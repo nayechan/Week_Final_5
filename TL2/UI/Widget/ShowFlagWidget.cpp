@@ -112,6 +112,7 @@ void UShowFlagWidget::SyncWithWorld(UWorld* World)
     bBoundingBoxes = World->IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes);
     bGrid = World->IsShowFlagEnabled(EEngineShowFlags::SF_Grid);
     bLighting = World->IsShowFlagEnabled(EEngineShowFlags::SF_Lighting);
+    bOctree = World->IsShowFlagEnabled(EEngineShowFlags::SF_OctreeDebug);
 }
 
 void UShowFlagWidget::RenderShowFlagCheckbox(const char* Label, EEngineShowFlags Flag, UWorld* World)
@@ -171,6 +172,10 @@ void UShowFlagWidget::RenderShowFlagCheckbox(const char* Label, EEngineShowFlags
             ImGui::Text("월드 그리드 표시/숨김");
             ImGui::Text("3D 공간의 참조용 격자를 표시합니다.");
             break;
+        case EEngineShowFlags::SF_OctreeDebug:
+            ImGui::Text("옥트리 디버그 바운드 표시/숨김");
+            ImGui::Text("공간 분할 노드의 AABB를 라인으로 렌더링합니다.");
+            break;
         case EEngineShowFlags::SF_Lighting:
             ImGui::Text("조명 효과 활성화/비활성화");
             ImGui::Text("라이팅 계산을 켜거나 끕니다.");
@@ -228,6 +233,7 @@ void UShowFlagWidget::RenderDebugSection(UWorld* World)
         RenderShowFlagCheckbox("Billboard Text", EEngineShowFlags::SF_BillboardText, World);
         RenderShowFlagCheckbox("Bounding Boxes", EEngineShowFlags::SF_BoundingBoxes, World);
         RenderShowFlagCheckbox("Grid", EEngineShowFlags::SF_Grid, World);
+        RenderShowFlagCheckbox("Octree", EEngineShowFlags::SF_OctreeDebug, World);
         
         ImGui::TreePop();
     }

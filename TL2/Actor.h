@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "Object.h"
 #include "Vector.h"
-
+#include "AABoundingBoxComponent.h"
 class UWorld;
 class USceneComponent;
 class UAABoundingBoxComponent;
@@ -20,7 +20,7 @@ public:
     virtual void BeginPlay();
     virtual void Tick(float DeltaSeconds);
     virtual void Destroy();
-
+    virtual FBound GetBounds() const { return FBound(); }
     // ───────────────
     // Transform API
     // ───────────────

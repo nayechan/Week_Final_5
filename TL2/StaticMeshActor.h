@@ -13,6 +13,7 @@ protected:
     ~AStaticMeshActor() override;
 
 public:
+    virtual FBound GetBounds() const override;
     UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
     void SetStaticMeshComponent(UStaticMeshComponent* InStaticMeshComponent);
 	void SetCollisionComponent(EPrimitiveType InType = EPrimitiveType::Default);

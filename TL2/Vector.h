@@ -958,12 +958,3 @@ inline FTransform FTransform::Inverse() const
     Out.Translation = InvTrans;
     return Out;
 }
-
-struct FBound
-{
-    FVector Min;
-    FVector Max;
-
-    FBound() : Min(FVector()), Max(FVector()) {}
-    FBound(const FVector& InMin, const FVector& InMax) : Min(InMin), Max(InMax) {}
-};

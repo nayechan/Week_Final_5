@@ -16,6 +16,7 @@
 #include "SceneRotationUtils.h"
 #include "WorldPartitionManager.h"
 #include "PrimitiveComponent.h"
+#include "Octree.h"
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
@@ -55,6 +56,13 @@ UWorld::~UWorld()
 
 	// ObjManager 정리
 	FObjManager::Clear();
+
+	// Octree 정리
+	if (SceneOctree)
+	{
+		delete SceneOctree;
+		SceneOctree = nullptr;
+	}
 
 	// Partition manager cleanup
 	delete PartitionManager;
@@ -124,6 +132,16 @@ void UWorld::Initialize()
 
 	// 액터 간 참조 설정
 	SetupActorReferences();
+
+	if (SceneOctree)
+	{
+		delete SceneOctree;
+		SceneOctree = nullptr;
+	}
+	{
+		FBound WorldBounds(FVector(-10.f, -10.f, -10.f), FVector(10.f, 10.f, 10.f));
+		SceneOctree = new FOctree(WorldBounds, 0, 8, 8);
+	}
 }
 
 void UWorld::InitializeMainCamera()
@@ -203,8 +221,8 @@ void UWorld::RenderSingleViewport()
 	// === Begin Line Batch for all actors ===
 	Renderer->BeginLineBatch();
 
-	// === Draw Actors with Show Flag checks ===
-	Renderer->SetViewModeType(ViewModeIndex);
+    // === Draw Actors with Show Flag checks ===
+    Renderer->SetViewModeType(ViewModeIndex);
 
 	// 일반 액터들 렌더링 (Primitives Show Flag 체크)
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives))
@@ -281,7 +299,13 @@ void UWorld::RenderSingleViewport()
 		// 블랜드 스테이드 종료
 		Renderer->OMSetBlendState(false);
 	}
-	Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
+    // Octree debug draw
+    if (IsShowFlagEnabled(EEngineShowFlags::SF_OctreeDebug) && SceneOctree)
+    {
+        SceneOctree->DebugDraw(Renderer);
+    }
+
+    Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 
 
 
@@ -312,8 +336,8 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 	// === Begin Line Batch for all actors ===
 	Renderer->BeginLineBatch();
 
-	// === Draw Actors with Show Flag checks ===
-	Renderer->SetViewModeType(ViewModeIndex);
+    // === Draw Actors with Show Flag checks ===
+    Renderer->SetViewModeType(ViewModeIndex);
 
 	// 일반 액터들 렌더링
 	if (IsShowFlagEnabled(EEngineShowFlags::SF_Primitives))
@@ -385,7 +409,13 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 		Renderer->OMSetBlendState(false);
 	}
 
-	Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
+    // Octree debug draw
+    if (IsShowFlagEnabled(EEngineShowFlags::SF_OctreeDebug) && SceneOctree)
+    {
+        SceneOctree->DebugDraw(Renderer);
+    }
+    
+    Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 
 
 	Renderer->UpdateHighLightConstantBuffer(false, rgb, 0, 0, 0, 0);
@@ -482,6 +512,9 @@ bool UWorld::DestroyActor(AActor* Actor)
 	auto it = std::find(Actors.begin(), Actors.end(), Actor);
 	if (it != Actors.end())
 	{
+		// 옥트리에서 제거
+		OnActorDestroyed(Actor);
+
 		Actors.erase(it);
 
 		// Before deleting, unregister primitive components from partition manager
@@ -506,6 +539,33 @@ bool UWorld::DestroyActor(AActor* Actor)
 	}
 
 	return false; // 월드에 없는 액터
+}
+
+void UWorld::OnActorSpawned(AActor* Actor)
+{
+    if (!Actor) return;
+    if (!SceneOctree) return;
+    FBound B = Actor->GetBounds();
+    if (SceneOctree->Contains(B))
+    {
+        SceneOctree->Insert(Actor, B);
+    }
+}
+
+void UWorld::OnActorDestroyed(AActor* Actor)
+{
+    if (!Actor) return;
+    if (!SceneOctree) return;
+    FBound B = Actor->GetBounds();
+    SceneOctree->Remove(Actor, B);
+}
+
+void UWorld::UpdateActorInOctree(AActor* Actor, const FBound& OldBounds, const FBound& NewBounds)
+{
+
+    if (!Actor) return;
+    if (!SceneOctree) return;
+    SceneOctree->Update(Actor, OldBounds, NewBounds);
 }
 
 inline FString ToObjFileName(const FString& TypeName)
@@ -551,6 +611,12 @@ void UWorld::CreateNewScene()
 
 	// 이름 카운터 초기화: 씬을 새로 시작할 때 각 BaseName 별 suffix를 0부터 다시 시작
 	ObjectTypeCounts.clear();
+
+	// 옥트리 초기화
+	if (SceneOctree)
+	{
+		SceneOctree->Clear();
+	}
 }
 
 
@@ -670,9 +736,6 @@ void UWorld::LoadScene(const FString& SceneName)
 	// [1] 로드 시작 전 현재 카운터 백업
 	const uint32 PreLoadNext = UObject::PeekNextUUID();
 
-
-	////////////JSON LOAD HICKING////////////
-
 	// [2] 파일 NextUUID는 현재보다 클 때만 반영(절대 하향 설정 금지)
 	uint32 LoadedNextUUID = 0;
 	if (FSceneLoader::TryReadNextUUID(FilePath, LoadedNextUUID))
@@ -767,7 +830,6 @@ void UWorld::LoadScene(const FString& SceneName)
 		if (UStaticMeshComponent* SMC = StaticMeshActor->GetStaticMeshComponent())
 		{
 			FPrimitiveData Temp = Primitive;
-			//SMC->Serialize(true, const_cast<FPrimitiveData&>(Primitive));
 			SMC->Serialize(true, Temp);
 
 			FString LoadedAssetPath;

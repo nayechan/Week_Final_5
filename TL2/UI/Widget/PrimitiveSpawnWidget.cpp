@@ -11,6 +11,7 @@
 #include <ctime>
 #include <string>
 #include "ObjectIterator.h"
+#include "../../Octree.h"
 
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
@@ -244,6 +245,17 @@ void UPrimitiveSpawnWidget::RenderWidget()
     {
         ImGui::Text("World Status: Connected");
         ImGui::Text("Current Actors: %zu", World->GetActors().size());
+
+        if (FOctree* Oct = World->GetOctree())
+        {
+            ImGui::Text("Octree Nodes: %d", Oct->TotalNodeCount());
+            ImGui::Text("Octree Actors: %d", Oct->TotalActorCount());
+            ImGui::Text("Octree Max Depth: %d", Oct->MaxOccupiedDepth());
+            if (ImGui::Button("Dump Octree To Log"))
+            {
+                Oct->DebugDump();
+            }
+        }
     }
     else
     {
@@ -339,6 +351,9 @@ void UPrimitiveSpawnWidget::SpawnActors() const
                 bHasResourceSelection ? GetBaseNameNoExt(MeshPath).c_str() : "StaticMesh"
             );
             NewActor->SetName(ActorName);
+
+            // 월드 옥트리에 등록
+            World->OnActorSpawned(NewActor);
 
             SuccessCount++;
             UE_LOG("PrimitiveSpawn: Created at (%.2f, %.2f, %.2f) scale %.2f using %s",

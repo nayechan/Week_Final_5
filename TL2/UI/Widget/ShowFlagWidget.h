@@ -57,6 +57,7 @@ private:
     bool bBoundingBoxes = false;
     bool bGrid = true;
     bool bLighting = true;
+    bool bOctree = false;
     
     // UI 스타일
     ImVec4 HeaderColor = ImVec4(0.4f, 0.6f, 0.9f, 1.0f);

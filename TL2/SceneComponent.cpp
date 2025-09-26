@@ -267,7 +267,7 @@ void USceneComponent::UpdateRelativeTransform()
             {
                 if (auto* PM = World->GetPartitionManager())
                 {
-                    PM->MarkDirty(Prim, /*flags*/1);
+                    PM->MarkDirty(Prim);
                 }
             }
         }

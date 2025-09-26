@@ -8,6 +8,7 @@
 #include "TextRenderComponent.h"
 #include "WorldPartitionManager.h"
 
+#include "World.h"
 AActor::AActor()
 {
     Name = "DefaultActor";
@@ -66,9 +67,15 @@ void AActor::Destroy()
 // ───────────────
 void AActor::SetActorTransform(const FTransform& NewTransform)
 {
+    FBound OldBounds = GetBounds();
     if (RootComponent)
     {
         RootComponent->SetWorldTransform(NewTransform);
+    }
+    if (World)
+    {
+        FBound NewBounds = GetBounds();
+        World->UpdateActorInOctree(this, OldBounds, NewBounds);
     }
 }
 
@@ -80,9 +87,15 @@ FTransform AActor::GetActorTransform() const
 
 void AActor::SetActorLocation(const FVector& NewLocation)
 {
+    FBound OldBounds = GetBounds();
     if (RootComponent)
     {
         RootComponent->SetWorldLocation(NewLocation);
+    }
+    if (World)
+    {
+        FBound NewBounds = GetBounds();
+        World->UpdateActorInOctree(this, OldBounds, NewBounds);
     }
 }
 
@@ -101,9 +114,15 @@ void AActor::SetActorRotation(const FVector& EulerDegree)
 
 void AActor::SetActorRotation(const FQuat& InQuat)
 {
+    FBound OldBounds = GetBounds();
     if (RootComponent)
     {
         RootComponent->SetWorldRotation(InQuat);
+    }
+    if (World)
+    {
+        FBound NewBounds = GetBounds();
+        World->UpdateActorInOctree(this, OldBounds, NewBounds);
     }
 }
 
@@ -114,9 +133,15 @@ FQuat AActor::GetActorRotation() const
 
 void AActor::SetActorScale(const FVector& NewScale)
 {
+    FBound OldBounds = GetBounds();
     if (RootComponent)
     {
         RootComponent->SetWorldScale(NewScale);
+    }
+    if (World)
+    {
+        FBound NewBounds = GetBounds();
+        World->UpdateActorInOctree(this, OldBounds, NewBounds);
     }
 }
 
@@ -132,9 +157,15 @@ FMatrix AActor::GetWorldMatrix() const
 
 void AActor::AddActorWorldRotation(const FQuat& DeltaRotation)
 {
+    FBound OldBounds = GetBounds();
     if (RootComponent)
     {
         RootComponent->AddWorldRotation(DeltaRotation);
+    }
+    if (World)
+    {
+        FBound NewBounds = GetBounds();
+        World->UpdateActorInOctree(this, OldBounds, NewBounds);
     }
 }
 
@@ -149,9 +180,15 @@ void AActor::AddActorWorldRotation(const FVector& DeltaEuler)
 
 void AActor::AddActorWorldLocation(const FVector& DeltaLocation)
 {
+    FBound OldBounds = GetBounds();
     if (RootComponent)
     {
         RootComponent->AddWorldOffset(DeltaLocation);
+    }
+    if (World)
+    {
+        FBound NewBounds = GetBounds();
+        World->UpdateActorInOctree(this, OldBounds, NewBounds);
     }
 }
 
@@ -166,17 +203,29 @@ void AActor::AddActorLocalRotation(const FVector& DeltaEuler)
 
 void AActor::AddActorLocalRotation(const FQuat& DeltaRotation)
 {
+    FBound OldBounds = GetBounds();
     if (RootComponent)
     {
         RootComponent->AddLocalRotation(DeltaRotation);
+    }
+    if (World)
+    {
+        FBound NewBounds = GetBounds();
+        World->UpdateActorInOctree(this, OldBounds, NewBounds);
     }
 }
 
 void AActor::AddActorLocalLocation(const FVector& DeltaLocation)
 {
+    FBound OldBounds = GetBounds();
     if (RootComponent)
     {
         RootComponent->AddLocalOffset(DeltaLocation);
+    }
+    if (World)
+    {
+        FBound NewBounds = GetBounds();
+        World->UpdateActorInOctree(this, OldBounds, NewBounds);
     }
 }
 

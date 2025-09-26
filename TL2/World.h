@@ -4,6 +4,8 @@
 #include "GridActor.h"
 #include "GizmoActor.h"
 #include "Enums.h"
+// forward declare to avoid heavy include
+class FOctree;
 
 // Forward Declarations
 class UResourceManager;
@@ -25,6 +27,8 @@ class UWorldPartitionManager;
  * UWorld
  * - 월드 단위의 액터/타임/매니저 관리 클래스
  */
+
+
 class UWorld final : public UObject
 {
 public:
@@ -69,6 +73,12 @@ public:
     void AddActor(AActor* Actor);
 
     bool DestroyActor(AActor* Actor);
+
+    // Octree hooks
+    void OnActorSpawned(AActor* Actor);
+    void OnActorDestroyed(AActor* Actor);
+    void UpdateActorInOctree(AActor* Actor, const FBound& OldBounds, const FBound& NewBounds);
+    FOctree* GetOctree() const { return SceneOctree; }
 
     void CreateNewScene();
     void LoadScene(const FString& SceneName);
@@ -160,6 +170,9 @@ private:
     EEngineShowFlags ShowFlags = EEngineShowFlags::SF_DefaultEnabled;
     
     EViewModeIndex ViewModeIndex = EViewModeIndex::VMI_Unlit;
+
+    // Spatial index
+    FOctree* SceneOctree = nullptr;
 };
 template<class T>
 inline T* UWorld::SpawnActor()

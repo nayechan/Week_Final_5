@@ -9,7 +9,7 @@ class AGizmoActor;
 // Forward Declarations
 class AActor;
 class ACameraActor;
-
+class FViewport;
 // Unreal-style simple ray type
 struct alignas(16) FRay
 {
