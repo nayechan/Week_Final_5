@@ -58,15 +58,15 @@ UWorld::~UWorld()
 	FObjManager::Clear();
 
 	// Octree 정리
-	if (SceneOctree)
-	{
-		delete SceneOctree;
-		SceneOctree = nullptr;
-	}
+	//if (SceneOctree)
+	//{
+	//	delete SceneOctree;
+	//	SceneOctree = nullptr;
+	//}
 
 	// Partition manager cleanup
-	delete PartitionManager;
-	PartitionManager = nullptr;
+	//delete PartitionManager;
+	//PartitionManager = nullptr;
 }
 
 static void DebugRTTI_UObject(UObject* Obj, const char* Title)
@@ -118,11 +118,10 @@ void UWorld::Initialize()
 	FObjManager::Preload();
 
 	// Create partition manager
-	if (!PartitionManager)
-	{
-		PartitionManager = new UWorldPartitionManager();
-	}
-
+	//if (!PartitionManager)
+	//{
+	//	PartitionManager = new UWorldPartitionManager();
+	//}
 	// 새 씬 생성
 	CreateNewScene();
 
@@ -133,15 +132,15 @@ void UWorld::Initialize()
 	// 액터 간 참조 설정
 	SetupActorReferences();
 
-	if (SceneOctree)
-	{
-		delete SceneOctree;
-		SceneOctree = nullptr;
-	}
-	{
-		FBound WorldBounds(FVector(-10.f, -10.f, -10.f), FVector(10.f, 10.f, 10.f));
-		SceneOctree = new FOctree(WorldBounds, 0, 8, 8);
-	}
+	//if (SceneOctree)
+	//{
+	//	delete SceneOctree;
+	//	SceneOctree = nullptr;
+	//}
+	//{
+	//	FBound WorldBounds(FVector(-800.f, -800.f, -800.f), FVector(800.f, 800.f, 800.f));
+	//	SceneOctree = new FOctree(WorldBounds, 0, 8, 8);
+	//}
 }
 
 void UWorld::InitializeMainCamera()
@@ -300,10 +299,13 @@ void UWorld::RenderSingleViewport()
 		Renderer->OMSetBlendState(false);
 	}
     // Octree debug draw
-    if (IsShowFlagEnabled(EEngineShowFlags::SF_OctreeDebug) && SceneOctree)
-    {
-        SceneOctree->DebugDraw(Renderer);
-    }
+	if (IsShowFlagEnabled(EEngineShowFlags::SF_OctreeDebug))
+	{
+		if (FOctree* Octree = UWorldPartitionManager::GetInstance()->GetSceneOctree())
+		{
+			Octree->DebugDraw(Renderer);
+		}
+	}
 
     Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 
@@ -408,10 +410,13 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 	}
 
     // Octree debug draw
-    if (IsShowFlagEnabled(EEngineShowFlags::SF_OctreeDebug) && SceneOctree)
-    {
-        SceneOctree->DebugDraw(Renderer);
-    }
+	if (IsShowFlagEnabled(EEngineShowFlags::SF_OctreeDebug))
+	{
+		if (FOctree* Octree = UWorldPartitionManager::GetInstance()->GetSceneOctree())
+		{
+			Octree->DebugDraw(Renderer);
+		}
+	}
     
     Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 
@@ -425,9 +430,9 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 void UWorld::Tick(float DeltaSeconds)
 {
 	// Update spatial indices first so any previous-frame changes are reflected
-	if (PartitionManager)
+	if (UWorldPartitionManager::GetInstance())
 	{
-		PartitionManager->Update(DeltaSeconds, /*budget*/256);
+		UWorldPartitionManager::GetInstance()->Update(DeltaSeconds, /*budget*/256);
 	}
 
 	//순서 바꾸면 안댐
@@ -513,17 +518,17 @@ bool UWorld::DestroyActor(AActor* Actor)
 
 void UWorld::OnActorSpawned(AActor* Actor)
 {
-	if (PartitionManager && Actor)
+	if (UWorldPartitionManager::GetInstance() && Actor)
 	{
-		PartitionManager->Register(Actor);
+		UWorldPartitionManager::GetInstance()->Register(Actor);
 	}
 }
 
 void UWorld::OnActorDestroyed(AActor* Actor)
 {
-	if (PartitionManager && Actor)
+	if (UWorldPartitionManager::GetInstance() && Actor)
 	{
-		PartitionManager->Unregister(Actor);
+		UWorldPartitionManager::GetInstance()->Unregister(Actor);
 	}
 }
 
@@ -572,14 +577,11 @@ void UWorld::CreateNewScene()
 	ObjectTypeCounts.clear();
 
 	// 옥트리 초기화
-	if (SceneOctree)
-	{
-		SceneOctree->Clear();
-	}
+	UWorldPartitionManager::GetInstance()->ClearSceneOctree();
 
-	if (PartitionManager)
+	if (UWorldPartitionManager::GetInstance())
 	{
-		PartitionManager->Clear();
+		UWorldPartitionManager::GetInstance()->Clear();
 	}
 }
 
@@ -827,10 +829,10 @@ void UWorld::LoadScene(const FString& SceneName)
 	}
 	
 	// 모든 액터를 한 번에 벌크 등록 하여 성능 최적화
-	if (PartitionManager && !SpawnedActors.empty())
+	if (UWorldPartitionManager::GetInstance() && !SpawnedActors.empty())
 	{
 		UE_LOG("LoadScene: Using bulk registration for %zu actors\r\n", SpawnedActors.size());
-		PartitionManager->BulkRegister(SpawnedActors);
+		UWorldPartitionManager::GetInstance()->BulkRegister(SpawnedActors);
 	}
 
 	// 3) 최종 보정: 전역 카운터는 절대 하향 금지 + 현재 사용된 최대값 이후로 설정

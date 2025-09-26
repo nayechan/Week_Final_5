@@ -12,6 +12,7 @@
 #include <string>
 #include "ObjectIterator.h"
 #include "../../Octree.h"
+#include "WorldPartitionManager.h"
 
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
@@ -246,7 +247,7 @@ void UPrimitiveSpawnWidget::RenderWidget()
         ImGui::Text("World Status: Connected");
         ImGui::Text("Current Actors: %zu", World->GetActors().size());
 
-        if (FOctree* Oct = World->GetOctree())
+        if (FOctree* Oct = UWorldPartitionManager::GetInstance()->GetSceneOctree())
         {
             ImGui::Text("Octree Nodes: %d", Oct->TotalNodeCount());
             ImGui::Text("Octree Actors: %d", Oct->TotalActorCount());

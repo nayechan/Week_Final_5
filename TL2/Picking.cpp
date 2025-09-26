@@ -239,24 +239,24 @@ AActor* CPickingSystem::PerformPicking(const TArray<AActor*>& Actors, ACameraAct
     float pickedT = 1e9f;
 
     // 모든 액터에 대해 피킹 테스트
-    //for (int i = 0; i < Actors.Num(); ++i)
-    //{
-    //    AActor* Actor = Actors[i];
-    //    if (!Actor) continue;
-    //    
-    //    // Skip hidden actors for picking
-    //    if (Actor->GetActorHiddenInGame()) continue;
+    for (int i = 0; i < Actors.Num(); ++i)
+    {
+        AActor* Actor = Actors[i];
+        if (!Actor) continue;
+        
+        // Skip hidden actors for picking
+        if (Actor->GetActorHiddenInGame()) continue;
 
-    //    float hitDistance;
-    //    if (CheckActorPicking(Actor, ray, hitDistance))
-    //    {
-    //        if (hitDistance < pickedT)
-    //        {
-    //            pickedT = hitDistance;
-    //            pickedIndex = i;
-    //        }
-    //    }
-    //}
+        float hitDistance;
+        if (CheckActorPicking(Actor, ray, hitDistance))
+        {
+            if (hitDistance < pickedT)
+            {
+                pickedT = hitDistance;
+                pickedIndex = i;
+            }
+        }
+    }
 
     if (pickedIndex >= 0)
     {

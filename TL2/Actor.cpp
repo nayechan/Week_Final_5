@@ -11,26 +11,26 @@
 #include "World.h"
 AActor::AActor()
 {
-    Name = "DefaultActor";
-    RootComponent= CreateDefaultSubobject<USceneComponent>(FName("SceneComponent"));
-    CollisionComponent = CreateDefaultSubobject<UAABoundingBoxComponent>(FName("CollisionBox"));
-    //UTextRenderComponent* TextComp = NewObject<UTextRenderComponent>();
-    //TextComp->SetOwner(this);
-    //AddComponent(TextComp);    
+	Name = "DefaultActor";
+	RootComponent = CreateDefaultSubobject<USceneComponent>(FName("SceneComponent"));
+	CollisionComponent = CreateDefaultSubobject<UAABoundingBoxComponent>(FName("CollisionBox"));
+	//UTextRenderComponent* TextComp = NewObject<UTextRenderComponent>();
+	//TextComp->SetOwner(this);
+	//AddComponent(TextComp);    
 }
 
 AActor::~AActor()
 {
-    for (USceneComponent*& Comp : Components)
-    {
-        if (Comp)
-        {
-            ObjectFactory::DeleteObject(Comp);
-            Comp = nullptr;
-        }
-    }
-    Components.Empty();
-    //TextComp->SetupAttachment(GetRootComponent());
+	for (USceneComponent*& Comp : Components)
+	{
+		if (Comp)
+		{
+			ObjectFactory::DeleteObject(Comp);
+			Comp = nullptr;
+		}
+	}
+	Components.Empty();
+	//TextComp->SetupAttachment(GetRootComponent());
 }
 
 void AActor::BeginPlay()
@@ -43,16 +43,16 @@ void AActor::Tick(float DeltaSeconds)
 
 void AActor::Destroy()
 {
-    if (!bCanEverTick) return;
-    // Prefer world-managed destruction to remove from world actor list
-    if (World)
-    {
-        // Avoid using 'this' after the call
-        World->DestroyActor(this);
-        return;
-    }
-    // Fallback: directly delete the actor via factory
-    ObjectFactory::DeleteObject(this);
+	if (!bCanEverTick) return;
+	// Prefer world-managed destruction to remove from world actor list
+	if (World)
+	{
+		// Avoid using 'this' after the call
+		World->DestroyActor(this);
+		return;
+	}
+	// Fallback: directly delete the actor via factory
+	ObjectFactory::DeleteObject(this);
 }
 
 // ───────────────
@@ -60,231 +60,191 @@ void AActor::Destroy()
 // ───────────────
 void AActor::SetActorTransform(const FTransform& NewTransform)
 {
-    if (RootComponent)
-    {
-        FTransform OldTransform = RootComponent->GetWorldTransform();
-        if (!(OldTransform == NewTransform)) // 실제로 변경되었을 때만
-        {
-            RootComponent->SetWorldTransform(NewTransform);
-            if (World)
-            {
-                auto* PM = World->GetPartitionManager();
-                if (PM)
-                {
-                    PM->MarkDirty(this);
-                }
-            }
-        }
-    }
+	if (RootComponent == nullptr)
+	{
+		return;
+	}
+
+	FTransform OldTransform = RootComponent->GetWorldTransform();
+	if (!(OldTransform == NewTransform))
+	{
+		RootComponent->SetWorldTransform(NewTransform);
+		MarkPartitionDirty();
+	}
 }
 
 
 FTransform AActor::GetActorTransform() const
 {
-    return RootComponent ? RootComponent->GetWorldTransform() : FTransform();
+	return RootComponent ? RootComponent->GetWorldTransform() : FTransform();
 }
 
 void AActor::SetActorLocation(const FVector& NewLocation)
 {
-    if (RootComponent)
-    {
-        FVector OldLocation = RootComponent->GetWorldLocation();
-        if (!(OldLocation == NewLocation)) // 위치가 실제로 변경되었을 때만
-        {
-            RootComponent->SetWorldLocation(NewLocation);
-            if (World)
-            {
-                auto* PM = World->GetPartitionManager();
-                if (PM)
-                {
-                    PM->MarkDirty(this);
-                }
-            }
-        }
-    }
+	if (RootComponent == nullptr)
+	{
+		return;
+	}
+
+	FVector OldLocation = RootComponent->GetWorldLocation();
+	if (!(OldLocation == NewLocation)) // 위치가 실제로 변경되었을 때만
+	{
+		RootComponent->SetWorldLocation(NewLocation);
+		MarkPartitionDirty();
+	}
 }
 
 FVector AActor::GetActorLocation() const
 {
-    return RootComponent ? RootComponent->GetWorldLocation() : FVector();
+	return RootComponent ? RootComponent->GetWorldLocation() : FVector();
+}
+
+void AActor::MarkPartitionDirty()
+{
+	auto* PartitionManager = UWorldPartitionManager::GetInstance();
+	if (PartitionManager)
+	{
+		PartitionManager->MarkDirty(this);
+	}
 }
 
 void AActor::SetActorRotation(const FVector& EulerDegree)
 {
-    if (RootComponent)
-    {
-        FQuat NewRotation = FQuat::MakeFromEuler(EulerDegree);
-        FQuat OldRotation = RootComponent->GetWorldRotation();
-        if (!(OldRotation == NewRotation)) // 회전이 실제로 변경되었을 때만
-        {
-            RootComponent->SetWorldRotation(NewRotation);
-            if (World)
-            {
-                auto* PM = World->GetPartitionManager();
-                if (PM)
-                {
-                    PM->MarkDirty(this);
-                }
-            }
-        }
-    }
+	if (RootComponent)
+	{
+		FQuat NewRotation = FQuat::MakeFromEuler(EulerDegree);
+		FQuat OldRotation = RootComponent->GetWorldRotation();
+		if (!(OldRotation == NewRotation)) // 회전이 실제로 변경되었을 때만
+		{
+			RootComponent->SetWorldRotation(NewRotation);
+			MarkPartitionDirty();
+		}
+	}
 }
 
 void AActor::SetActorRotation(const FQuat& InQuat)
 {
-    if (RootComponent)
-    {
-        FQuat OldRotation = RootComponent->GetWorldRotation();
-        if (!(OldRotation == InQuat)) // 회전이 실제로 변경되었을 때만
-        {
-            RootComponent->SetWorldRotation(InQuat);
-            if (World)
-            {
-                auto* PM = World->GetPartitionManager();
-                if (PM)
-                {
-                    PM->MarkDirty(this);
-                }
-            }
-        }
-    }
+	if (RootComponent == nullptr)
+	{
+		return;
+	}
+	FQuat OldRotation = RootComponent->GetWorldRotation();
+	if (!(OldRotation == InQuat)) // 회전이 실제로 변경되었을 때만
+	{
+		RootComponent->SetWorldRotation(InQuat);
+		MarkPartitionDirty();
+	}
 }
 
 FQuat AActor::GetActorRotation() const
 {
-    return RootComponent ? RootComponent->GetWorldRotation() : FQuat();
+	return RootComponent ? RootComponent->GetWorldRotation() : FQuat();
 }
 
 void AActor::SetActorScale(const FVector& NewScale)
 {
-    if (RootComponent)
-    {
-        FVector OldScale = RootComponent->GetWorldScale();
-        if (!(OldScale == NewScale)) // 스케일이 실제로 변경되었을 때만
-        {
-            RootComponent->SetWorldScale(NewScale);
-            if (World)
-            {
-                auto* PM = World->GetPartitionManager();
-                if (PM)
-                {
-                    PM->MarkDirty(this);
-                }
-            }
-        }
-    }
+	if (RootComponent == nullptr)
+	{
+		return;
+	}
+
+	FVector OldScale = RootComponent->GetWorldScale();
+	if (!(OldScale == NewScale)) // 스케일이 실제로 변경되었을 때만
+	{
+		RootComponent->SetWorldScale(NewScale);
+		MarkPartitionDirty();
+	}
 }
 
 FVector AActor::GetActorScale() const
 {
-    return RootComponent ? RootComponent->GetWorldScale() : FVector(1, 1, 1);
+	return RootComponent ? RootComponent->GetWorldScale() : FVector(1, 1, 1);
 }
 
 FMatrix AActor::GetWorldMatrix() const
 {
-    return RootComponent ? RootComponent->GetWorldMatrix() : FMatrix::Identity();
+	return RootComponent ? RootComponent->GetWorldMatrix() : FMatrix::Identity();
 }
 
 void AActor::AddActorWorldRotation(const FQuat& DeltaRotation)
 {
-    if (RootComponent && !DeltaRotation.IsIdentity()) // 단위 쿼터니온이 아닐 때만
-    {
-        RootComponent->AddWorldRotation(DeltaRotation);
-        if (World)
-        {
-            auto* PM = World->GetPartitionManager();
-            if (PM)
-            {
-                PM->MarkDirty(this);
-            }
-        }
-    }
+	if (RootComponent && !DeltaRotation.IsIdentity()) // 단위 쿼터니온이 아닐 때만
+	{
+		RootComponent->AddWorldRotation(DeltaRotation);
+		MarkPartitionDirty();
+	}
 }
 
 void AActor::AddActorWorldRotation(const FVector& DeltaEuler)
 {
-    /* if (RootComponent)
-     {
-         FQuat DeltaQuat = FQuat::FromEuler(DeltaEuler.X, DeltaEuler.Y, DeltaEuler.Z);
-         RootComponent->AddWorldRotation(DeltaQuat);
-     }*/
+	/* if (RootComponent)
+	 {
+		 FQuat DeltaQuat = FQuat::FromEuler(DeltaEuler.X, DeltaEuler.Y, DeltaEuler.Z);
+		 RootComponent->AddWorldRotation(DeltaQuat);
+	 }*/
 }
 
 void AActor::AddActorWorldLocation(const FVector& DeltaLocation)
 {
-    if (RootComponent && !DeltaLocation.IsZero()) // 영 벡터가 아닐 때만
-    {
-        RootComponent->AddWorldOffset(DeltaLocation);
-        if (World)
-        {
-            auto* PM = World->GetPartitionManager();
-            if (PM)
-            {
-                PM->MarkDirty(this);
-            }
-        }
-    }
+	if (RootComponent && !DeltaLocation.IsZero()) // 영 벡터가 아닐 때만
+	{
+		RootComponent->AddWorldOffset(DeltaLocation);
+		MarkPartitionDirty();
+	}
 }
 
 void AActor::AddActorLocalRotation(const FVector& DeltaEuler)
 {
-    /*  if (RootComponent)
-      {
-          FQuat DeltaQuat = FQuat::FromEuler(DeltaEuler.X, DeltaEuler.Y, DeltaEuler.Z);
-          RootComponent->AddLocalRotation(DeltaQuat);
-      }*/
+	/*  if (RootComponent)
+	  {
+		  FQuat DeltaQuat = FQuat::FromEuler(DeltaEuler.X, DeltaEuler.Y, DeltaEuler.Z);
+		  RootComponent->AddLocalRotation(DeltaQuat);
+	  }*/
 }
 
 void AActor::AddActorLocalRotation(const FQuat& DeltaRotation)
 {
-    if (RootComponent && !DeltaRotation.IsIdentity()) // 단위 쿼터니온이 아닐 때만
-    {
-        RootComponent->AddLocalRotation(DeltaRotation);
-        if (World)
-        {
-            auto* PM = World->GetPartitionManager();
-            if (PM)
-            {
-                PM->MarkDirty(this);
-            }
-        }
-    }
+	if (RootComponent && !DeltaRotation.IsIdentity()) // 단위 쿼터니온이 아닐 때만
+	{
+		RootComponent->AddLocalRotation(DeltaRotation);
+		if (World)
+		{
+			auto* PM = UWorldPartitionManager::GetInstance();
+			if (PM)
+			{
+				PM->MarkDirty(this);
+			}
+		}
+	}
 }
 
 void AActor::AddActorLocalLocation(const FVector& DeltaLocation)
 {
-    if (RootComponent && !DeltaLocation.IsZero()) // 영 벡터가 아닐 때만
-    {
-        RootComponent->AddLocalOffset(DeltaLocation);
-        if (World)
-        {
-            auto* PM = World->GetPartitionManager();
-            if (PM)
-            {
-                PM->MarkDirty(this);
-            }
-        }
-    }
+	if (RootComponent && !DeltaLocation.IsZero()) // 영 벡터가 아닐 때만
+	{
+		RootComponent->AddLocalOffset(DeltaLocation);
+		MarkPartitionDirty();
+	}
 }
 
 const TArray<USceneComponent*>& AActor::GetComponents() const
 {
-    return Components;
+	return Components;
 }
 
 void AActor::AddComponent(USceneComponent* Component)
 {
-    if (!Component)
-    {
-        return;
-    }
+	if (!Component)
+	{
+		return;
+	}
 
-    Components.push_back(Component);
-    if (!RootComponent)
-    {
-        RootComponent = Component;
-        //Component->SetupAttachment(RootComponent);
-    }
+	Components.push_back(Component);
+	if (!RootComponent)
+	{
+		RootComponent = Component;
+		//Component->SetupAttachment(RootComponent);
+	}
 
-    // Registration is handled at actor spawn time; no per-component registration needed here.
+	// Registration is handled at actor spawn time; no per-component registration needed here.
 }

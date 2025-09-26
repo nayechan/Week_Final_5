@@ -29,7 +29,7 @@ public:
 
     void SetActorLocation(const FVector& NewLocation);
     FVector GetActorLocation() const;
-
+    void MarkPartitionDirty();
     void SetActorRotation(const FVector& EulerDegree);
     void SetActorRotation(const FQuat& InQuat);
     FQuat GetActorRotation() const;

@@ -79,7 +79,7 @@ public:
     // Partial hooks
     void OnActorSpawned(AActor* Actor);
     void OnActorDestroyed(AActor* Actor);
-    FOctree* GetOctree() const { return SceneOctree; }
+    //FOctree* GetOctree() const { return SceneOctree; }
 
     void CreateNewScene();
     void LoadScene(const FString& SceneName);
@@ -113,7 +113,7 @@ public:
     //void GameRender(ACameraActor* Camera, FViewport* Viewport);
 
     // Partition manager
-    UWorldPartitionManager* GetPartitionManager() const { return PartitionManager; }
+    //UWorldPartitionManager* GetPartitionManager() const { return PartitionManager; }
 
 
     /** === 필요한 엑터 게터 === */
@@ -139,7 +139,7 @@ private:
     USelectionManager& SelectionManager;
 
     // World partition/spatial indexing //Non Single Ton
-    UWorldPartitionManager* PartitionManager = nullptr;
+    //UWorldPartitionManager* PartitionManager = nullptr;
 
    
     // 메인 카메라
@@ -172,8 +172,7 @@ private:
     
     EViewModeIndex ViewModeIndex = EViewModeIndex::VMI_Unlit;
 
-    // Spatial index
-    FOctree* SceneOctree = nullptr;
+
 };
 template<class T>
 inline T* UWorld::SpawnActor()
