@@ -272,12 +272,17 @@ struct FVector
 // ─────────────────────────────
 // FVector4 (4D Vector)
 // ─────────────────────────────
-struct FVector4
+struct alignas(16) FVector4
 {
-    float X, Y, Z, W;
-    FVector4(float InX = 0, float InY = 0, float InZ = 0, float InW = 0)
-        : X(InX), Y(InY), Z(InZ), W(InW)
+    union
     {
+        __m128 SimdData;
+        struct { float X, Y, Z, W; };
+    };
+
+    FVector4(float InX = 1, float InY = 2, float InZ = 3, float InW = 4)
+    {
+        SimdData = _mm_set_ps(InW, InZ, InY, InX);
     }
     FVector4 operator+(const FVector4& V) const { return FVector4(X + V.X, Y + V.Y, Z + V.Z, W + V.W); }
     FVector4 operator-(const FVector4& V) const { return FVector4(X - V.X, Y - V.Y, Z - V.Z, W - V.W); }
@@ -295,23 +300,15 @@ struct FVector4
     FVector4& operator-=(float S) { X -= S; Y -= S; Z -= S, W *= S; return *this; }
 
 
-    FVector4 ComponentMin(const FVector4& B)
+    FVector4(const __m128& InSimd) : SimdData(InSimd) {}
+
+    FVector4 ComponentMin(const FVector4& B) const
     {
-        return FVector4(
-            (X < B.X) ? X : B.X,
-            (Y < B.Y) ? Y : B.Y,
-            (Z < B.Z) ? Z : B.Z,
-            (W < B.W) ? W : B.W
-        );
+        return FVector4(_mm_min_ps(this->SimdData, B.SimdData));
     }
-    FVector4 ComponentMax(const FVector4& B)
+    FVector4 ComponentMax(const FVector4& B) const
     {
-        return FVector4(
-            (X > B.X) ? X : B.X,
-            (Y > B.Y) ? Y : B.Y,
-            (Z > B.Z) ? Z : B.Z,
-            (W > B.W) ? W : B.W
-        );
+        return FVector4(_mm_max_ps(this->SimdData, B.SimdData));
     }
 
 };
@@ -736,12 +733,24 @@ inline FVector operator*(const FVector& V, const FMatrix& S)
 // FVector4 * FMatrix (row-vector: v' = v * M)
 inline FVector4 operator*(const FVector4& V, const FMatrix& M)
 {
-    return FVector4(
-        V.X * M.M[0][0] + V.Y * M.M[1][0] + V.Z * M.M[2][0] + V.W * M.M[3][0],
-        V.X * M.M[0][1] + V.Y * M.M[1][1] + V.Z * M.M[2][1] + V.W * M.M[3][1],
-        V.X * M.M[0][2] + V.Y * M.M[1][2] + V.Z * M.M[2][2] + V.W * M.M[3][2],
-        V.X * M.M[0][3] + V.Y * M.M[1][3] + V.Z * M.M[2][3] + V.W * M.M[3][3]
-    );
+    // Splat V components into separate registers
+    __m128 vX = _mm_shuffle_ps(V.SimdData, V.SimdData, _MM_SHUFFLE(0, 0, 0, 0));
+    __m128 vY = _mm_shuffle_ps(V.SimdData, V.SimdData, _MM_SHUFFLE(1, 1, 1, 1));
+    __m128 vZ = _mm_shuffle_ps(V.SimdData, V.SimdData, _MM_SHUFFLE(2, 2, 2, 2));
+    __m128 vW = _mm_shuffle_ps(V.SimdData, V.SimdData, _MM_SHUFFLE(3, 3, 3, 3));
+
+    // Multiply each component with the corresponding matrix row
+    __m128 mRow0 = _mm_load_ps(&M.M[0][0]);
+    __m128 mRow1 = _mm_load_ps(&M.M[1][0]);
+    __m128 mRow2 = _mm_load_ps(&M.M[2][0]);
+    __m128 mRow3 = _mm_load_ps(&M.M[3][0]);
+
+    __m128 result = _mm_mul_ps(vX, mRow0);
+    result = _mm_add_ps(result, _mm_mul_ps(vY, mRow1));
+    result = _mm_add_ps(result, _mm_mul_ps(vZ, mRow2));
+    result = _mm_add_ps(result, _mm_mul_ps(vW, mRow3));
+
+    return FVector4(result);
 }
 
 // ─────────────────────────────
