@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClCompile Include="ActorComponent.cpp" />
     <ClCompile Include="BVHierachy.cpp" />
+    <ClCompile Include="PlatformTime.cpp" />
     <ClCompile Include="WorldPartitionManager.cpp" />
     <ClCompile Include="AllClassesRegistration.cpp" />
     <ClCompile Include="AABoundingBoxComponent.cpp" />
@@ -326,6 +327,7 @@
   <ItemGroup>
     <ClInclude Include="ActorComponent.h" />
     <ClInclude Include="BVHierachy.h" />
+    <ClInclude Include="PlatformTime.h" />
     <ClInclude Include="WorldPartitionManager.h" />
     <ClInclude Include="AABoundingBoxComponent.h" />
     <ClInclude Include="Archive.h" />

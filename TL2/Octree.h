@@ -25,6 +25,8 @@ public:
     //void QueryFrustum(const Frustum& InFrustum, std::vector<Actor*>& OutActors) const;
 	//쿼리
 	void QueryRay(const FRay& Ray, TArray<AActor*>& OutActors) const;
+    // Ordered query: returns pairs (Actor, AABB tmin) for early-out pruning
+    void QueryRayOrdered(const FRay& Ray, TArray<std::pair<AActor*, float>>& OutCandidates) const;
     // for Partition Manager Query
     void Remove(AActor* InActor);
     void Update(AActor* InActor);

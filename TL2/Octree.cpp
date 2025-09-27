@@ -429,6 +429,69 @@ void FOctree::QueryRay(const FRay& Ray, TArray<AActor*>& OutActors) const
         }
     }
 }
+
+namespace {
+    inline bool RayAABB_IntersectT(const FRay& ray, const FBound& box, float& outTMin, float& outTMax)
+    {
+        float tmin = -FLT_MAX;
+        float tmax =  FLT_MAX;
+        for (int axis = 0; axis < 3; ++axis)
+        {
+            const float ro = ray.Origin[axis];
+            const float rd = ray.Direction[axis];
+            const float bmin = box.Min[axis];
+            const float bmax = box.Max[axis];
+            if (std::abs(rd) < 1e-6f)
+            {
+                if (ro < bmin || ro > bmax)
+                    return false;
+            }
+            else
+            {
+                const float inv = 1.0f / rd;
+                float t1 = (bmin - ro) * inv;
+                float t2 = (bmax - ro) * inv;
+                if (t1 > t2) std::swap(t1, t2);
+                if (t1 > tmin) tmin = t1;
+                if (t2 < tmax) tmax = t2;
+                if (tmin > tmax) return false;
+            }
+        }
+        outTMin = tmin < 0.0f ? 0.0f : tmin;
+        outTMax = tmax;
+        return true;
+    }
+}
+
+void FOctree::QueryRayOrdered(const FRay& Ray, TArray<std::pair<AActor*, float>>& OutCandidates) const
+{
+    float nodeTMin, nodeTMax;
+    if (!RayAABB_IntersectT(Ray, Bounds, nodeTMin, nodeTMax))
+        return;
+
+    // Check local actors with cached bounds if possible
+    for (AActor* Actor : Actors)
+    {
+        if (!Actor) continue;
+        auto it = ActorLastBounds.find(Actor);
+        const FBound box = (it != ActorLastBounds.end()) ? it->second : Actor->GetBounds();
+        float tmin, tmax;
+        if (RayAABB_IntersectT(Ray, box, tmin, tmax))
+        {
+            OutCandidates.Add({ Actor, tmin });
+        }
+    }
+    if (Children[0])
+    {
+        for (int i = 0; i < 8; ++i)
+        {
+            if (Children[i])
+            {
+                Children[i]->QueryRayOrdered(Ray, OutCandidates);
+            }
+        }
+    }
+}
 static const FVector4 LevelColors[8] =
 {
     FVector4(0.0f, 1.0f, 0.0f, 1.0f),   // 0: 초록
