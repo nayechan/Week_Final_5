@@ -8,15 +8,41 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fefa4e90-013f-4429-a20f-41b7a75c0774" name="변경" comment="">
+      <change afterPath="$PROJECT_DIR$/TL2/Occlusion.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/TL2/Occlusion.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/TL2/ShaderDepthOnly.hlsl" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.TL2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.TL2/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TL2/Enums.h" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Enums.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TL2/UI/Widget/PrimitiveSpawnWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/UI/Widget/PrimitiveSpawnWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TL2/UI/Widget/ShowFlagWidget.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/UI/Widget/ShowFlagWidget.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TL2/UI/Widget/ShowFlagWidget.h" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/UI/Widget/ShowFlagWidget.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/BVHierachy.h" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/BVHierachy.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/Arrow.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/Arrow.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/Cube.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/Cube.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/Cube2.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/Cube2.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/RotationHandle.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/RotationHandle.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/RotationHandleCollision.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/RotationHandleCollision.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/ScaleHandle.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/ScaleHandle.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/Sphere.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/Sphere.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/TranslationHandle.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/TranslationHandle.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/Triangle.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/Triangle.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/apple_mid.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/apple_mid.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/apple_midMat.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/apple_midMat.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/bitten_apple_mid.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/bitten_apple_mid.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/bitten_apple_midMat.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/bitten_apple_midMat.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/cube-tex.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/cube-tex.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/cube-texMat.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/cube-texMat.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/cube3.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/cube3.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/cubeNoTex.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/cubeNoTex.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/cube_tex_blender.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/cube_tex_blender.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/cube_tex_blenderMat.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/cube_tex_blenderMat.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/spaceCompound.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/spaceCompound.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Data/spaceCompoundMat.bin" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Data/spaceCompoundMat.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Renderer.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Renderer.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Renderer.h" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Renderer.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Shader.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Shader.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Shader.h" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Shader.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/TL2.vcxproj" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/TL2.vcxproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/TL2.vcxproj.filters" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/TL2.vcxproj.filters" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TL2/Vector.h" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/Vector.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TL2/World.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/World.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TL2/World.h" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/World.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TL2/WorldPartitionManager.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/WorldPartitionManager.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TL2/WorldPartitionManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/TL2/WorldPartitionManager.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -27,15 +53,11 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="mock://C:/TechLab_Week05_5/TL2/AABoundingBoxComponent.h" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://C:/TechLab_Week05_5/TL2/AABoundingBoxComponent.h" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TL2/AABoundingBoxComponent.h" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock://C:/TechLab_Week05_5/TL2/Actor.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://C:/TechLab_Week05_5/TL2/Actor.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TL2/Actor.cpp" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock://C:/TechLab_Week05_5/TL2/World.cpp" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://C:/TechLab_Week05_5/TL2/World.cpp" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/TL2/World.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://C:/TechLab_Week05_5/TL2/World.h" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://C:/TechLab_Week05_5/TL2/World.h" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4
@@ -45,20 +67,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;Feature/Bounding-Volume-Hierachy&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "Feature/Bounding-Volume-Hierachy 병합 중",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="TL2" type="CppProject" factoryName="C++ Project">
       <configuration_1 setup="1">
@@ -90,6 +112,7 @@
       <updated>1758874219371</updated>
       <workItem from="1758874220743" duration="133000" />
       <workItem from="1758898711200" duration="4270000" />
+      <workItem from="1758991978388" duration="33000" />
     </task>
     <servers />
   </component>

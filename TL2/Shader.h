@@ -11,6 +11,10 @@ public:
 	ID3D11InputLayout* GetInputLayout() const { return InputLayout; }
 	ID3D11VertexShader* GetVertexShader() const { return VertexShader; }
 	ID3D11PixelShader* GetPixelShader() const { return PixelShader; }
+
+
+
+
 protected:
 	virtual ~UShader();
 
@@ -82,3 +86,13 @@ struct FVertexPositionBillBoard
 	static uint32 GetLayoutCount() { return 3; }
 
 };
+
+// ======================== 오클루전 관련 메소드들 ============================
+/*
+// 실패 시 false 반환, *OutVS/*OutPS는 성공 시 유효
+bool CompileVS(ID3D11Device* Dev, const wchar_t* FilePath, const char* Entry,
+	ID3D11VertexShader** OutVS, ID3DBlob** OutVSBytecode = nullptr);
+
+bool CompilePS(ID3D11Device* Dev, const wchar_t* FilePath, const char* Entry,
+	ID3D11PixelShader** OutPS);
+*/

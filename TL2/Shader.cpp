@@ -77,3 +77,81 @@ void UShader::ReleaseResources()
         PixelShader = nullptr;
     }
 }
+// ========================== 오클루전 관련 메소드들 ==========================
+/*
+static bool CompileShaderBlob(const wchar_t* FilePath, const char* Entry, const char* Target, ID3DBlob** OutBlob)
+{
+    UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
+#if defined(_DEBUG)
+    flags |= D3D_COMPILE_DEBUG | D3D_COMPILE_SKIP_OPTIMIZATION;
+#else
+    flags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
+#endif
+
+    ID3DBlob* bytecode = nullptr;
+    ID3DBlob* errors = nullptr;
+    HRESULT hr = D3DCompileFromFile(
+        FilePath, nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE,
+        Entry, Target, flags, 0, &bytecode, &errors);
+
+    if (FAILED(hr))
+    {
+        if (errors)
+        {
+            OutputDebugStringA((const char*)errors->GetBufferPointer());
+            errors->Release();
+        }
+        if (bytecode) bytecode->Release();
+        return false;
+    }
+
+    *OutBlob = bytecode;
+    if (errors) errors->Release();
+    return true;
+}
+
+bool CompileVS(ID3D11Device* Dev, const wchar_t* FilePath, const char* Entry,
+    ID3D11VertexShader** OutVS, ID3DBlob** OutVSBytecode)
+{
+    if (!Dev || !OutVS) return false;
+
+    ID3DBlob* vsBlob = nullptr;
+    if (!CompileShaderBlob(FilePath, Entry, "vs_5_0", &vsBlob)) return false;
+
+    ID3D11VertexShader* VS = nullptr;
+    HRESULT hr = Dev->CreateVertexShader(
+        vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &VS);
+    if (FAILED(hr))
+    {
+        vsBlob->Release();
+        return false;
+    }
+
+    *OutVS = VS;
+    if (OutVSBytecode) *OutVSBytecode = vsBlob;
+    else vsBlob->Release();
+
+    return true;
+}
+
+bool CompilePS(ID3D11Device* Dev, const wchar_t* FilePath, const char* Entry,
+    ID3D11PixelShader** OutPS)
+{
+    if (!Dev || !OutPS) return false;
+
+    ID3DBlob* psBlob = nullptr;
+    if (!CompileShaderBlob(FilePath, Entry, "ps_5_0", &psBlob)) return false;
+
+    ID3D11PixelShader* PS = nullptr;
+    HRESULT hr = Dev->CreatePixelShader(
+        psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &PS);
+    psBlob->Release();
+
+    if (FAILED(hr)) return false;
+
+    *OutPS = PS;
+    return true;
+}
+*/
+
+// ========================================================================

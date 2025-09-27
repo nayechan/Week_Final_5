@@ -130,7 +130,7 @@ void UWorldPartitionManager::Update(float DeltaTime, uint32 InBugetCount)
 void UWorldPartitionManager::RayQuery(FRay InRay, OUT TArray<AActor*>& Actors)
 {
     //SceneOctree->QueryRay(InRay, Actors);
-	BVH->QueryRay(InRay, Actors);
+	//BVH->QueryRay(InRay, Actors);
 }
 
 void UWorldPartitionManager::RayQueryOrdered(FRay InRay, OUT TArray<std::pair<AActor*, float>>& Candidates)
@@ -143,7 +143,10 @@ void UWorldPartitionManager::RayQueryOrdered(FRay InRay, OUT TArray<std::pair<AA
 
 void UWorldPartitionManager::FrustumQuery(Frustum InFrustum)
 {
-	BVH->QueryFrustum(InFrustum);
+	if(BVH)
+	{
+		BVH->QueryFrustum(InFrustum);
+	}
 }
 
 void UWorldPartitionManager::ClearSceneOctree()

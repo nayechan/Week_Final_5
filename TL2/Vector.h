@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <cmath>        // ← 추가 (std::sin, std::cos, std::atan2, std::copysign 등)
 #include <algorithm>
 #include <string>
@@ -524,19 +524,38 @@ inline FQuat operator*(float Scalar, const FQuat& Quat) { return FQuat(Quat.X * 
 // ─────────────────────────────
 struct alignas(16) FMatrix
 {
-    float M[4][4]{};
-
-    FMatrix() = default;
-
-    constexpr FMatrix(float M00, float M01, float M02, float M03,
-                      float M10, float M11, float M12, float M13,
-                      float M20, float M21, float M22, float M23,
-                      float M30, float M31, float M32, float M33) noexcept
+    union
     {
-        M[0][0] = M00; M[0][1] = M01; M[0][2] = M02; M[0][3] = M03;
-        M[1][0] = M10; M[1][1] = M11; M[1][2] = M12; M[1][3] = M13;
-        M[2][0] = M20; M[2][1] = M21; M[2][2] = M22; M[2][3] = M23;
-        M[3][0] = M30; M[3][1] = M31; M[3][2] = M32; M[3][3] = M33;
+        __m128 Rows[4];
+        float M[4][4];
+        FVector4 VRows[4];
+    };
+
+    FMatrix()
+    {
+        Rows[0] = _mm_setzero_ps();
+        Rows[1] = _mm_setzero_ps();
+        Rows[2] = _mm_setzero_ps();
+        Rows[3] = _mm_setzero_ps();
+    }
+
+    FMatrix(const __m128& R0, const __m128& R1, const __m128& R2, const __m128& R3)
+    {
+        Rows[0] = R0;
+        Rows[1] = R1;
+        Rows[2] = R2;
+        Rows[3] = R3;
+    }
+
+    FMatrix(float M00, float M01, float M02, float M03,
+              float M10, float M11, float M12, float M13,
+              float M20, float M21, float M22, float M23,
+              float M30, float M31, float M32, float M33)
+    {
+        Rows[0] = _mm_set_ps(M03, M02, M01, M00);
+        Rows[1] = _mm_set_ps(M13, M12, M11, M10);
+        Rows[2] = _mm_set_ps(M23, M22, M21, M20);
+        Rows[3] = _mm_set_ps(M33, M32, M31, M30);
     }
 
     static FMatrix Identity()
@@ -548,37 +567,45 @@ struct alignas(16) FMatrix
             0, 0, 0, 1
         );
     }
-
-    // 행렬 * 행렬
-    FMatrix operator*(const FMatrix& B) const
+    // 비균일 스케일
+    static FMatrix MakeScale(const FVector& S)
     {
-        const FMatrix& A = *this;
-        FMatrix C;
-        for (uint8 I = 0; I < 4; ++I)
-        {
-            for (uint8 J = 0; J < 4; ++J)
-            {
-                C.M[I][J] = A.M[I][0] * B.M[0][J]
-                    + A.M[I][1] * B.M[1][J]
-                    + A.M[I][2] * B.M[2][J]
-                    + A.M[I][3] * B.M[3][J];
-            }
-        }
-        return C;
+        FMatrix R = Identity();
+        R.M[0][0] = S.X;  // x' = x*Sx
+        R.M[1][1] = S.Y;  // y' = y*Sy
+        R.M[2][2] = S.Z;  // z' = z*Sz
+        return R;
+    }
+    // 균일 스케일
+    static FMatrix MakeScale(float S)
+    {
+        return MakeScale(FVector{ S, S, S });
+    }
+    // 평행이동 (row-vector에서는 마지막 "행"의 xyz가 이동)
+    static FMatrix MakeTranslation(const FVector& T)
+    {
+        FMatrix R = Identity();
+        // p' = [x y z 1] * M  =>  x' = ... + 1*M[3][0]  (따라서 M[3][0..2]에 T)
+        R.M[3][0] = T.X;
+        R.M[3][1] = T.Y;
+        R.M[3][2] = T.Z;
+        return R;
     }
 
-    // 전치
+    // SIMD-accelerated transpose
     FMatrix Transpose() const
     {
-        FMatrix T;
-        for (uint8 i = 0; i < 4; ++i)
-        {
-            for (uint8 j = 0; j < 4; ++j)
-            {
-                T.M[i][j] = M[j][i];
-            }
-        }
-        return T;
+        __m128 temp0 = _mm_shuffle_ps(Rows[0], Rows[1], _MM_SHUFFLE(1, 0, 1, 0));
+        __m128 temp1 = _mm_shuffle_ps(Rows[0], Rows[1], _MM_SHUFFLE(3, 2, 3, 2));
+        __m128 temp2 = _mm_shuffle_ps(Rows[2], Rows[3], _MM_SHUFFLE(1, 0, 1, 0));
+        __m128 temp3 = _mm_shuffle_ps(Rows[2], Rows[3], _MM_SHUFFLE(3, 2, 3, 2));
+
+        FMatrix Result;
+        Result.Rows[0] = _mm_shuffle_ps(temp0, temp2, _MM_SHUFFLE(2, 0, 2, 0));
+        Result.Rows[1] = _mm_shuffle_ps(temp0, temp2, _MM_SHUFFLE(3, 1, 3, 1));
+        Result.Rows[2] = _mm_shuffle_ps(temp1, temp3, _MM_SHUFFLE(2, 0, 2, 0));
+        Result.Rows[3] = _mm_shuffle_ps(temp1, temp3, _MM_SHUFFLE(3, 1, 3, 1));
+        return Result;
     }
 
     // Affine 역행렬 (마지막 행 = [0,0,0,1] 가정)
@@ -735,17 +762,44 @@ inline FVector4 operator*(const FVector4& V, const FMatrix& M)
     __m128 vW = _mm_shuffle_ps(V.SimdData, V.SimdData, _MM_SHUFFLE(3, 3, 3, 3));
 
     // Multiply each component with the corresponding matrix row
-    __m128 mRow0 = _mm_loadu_ps(&M.M[0][0]);
-    __m128 mRow1 = _mm_loadu_ps(&M.M[1][0]);
-    __m128 mRow2 = _mm_loadu_ps(&M.M[2][0]);
-    __m128 mRow3 = _mm_loadu_ps(&M.M[3][0]);
-
-    __m128 result = _mm_mul_ps(vX, mRow0);
-    result = _mm_add_ps(result, _mm_mul_ps(vY, mRow1));
-    result = _mm_add_ps(result, _mm_mul_ps(vZ, mRow2));
-    result = _mm_add_ps(result, _mm_mul_ps(vW, mRow3));
+    __m128 result = _mm_mul_ps(vX, M.Rows[0]);
+    result = _mm_add_ps(result, _mm_mul_ps(vY, M.Rows[1]));
+    result = _mm_add_ps(result, _mm_mul_ps(vZ, M.Rows[2]));
+    result = _mm_add_ps(result, _mm_mul_ps(vW, M.Rows[3]));
 
     return FVector4(result);
+}
+
+// SIMD-accelerated matrix multiplication
+inline FMatrix operator*(const FMatrix& A, const FMatrix& B)
+{
+    FMatrix Result;
+    //const FMatrix& A = *this;
+
+    // Transpose B to make columns into rows for easier processing
+    //FMatrix B_T = B.Transpose();
+
+    //for (int i = 0; i < 4; ++i)
+    //{
+    //    __m128 row = A.Rows[i];
+    //    __m128 r0 = _mm_mul_ps(row, B_T.Rows[0]);
+    //    __m128 r1 = _mm_mul_ps(row, B_T.Rows[1]);
+    //    __m128 r2 = _mm_mul_ps(row, B_T.Rows[2]);
+    //    __m128 r3 = _mm_mul_ps(row, B_T.Rows[3]);
+
+    //    // Sum horizontally
+    //    // r0 = (r0.x + r0.y + r0.z + r0.w, ...)
+    //    __m128 sum_01 = _mm_hadd_ps(r0, r1);
+    //    __m128 sum_23 = _mm_hadd_ps(r2, r3);
+    //    Result.Rows[i] = _mm_hadd_ps(sum_01, sum_23);
+    //}
+
+    Result.VRows[0] = A.VRows[0] * B;
+    Result.VRows[1] = A.VRows[1] * B;
+    Result.VRows[2] = A.VRows[2] * B;
+    Result.VRows[3] = A.VRows[3] * B;
+
+    return Result;
 }
 
 // ─────────────────────────────
@@ -853,50 +907,17 @@ inline FMatrix FQuat::ToMatrix() const
 // Row-major + 행벡터(p' = p * M), Left-Handed: forward = +Z
 inline FMatrix FMatrix::LookAtLH(const FVector& Eye, const FVector& At, const FVector& Up)
 {
-    // 1) forward(+Z)
-    FVector ZAxis = (At - Eye);
-    const float LenZ2 = ZAxis.X * ZAxis.X + ZAxis.Y * ZAxis.Y + ZAxis.Z * ZAxis.Z;
-    if (LenZ2 < 1e-12f) // Eye == At
-        return FMatrix::Identity();
-    ZAxis = ZAxis / sqrt(LenZ2);
-
-    // 2) right = Up × forward (LH에서 이 순서가 오른손쪽을 만듦)
-    FVector XAxis = FVector::Cross(Up, ZAxis);
-    float LenX2 = XAxis.X * XAxis.X + XAxis.Y * XAxis.Y + XAxis.Z * XAxis.Z;
-    if (LenX2 < 1e-12f)
-    { // up이 forward와 평행/반평행이면 임의 보정 벡터 사용
-        const FVector Temp(0.0f, 1.0f, 0.0f);
-        XAxis = FVector::Cross(Temp, ZAxis);
-        LenX2 = XAxis.X * XAxis.X + XAxis.Y * XAxis.Y + XAxis.Z * XAxis.Z;
-        if (LenX2 < 1e-12f)
-        {
-            const FVector Tmp2(1.0f, 0.0f, 0.0f);
-            XAxis = FVector::Cross(Tmp2, ZAxis);
-            LenX2 = XAxis.X * XAxis.X + XAxis.Y * XAxis.Y + XAxis.Z * XAxis.Z;
-            if (LenX2 < 1e-12f) return FMatrix::Identity();
-        }
-    }
-    XAxis = XAxis / sqrt(LenX2);
-
-    // 3) Up = forward × right  (정규직교 보정)
+    FVector ZAxis = (At - Eye).GetNormalized();
+    FVector XAxis = FVector::Cross(Up, ZAxis).GetNormalized();
     FVector YAxis = FVector::Cross(ZAxis, XAxis);
-    const float LenY2 = YAxis.X * YAxis.X + YAxis.Y * YAxis.Y + YAxis.Z * YAxis.Z;
-    if (LenY2 < 1e-12f) return FMatrix::Identity();
-    YAxis = YAxis / sqrt(LenY2);
 
-    // 4) 조립 (기저 벡터를 행에, 평행이동을 마지막 행에)
-    FMatrix View = FMatrix::Identity();
-    View.M[0][0] = XAxis.X; View.M[0][1] = XAxis.Y; View.M[0][2] = XAxis.Z; View.M[0][3] = 0.0f;
-    View.M[1][0] = YAxis.X; View.M[1][1] = YAxis.Y; View.M[1][2] = YAxis.Z; View.M[1][3] = 0.0f;
-    View.M[2][0] = ZAxis.X; View.M[2][1] = ZAxis.Y; View.M[2][2] = ZAxis.Z; View.M[2][3] = 0.0f;
+    FMatrix View;
+    View.Rows[0] = _mm_set_ps(0.0f, ZAxis.X, YAxis.X, XAxis.X);
+    View.Rows[1] = _mm_set_ps(0.0f, ZAxis.Y, YAxis.Y, XAxis.Y);
+    View.Rows[2] = _mm_set_ps(0.0f, ZAxis.Z, YAxis.Z, XAxis.Z);
+    View.Rows[3] = _mm_set_ps(1.0f, -FVector::Dot(Eye, ZAxis), -FVector::Dot(Eye, YAxis), -FVector::Dot(Eye, XAxis));
 
-    // 마지막 행 = -Eye * R (행벡터 규약)
-    View.M[3][0] = -(Eye.X * View.M[0][0] + Eye.Y * View.M[0][1] + Eye.Z * View.M[0][2]);
-    View.M[3][1] = -(Eye.X * View.M[1][0] + Eye.Y * View.M[1][1] + Eye.Z * View.M[1][2]);
-    View.M[3][2] = -(Eye.X * View.M[2][0] + Eye.Y * View.M[2][1] + Eye.Z * View.M[2][2]);
-    View.M[3][3] = 1.0f;
-
-    return View;
+    return View.Transpose(); // Transpose to get the final row-major matrix
 }
 
 
@@ -906,28 +927,24 @@ inline FMatrix FMatrix::PerspectiveFovLH(float FovY, float Aspect, float Zn, flo
     float XScale = YScale / Aspect;
 
     FMatrix proj{};
-    proj.M[0][0] = XScale;
-    proj.M[1][1] = YScale;
-    proj.M[2][2] = Zf / (Zf - Zn);
-    proj.M[2][3] = 1.0f;
-    proj.M[3][2] = (-Zn * Zf) / (Zf - Zn);
-    proj.M[3][3] = 0.0f;
+    proj.Rows[0] = _mm_set_ps(0.0f, 0.0f, 0.0f, XScale);
+    proj.Rows[1] = _mm_set_ps(0.0f, 0.0f, YScale, 0.0f);
+    proj.Rows[2] = _mm_set_ps(1.0f, Zf / (Zf - Zn), 0.0f, 0.0f);
+    proj.Rows[3] = _mm_set_ps(0.0f, (-Zn * Zf) / (Zf - Zn), 0.0f, 0.0f);
     return proj;
 }
 
 inline FMatrix FMatrix::OrthoLH(float Width, float Height, float Zn, float Zf)
 {
-    // 기본 방어: 0 또는 역Z 방지
     const float W = (Width != 0.0f) ? Width : 1e-6f;
     const float H = (Height != 0.0f) ? Height : 1e-6f;
     const float DZ = (Zf - Zn != 0.0f) ? (Zf - Zn) : 1e-6f;
 
     FMatrix m = FMatrix::Identity();
-    m.M[0][0] = 2.0f / W;
-    m.M[1][1] = 2.0f / H;
-    m.M[2][2] = 1.0f / DZ;
-    m.M[3][2] = -Zn / DZ;   // 행벡터 규약: 마지막 행에 배치
-    // 나머지는 Identity()로 이미 [0,0,0,1]
+    m.Rows[0] = _mm_set_ps(0.0f, 0.0f, 0.0f, 2.0f / W);
+    m.Rows[1] = _mm_set_ps(0.0f, 0.0f, 2.0f / H, 0.0f);
+    m.Rows[2] = _mm_set_ps(0.0f, 1.0f / DZ, 0.0f, 0.0f);
+    m.Rows[3] = _mm_set_ps(1.0f, -Zn / DZ, 0.0f, 0.0f);
     return m;
 }
 
@@ -993,12 +1010,12 @@ inline FMatrix MakeRotationRowMajorFromQuat(const FQuat& Q)
     const float XY = Q.X * Q.Y * S, XZ = Q.X * Q.Z * S, YZ = Q.Y * Q.Z * S;
     const float WX = Q.W * Q.X * S, WY = Q.W * Q.Y * S, WZ = Q.W * Q.Z * S;
 
-    FMatrix M = FMatrix::Identity();
-    // row-major + 행벡터용 회전 블록
-    M.M[0][0] = 1.0f - (YY + ZZ); M.M[0][1] = XY + WZ;          M.M[0][2] = XZ - WY;            M.M[0][3] = 0.0f;
-    M.M[1][0] = XY - WZ;          M.M[1][1] = 1.0f - (XX + ZZ); M.M[1][2] = YZ + WX;            M.M[1][3] = 0.0f;
-    M.M[2][0] = XZ + WY;          M.M[2][1] = YZ - WX;          M.M[2][2] = 1.0f - (XX + YY);   M.M[2][3] = 0.0f;
-    // 마지막 행은 호출부에서 채움(평행이동 등)
+    FMatrix M;
+    M.Rows[0] = _mm_set_ps(0.0f, XZ - WY, XY + WZ, 1.0f - (YY + ZZ));
+    M.Rows[1] = _mm_set_ps(0.0f, YZ + WX, 1.0f - (XX + ZZ), XY - WZ);
+    M.Rows[2] = _mm_set_ps(0.0f, 1.0f - (XX + YY), YZ - WX, XZ + WY);
+    M.Rows[3] = _mm_set_ps(1.0f, 0.0f, 0.0f, 0.0f);
+    
     return M;
 }
 
@@ -1006,30 +1023,26 @@ inline FMatrix MakeRotationRowMajorFromQuat(const FQuat& Q)
 // row-major + 행벡터(p' = p * M) 규약
 inline FMatrix FTransform::ToMatrixWithScaleLocalXYZ() const
 {
-    FMatrix YUpToZUp =
-    {
-         0,  1,  0, 0 ,
-         0,  0,  1, 0 ,
-         1, 0,  0, 0 ,
-         0,  0,  0, 1 
-    };
-    // Rotation(FQuat)은 이미 로컬 XYZ 순서로 만들어져 있다고 가정
     FMatrix R = MakeRotationRowMajorFromQuat(Rotation);
 
-    // 행별 스케일(S * R): 각 "행"에 스케일 적용
-    R.M[0][0] *= Scale3D.X; R.M[0][1] *= Scale3D.X; R.M[0][2] *= Scale3D.X;
-    R.M[1][0] *= Scale3D.Y; R.M[1][1] *= Scale3D.Y; R.M[1][2] *= Scale3D.Y;
-    R.M[2][0] *= Scale3D.Z; R.M[2][1] *= Scale3D.Z; R.M[2][2] *= Scale3D.Z;
+    // Scale the rotation part using SIMD
+    R.Rows[0] = _mm_mul_ps(R.Rows[0], _mm_set1_ps(Scale3D.X));
+    R.Rows[1] = _mm_mul_ps(R.Rows[1], _mm_set1_ps(Scale3D.Y));
+    R.Rows[2] = _mm_mul_ps(R.Rows[2], _mm_set1_ps(Scale3D.Z));
 
-    // 동차좌표 마무리 + Translation(last row)
-    R.M[0][3] = 0.0f; R.M[1][3] = 0.0f; R.M[2][3] = 0.0f;
-    R.M[3][0] = Translation.X;
-    R.M[3][1] = Translation.Y;
-    R.M[3][2] = Translation.Z;
-    R.M[3][3] = 1.0f;
+    // Set the translation part using SIMD
+    R.Rows[3] = _mm_set_ps(1.0f, Translation.Z, Translation.Y, Translation.X);
 
-    return YUpToZUp * R; // 결과 = S * R(q) * T
-    //return R; // 결과 = S * R(q) * T
+    // The YUpToZUp matrix for coordinate system conversion
+    FMatrix YUpToZUp(
+         0,  1,  0, 0,
+         0,  0,  1, 0,
+         1,  0,  0, 0,
+         0,  0,  0, 1
+    );
+
+    // The multiplication will use the SIMD-optimized operator*
+    return YUpToZUp * R;
 }
 
 

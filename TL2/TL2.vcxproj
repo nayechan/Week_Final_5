@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClCompile Include="ActorComponent.cpp" />
     <ClCompile Include="BVHierachy.cpp" />
+    <ClCompile Include="Occlusion.cpp" />
     <ClCompile Include="PlatformTime.cpp" />
     <ClCompile Include="WorldPartitionManager.cpp" />
     <ClCompile Include="AllClassesRegistration.cpp" />
@@ -294,6 +295,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="ShaderDepthOnly.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="ShaderLine.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -327,6 +331,7 @@
   <ItemGroup>
     <ClInclude Include="ActorComponent.h" />
     <ClInclude Include="BVHierachy.h" />
+    <ClInclude Include="Occlusion.h" />
     <ClInclude Include="PlatformTime.h" />
     <ClInclude Include="WorldPartitionManager.h" />
     <ClInclude Include="AABoundingBoxComponent.h" />
