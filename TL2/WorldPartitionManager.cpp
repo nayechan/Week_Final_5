@@ -21,8 +21,8 @@ namespace
 
 UWorldPartitionManager::UWorldPartitionManager()
 {
-	FBound WorldBounds(FVector(-50, -50, -50), FVector(50, 50, 50));
-	//FBound WorldBounds(FVector(-25, -25, -0), FVector(25, 25, 20));
+	//FBound WorldBounds(FVector(-50, -50, -50), FVector(50, 50, 50));
+	FBound WorldBounds(FVector(-30, -30, -10), FVector(25, 25, 25));
 	SceneOctree = new FOctree(WorldBounds, 0, 8, 8);
 	// BVH도 동일 월드 바운드로 초기화 (더 깊고 작은 리프 설정)
 	BVH = new FBVHierachy(FBound(), 0, 12, 8);
