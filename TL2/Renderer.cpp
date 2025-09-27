@@ -9,6 +9,10 @@
 URenderer::URenderer(URHIDevice* InDevice) : RHIDevice(InDevice)
 {
     InitializeLineBatch();
+
+    CreateDepthOnlyStates();
+    CreateUnitCube();
+    CreateOcclusionCB();
 }
 
 URenderer::~URenderer()
@@ -16,6 +20,47 @@ URenderer::~URenderer()
     if (LineBatchData)
     {
         delete LineBatchData;
+    }
+    if (DepthLEqual) 
+    { 
+        DepthLEqual->Release();  
+        DepthLEqual = nullptr; 
+    }
+    if (RS_Solid) 
+    {
+        RS_Solid->Release();    
+        RS_Solid = nullptr;
+    }
+    if (ColorMaskOff) 
+    {
+        ColorMaskOff->Release(); 
+        ColorMaskOff = nullptr; 
+    }
+    if (UnitCubeVB) 
+    { 
+        UnitCubeVB->Release(); 
+        UnitCubeVB = nullptr;
+    }
+    if (UnitCubeIB)
+    { 
+        UnitCubeIB->Release();  
+        UnitCubeIB = nullptr; 
+    }
+    if (OcclusionCB)
+    { 
+        OcclusionCB->Release(); 
+        OcclusionCB = nullptr; 
+    }
+
+    if (DepthLEqualNoWrite) 
+    { 
+        DepthLEqualNoWrite->Release();
+        DepthLEqualNoWrite = nullptr; 
+    }
+    if (DepthOnlyIL) 
+    { 
+        DepthOnlyIL->Release();
+        DepthOnlyIL = nullptr; 
     }
 }
 
@@ -346,3 +391,164 @@ void URenderer::ClearLineBatch()
     bLineBatchActive = false;
 }
 
+
+
+// 상태/버퍼 생성
+void URenderer::CreateDepthOnlyStates()
+{
+    ID3D11Device* Dev = RHIDevice->GetDevice();
+
+    // 기존: 쓰기 ON (다른 곳에서 쓸 수 있음)
+    {
+        D3D11_DEPTH_STENCIL_DESC dsd = {};
+        dsd.DepthEnable = TRUE;
+        dsd.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;   // ← ON
+        dsd.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+        Dev->CreateDepthStencilState(&dsd, &DepthLEqual);
+    }
+
+    // ★ 오클루전 전용: 쓰기 OFF
+    {
+        D3D11_DEPTH_STENCIL_DESC dsd = {};
+        dsd.DepthEnable = TRUE;
+        dsd.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;  // ← OFF (핵심)
+        dsd.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+        Dev->CreateDepthStencilState(&dsd, &DepthLEqualNoWrite);
+    }
+    D3D11_RASTERIZER_DESC rsd = {};
+    rsd.FillMode = D3D11_FILL_SOLID;
+    rsd.CullMode = D3D11_CULL_BACK;
+    rsd.DepthClipEnable = TRUE;
+    Dev->CreateRasterizerState(&rsd, &RS_Solid);
+
+    D3D11_BLEND_DESC bd = {};
+    bd.RenderTarget[0].BlendEnable = FALSE;
+    bd.RenderTarget[0].RenderTargetWriteMask = 0; // color write off
+    Dev->CreateBlendState(&bd, &ColorMaskOff);
+}
+
+void URenderer::CreateUnitCube()
+{
+    struct V { float x, y, z; };
+    const V Verts[8] = {
+        {-1,-1,-1},{+1,-1,-1},{+1,+1,-1},{-1,+1,-1},
+        {-1,-1,+1},{+1,-1,+1},{+1,+1,+1},{-1,+1,+1},
+    };
+    const uint32 Idx[36] = {
+        0,1,2, 0,2,3,
+        4,6,5, 4,7,6,
+        4,5,1, 4,1,0,
+        3,2,6, 3,6,7,
+        4,0,3, 4,3,7,
+        1,5,6, 1,6,2
+    };
+
+    ID3D11Device* Dev = RHIDevice->GetDevice();
+
+    D3D11_BUFFER_DESC vb = {};
+    vb.ByteWidth = sizeof(Verts);
+    vb.Usage = D3D11_USAGE_IMMUTABLE;
+    vb.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    D3D11_SUBRESOURCE_DATA sdv = { Verts };
+    Dev->CreateBuffer(&vb, &sdv, &UnitCubeVB);
+
+    D3D11_BUFFER_DESC ib = {};
+    ib.ByteWidth = sizeof(Idx);
+    ib.Usage = D3D11_USAGE_IMMUTABLE;
+    ib.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    D3D11_SUBRESOURCE_DATA sdi = { Idx };
+    Dev->CreateBuffer(&ib, &sdi, &UnitCubeIB);
+}
+
+void URenderer::CreateOcclusionCB()
+{
+    D3D11_BUFFER_DESC bd = {};
+    bd.ByteWidth = sizeof(float) * 16 * 3; // gModel/gView/gProj
+    bd.Usage = D3D11_USAGE_DYNAMIC;
+    bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    bd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    RHIDevice->GetDevice()->CreateBuffer(&bd, nullptr, &OcclusionCB);
+}
+
+void URenderer::BeginDepthOnly()
+{
+    auto* Ctx = RHIDevice->GetDeviceContext();
+    float factor[4] = { 0,0,0,0 };
+
+    Ctx->OMSetBlendState(ColorMaskOff, factor, 0xffffffff);
+    Ctx->OMSetDepthStencilState(DepthLEqualNoWrite, 0);  // ★ 쓰기 OFF 상태 사용
+    Ctx->RSSetState(RS_Solid);
+
+    if (DepthOnlyIL) Ctx->IASetInputLayout(DepthOnlyIL);  // ★ IL 바인딩
+    Ctx->VSSetShader(DepthOnlyVS, nullptr, 0);
+    Ctx->PSSetShader(DepthOnlyPS, nullptr, 0);
+}
+
+void URenderer::EndDepthOnly()
+{
+    auto* Ctx = RHIDevice->GetDeviceContext();
+
+    // ★★ 상태 원복을 확실히 ★★
+    Ctx->IASetInputLayout(nullptr);           // 레이아웃 클리어
+    Ctx->VSSetShader(nullptr, nullptr, 0);    // 셰이더 언바인드
+    Ctx->PSSetShader(nullptr, nullptr, 0);
+
+    Ctx->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+    Ctx->OMSetDepthStencilState(nullptr, 0);  // 기본으로 되돌림
+    Ctx->RSSetState(nullptr);
+}
+
+void URenderer::SetPredication(ID3D11Predicate* Pred, BOOL OpEqualTrue)
+{
+    RHIDevice->GetDeviceContext()->SetPredication(Pred, OpEqualTrue);
+}
+
+void URenderer::SetDepthOnlyShaders(ID3D11VertexShader* VS, ID3D11PixelShader* PS)
+{
+    DepthOnlyVS = VS;
+    DepthOnlyPS = PS;
+}
+
+ID3D11Device* URenderer::GetDevice() { return RHIDevice->GetDevice(); }
+ID3D11DeviceContext* URenderer::GetDeviceContext() { return RHIDevice->GetDeviceContext(); }
+
+static inline void CopyMatrixRowMajor(const FMatrix& M, float* Out16)
+{
+    for (int r = 0; r < 4; ++r)
+        for (int c = 0; c < 4; ++c)
+            Out16[r * 4 + c] = M.M[r][c];
+}
+
+void URenderer::DrawOcclusionBox(const FBound& B, const FMatrix& View, const FMatrix& Proj)
+{
+    const FVector C = (B.Min + B.Max) * 0.5f;
+    const FVector E = (B.Max - B.Min) * 0.5f;
+
+    FMatrix S = FMatrix::MakeScale(E);
+    FMatrix T = FMatrix::MakeTranslation(C);
+    FMatrix Model = S * T; // row-vector, Z-up
+
+    D3D11_MAPPED_SUBRESOURCE map;
+    auto* Ctx = RHIDevice->GetDeviceContext();
+    if (SUCCEEDED(Ctx->Map(OcclusionCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &map)))
+    {
+        float* Ptr = reinterpret_cast<float*>(map.pData);
+        CopyMatrixRowMajor(Model, Ptr + 16 * 0);
+        CopyMatrixRowMajor(View, Ptr + 16 * 1);
+        CopyMatrixRowMajor(Proj, Ptr + 16 * 2);
+        Ctx->Unmap(OcclusionCB, 0);
+    }
+    Ctx->VSSetConstantBuffers(0, 1, &OcclusionCB);
+
+    UINT stride = sizeof(float) * 3, offset = 0;
+    Ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    Ctx->IASetVertexBuffers(0, 1, &UnitCubeVB, &stride, &offset);
+    Ctx->IASetIndexBuffer(UnitCubeIB, DXGI_FORMAT_R32_UINT, 0);
+
+    Ctx->DrawIndexed(36, 0, 0);
+}
+
+void URenderer::SetDepthOnlyInputLayout(ID3D11InputLayout* IL)
+{
+    DepthOnlyIL = IL;
+}

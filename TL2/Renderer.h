@@ -57,6 +57,21 @@ public:
     void OMSetDepthStencilState(EComparisonFunc Func);
 
     URHIDevice* GetRHIDevice() { return RHIDevice; }
+
+    // Occlusion helpers
+    void BeginDepthOnly();
+    void EndDepthOnly();
+    void SetPredication(ID3D11Predicate* Pred, BOOL OpEqualTrue);
+
+    // AABB를 박스로 깊이만 렌더
+    void DrawOcclusionBox(const FBound& B, const FMatrix& View, const FMatrix& Proj);
+
+    // 깊이 전용 셰이더 주입(엔진 셰이더 매니저 사용 시)
+    void SetDepthOnlyShaders(ID3D11VertexShader* VS, ID3D11PixelShader* PS);
+
+    ID3D11Device* GetDevice();
+    ID3D11DeviceContext* GetDeviceContext();
+    void SetDepthOnlyInputLayout(ID3D11InputLayout* IL);
 private:
 	URHIDevice* RHIDevice;
 
@@ -68,5 +83,29 @@ private:
     static const uint32 MAX_LINES = 200000;  // Maximum lines per batch (safety headroom)
 
     void InitializeLineBatch();
+
+    // Depth-only states
+    ID3D11DepthStencilState* DepthLEqual = nullptr;
+    ID3D11RasterizerState* RS_Solid = nullptr;
+    ID3D11BlendState* ColorMaskOff = nullptr;
+
+    // Unit cube for occlusion draw
+    ID3D11Buffer* UnitCubeVB = nullptr;
+    ID3D11Buffer* UnitCubeIB = nullptr;
+
+    // Per-object CB (gModel/gView/gProj)
+    ID3D11Buffer* OcclusionCB = nullptr;
+
+    // Depth-only VS/PS
+    ID3D11VertexShader* DepthOnlyVS = nullptr;
+    ID3D11PixelShader* DepthOnlyPS = nullptr;
+
+    void CreateDepthOnlyStates();
+    void CreateUnitCube();
+    void CreateOcclusionCB();
+    ID3D11DepthStencilState* DepthLEqualNoWrite = nullptr;
+    ID3D11InputLayout* DepthOnlyIL = nullptr;
+    // Renderer.h (public 메서드에 추가)
+
 };
 

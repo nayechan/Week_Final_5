@@ -548,7 +548,30 @@ struct alignas(16) FMatrix
             0, 0, 0, 1
         );
     }
-
+    // 비균일 스케일
+    static FMatrix MakeScale(const FVector& S)
+    {
+        FMatrix R = Identity();
+        R.M[0][0] = S.X;  // x' = x*Sx
+        R.M[1][1] = S.Y;  // y' = y*Sy
+        R.M[2][2] = S.Z;  // z' = z*Sz
+        return R;
+    }
+    // 균일 스케일
+    static FMatrix MakeScale(float S)
+    {
+        return MakeScale(FVector{ S, S, S });
+    }
+    // 평행이동 (row-vector에서는 마지막 "행"의 xyz가 이동)
+    static FMatrix MakeTranslation(const FVector& T)
+    {
+        FMatrix R = Identity();
+        // p' = [x y z 1] * M  =>  x' = ... + 1*M[3][0]  (따라서 M[3][0..2]에 T)
+        R.M[3][0] = T.X;
+        R.M[3][1] = T.Y;
+        R.M[3][2] = T.Z;
+        return R;
+    }
     // 행렬 * 행렬
     FMatrix operator*(const FMatrix& B) const
     {

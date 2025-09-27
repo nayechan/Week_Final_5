@@ -36,6 +36,10 @@ public:
     int MaxOccupiedDepth() const;
     void DebugDump() const;
     const FBound& GetBounds() const { return Bounds; }
+	FBVHierachy* GetLeft() { return Left; }
+    FBVHierachy* GetRight() { return Right; }
+    const TArray<AActor*>& GetActors() const { return Actors; }
+
 
 private:
     // 내부 함수 (BVH)
