@@ -292,4 +292,122 @@ bool IsAABBVisible(const Frustum& F, const FBound& B)
         Intersects(F.NearFace, Center, Extents) &&
         Intersects(F.FarFace, Center, Extents);
 }
+
 */
+
+// AVX-optimized culling for 8 AABBs
+uint8_t AreAABBsVisible_8_AVX(const Frustum& Frustum, const FBound Bounds[8])
+{
+    // This function performs frustum culling for 8 AABBs simultaneously using AVX2.
+    // It works by testing all 8 boxes against each of the 6 frustum planes.
+
+    // 1. Transpose AoS (Array of Structures) to SoA (Structure of Arrays)
+    // We need to rearrange the FBound data (Min.X, Min.Y, Min.Z, Max.X, ...)
+    // into separate __m256 registers for each component (all 8 Min.X values together, etc.).
+
+    __m256 centers_x, centers_y, centers_z;
+    __m256 extents_x, extents_y, extents_z;
+
+    // To transpose, we load data and shuffle it around.
+    // Load 8 FVector from Bounds (Min and Max for 4 boxes)
+    __m256 row0 = _mm256_loadu_ps(&Bounds[0].Min.X);
+    __m256 row1 = _mm256_loadu_ps(&Bounds[1].Min.X);
+    __m256 row2 = _mm256_loadu_ps(&Bounds[2].Min.X);
+    __m256 row3 = _mm256_loadu_ps(&Bounds[3].Min.X);
+    __m256 row4 = _mm256_loadu_ps(&Bounds[4].Min.X);
+    __m256 row5 = _mm256_loadu_ps(&Bounds[5].Min.X);
+    __m256 row6 = _mm256_loadu_ps(&Bounds[6].Min.X);
+    __m256 row7 = _mm256_loadu_ps(&Bounds[7].Min.X);
+
+    // Transpose 8x8 matrix of floats
+    __m256 t0, t1, t2, t3, t4, t5, t6, t7;
+    t0 = _mm256_unpacklo_ps(row0, row1);
+    t1 = _mm256_unpackhi_ps(row0, row1);
+    t2 = _mm256_unpacklo_ps(row2, row3);
+    t3 = _mm256_unpackhi_ps(row2, row3);
+    t4 = _mm256_unpacklo_ps(row4, row5);
+    t5 = _mm256_unpackhi_ps(row4, row5);
+    t6 = _mm256_unpacklo_ps(row6, row7);
+    t7 = _mm256_unpackhi_ps(row6, row7);
+
+    __m256 tt0, tt1, tt2, tt3, tt4, tt5, tt6, tt7;
+    tt0 = _mm256_shuffle_ps(t0, t2, _MM_SHUFFLE(1, 0, 1, 0));
+    tt1 = _mm256_shuffle_ps(t0, t2, _MM_SHUFFLE(3, 2, 3, 2));
+    tt2 = _mm256_shuffle_ps(t1, t3, _MM_SHUFFLE(1, 0, 1, 0));
+    tt3 = _mm256_shuffle_ps(t1, t3, _MM_SHUFFLE(3, 2, 3, 2));
+    tt4 = _mm256_shuffle_ps(t4, t6, _MM_SHUFFLE(1, 0, 1, 0));
+    tt5 = _mm256_shuffle_ps(t4, t6, _MM_SHUFFLE(3, 2, 3, 2));
+    tt6 = _mm256_shuffle_ps(t5, t7, _MM_SHUFFLE(1, 0, 1, 0));
+    tt7 = _mm256_shuffle_ps(t5, t7, _MM_SHUFFLE(3, 2, 3, 2));
+
+    __m256 min_x = _mm256_permute2f128_ps(tt0, tt4, 0x20);
+    __m256 min_y = _mm256_permute2f128_ps(tt1, tt5, 0x20);
+    __m256 min_z = _mm256_permute2f128_ps(tt2, tt6, 0x20);
+    __m256 max_x = _mm256_permute2f128_ps(tt0, tt4, 0x31);
+    __m256 max_y = _mm256_permute2f128_ps(tt1, tt5, 0x31);
+    __m256 max_z = _mm256_permute2f128_ps(tt2, tt6, 0x31);
+
+    // Calculate centers and extents
+    const __m256 half = _mm256_set1_ps(0.5f);
+    centers_x = _mm256_mul_ps(_mm256_add_ps(max_x, min_x), half);
+    centers_y = _mm256_mul_ps(_mm256_add_ps(max_y, min_y), half);
+    centers_z = _mm256_mul_ps(_mm256_add_ps(max_z, min_z), half);
+    extents_x = _mm256_mul_ps(_mm256_sub_ps(max_x, min_x), half);
+    extents_y = _mm256_mul_ps(_mm256_sub_ps(max_y, min_y), half);
+    extents_z = _mm256_mul_ps(_mm256_sub_ps(max_z, min_z), half);
+
+    // 2. Perform Culling
+    const Plane* planes = &Frustum.TopFace;
+    uint32_t all_visible_mask = 0xFF; // Start with all 8 boxes being visible
+
+    const __m256 sign_mask = _mm256_set1_ps(-0.0f); // Mask to get absolute value
+
+    for (int i = 0; i < 6; ++i)
+    {
+        const Plane& p = planes[i];
+
+        // Broadcast plane data to 256-bit registers
+        __m256 plane_nx = _mm256_set1_ps(p.Normal.X);
+        __m256 plane_ny = _mm256_set1_ps(p.Normal.Y);
+        __m256 plane_nz = _mm256_set1_ps(p.Normal.Z);
+        __m256 plane_d = _mm256_set1_ps(p.Distance);
+
+        // Calculate signed distance from plane for all 8 box centers
+        // dist = dot(center, normal) - plane_dist
+        __m256 dist = _mm256_sub_ps(
+            _mm256_add_ps(
+                _mm256_add_ps(_mm256_mul_ps(centers_x, plane_nx), _mm256_mul_ps(centers_y, plane_ny)),
+                _mm256_mul_ps(centers_z, plane_nz)
+            ),
+            plane_d
+        );
+
+        // Calculate projected radius of boxes onto the plane normal
+        // radius = dot(extents, abs(normal))
+        __m256 radius = _mm256_add_ps(
+            _mm256_add_ps(
+                _mm256_mul_ps(extents_x, _mm256_andnot_ps(sign_mask, plane_nx)),
+                _mm256_mul_ps(extents_y, _mm256_andnot_ps(sign_mask, plane_ny))
+            ),
+            _mm256_mul_ps(extents_z, _mm256_andnot_ps(sign_mask, plane_nz))
+        );
+
+        // A box is outside if dist < -radius (or dist + radius < 0)
+        __m256 comparison = _mm256_cmp_ps(_mm256_add_ps(dist, radius), _mm256_setzero_ps(), _CMP_GE_OQ);
+        
+        // Convert comparison result to an 8-bit mask
+        int plane_mask = _mm256_movemask_ps(comparison);
+
+        // Update the overall visibility mask. If a box is outside this plane,
+        // its corresponding bit will be 0, and it will be culled for the rest of the process.
+        all_visible_mask &= plane_mask;
+
+        // Early exit: if all boxes are culled, no need to check other planes
+        if (all_visible_mask == 0)
+        {
+            return 0;
+        }
+    }
+
+    return static_cast<uint8_t>(all_visible_mask);
+}
