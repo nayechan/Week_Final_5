@@ -595,7 +595,10 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 
 	Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
 	Renderer->UpdateHighLightConstantBuffer(false, rgb, 0, 0, 0, 0);
-	//UE_LOG("Obj count: %d, Visible count: %d\r\n", objCount, visibleCount);
+	if (IsShowFlagEnabled(EEngineShowFlags::SF_Culling))
+	{
+		UE_LOG("Obj count: %d, Visible count: %d\r\n", objCount, visibleCount);
+	}
 }
 
 

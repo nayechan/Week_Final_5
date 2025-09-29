@@ -238,7 +238,7 @@ void UShowFlagWidget::RenderDebugSection(UWorld* World)
         RenderShowFlagCheckbox("Billboard Text", EEngineShowFlags::SF_BillboardText, World);
         RenderShowFlagCheckbox("Bounding Boxes", EEngineShowFlags::SF_BoundingBoxes, World);
         RenderShowFlagCheckbox("Grid", EEngineShowFlags::SF_Grid, World);
-
+        RenderShowFlagCheckbox("Culling", EEngineShowFlags::SF_Culling, World);
         // Mutually exclusive toggles: Octree vs BVH
         bool oct = World->IsShowFlagEnabled(EEngineShowFlags::SF_OctreeDebug);
         bool bvh = World->IsShowFlagEnabled(EEngineShowFlags::SF_BVHDebug);
