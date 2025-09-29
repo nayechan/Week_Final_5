@@ -1,358 +1,85 @@
-# 📘 KRAFTON TechLab Week03 – Unreal Engine Style 3D Editor & Rendering System
-📌 프로젝트 개요
-
-### 프로젝트명: Unreal Engine Style 3D Editor & Rendering System
-
-#### 개발 기간: 1 week
-
-#### 개발 환경: Visual Studio, DirectX 11, Windows 10/11
-
-## 아키텍처: C++ 기반 Actor-Component 시스템
-<img width="1911" height="1104" alt="image" src="https://github.com/user-attachments/assets/2aa029db-2fca-451d-aeaf-607d3256ccee" />
-
-https://drive.google.com/file/d/1bAa-ZufdUz7_mbSy236LDdI_DdKsFZ1b/view?usp=drive_link
-
-## 🚀 구현 완료 사항
-### 🎨 1. Editor & Rendering System (눈에 보이는 세상)
-#### 1.1 실시간 텍스트 렌더링 시스템
-
-파일: TextBillboard.hlsl, Week02/UI/
-
-기능
-
-ASCII 문자 → 텍스처 아틀라스 베이킹
-
-UV 좌표 조작을 통한 임의 문자열 생성
-
-Billboard 효과 (항상 카메라를 향함)
-
-월드 공간의 UObject UUID 실시간 표시
-
-기술
-
-ViewInverse 행렬을 이용한 카메라 정렬
-
-Alpha Testing 기반 텍스트 윤곽 처리
-
-#### 1.2 Batch Line 렌더링 시스템
-
-
-파일: ShaderLine.hlsl
-
-기능
-
-모든 Line을 하나의 Vertex/Index Buffer로 관리
-
-D3D11_PRIMITIVE_TOPOLOGY_LINELIST 기반
-
-World Grid, Bounding Box 시각화
-
-성능 최적화
-
-단일 Draw Call 처리
-
-동적 버퍼 업데이트 지원
-
-#### 1.3 좌표계 변환 시스템
-
-DirectX 좌표계 (Y-Up, Z-Depth) → UE 좌표계 (Z-Up, X-Depth) 변환
-
-카메라, 트랜스폼, 렌더링 파이프라인 전반에 적용
-
-#### 1.4 동적 윈도우 리사이징
-
-RTV/DSV 해제 → SwapChain Resize → ImGui DisplaySize 갱신 → RTV/DSV 재생성
-
-#### 1.5 View Mode 시스템
-
-Lit / Unlit / Wireframe 모드 지원
-
-#### 1.6 Show Flag 시스템
-
-비트 플래그 기반 토글 기능
-
-예: Primitive 표시, UUID 텍스트, Bounding Box, Grid 등
-
-ImGui 연동으로 실시간 제어
-
-⚙️ 2. Engine Core System (눈에 안 보이는 세상)
-#### 2.1 FName 시스템
-
-문자열 → Pool 관리, 인덱스로 비교
-
-strcmp() 대신 정수 비교 (O(n) → O(1))
-
-대소문자 구분 없는 비교 ("Test" == "test")
-
-메모리 절약 + 성능 최적화
-
-#### 2.2 UObject 시스템 & RTTI
-
-구현: Object.h
-
-특징
-
-UUID, FName 기반 이름 관리
-
-컴파일 타임 타입 정보 생성 (DECLARE_CLASS)
-
-안전한 런타임 타입 검사 & 캐스팅
-
-ObjectFactory와 연동된 메모리 관리
-
-#### 2.3 메모리 관리 시스템
-
-UObject 전용 Allocator / Deallocator
-
-중앙 집중식 객체 관리
-
-자동 정리로 메모리 누수 방지
-
-#### 2.4 Selection Manager
-
-선택된 Actor 관리
-
-안전성 강화 (CleanupInvalidActors)
-
-## 🏗 아키텍처 및 설계 패턴
-
-싱글톤 패턴: UUIManager, USelectionManager, UInputManager
-
-컴포넌트 시스템: Actor-Component 구조 (Camera, Cube, Gizmo 등)
-
-팩토리 패턴: ObjectFactory + NewObject<T>() 템플릿
-
-Observer 패턴: Show Flag 시스템과 UI/렌더링 간 느슨한 결합
-
-## 🖥 렌더링 파이프라인
-
-World Grid (Show Flag)
-
-Primitive Geometry (Lit/Unlit/Wireframe)
-
-Bounding Boxes (Show Flag)
-
-Billboard Text (UUID) (Show Flag)
-
-Gizmo (선택된 객체)
-
-셰이더 구성
-
-Primitive.hlsl: 기본 메시
-
-ShaderLine.hlsl: 라인/그리드
-
-TextBillboard.hlsl: 빌보드 텍스트
-
-## ⚡ 안전성 및 성능 최적화
-
-배치 렌더링: Draw Call 최소화
-
-텍스처 아틀라스: 폰트 통합 관리
-
-Show Flag: 불필요한 렌더링 제거
-
-FName 시스템: 문자열 비교 최적화
-
-## 🏆 기술적 성취
-
-언리얼 스타일 아키텍처 구현
-
-UObject 시스템, RTTI, FName 최적화
-
-Actor-Component 패러다임 적용
-
-고급 렌더링 기술
-
-Billboard 텍스트
-
-Batch Line 렌더링
-
-멀티 셰이더 파이프라인 관리
-
-실용적인 에디터 도구
-
-Show Flag 실시간 제어
-
-다중 View Mode 지원
-
-동적 윈도우 리사이징
-
-
-# Week04 프로젝트 보고서
-
-# Week04 프로젝트 - UE 스타일 3D 에디터 구현
-https://drive.google.com/file/d/1bAa-ZufdUz7_mbSy236LDdI_DdKsFZ1b/view?usp=drive_link
-## 개요
-
-이 프로젝트는 Unreal Engine 4의 에디터 구조를 모방하여 구현한 3D 렌더링 엔진 및 에디터입니다. DirectX 11을 기반으로 하며, 정적 메시 렌더링, 다중 뷰포트, 오브젝트 관리 시스템 등의 핵심 기능들을 구현했습니다.
-![Adobe Express - 제목 없는 비디오 - Clipchamp로 제작 (2)](https://github.com/user-attachments/assets/1af2b319-b0ae-41eb-9b94-4a9697a79b8b)
-## 주요 특징
-
-### 🎮 정적 메시 (Static Mesh) 시스템
-
-- **OBJ 파일 로딩**: Wavefront OBJ 파일을 파싱하여 3D 모델 로드
-- **바이너리 캐싱**: OBJ 파일을 바이너리 형식으로 변환하여 성능 최적화
-- **다중 재질 지원**: 여러 Material Section을 지원하는 머티리얼 시스템
-- **UV 스크롤링**: 텍스처 애니메이션 효과 지원
-
-### 🖼️ 다중 뷰포트 시스템
-
-- **4분할 뷰포트**: Perspective, Front, Side, Top 뷰 동시 렌더링
-- **동적 크기 조절**: 드래그 가능한 스플리터로 뷰포트 크기 조절
-- **UE 스타일 구조**: `FViewport`와 `FViewportClient` 클래스로 관리
-- **설정 저장**: Editor.ini 파일에 스플리터 상태 저장/복원
-
-### 🎯 오브젝트 관리 시스템
-
-- **TObjectIterator**: 타입 안전하게 특정 타입에 대해서 순회 가능한 반복자
-- **Scene Manager**: 월드 아웃라이너와 유사한 오브젝트 관리 UI
-- **선택 시스템**: 3D 뷰포트와 연동된 오브젝트 선택
-- **직렬화**: StaticMeshComponent 정보, UUID 정보, 카메라 정보 등을 씬 파일에 직렬화
-
-## 핵심 구현 내용
-
-### 📁 아키텍처 구조
-
-### 1. 오브젝트 시스템 (`ObjectIterator.h`)
-
-```cpp
-template<typename TObject>
-class TObjectIterator
-{
-    // UE4와 동일한 방식의 타입 안전한 오브젝트 순회
-    // GUObjectArray에서 특정 타입의 오브젝트만 필터링
-};
-```
-
-### 2. 정적 메시 관리 (`ObjManager.cpp`)
-
-- **Preload()**: Data 폴더의 모든 OBJ 파일을 스캔하여 미리 로드
-- **Binary Caching**: `.obj` → `.bin` + `Mat.bin` 변환으로 로딩 속도 향상
-- **Resource Management**: 중복 로딩 방지 및 리소스 중앙 관리를 위한 캐싱 시스템
-
-### 3. 뷰포트 시스템 (`FViewport.h`)
-
-```cpp
-class FViewport
-{
-    // D3D11 렌더 타겟 관리
-    // 마우스/키보드 입력 처리
-    // 뷰포트별 독립적인 렌더링
-};
-```
-
-### 4. SWindow(SWindow`.h`)
-
-```cpp
-class SWindow
-{
-
- Direct3D11 렌더 타겟(Render Target)을 보유/관리
- 자신이 차지하는 Rect 영역에 대한 마우스/키보드 입력 처리
- 자식 위젯들을 가질 수 있으며, 공통된 창(Window) 기능 제공
- 뷰포트, 패널, 스플리터 등 모든 UI 요소의 기반 클래스
-
-*};
-
-class SSplitter
-{*
- 영역을 분할하는 윈도우 (수직/수평)
-
- SWindow를 상속하여 좌/우 혹은 상/하로 화면을 나누는 역할
- D3D11 렌더 타겟은 자식 윈도우(SWindow, SViewportWindow 등)로 전달
- 마우스 드래그로 분할 비율을 조정 가능
- 입력 처리 후 자식에게 이벤트를 위임 
- 뷰포트와 패널들을 배치하는 레이아웃 관리의 핵심
-
-*};
-
-class SViewportWindow
-{*
-
- 실제 게임/에디터 씬을 그려주는 뷰포트 윈도우
- D3D11 렌더 타겟을 직접 생성하고, Scene/World를 렌더링
- 카메라, 조명, 오브젝트를 포함한 3D 씬 표현
- 마우스 입력을 받아 카메라 이동/회전, 오브젝트 선택(Picking) 등 처리
- 각 뷰포트는 독립적인 카메라 상태를 가짐
- 에디터에서 여러 개(4분할 등)로 배치 가능
-};
-```
-
-### 4. 직렬화 시스템 (`Archive.h`)
-
-```cpp
-class FArchive
-{
-    // 바이너리 데이터 읽기/쓰기 추상화
-    // 문자열, 배열 직렬화 헬퍼 함수
-};
-```
-
-### 🎨 렌더링 시스템
-
-### HLSL 셰이더 (`StaticMeshShader.hlsl`)
-
-- **Vertex Shader**: 월드-뷰-프로젝션 변환
-- **Pixel Shader**: 텍스처 샘플링, 머티리얼 적용용
-- **하이라이트 시스템**: 선택된 오브젝트 시각적 표시
-- **기즈모 렌더링**: X(빨강), Y(초록), Z(파랑) 축별 색상 구분
-
-### 다중 뷰포트 렌더링
-
-- **Orthogonal Views**: Front, Side, Top 직교 투영
-- **Perspective View**: 자유로운 카메라 시점
-- **동기화된 선택**: 모든 뷰포트에서 동일한 오브젝트 상태 유지
-
-### 💾 파일 시스템
-
-### OBJ 파일 처리
-
-1. **파싱**: Wavefront OBJ 형식 지원 (정점, 법선, UV, 머티리얼)
-2. **최적화**: 바이너리 캐싱으로 재로딩 성능 향상
-3. **머티리얼**: MTL 파일 파싱으로 다중 재질 지원
-
-### 씬 저장/로드
-
-- **FPrimitiveData**: 오브젝트 정보 직렬화 구조체
-- **카메라 상태**: Perspective 뷰의 카메라 위치/회전 저장
-- **스플리터 설정**: UI 레이아웃 상태 유지
-
-## 🔧 사용 방법
-
-### 오브젝트 생성
-
-1. Scene Manager에서 Primitive Type, 사용할 Static Mesh를 지정한 후 Spawn Actor 클릭
-2. 자동으로 씬에 추가되고 기즈모 표시
-
-### 뷰포트 조작
-
-- **마우스 드래그**: 뷰포트 경계에서 크기 조절
-- **오브젝트 선택**: 3D 뷰포트 또는 Scene Manager에서 클릭
-- **카메라 이동**: WASD 키와 마우스로 자유 시점 이동
-
-### 씬 관리
-
-- **저장**: File → Save Scene
-- **로드**: File → Load Scene
-- **검색**: Scene Manager의 Search Bar로 오브젝트 필터링
-
-## 📊 성능 최적화
-
-### 바이너리 캐싱
-
-```
-.obj 파일 (텍스트) → .bin 파일 (바이너리)
-- 파싱 시간 단축
-- 메모리 사용량 감소
-- 로딩 속도 향상
-```
-
-### 오브젝트 풀링
-
-- TObjectIterator로 메모리 효율적인 오브젝트 순회
-- 중복 로딩 방지를 위한 리소스 캐싱
-
-### 렌더링 최적화
-
-- 뷰포트별 독립적인 렌더 타겟
+  # TL2 🚀
+
+  ## 프로젝트 개요 ✨
+  TL2는 Direct3D 11과 ImGui를 기반으로 한 실시간 렌더링 & 씬 편집기입니다.
+  엔진 레이어(`Renderer`, `D3D11RHI`)와 에디터 레이어(`UWorld`, `UUIManager`)가 분리되어 있어
+  렌더링 파이프라인과 편집 UI를 독립적으로 확장할 수 있습니다.
+  씬 편집, 멀티 뷰포트, 기즈모 조작, 씬 저장/불러오기 등 학습용·프로토타이핑에 필요한 기능을 담고 있습니다.
+
+  ## 주요 기능 🧩
+  - 💡 Direct3D 11 렌더러: `D3D11RHI`가 스왑체인/버퍼/셰이더를 관리하고 `URenderer`가 드로우 호출을 조율합니다.
+  - 🧱 컴포넌트 기반 액터 시스템: `AActor`, `USceneComponent` 파생 클래스로 메시·카메라·텍스트 등을 구성합니다.
+  - 🧭 공간 분할 & 컬링: BVH(`BVHierachy`), 옥트리(`FOctree`), 프러스텀 컬링으로 효율적인 월드 관리.
+  - 🪟 멀티 뷰포트 & 편집 UI: ImGui 기반 창(`SMultiViewportWindow`, `SViewportWindow`)과 다양한 위젯 제공.
+  - 🗂️ 씬 자산 관리: `Scene/*.Scene` JSON을 `FSceneLoader`가 읽고 쓰며, `Data/` 폴더 자산과 연동됩니다.
+  - 🎯 입력 & 기즈모: `UInputManager`가 키보드/마우스를 통합하고, 이동/회전/스케일 기즈모와 UV 스크롤을 제어합니다.
+
+  ## 프로젝트 구조 🗃️
+  ```text
+  TL2/
+  ├─ Data/                 # OBJ/텍스처/미리 빌드된 바이너리 자산
+  ├─ Scene/                # JSON 기반 장면 스냅샷 (Default.scene, QuickSave 등)
+  ├─ UI/                   # 에디터 창, 위젯, ImGui 헬퍼 및 Direct2D 오버레이
+  ├─ d3dtk/                # DirectX Tool Kit 헤더 (DDSTextureLoader 등)
+  ├─ ImGui/                # ImGui 소스 및 Win32/DX11 바인딩
+  ├─ nlohmann/             # JSON 파서 (single-header)
+  ├─ *.cpp, *.h            # 엔진, 렌더러, 액터, 컴포넌트 구현
+  ├─ TL2.vcxproj           # Visual Studio 2022 C++ 프로젝트 파일
+  └─ editor.ini            # 창 배치 및 사용자 설정 (자동 생성/저장)
+
+  ## 개발 환경 & 의존성 🛠️
+
+  - Visual Studio 2022 (v143), Windows 10 SDK 10.0 이상.
+  - DirectX 11 런타임 (Windows 10 기본 포함).
+  - 외부 라이브러리: ImGui, nlohmann::json, DirectX Tool Kit (저장소에 포함되어 별도 설치 불필요).
+
+  ## 빌드 & 실행 방법 ▶️
+
+1. Visual Studio에서 TL2.vcxproj를 열고, 구성은 Debug/Release, 플랫폼은 x64를 선택합니다.
+2. 솔루션을 빌드하면 실행 파일이 x64/<Configuration>/TL2.exe로 생성됩니다.
+3. 첫 실행 시 editor.ini가 생성되며, 이후 창 레이아웃과 편집 옵션이 자동으로 저장됩니다.
+4. 에디터를 종료하려면 ESC 키를 누르거나 창을 닫습니다.
+
+  > ⚙️ Microsoft Visual C++ 재배포 패키지가 설치되어 있지 않으면 실행 시 DLL 로드 오류가 발생할 수 있습니다.
+
+  ## 기본 조작 🎮
+
+  - 🖱️ 마우스 우클릭 + 드래그: 카메라 회전(피치/요우), UIManager 저장 롤 유지.
+  - ⌨️ W / A / S / D: 전후좌우 이동, Q / E: 하강/상승.
+  - 🔁 T: UV 스크롤 토글 (Renderer::UpdateUVScroll 참조).
+  - 🔍 마우스: ImGui 윈도우
+  - 🚪 ESC: 프로그램 종료.
+
+  카메라 속도는 Camera Control 위젯에서 조절하며, 마우스 감도는 CameraActor.cpp의 MouseSensitivity로 정의됩니다.
+
+  ## 에디터 주요 패널 🖼️
+
+  - 🗂️ Scene Manager: 액터 계층, 뷰포트 스위처, ShowFlag 토글 관리 (UI/Window/SceneWindow.cpp).
+  - 🎛️ Control Panel: 기즈모 모드, 선택 액터 트랜스폼, 삭제 기능 제공.
+  - 🧱 Primitive Spawn: Data/ 자산을 골라 정적 메시를 랜덤 위치/스케일로 배치.
+  - 💾 Scene IO: 새 씬 생성, 저장/불러오기, 퀵세이브/로드 제공 (SceneIOWidget).
+  - 💬 Console: UE_LOG 출력과 디버그 메시지 확인.
+  - 📊 Stats Overlay: Direct2D로 프레임 타임 및 GPU 상태 오버레이 (UI/StatsOverlayD2D).
+
+  ## 장면 파일 & 자산 관리 📁
+
+  - 씬은 Scene/*.Scene JSON으로 관리되며, FSceneLoader가 카메라 정보·액터 UUID·머티리얼 슬롯 등을 파싱합니다.
+  - 퀵세이브 시 Scene/QuickSave.Scene이 갱신되고, 이름을 지정하면 Scene/<Name>.Scene으로 저장됩니다.
+  - 메시/머티리얼 바이너리는 Data/의 .obj, .bin, .dds 등을 UResourceManager가 로드합니다.
+  - editor.ini는 창 크기, 카메라 속도 등 사용자 설정을 보존합니다. 초기화하려면 파일을 삭제하면 됩니다.
+
+  ## 문제 해결 가이드 🛟
+
+  - D3D11 디바이스 생성 실패: 구형 GPU나 원격 세션에서 발생 가능. 최신 그래픽 드라이버와 DirectX 런타임 설치 후 재시도하
+  세요.
+  - 씬 로드 실패: 콘솔에 Scene load failed 로그가 보이면 JSON 구문 오류 가능성이 큽니다. SceneIOWidget으로 만든 파일을
+  참고하거나 Scene/Default.scene으로 초기화하세요.
+  - 기즈모/뷰포트 미표시: ShowFlag 위젯에서 Primitives, Gizmo 토글이 켜져 있는지 확인하고, 카메라가 씬 내부를 바라보는지
+  점검하세요.
+
+  ## 확장 아이디어 🌱
+
+  - 디퍼드 렌더링, 포스트 프로세스, 라이트 컴포넌트 등 그래픽 기능 추가.
+  - 씬 히스토리/언두 시스템, 사용자 지정 단축키 지원.
+  - FBX/GLTF 등 다양한 포맷의 자산 파이프라인 확장.
+  - 네비게이션 메시, 물리 시뮬레이션과 통합해 게임플레이 편집 기능 강화.
