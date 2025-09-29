@@ -47,7 +47,7 @@ UWorldPartitionManager::~UWorldPartitionManager()
 
 void UWorldPartitionManager::Clear()
 {
-	ClearSceneOctree();
+	//ClearSceneOctree();
 	ClearBVHierachy();
 }
 
@@ -78,7 +78,7 @@ void UWorldPartitionManager::BulkRegister(const TArray<AActor*>& Actors)
 	}
 
 	// Octree: 기존 대량 삽입
-	if (SceneOctree) SceneOctree->BulkInsert(ActorsAndBounds);
+	//if (SceneOctree) SceneOctree->BulkInsert(ActorsAndBounds);
 	if (BVH) BVH->BulkInsert(ActorsAndBounds);
 }
 
@@ -87,7 +87,7 @@ void UWorldPartitionManager::Unregister(AActor* Owner)
 	if (!Owner) return;
 	if (!ShouldIndexActor(Owner)) return;
 	
-	if (SceneOctree) SceneOctree->Remove(Owner);
+	//if (SceneOctree) SceneOctree->Remove(Owner);
 	if (BVH) BVH->Remove(Owner);
 
 	if (USceneComponent* Root = Owner->GetRootComponent())
@@ -122,7 +122,7 @@ void UWorldPartitionManager::Update(float DeltaTime, uint32 InBugetCount)
 		}
 
 		if (!Actor) continue;
-		if (SceneOctree) SceneOctree->Update(Actor);
+		//if (SceneOctree) SceneOctree->Update(Actor);
 		if (BVH) BVH->Update(Actor);
 
 		++processed;

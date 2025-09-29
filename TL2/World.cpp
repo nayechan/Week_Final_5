@@ -446,7 +446,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 
 						for (UStaticMeshComponent* Component : StaticMesh->GetUsingComponents())
 						{
-							if (Component->GetCulled() == false)
+							if (Component->GetOwner()->GetCulled() == false)
 							{
 								// ★★★ CPU 오클루전 컬링: UUID로 보임 여부 확인
 								if (bUseCPUOcclusion)

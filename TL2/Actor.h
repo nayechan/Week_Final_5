@@ -68,13 +68,6 @@ public:
         {
             return;
         }
-        for (USceneComponent* Component : Components)
-        {
-            if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
-            {
-                Primitive->SetCulled(InCulled);
-            }
-        }
     }
     bool GetCulled() { return bIsCulled; }
 
