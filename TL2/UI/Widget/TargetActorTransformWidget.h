@@ -55,4 +55,7 @@ private:
 	// 헬퍼 메서드
 	AActor* GetCurrentSelectedActor() const;
 	void ResetChangeFlags();
+
+	// 선택된 컴포넌트
+	USceneComponent* SelectedComponent = nullptr;
 };

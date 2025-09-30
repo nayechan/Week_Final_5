@@ -102,6 +102,7 @@ public:
     bool GetActorHiddenInGame() const { return bHiddenInGame; }
     bool IsActorVisible() const { return !bHiddenInGame; }
     void AddComponent(USceneComponent* Component);
+    void RemoveComponent(USceneComponent* Component);
 protected:
     TArray<USceneComponent*> Components;
     bool bIsPicked = false;

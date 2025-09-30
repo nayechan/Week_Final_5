@@ -51,7 +51,12 @@ void UImGuiHelper::Initialize(HWND InWindowHandle, ID3D11Device* InDevice, ID3D1
 	ImGui::CreateContext();
 	ImGui_ImplWin32_Init(InWindowHandle);
 
+	// TODO (동민, 한글) utf-8 설정을 푼다면 그냥 한글을 넣지 마세요.
 	ImGuiIO& IO = ImGui::GetIO();
+	ImFontConfig Cfg;
+	Cfg.OversampleH = Cfg.OversampleV = 2;
+	IO.Fonts->AddFontFromFileTTF("Fonts/malgun.ttf", 18.0f, &Cfg, IO.Fonts->GetGlyphRangesKorean());
+	// IO.Fonts->Build();
 	// Use default ImGui font
 	// IO.Fonts->AddFontDefault();
 
