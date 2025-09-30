@@ -30,6 +30,18 @@ namespace ObjectFactory
     {
         return static_cast<T*>(NewObject(T::StaticClass()));
     }
+
+    // 4) GUObjectArray 자동 등록
+    UObject* AddToGUObjectArray(UClass* Class, UObject* Obj);
+
+    // 5) 복사생성자 호출 + GUObjectArray 자동 등록
+    template<class T>
+    inline T* DuplicateObject(UObject* Source)
+    {
+        T* Dest = new T(*Source);
+        return static_cast<T*>(AddToGUObjectArray(T::StaticClass(), Dest));
+    }
+
     // 개별 삭제(단일 소유자: Factory)
     void DeleteObject(UObject* Obj);
     // 종료시 일괄 정리
