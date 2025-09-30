@@ -68,13 +68,93 @@ namespace
 		{
 			if (Root != NewComponent)
 			{
-				NewComponent->SetupAttachment(Root, EAttachmentRule::KeepWorld);
+				NewComponent->SetupAttachment(Root, EAttachmentRule::KeepRelative);
 			}
 		}
 
 		NewComponent->InitializeComponent();
 		Actor.MarkPartitionDirty();
 		return true;
+	}
+	void MarkComponentSubtreeVisited(USceneComponent* Component, TSet<USceneComponent*>& Visited)
+	{
+		if (!Component || Visited.count(Component))
+		{
+			return;
+		}
+
+		Visited.insert(Component);
+		for (USceneComponent* Child : Component->GetAttachChildren())
+		{
+			MarkComponentSubtreeVisited(Child, Visited);
+		}
+	}
+
+	void RenderSceneComponentTree(
+		USceneComponent* Component,
+		AActor& Actor,
+		USceneComponent*& SelectedComponent,
+		USceneComponent*& ComponentPendingRemoval,
+		TSet<USceneComponent*>& Visited)
+	{
+		if (!Component)
+			return;
+
+		Visited.insert(Component);
+
+		const TArray<USceneComponent*>& Children = Component->GetAttachChildren();
+		const bool bHasChildren = !Children.IsEmpty();
+
+		ImGuiTreeNodeFlags NodeFlags =
+			ImGuiTreeNodeFlags_OpenOnArrow |
+			ImGuiTreeNodeFlags_SpanAvailWidth;
+
+		if (!bHasChildren)
+		{
+			NodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+		}
+		if (Component == SelectedComponent)
+		{
+			NodeFlags |= ImGuiTreeNodeFlags_Selected;
+		}
+
+		FString Label = Component->GetClass() ? Component->GetClass()->Name : "Unknown Component";
+		if (Component == Actor.GetRootComponent())
+		{
+			Label += " (Root)";
+		}
+
+		// 트리 노드 그리기 직전에 ID 푸시
+		ImGui::PushID(Component);
+		const bool bNodeOpen = ImGui::TreeNodeEx(Component, NodeFlags, "%s", Label.c_str());
+
+		if (ImGui::BeginPopupContextItem("ComponentContext"))
+		{
+			const bool bCanRemove = (Component != Actor.GetRootComponent());
+			if (ImGui::MenuItem("Remove", "Delete", false, bCanRemove))
+			{
+				ComponentPendingRemoval = Component;
+			}
+			ImGui::EndPopup();
+		}
+
+		if (bNodeOpen && bHasChildren)
+		{
+			for (USceneComponent* Child : Children)
+			{
+				RenderSceneComponentTree(Child, Actor, SelectedComponent, ComponentPendingRemoval, Visited);
+			}
+			ImGui::TreePop();
+		}
+		else if (!bNodeOpen && bHasChildren)
+		{
+			for (USceneComponent* Child : Children)
+			{
+				MarkComponentSubtreeVisited(Child, Visited);
+			}
+		}
+		// 항목 처리가 끝나면 반드시 PopID
+		ImGui::PopID();
 	}
 }
 
@@ -191,47 +271,49 @@ void UTargetActorTransformWidget::Update()
 
 void UTargetActorTransformWidget::RenderWidget()
 {
-	// 월드 정보 표시
-	ImGui::Text("World Information");
-	ImGui::Text("Actor Count: %u", WorldActorCount);
-	ImGui::Separator();
-
-	AGridActor* gridActor = UIManager->GetWorld()->GetGridActor();
-	if (gridActor)
 	{
-		float currentLineSize = gridActor->GetLineSize();
-		if (ImGui::DragFloat("Grid Spacing", &currentLineSize, 0.1f, 0.1f, 1000.0f))
-		{
-			gridActor->SetLineSize(currentLineSize);
-			EditorINI["GridSpacing"] = std::to_string(currentLineSize);
-		}
-	}
-	else
-	{
-		ImGui::Text("GridActor not found in the world.");
-	}
-
-	ImGui::Text("Transform Editor");
-
-	SelectedActor = GetCurrentSelectedActor();
-	
-
-
-	// 기즈모 스페이스 모드 선택
-	if (GizmoActor)
-	{
-		const char* spaceItems[] = { "World", "Local" };
-		int currentSpaceIndex = static_cast<int>(CurrentGizmoSpace);
-		
-		if (ImGui::Combo("Gizmo Space", &currentSpaceIndex, spaceItems, IM_ARRAYSIZE(spaceItems)))
-		{
-			CurrentGizmoSpace = static_cast<EGizmoSpace>(currentSpaceIndex);
-			
-			GizmoActor->SetSpaceWorldMatrix(CurrentGizmoSpace, SelectedActor);
-		}
+		// 월드 정보 표시
+		ImGui::Text("World Information");
+		ImGui::Text("Actor Count: %u", WorldActorCount);
 		ImGui::Separator();
+
+		AGridActor* gridActor = UIManager->GetWorld()->GetGridActor();
+		if (gridActor)
+		{
+			float currentLineSize = gridActor->GetLineSize();
+			if (ImGui::DragFloat("Grid Spacing", &currentLineSize, 0.1f, 0.1f, 1000.0f))
+			{
+				gridActor->SetLineSize(currentLineSize);
+				EditorINI["GridSpacing"] = std::to_string(currentLineSize);
+			}
+		}
+		else
+		{
+			ImGui::Text("GridActor not found in the world.");
+		}
+
+		ImGui::Text("Transform Editor");
+
+		SelectedActor = GetCurrentSelectedActor();
+
+
+
+		// 기즈모 스페이스 모드 선택
+		if (GizmoActor)
+		{
+			const char* spaceItems[] = { "World", "Local" };
+			int currentSpaceIndex = static_cast<int>(CurrentGizmoSpace);
+
+			if (ImGui::Combo("Gizmo Space", &currentSpaceIndex, spaceItems, IM_ARRAYSIZE(spaceItems)))
+			{
+				CurrentGizmoSpace = static_cast<EGizmoSpace>(currentSpaceIndex);
+
+				GizmoActor->SetSpaceWorldMatrix(CurrentGizmoSpace, SelectedActor);
+			}
+			ImGui::Separator();
+		}
 	}
-	
+	// 컴포넌트 관리 UI
 	if (SelectedActor)
 	{
 		ImGui::Text("Components");
@@ -266,40 +348,65 @@ void UTargetActorTransformWidget::RenderWidget()
 			ImGui::EndPopup();
 		}
 		ImGui::Spacing();
-		ImGui::TextDisabled("Current Components");
 
-		const TArray<USceneComponent*>& Components = SelectedActor->GetComponents();
-		if (Components.IsEmpty())
+
+		AActor* ActorPendingRemoval = nullptr;
+		USceneComponent* ComponentPendingRemoval = nullptr;
+		ImGui::PushID("ActorDisplay");
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.85f, 0.3f, 1.0f));
+		// 액터 이름 표시 (캐시된 이름 사용)
+		const bool bActorClicked =
+			ImGui::Selectable(CachedActorName.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick |
+				ImGuiSelectableFlags_SpanAvailWidth);
+		ImGui::PopStyleColor();
+
+		if (bActorClicked && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && SelectedActor)
 		{
-			ImGui::BulletText("None");
+			SelectedComponent = SelectedActor->GetRootComponent();
+		}
+
+		if (ImGui::BeginPopupContextItem("ActorContextMenu"))
+		{
+			if (ImGui::MenuItem("Remove Actor", "Delete", false, SelectedActor != nullptr))
+			{
+				ActorPendingRemoval = SelectedActor;
+			}
+			ImGui::EndPopup();
+		}
+		ImGui::PopID();
+
+
+		USceneComponent* RootComponent = SelectedActor->GetRootComponent();
+		if (!RootComponent)
+		{
+			ImGui::BulletText("Root component not found.");
 		}
 		else
 		{
-			USceneComponent* ComponentPendingRemoval = nullptr;
+			TSet<USceneComponent*> VisitedComponents;
+			// 아직 루트 컴포넌트에 붙은 컴포넌트는 static component밖에 없음.
+			RenderSceneComponentTree(RootComponent, *SelectedActor, SelectedComponent, ComponentPendingRemoval, VisitedComponents);
 
-			for (USceneComponent* Component : Components)
+			const TArray<USceneComponent*>& AllComponents = SelectedActor->GetComponents();
+			for (USceneComponent* Component : AllComponents)
 			{
-				if (!Component)
-					continue;
-
-				const bool bIsRoot = Component == SelectedActor->GetRootComponent();
-				const bool bIsSelected = (Component == SelectedComponent);
-
-				FString DisplayLabel = Component->GetClass() ? Component->GetClass()->Name : "Unknown Component";
-				if (bIsRoot)
+				if (!Component || VisitedComponents.count(Component))
 				{
-					DisplayLabel += " (Root)";
+					//UE_LOG("Skipping already visited or null component.");
+					continue;
 				}
 
 				ImGui::PushID(Component);
-				if (ImGui::Selectable(DisplayLabel.c_str(), bIsSelected))
+				const bool bSelected = (Component == SelectedComponent);
+				if (ImGui::Selectable(Component->GetClass()->Name, bSelected))
 				{
 					SelectedComponent = Component;
 				}
 
 				if (ImGui::BeginPopupContextItem("ComponentContext"))
 				{
-					const bool bCanRemove = !bIsRoot;
+					// 루트 컴포넌트가 아닌 경우에만 제거 가능
+					const bool bCanRemove = (Component != SelectedActor->GetRootComponent());
 					if (ImGui::MenuItem("Remove", "Delete", false, bCanRemove))
 					{
 						ComponentPendingRemoval = Component;
@@ -318,6 +425,20 @@ void UTargetActorTransformWidget::RenderWidget()
 				}
 			}
 		}
+		if (ActorPendingRemoval)
+		{
+			UWorld* World = ActorPendingRemoval->GetWorld();
+			if (World)
+			{
+				World->DestroyActor(ActorPendingRemoval);
+			}
+			else
+			{
+				ActorPendingRemoval->Destroy();
+			}
+			OnSelectedActorCleared();
+			return; // 방금 제거된 액터에 대한 나머지 UI 갱신 건너뜀
+		}
 
 		if (SelectedComponent &&
 			SelectedComponent != SelectedActor->GetRootComponent() &&
@@ -328,13 +449,6 @@ void UTargetActorTransformWidget::RenderWidget()
 			SelectedComponent = nullptr;
 		}
 		ImGui::Separator();
-		ImGui::Spacing();
-
-		// 액터 이름 표시 (캐시된 이름 사용)
-		ImGui::TextColored(ImVec4(0.2f, 1.0f, 0.2f, 1.0f), "Selected: %s", 
-		                   CachedActorName.c_str());
-		// 선택된 액터 UUID 표시(전역 고유 ID)
-		ImGui::Text("UUID: %u", static_cast<unsigned int>(SelectedActor->UUID));
 		ImGui::Spacing();
 		
 		// Location 편집

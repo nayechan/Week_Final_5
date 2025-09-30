@@ -15,6 +15,10 @@ AActor::AActor()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(FName("SceneComponent"));
 	CollisionComponent = CreateDefaultSubobject<UAABoundingBoxComponent>(FName("CollisionBox"));
 	TextComp = CreateDefaultSubobject<UTextRenderComponent>("TextBox");
+
+	// TODO (동민) - 임시로 루트 컴포넌트에 붙임. 추후 계층 구조 관리 기능 구현 필요
+	CollisionComponent->SetupAttachment(RootComponent);
+	TextComp->SetupAttachment(RootComponent);
 }
 
 AActor::~AActor()
