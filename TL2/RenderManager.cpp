@@ -195,7 +195,7 @@ void URenderManager::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 		// TODO: StaticCmp를 State tree 이용해서 렌더(showFlag 확인 필요)
 		if (World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_StaticMeshes))
 		{
-			for (UStaticMesh* StaticMesh : World->GetStaticMeshs())
+			for (UStaticMesh* StaticMesh : RESOURCE.GetStaticMeshs())
 			{
 				UINT stride = 0;
 				stride = sizeof(FVertexDynamic);

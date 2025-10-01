@@ -419,18 +419,8 @@ void UWorld::SaveScene(const FString& SceneName)
     FSceneLoader::Save(Primitives, CamPtr, SceneName);
 }
 
-void UWorld::SetCameraActor(ACameraActor* InCamera)
-{
-	MainCameraActor = InCamera;
-	UI.SetCamera(MainCameraActor);
-}
-
 AGizmoActor* UWorld::GetGizmoActor()
 {
 	return GizmoActor;
 }
 
-void UWorld::SetStaticMeshs()
-{
-	StaticMeshs = RESOURCE.GetAll<UStaticMesh>();
-}

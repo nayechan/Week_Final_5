@@ -81,6 +81,10 @@ public:
     FMeshBVH* GetMeshBVH(const FString& ObjPath);
     FMeshBVH* GetOrBuildMeshBVH(const FString& ObjPath, const struct FStaticMesh* StaticMeshAsset);
 
+    // MeshCache (for material sorting)
+    void SetStaticMeshs();
+    const TArray<UStaticMesh*>& GetStaticMeshs() { return StaticMeshs; }
+
 public:
     UResourceManager() = default;
 protected:
@@ -107,6 +111,7 @@ protected:
     TMap<FString, TArray<D3D11_INPUT_ELEMENT_DESC>> ShaderToInputLayoutMap;
     TMap<FString, FString> TextureToShaderMap;
 
+    TArray<UStaticMesh*> StaticMeshs;
 private:
     TMap<FString, UMaterial*> MaterialMap;
 

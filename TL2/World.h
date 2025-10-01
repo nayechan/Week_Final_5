@@ -56,9 +56,9 @@ public:
     void CreateNewScene();
     void LoadScene(const FString& SceneName);
     void SaveScene(const FString& SceneName);
-    ACameraActor* GetCameraActor() { return MainCameraActor; }
-    void SetCameraActor(ACameraActor* InCamera);
 
+    ACameraActor* GetCameraActor() { return MainCameraActor; }
+    void SetCameraActor(ACameraActor* InCamera) { MainCameraActor = InCamera; }
 
     /** Generate unique name for actor based on type */
     FString GenerateUniqueActorName(const FString& ActorType);
@@ -76,10 +76,7 @@ public:
     // Per-world render settings
     URenderSettings& GetRenderSettings() { return RenderSettings; }
     const URenderSettings& GetRenderSettings() const { return RenderSettings; }
-
-    void SetStaticMeshs();
-    const TArray<UStaticMesh*>& GetStaticMeshs() { return StaticMeshs; }
-    
+        
     /** === 레벨 / 월드 구성 === */
     // TArray<ULevel*> Levels;
 private:
@@ -91,9 +88,6 @@ private:
 
     /** === 액터 관리 === */
     TArray<AActor*> Actors;
-
-    /** A dedicated array for static mesh actors to optimize culling. */
-    TArray<UStaticMesh*> StaticMeshs;
 
     // Object naming system
     TMap<FString, int32> ObjectTypeCounts;

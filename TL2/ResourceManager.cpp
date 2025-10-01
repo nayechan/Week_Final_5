@@ -180,6 +180,11 @@ FMeshBVH* UResourceManager::GetOrBuildMeshBVH(const FString& ObjPath, const FSta
     return NewBVH;
 }
 
+void UResourceManager::SetStaticMeshs()
+{
+    StaticMeshs = GetAll<UStaticMesh>();
+}
+
 void UResourceManager::CreateAxisMesh(float Length, const FString& FilePath)
 {
     // 이미 있으면 패스

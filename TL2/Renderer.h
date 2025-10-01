@@ -18,7 +18,7 @@ public:
     ~URenderer();
 
 public:
-	void BeginFrame();
+    void BeginFrame();
 
     // Viewport size for current draw context (used by overlay/gizmo scaling)
     void SetCurrentViewportSize(uint32 InWidth, uint32 InHeight) { CurrentViewportWidth = InWidth; CurrentViewportHeight = InHeight; }
@@ -57,7 +57,7 @@ public:
     void EndLineBatch(const FMatrix& ModelMatrix, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix);
     void ClearLineBatch();
 
-	void EndFrame();
+    void EndFrame();
 
     void OMSetDepthStencilState(EComparisonFunc Func);
     // Overlay precedence helpers
@@ -66,7 +66,7 @@ public:
 
     URHIDevice* GetRHIDevice() { return RHIDevice; }
 private:
-	URHIDevice* RHIDevice;
+    URHIDevice* RHIDevice;
 
     // Current viewport size (per FViewport draw); 0 if unset
 
