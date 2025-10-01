@@ -9,7 +9,16 @@ class AActor;
 class AGizmoActor;
 class USceneComponent;
 class UStaticMeshComponent;   // 추가
-
+static const char* kDisplayItems[] = {
+				"Pawn_64x.png",
+				"PointLight_64x.png",
+				"SpotLight_64x.png"
+};
+static const char* kFullPaths[] = {
+	"Editor/Pawn_64x.png",
+	"Editor/PointLight_64x.png",
+	"Editor/SpotLight_64x.png"
+};
 class UTargetActorTransformWidget
 	: public UWidget
 {

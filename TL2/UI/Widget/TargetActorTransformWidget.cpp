@@ -740,6 +740,39 @@ void UTargetActorTransformWidget::RenderWidget()
 		ImGui::Spacing();
 		ImGui::Separator();
 
+		// BillboardComponent 전용 텍스처 선택 드롭다운
+		if (USceneComponent* EditingCompBB = GetEditingComponent())
+		{
+			if (UBillboardComponent* Billboard = Cast<UBillboardComponent>(EditingCompBB))
+			{
+				ImGui::Text("Billboard Texture");
+			
+				int currentIdx = -1;
+				if (UMaterial* M = Billboard->GetMaterial())
+				{
+					const FString& cur = M->GetTextName();
+					for (int i = 0; i < 3; ++i)
+					{
+						const FString item = kDisplayItems[i];
+						if (cur.size() >= item.size() && cur.compare(cur.size() - item.size(), item.size(), item) == 0)
+						{
+							currentIdx = i;
+							break;
+						}
+					}
+				}
+				ImGui::SetNextItemWidth(240);
+				if (ImGui::Combo("Texture", &currentIdx, kDisplayItems, 3))
+				{
+					if (currentIdx >= 0 && currentIdx < 3)
+					{
+						Billboard->SetTexture(kFullPaths[currentIdx]);
+					}
+				}
+				ImGui::Separator();
+			}
+		}
+
 		// Actor가 AStaticMeshActor인 경우 StaticMesh 변경 UI
 		if (UStaticMeshComponent* TargetSMC = GetEditingStaticMeshComponent())
 		{
