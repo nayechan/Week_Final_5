@@ -251,7 +251,7 @@ void URenderer::DrawIndexedPrimitiveComponent(UBillboardComponent* Comp, D3D11_P
     ID3D11ShaderResourceView* srv = nullptr;
     if (Comp->GetMaterial())
     {
-        const FString& TextName = Comp->GetMaterial()->GetTextName();
+        const FString& TextName = Comp->GetTextureName();
         if (!TextName.empty())
         {
             int needW = ::MultiByteToWideChar(CP_UTF8, 0, TextName.c_str(), -1, nullptr, 0);

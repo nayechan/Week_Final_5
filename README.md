@@ -13,10 +13,13 @@ TL2는 Direct3D 11과 ImGui를 기반으로 한 실시간 렌더링 & 씬 편집
 - 🪟 멀티 뷰포트 & 편집 UI: ImGui 기반 창(`SMultiViewportWindow`, `SViewportWindow`)과 다양한 위젯 제공.
 - 🗂️ 씬 자산 관리: `Scene/*.Scene` JSON을 `FSceneLoader`가 읽고 쓰며, `Data/` 폴더 자산과 연동됩니다.
 - 🎯 입력 & 기즈모: `UInputManager`가 키보드/마우스를 통합하고, 이동/회전/스케일 기즈모와 UV 스크롤을 제어합니다.
+- 🎮 PIE(Play In Editor): 에디터에서 Start PIE를 누르면 에디터 창에서서 바로 게임이 시작됩니다.
+- 🧩 컴포넌트 추가/삭제/수정: 액터를 고르고 ImGui 기반 창에서 디테일 패널에서 컴포넌트를 제어합니다.
 
 ## 프로젝트 구조 🗃️
 TL2<br>
 ├─ Data/                 # OBJ/텍스처/미리 빌드된 바이너리 자산<br>
+├─ Font/                 # ImGui에 한글 패치를 위한 폰트<br>
 ├─ Scene/                # JSON 기반 장면 스냅샷 (Default.scene, QuickSave 등)<br>
 ├─ UI/                   # 에디터 창, 위젯, ImGui 헬퍼 및 Direct2D 오버레이<br>
 ├─ d3dtk/                # DirectX Tool Kit 헤더 (DDSTextureLoader 등)<br>
@@ -58,7 +61,8 @@ TL2<br>
 - 🧱 Primitive Spawn: Data/ 자산을 골라 정적 메시를 랜덤 위치/스케일로 배치.
 - 💾 Scene IO: 새 씬 생성, 저장/불러오기, 퀵세이브/로드 제공 (SceneIOWidget).
 - 💬 Console: UE_LOG 출력과 디버그 메시지 확인.
-- 📊 Stats Overlay: Direct2D로 프레임 타임 및 GPU 상태 오버레이 (UI/StatsOverlayD2D).
+- 📊 Stats Overlay: Direct2D로 프레임 타임 및 GPU 상태 오버레이 (UI/StatsOverlayD2D) stat fps, stat memory, stat all, stat none 으로 콘솔에 입력하여 제어.
+- 🔧 Detail Panel: 컴포넌트 추가/삭제/속성에 따른 수정 (트랜스폼, 메쉬 변경 등).
 
 ## 장면 파일 & 자산 관리 📁
 

@@ -24,26 +24,26 @@ UBillboardComponent::UBillboardComponent()
 	//Material->SetShader(".hlsl", EVertexLayoutType::PositionColorTexturNormal);
 
 	// 일단 디폴트 텍스쳐로 설정하기 .
-	SetTexture("Editor/Pawn_64x.png");
+	SetTextureName("Editor/Pawn_64x.png");
 }
 
 
 // 기존 작업에서 , Renderer 단계에서 리소스 매니저에 요청해서 찾아오는 작업으로 되어있기에, 
 // 일단 텍스쳐 이름만 저장하는 방안으로 두어  랜더링 단게에서 Texture를 로드 하는 방법 선택 ...
 // 리팩토링 필요 
-void UBillboardComponent::SetTexture( FString TexturePath)
+void UBillboardComponent::SetTextureName( FString TexturePath)
 {
 
-    if (!Material)
-        return;
-
+    //if (!Material)
+    //    return;
+	TextureName = TexturePath;
     // Ensure Material has a texture object to carry the name.
   /*  if (!Material->GetTexture())
     {
         UTexture* TempTex = NewObject<UTexture>();
         Material->SetTexture(TempTex);
     }*/
-    Material->SetTextName(TexturePath);
+    //Material->SetTextName(TexturePath);
 }
 
 // 여기서만 Cull_Back을 꺼야함. 

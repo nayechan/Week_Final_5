@@ -18,14 +18,17 @@ public:
     void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;
 
     // Setup
-    void SetTexture( FString TexturePath);
+    void SetTextureName( FString TexturePath);
     void SetSize(float InWidth, float InHeight) { Width = InWidth; Height = InHeight; }
 
     float GetWidth() const { return Width; }
     float GetHeight() const { return Height; }
     UQuad* GetStaticMesh() const { return Quad; }
+    FString& GetTextureName() { return TextureName; }
 
 private:
+    FString TextureName;
+
     // 버텍스랑 인덱스 정보 
     UQuad* Quad = nullptr;
 

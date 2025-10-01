@@ -292,7 +292,7 @@ AActor* UTargetActorTransformWidget::GetCurrentSelectedActor() const
 {
 	if (!UIManager)
 		return nullptr;
-		
+
 	return UIManager->GetSelectedActor();
 }
 
@@ -765,19 +765,16 @@ void UTargetActorTransformWidget::RenderWidget()
 			if (UBillboardComponent* Billboard = Cast<UBillboardComponent>(EditingCompBB))
 			{
 				ImGui::Text("Billboard Texture");
-			
+
 				int currentIdx = -1;
-				if (UMaterial* M = Billboard->GetMaterial())
+				const FString& cur = Billboard->GetTextureName();
+				for (int i = 0; i < 3; ++i)
 				{
-					const FString& cur = M->GetTextName();
-					for (int i = 0; i < 3; ++i)
+					const FString item = kDisplayItems[i];
+					if (cur.size() >= item.size() && cur.compare(cur.size() - item.size(), item.size(), item) == 0)
 					{
-						const FString item = kDisplayItems[i];
-						if (cur.size() >= item.size() && cur.compare(cur.size() - item.size(), item.size(), item) == 0)
-						{
-							currentIdx = i;
-							break;
-						}
+						currentIdx = i;
+						break;
 					}
 				}
 				ImGui::SetNextItemWidth(240);
@@ -785,7 +782,7 @@ void UTargetActorTransformWidget::RenderWidget()
 				{
 					if (currentIdx >= 0 && currentIdx < 3)
 					{
-						Billboard->SetTexture(kFullPaths[currentIdx]);
+						Billboard->SetTextureName(kFullPaths[currentIdx]);
 					}
 				}
 				ImGui::Separator();
