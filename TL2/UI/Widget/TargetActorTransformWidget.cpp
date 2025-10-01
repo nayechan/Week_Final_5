@@ -136,11 +136,17 @@ namespace
 		// 씬 컴포넌트라면 루트에 붙임
 		if (USceneComponent* SceneComp = Cast<USceneComponent>(NewComp))
 		{
-			SceneComp->SetWorldTransform(Actor.GetActorTransform()); // 초기 트랜스폼
+			SceneComp->SetWorldTransform(Actor.GetActorTransform()); // 초기 월드 트랜스폼을 부모와 동일하게
+
 			if (USceneComponent* Root = Actor.GetRootComponent())
 			{
-				const bool bIsStaticMeshComponent = SceneComp->IsA(UStaticMeshComponent::StaticClass());
-				const EAttachmentRule AttachRule = bIsStaticMeshComponent ? EAttachmentRule::KeepWorld : EAttachmentRule::KeepRelative;
+				const bool bUsesWorldAttachment =
+					SceneComp->IsA(UStaticMeshComponent::StaticClass()) ||
+					SceneComp->IsA(UBillboardComponent::StaticClass());   // ← BillBoard도 월드 기준
+
+				const EAttachmentRule AttachRule =
+					bUsesWorldAttachment ? EAttachmentRule::KeepWorld : EAttachmentRule::KeepRelative;
+
 				SceneComp->SetupAttachment(Root, AttachRule);
 			}
 		}
