@@ -25,7 +25,7 @@ public:
 
     FViewport* GetViewport() const { return Viewport; }
     FViewportClient* GetViewportClient() const { return ViewportClient; }
-
+    void SetVClientWorld(UWorld* InWorld);
 private:
     void RenderToolbar();
 

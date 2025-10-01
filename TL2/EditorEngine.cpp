@@ -174,7 +174,6 @@ bool UEditorEngine::Startup(HINSTANCE hInstance)
 
     ///////////////////////////////////
     WorldContexts.Add(FWorldContext(NewObject<UWorld>(), EWorldType::Editor));
-    WorldContexts.Add(FWorldContext(NewObject<UWorld>(), EWorldType::Editor));
     ///////////////////////////////////
 
     GWorld = WorldContexts[0].World;
@@ -197,15 +196,16 @@ void UEditorEngine::Tick(float DeltaSeconds)
 
     for (auto& WorldContext : WorldContexts)
     {
-        // 테스트용으로 분기해놨음
-        if (WorldContext.World && bPIEActive && WorldContext.WorldType == EWorldType::Game)
-        {
-            WorldContext.World->Tick(DeltaSeconds, WorldContext.WorldType);
-        }
-        else if (WorldContext.World && !bPIEActive && WorldContext.WorldType == EWorldType::Editor)
-        {
-            WorldContext.World->Tick(DeltaSeconds, WorldContext.WorldType);
-        }
+        WorldContext.World->Tick(DeltaSeconds, WorldContext.WorldType);
+        //// 테스트용으로 분기해놨음
+        //if (WorldContext.World && bPIEActive && WorldContext.WorldType == EWorldType::Game)
+        //{
+        //    WorldContext.World->Tick(DeltaSeconds, WorldContext.WorldType);
+        //}
+        //else if (WorldContext.World && !bPIEActive && WorldContext.WorldType == EWorldType::Editor)
+        //{
+        //    WorldContext.World->Tick(DeltaSeconds, WorldContext.WorldType);
+        //}
     }
     
     SLATE.Update(DeltaSeconds);
@@ -308,7 +308,7 @@ void UEditorEngine::StartPIE()
     UWorld* PIEWorld = UWorld::DuplicateWorldForPIE(EditorWorld);
 
     GWorld = PIEWorld;
-    SLATE.SetWorld(GWorld);
+    SLATE.SetPIEWorld(GWorld);
 
     bPIEActive = true;
 
@@ -329,7 +329,7 @@ void UEditorEngine::EndPIE()
     //    GWorld->CleanupWorld();
     //    delete GWorld;
     //}
-
+    //SLATE.SetPIEWorld(WorldContexts[0].World);
     //GWorld = GEditor->GetEditorWorldContext().World();
 
     bPIEActive = false;

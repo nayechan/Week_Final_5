@@ -124,7 +124,7 @@ void USlateManager::Initialize(ID3D11Device* InDevice, UWorld* InWorld, const FR
 
     Viewports[1]->Initialize(Rect.GetWidth() / 2, 0,
         Rect.GetWidth(), Rect.GetHeight() / 2,
-        GEngine.GetWorldContexts()[1].World, Device, EViewportType::Orthographic_Front);
+        World, Device, EViewportType::Orthographic_Front);
 
     Viewports[2]->Initialize(0, Rect.GetHeight() / 2,
         Rect.GetWidth() / 2, Rect.GetHeight(),
@@ -301,4 +301,9 @@ void USlateManager::Shutdown()
     }
     MainViewport = nullptr;
     ActiveViewport = nullptr;
+}
+
+void USlateManager::SetPIEWorld(UWorld* InWorld)
+{
+    MainViewport->SetVClientWorld(InWorld);
 }

@@ -123,6 +123,14 @@ void SViewportWindow::OnMouseUp(FVector2D MousePos, uint32 Button)
 	Viewport->ProcessMouseButtonUp((int32)LocalPos.X, (int32)LocalPos.Y, Button);
 }
 
+void SViewportWindow::SetVClientWorld(UWorld* InWorld)
+{
+	if (ViewportClient && InWorld)
+	{
+		ViewportClient->SetWorld(InWorld);
+	}
+}
+
 void SViewportWindow::RenderToolbar()
 {
 	if (!Viewport) return;

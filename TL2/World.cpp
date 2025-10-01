@@ -274,6 +274,10 @@ void UWorld::SetLevel(std::unique_ptr<ULevel> InLevel)
 
 void UWorld::AddActorToLevel(AActor* Actor)
 {
-	if (Level) Level->AddActor(Actor);
+	if (Level) 
+	{
+		Level->AddActor(Actor);
+		Partition->Register(Actor);
+	}
 }
 
