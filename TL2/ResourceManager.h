@@ -6,7 +6,7 @@
 #include "Material.h"
 #include "Texture.h"
 #include "DynamicMesh.h"
-#include "TextQuad.h"
+#include "Quad.h"
 #include "LineDynamicMesh.h"
 
 class UStaticMesh;
@@ -49,6 +49,7 @@ public:
 
     void CreateAxisMesh(float Length, const FString& FilePath);
     void CreateTextBillboardMesh();
+    void CreateBillboardMesh();
     void CreateGridMesh(int N, const FString& FilePath);
     void CreateBoxWireframeMesh(const FVector& Min, const FVector& Max, const FString& FilePath);
     //FMeshData* CreateWireBoxMesh(const FVector& Min, const FVector& Max, const FString& FilePath);
@@ -119,6 +120,7 @@ private:
     TMap<FString, FMeshBVH*> MeshBVHCache;
 };
 //-----definition
+// 리소스 매니저에 새로운 리소스 등록하는 함수이다. 
 template<typename T>
 bool UResourceManager::Add(const FString& InFilePath, UObject* InObject)
 {
@@ -127,6 +129,7 @@ bool UResourceManager::Add(const FString& InFilePath, UObject* InObject)
     if (iter == Resources[typeIndex].end())
     {
         Resources[typeIndex][InFilePath] = static_cast<T*>(InObject);
+        // 경로 저장 
         Resources[typeIndex][InFilePath]->SetFilePath(InFilePath);
         return true;
     }
@@ -170,8 +173,8 @@ ResourceType UResourceManager::GetResourceType()
 {
     if (T::StaticClass() == UStaticMesh::StaticClass())
         return ResourceType::StaticMesh;
-    if (T::StaticClass() == UTextQuad::StaticClass())
-        return ResourceType::TextQuad;
+    if (T::StaticClass() == UQuad::StaticClass())
+        return ResourceType::Quad;
     if (T::StaticClass() == UDynamicMesh::StaticClass())
         return ResourceType::DynamicMesh;
     if (T::StaticClass() == ULineDynamicMesh::StaticClass())

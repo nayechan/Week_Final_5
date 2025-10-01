@@ -70,11 +70,12 @@
 #define RESOURCE UResourceManager::GetInstance()
 #define UI UUIManager::GetInstance()
 #define INPUT UInputManager::GetInstance()
-#define SELECTION USelectionManager::GetInstance()
 #define RENDER URenderManager::GetInstance()
 #define SLATE USlateManager::GetInstance()
-//@TODO Partition Manager 싱글톤 배제 (월드 별 소유)
+
+//(월드 별 소유)
 //#define PARTITION UWorldPartitionManager::GetInstance()
+//#define SELECTION (GEngine.GetDefaultWorld()->GetSelectionManager())
 
 extern TMap<FString, FString> EditorINI;
 

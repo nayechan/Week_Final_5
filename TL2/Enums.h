@@ -291,7 +291,7 @@ enum class ResourceType : uint8
     None,
 
     StaticMesh,
-    TextQuad,
+    Quad,
     DynamicMesh,
     Shader,
     Texture,
@@ -307,8 +307,9 @@ enum class EVertexLayoutType : uint8
     PositionColor,
     PositionColorTexturNormal,
 
-    PositionBillBoard,
+    PositionTextBillBoard,
     PositionCollisionDebug,
+    PositionBillBoard,
 
     End,
 };

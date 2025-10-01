@@ -823,7 +823,7 @@ bool CPickingSystem::CheckActorPicking(const AActor* Actor, const FRay& Ray, flo
 	if (!Actor) return false;
 
 	// 액터의 모든 SceneComponent 순회
-	for (auto SceneComponent : Actor->GetComponents())
+	for (auto SceneComponent : Actor->GetSceneComponents())
 	{
 		if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(SceneComponent))
 		{

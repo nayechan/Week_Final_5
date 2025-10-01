@@ -43,6 +43,8 @@ public:
     void OnMouseUp(FVector2D MousePos, uint32 Button);
 
     void OnShutdown();
+    // Explicit cleanup to release viewports/contexts before D3D device is destroyed
+    void Shutdown();
 
     // 상태
     static SViewportWindow* ActiveViewport; // 현재 드래그 중인 뷰포트

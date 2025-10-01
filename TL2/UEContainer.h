@@ -551,3 +551,20 @@ public:
 #define TPriorityQueueWithCompare(T, Compare) TQueue<T, EQueueMode::Priority, Compare>
 
 
+// ANSI 문자열을 UTF-8로 변환하는 유틸리티 함수
+// TODO (동민, 한글) - 혹시나 프로젝트 설정의 /utf-8 옵션을 끈다면 이 설정이 무의미해집니다.
+static inline FString ToUtf8(const FString& Ansi)
+{
+    if (Ansi.empty()) return {};
+
+    // ANSI -> Wide
+    int WideLen = MultiByteToWideChar(CP_ACP, 0, Ansi.c_str(), -1, nullptr, 0);
+    FWideString Wide(static_cast<size_t>(WideLen - 1), L'\0');
+    MultiByteToWideChar(CP_ACP, 0, Ansi.c_str(), -1, Wide.data(), WideLen);
+
+    // Wide -> UTF-8
+    int Utf8Len = WideCharToMultiByte(CP_UTF8, 0, Wide.c_str(), -1, nullptr, 0, nullptr, nullptr);
+    FString Utf8(static_cast<size_t>(Utf8Len - 1), '\0');
+    WideCharToMultiByte(CP_UTF8, 0, Wide.c_str(), -1, Utf8.data(), Utf8Len, nullptr, nullptr);
+    return Utf8;
+}

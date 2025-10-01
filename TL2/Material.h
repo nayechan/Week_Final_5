@@ -19,14 +19,23 @@ public:
     UShader* GetShader();
 
     void SetTexture(UTexture* TextureResource);
+    void SetTexture(const FString& TexturePath);
     UTexture* GetTexture();
 
     void SetMaterialInfo(const FObjMaterialInfo& InMaterialInfo) { MaterialInfo = InMaterialInfo; }
     const FObjMaterialInfo& GetMaterialInfo() const { return MaterialInfo; }
 
+    // TEST
+    FString& GetTextName() { return TextureName; }
+    void SetTextName(FString& InName) { TextureName = InName; };
+
 private:
 	UShader* Shader = nullptr;
 	UTexture* Texture= nullptr;
     FObjMaterialInfo MaterialInfo;
+
+
+    // TEST 
+    FString TextureName;
 };
 

@@ -15,8 +15,7 @@ class USelectionManager : public UObject
 {
 public:
     DECLARE_CLASS(USelectionManager, UObject)
-    static USelectionManager& GetInstance();
-    
+
     /** === 선택 관리 === */
     void SelectActor(AActor* Actor);
     void DeselectActor(AActor* Actor);
@@ -36,8 +35,8 @@ public:
 
 public:
     USelectionManager();
-protected:
     ~USelectionManager() override;
+protected:
     
     // 복사 금지
     USelectionManager(const USelectionManager&) = delete;

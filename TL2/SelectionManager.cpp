@@ -2,16 +2,6 @@
 #include "SelectionManager.h"
 #include "Actor.h"
 
-USelectionManager& USelectionManager::GetInstance()
-{
-    static USelectionManager* Instance = nullptr;
-    if (Instance == nullptr)
-    {
-        Instance = NewObject<USelectionManager>();
-    }
-    return *Instance;
-}
-
 void USelectionManager::SelectActor(AActor* Actor)
 {
     if (!Actor) return;

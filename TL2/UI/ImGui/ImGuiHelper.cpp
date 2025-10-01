@@ -52,11 +52,17 @@ void UImGuiHelper::Initialize(HWND InWindowHandle, ID3D11Device* InDevice, ID3D1
 	ImGui_ImplWin32_Init(InWindowHandle);
 
 	// TODO (동민, 한글) utf-8 설정을 푼다면 그냥 한글을 넣지 마세요.
+	// ImGui는 utf-8을 기본으로 사용하기 때문에 그것에 맞춰 바꿔야 합니다.
 	ImGuiIO& IO = ImGui::GetIO();
 	ImFontConfig Cfg;
+	/*
+		오버 샘플은 폰트 비트맵을 만들 때 더 좋은 해상도로 래스터라이즈했다가
+		목표 크기로 다운샘플해서 가장자리 품질을 높이는 슈퍼 샘플링 개념이다.
+		따라서 베이크 시간/메모리 비용이 아깝다면 내릴 것
+	*/
 	Cfg.OversampleH = Cfg.OversampleV = 2;
 	IO.Fonts->AddFontFromFileTTF("Fonts/malgun.ttf", 18.0f, &Cfg, IO.Fonts->GetGlyphRangesKorean());
-	// IO.Fonts->Build();
+
 	// Use default ImGui font
 	// IO.Fonts->AddFontDefault();
 

@@ -9,7 +9,6 @@ cbuffer CameraInfo : register(b0)
     //float3 cameraUp_worldspace;
 };
 
-// C++의 BillboardCharInfo와 레이아웃이 동일해야 하는 입력 구조체
 struct VS_INPUT
 {
     float3 centerPos : WORLDPOSITION;
@@ -32,13 +31,18 @@ PS_INPUT mainVS(VS_INPUT input)
 {
     PS_INPUT output;
 
-    float3 pos_aligned = mul(float4(input.centerPos, 0.0f), viewInverse).xyz;//카메라 회전 무시시키고
-    float3 finalPos_worldspace = textWorldPos + pos_aligned;//월드좌표계에서 원하는 위치에 위치시킨다(4개의 corner점을)
-     
-    
-    output.pos_screenspace = mul(float4(finalPos_worldspace, 1.0f), mul(viewMatrix, projectionMatrix))*0.1;//월드좌표기준에서 view proj
-    
-    output.tex = input.uvRect.xy; // UV는 C++에서 계산했으므로 그대로 전달
+    // 고정 방향(월드 기준)으로 배치. Z가 Up인 좌표계를 가정하여
+    // 로컬 XY를 월드 XZ로 매핑해 수직 면(정면 노멀=-X)을 만든다.
+    // 더 이상 카메라를 따라 회전시키지 않음 (billboard 해제)
+    //float3 pos_aligned = float3(input.centerPos.x, 0.0f, input.centerPos.y);
+    float3 pos_aligned = float3(0.0f, input.centerPos.x, input.centerPos.y);
+    float3 finalPos_worldspace = textWorldPos + pos_aligned;
+
+    // 월드 → 뷰 → 프로젝션
+    output.pos_screenspace = mul(float4(finalPos_worldspace, 1.0f), mul(viewMatrix, projectionMatrix)) * 0.1;
+
+    // UV는 C++에서 각 정점별로 계산해 전달됨
+    output.tex = input.uvRect.xy;
 
     return output;
 }

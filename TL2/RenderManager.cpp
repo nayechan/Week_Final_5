@@ -1,7 +1,6 @@
 ﻿#include "pch.h"
 #include "RenderManager.h"
 #include "WorldPartitionManager.h"
-#include "SelectionManager.h"
 #include "World.h"
 #include "Renderer.h"
 #include "FViewport.h"
@@ -162,14 +161,11 @@ void URenderManager::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 					continue;
 				}
 
-				if (SELECTION.IsActorSelected(Actor))
-					continue;
-
-				for (USceneComponent* Component : Actor->GetComponents())
-				{
-					if (!Component) continue;
-					if (UActorComponent* ActorComp = Cast<UActorComponent>(Component))
-						if (!ActorComp->IsActive()) continue;
+			for (USceneComponent* Component : Actor->GetSceneComponents())
+			{
+				if (!Component) continue;
+				if (UActorComponent* ActorComp = Cast<UActorComponent>(Component))
+					if (!ActorComp->IsActive()) continue;
 
 					if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
 					{
@@ -292,35 +288,6 @@ void URenderManager::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 			}
 		}
 	}
-	for (AActor* SelectedActor : SELECTION.GetSelectedActors())
-	{
-		if (!SelectedActor) continue;
-		if (SelectedActor->GetActorHiddenInGame()) continue;
-		if (Cast<AStaticMeshActor>(SelectedActor) && !World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_StaticMeshes))
-			continue;
-
-		for (USceneComponent* Component : SelectedActor->GetComponents())
-		{
-			if (!Component) continue;
-			if (UActorComponent* ActorComp = Cast<UActorComponent>(Component))
-				if (!ActorComp->IsActive()) continue;
-
-			if (Cast<UTextRenderComponent>(Component) && !World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText)) continue;
-			if (Cast<UAABoundingBoxComponent>(Component) && !World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes)) continue;
-
-			if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
-			{
-				//UStaticMeshComponent* SMC = Cast<UStaticMeshComponent>(Primitive);
-				//if (SMC && SMC->IsChangedMaterialByUser() == false)
-				//{
-				//	continue;
-				//}
-				Renderer->SetViewModeType(World->GetRenderSettings().GetViewModeIndex());
-				Primitive->Render(Renderer, ViewMatrix, ProjectionMatrix);
-				Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqual);
-			}
-		}
-	}
 
 	// 엔진 액터들 (그리드 등)
 	for (AActor* EngineActor : World->GetEditorActors())
@@ -331,7 +298,7 @@ void URenderManager::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 		if (Cast<AGridActor>(EngineActor) && !World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Grid))
 			continue;
 
-		for (USceneComponent* Component : EngineActor->GetComponents())
+		for (USceneComponent* Component : EngineActor->GetSceneComponents())
 		{
 			if (!Component || !Component->IsActive())
 				continue;

@@ -19,23 +19,6 @@
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
 
-// ANSI 문자열을 UTF-8로 변환하는 유틸리티 함수
-// TODO (동민, 한글) - 혹시나 프로젝트 설정의 /utf-8 옵션을 끈다면 이 설정이 무의미해집니다.
-std::string ToUtf8(const std::string& ansi)
-{
-    if (ansi.empty()) return {};
-
-    // ANSI -> wide
-    int wideLen = MultiByteToWideChar(CP_ACP, 0, ansi.c_str(), -1, nullptr, 0);
-    std::wstring wide(static_cast<size_t>(wideLen - 1), L'\0');
-    MultiByteToWideChar(CP_ACP, 0, ansi.c_str(), -1, wide.data(), wideLen);
-
-    // wide -> UTF-8
-    int utf8Len = WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), -1, nullptr, 0, nullptr, nullptr);
-    std::string utf8(static_cast<size_t>(utf8Len - 1), '\0');
-    WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), -1, utf8.data(), utf8Len, nullptr, nullptr);
-    return utf8;
-}
 // std 함수들 정의
 using std::max;
 using std::min;
@@ -196,8 +179,8 @@ void UPrimitiveSpawnWidget::RenderWidget()
             {
 				// TODO (동민, 한글) - UTF-8 설정이 안되어 있다면 주석으로 되돌리세요.
                 // ImGui::BulletText("%s", Path.c_str());
-                std::string utf8 = ToUtf8(Path);
-                ImGui::BulletText("%s", utf8.c_str());
+                FString Utf8 = ToUtf8(Path);
+                ImGui::BulletText("%s", Utf8.c_str());
             }
             ImGui::TreePop();
         }
@@ -392,10 +375,10 @@ void UPrimitiveSpawnWidget::SpawnActors() const
 
             // 월드 옥트리에 등록
             World->OnActorSpawned(NewActor);
-
+            const FString LogPath = ToUtf8(MeshPath);
             SuccessCount++;
             UE_LOG("PrimitiveSpawn: Created at (%.2f, %.2f, %.2f) scale %.2f using %s",
-                SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z, SpawnScale, MeshPath.c_str());
+                SpawnLocation.X, SpawnLocation.Y, SpawnLocation.Z, SpawnScale, LogPath.c_str());
         }
         else
         {

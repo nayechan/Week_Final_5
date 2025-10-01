@@ -20,7 +20,7 @@
 USceneManagerWidget::USceneManagerWidget()
     : UWidget("Scene Manager")
     , UIManager(&UUIManager::GetInstance())
-    , SelectionManager(&USelectionManager::GetInstance())
+    , SelectionManager(nullptr)
 {
 }
 
@@ -32,7 +32,7 @@ USceneManagerWidget::~USceneManagerWidget()
 void USceneManagerWidget::Initialize()
 {
     UIManager = &UUIManager::GetInstance();
-    SelectionManager = &USelectionManager::GetInstance();
+    SelectionManager = nullptr;
 }
 
 void USceneManagerWidget::Update()
@@ -104,9 +104,12 @@ void USceneManagerWidget::Update()
     // 정기적으로 SelectionManager 정리 (매 프레임마다 하지 않고 가끔씩)
     static int32 CleanupCounter = 0;
     CleanupCounter++;
-    if (CleanupCounter % 60 == 0 && SelectionManager) // 약 1초마다
+    if (CleanupCounter % 60 == 0) // 약 1초마다
     {
-        SelectionManager->CleanupInvalidActors();
+        if (UWorld* W = GetCurrentWorld())
+        {
+            W->GetSelectionManager()->CleanupInvalidActors();
+        }
     }
 }
 
@@ -164,7 +167,11 @@ void USceneManagerWidget::RenderWidget()
     
     // Status bar
     ImGui::Separator();
-    AActor* SelectedActor = SelectionManager ? SelectionManager->GetSelectedActor() : nullptr;
+    AActor* SelectedActor = nullptr;
+    if (UWorld* W = GetCurrentWorld())
+    {
+        SelectedActor = W->GetSelectionManager()->GetSelectedActor();
+    }
     if (SelectedActor)
     {
         // 액터 이름을 가져오기 전에 안전성 확인
@@ -246,7 +253,11 @@ void USceneManagerWidget::RenderActorNode(FActorTreeNode* Node, int32 Depth)
     ImGuiTreeNodeFlags NodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
     
     // Check if selected
-    bool bIsSelected = SelectionManager->IsActorSelected(Actor);
+    bool bIsSelected = false;
+    if (UWorld* W = GetCurrentWorld())
+    {
+        bIsSelected = W->GetSelectionManager()->IsActorSelected(Actor);
+    }
     if (bIsSelected)
     {
         NodeFlags |= ImGuiTreeNodeFlags_Selected;
@@ -362,12 +373,15 @@ bool USceneManagerWidget::ShouldShowActor(AActor* Actor) const
 
 void USceneManagerWidget::HandleActorSelection(AActor* Actor)
 {
-    if (!Actor || !SelectionManager)
+    if (!Actor)
         return;
     
-    // Clear previous selection and select this actor
-    SelectionManager->ClearSelection();
-    SelectionManager->SelectActor(Actor);
+    if (UWorld* W = GetCurrentWorld())
+    {
+        // Clear previous selection and select this actor
+        W->GetSelectionManager()->ClearSelection();
+        W->GetSelectionManager()->SelectActor(Actor);
+    }
     
     // Sync with UIManager for gizmo positioning
     if (UIManager)
@@ -625,13 +639,17 @@ USceneManagerWidget::FActorTreeNode* USceneManagerWidget::FindNodeByActor(AActor
 void USceneManagerWidget::SyncSelectionFromViewport()
 {
     // SelectionManager에서 null 액터들을 정리
-    if (SelectionManager)
+    if (UWorld* W = GetCurrentWorld())
     {
-        SelectionManager->CleanupInvalidActors();
+        W->GetSelectionManager()->CleanupInvalidActors();
     }
     
     // 선택된 액터가 null인지 확인
-    AActor* SelectedActor = SelectionManager ? SelectionManager->GetSelectedActor() : nullptr;
+    AActor* SelectedActor = nullptr;
+    if (UWorld* W = GetCurrentWorld())
+    {
+        SelectedActor = W->GetSelectionManager()->GetSelectedActor();
+    }
     if (!SelectedActor)
     {
         // 선택된 액터가 null이면 UI를 업데이트

@@ -29,6 +29,7 @@
 UWorld::UWorld()
 	: Partition(new UWorldPartitionManager())
 {
+	SelectionMgr = std::make_unique<USelectionManager>();
 	Level = std::make_unique<ULevel>();
 	//FObjManager::Preload();
 	CreateLevel();
@@ -146,19 +147,27 @@ FString UWorld::GenerateUniqueActorName(const FString& ActorType)
 //
 bool UWorld::DestroyActor(AActor* Actor)
 {
-	if (!Actor)
-	{
-		return false; // nullptr 들어옴 → 실패
-	}
+	if (!Actor) return false;
 
-	// SelectionManager에서 선택 해제 (메모리 해제 전에 하자)
-	SELECTION.DeselectActor(Actor);
+	// 재진입 가드
+	if (Actor->IsPendingDestroy()) return false;
+	Actor->MarkPendingDestroy();
 
-	// UIManager에서 픽된 액터 정리
+	// 선택/UI 해제
+	if (SelectionMgr) SelectionMgr->DeselectActor(Actor);
 	if (UI.GetPickedActor() == Actor)
-	{
 		UI.ResetPickedActor();
-	}
+
+	// 게임 수명 종료
+	Actor->EndPlay(EEndPlayReason::Destroyed);
+
+	// 컴포넌트 정리 (등록 해제 → 파괴)
+	Actor->UnregisterAllComponents(/*bCallEndPlayOnBegun=*/true);
+	Actor->DestroyAllComponents();
+	Actor->ClearSceneComponentCaches();
+
+	// 월드 자료구조에서 제거 (옥트리/파티션/렌더 캐시 등)
+	OnActorDestroyed(Actor);
 
 // 레벨에서 제거 시도
 	if (Level && Level->RemoveActor(Actor))
@@ -170,7 +179,7 @@ bool UWorld::DestroyActor(AActor* Actor)
 		ObjectFactory::DeleteObject(Actor);
 
 		// 삭제된 액터 정리
-		SELECTION.CleanupInvalidActors();
+		if (SelectionMgr) SelectionMgr->CleanupInvalidActors();
 
 		return true; // 성공적으로 삭제
 	}
@@ -220,10 +229,9 @@ inline FString RemoveObjExtension(const FString& FileName)
 
 void UWorld::CreateLevel()
 {
-	// DEPRECATED shim: forward to LevelService
-	SELECTION.ClearSelection();
+	if (SelectionMgr) SelectionMgr->ClearSelection();
 	UI.ResetPickedActor();
-
+	 
 	SetLevel(ULevelService::CreateNewLevel());
 	// 이름 카운터 초기화: 씬을 새로 시작할 때 각 BaseName 별 suffix를 0부터 다시 시작
 	ObjectTypeCounts.clear();
@@ -232,7 +240,7 @@ void UWorld::CreateLevel()
 void UWorld::SetLevel(std::unique_ptr<ULevel> InLevel)
 {
     // Make UI/selection safe before destroying previous actors
-    SELECTION.ClearSelection();
+    if (SelectionMgr) SelectionMgr->ClearSelection();
     UI.ResetPickedActor();
 
     // Cleanup current
@@ -261,7 +269,7 @@ void UWorld::SetLevel(std::unique_ptr<ULevel> InLevel)
     }
 
     // Clean any dangling selection references just in case
-    SELECTION.CleanupInvalidActors();
+    if (SelectionMgr) SelectionMgr->CleanupInvalidActors();
 }
 
 void UWorld::AddActorToLevel(AActor* Actor)

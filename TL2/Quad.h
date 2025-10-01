@@ -4,16 +4,16 @@
 #include "Enums.h"
 #include <d3d11.h>
 
-class UTextQuad : public UResourceBase
+class UQuad : public UResourceBase
 {
 public:
-    DECLARE_CLASS(UTextQuad, UResourceBase)
+    DECLARE_CLASS(UQuad, UResourceBase)
 
-    UTextQuad() = default;
-    virtual ~UTextQuad() override;
+    UQuad() = default;
+    virtual ~UQuad() override;
 
     void Load(const FString& InFilePath, ID3D11Device* InDevice);
-    void Load(FMeshData* InData, ID3D11Device* InDevice);
+    void Load(FMeshData* InData, ID3D11Device* InDevice, bool IsTextQuad = false);
 
     ID3D11Buffer* GetVertexBuffer() const { return VertexBuffer; }
     ID3D11Buffer* GetIndexBuffer() const { return IndexBuffer; }
@@ -29,7 +29,7 @@ public:
     //bool HasMaterial() const { return StaticMeshAsset->bHasMaterial; }
 
 private:
-    void CreateVertexBuffer(FMeshData* InMeshData, ID3D11Device* InDevice);
+    void CreateVertexBuffer(FMeshData* InMeshData, ID3D11Device* InDevice, bool IsTextQuad = false);
     void CreateIndexBuffer(FMeshData* InMeshData, ID3D11Device* InDevice);
     void ReleaseResources();
 

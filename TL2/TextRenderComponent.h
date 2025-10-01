@@ -17,7 +17,7 @@ public:
 	virtual void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;
 	// void SetText(FString Txt);
 
-	UTextQuad* GetStaticMesh() const { return TextQuad; }
+	UQuad* GetStaticMesh() const { return TextQuad; }
 
 	// ───── 복사 관련 ────────────────────────────
 	void DuplicateSubObjects() override;
@@ -29,5 +29,5 @@ private:
 	FString TextureFilePath;
 
 	// TODO: UStaticMesh는 UStaticMeshComponent만 사용하도록 바꿔야 한다
-	UTextQuad* TextQuad = nullptr;
+	UQuad* TextQuad = nullptr;
 };

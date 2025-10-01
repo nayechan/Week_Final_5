@@ -16,7 +16,7 @@
 UDetailsPanelWidget::UDetailsPanelWidget()
     : UWidget("Details")
     , UIManager(&UUIManager::GetInstance())
-    , SelectionManager(&USelectionManager::GetInstance())
+    , SelectionManager(nullptr)
 {
 }
 
@@ -27,7 +27,7 @@ UDetailsPanelWidget::~UDetailsPanelWidget()
 void UDetailsPanelWidget::Initialize()
 {
     UIManager = &UUIManager::GetInstance();
-    SelectionManager = &USelectionManager::GetInstance();
+    SelectionManager = nullptr;
 }
 
 void UDetailsPanelWidget::Update()
@@ -41,7 +41,11 @@ void UDetailsPanelWidget::RenderWidget()
     ImGui::Spacing();
     
     // Check if we have a selection
-    AActor* SelectedActor = SelectionManager->GetSelectedActor();
+    AActor* SelectedActor = nullptr;
+    if (UIManager && UIManager->GetWorld())
+    {
+        SelectedActor = UIManager->GetWorld()->GetSelectionManager().GetSelectedActor();
+    }
     if (!SelectedActor)
     {
         ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "No object selected");
@@ -56,7 +60,11 @@ void UDetailsPanelWidget::RenderWidget()
 
 void UDetailsPanelWidget::CheckSelectionChanged()
 {
-    AActor* NewSelection = SelectionManager->GetSelectedActor();
+    AActor* NewSelection = nullptr;
+    if (UIManager && UIManager->GetWorld())
+    {
+        NewSelection = UIManager->GetWorld()->GetSelectionManager().GetSelectedActor();
+    }
     if (NewSelection != CurrentSelectedActor)
     {
         OnSelectionChanged(NewSelection);

@@ -38,7 +38,8 @@ void UAABoundingBoxComponent::SetFromVertices(const TArray<FNormalVertex>& Verts
 
 void UAABoundingBoxComponent::Render(URenderer* Renderer, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix)
 {
-    if (USelectionManager::GetInstance().GetSelectedActor() == GetOwner())
+    if (GetOwner() && GetOwner()->GetWorld() &&
+        GetOwner()->GetWorld()->GetSelectionManager()->GetSelectedActor() == GetOwner())
     {
         TArray<FVector> Start;
         TArray<FVector> End;

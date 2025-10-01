@@ -52,7 +52,11 @@
 #include "Material.h"
 #include "DynamicMesh.h"
 #include "LineDynamicMesh.h"
-#include "TextQuad.h"
+#include "Quad.h"
+#include"RenderViewportSwitcherWidget.h"
+#include "MenuBarWidget.h"
+#include "WorldPartitionManager.h"
+#include "BillboardComponent.h"
 // ... (rest of the file)
 IMPLEMENT_CLASS(UWorld)
 
@@ -123,4 +127,6 @@ IMPLEMENT_CLASS(UShader)
 IMPLEMENT_CLASS(UTexture)
 IMPLEMENT_CLASS(UDynamicMesh)
 IMPLEMENT_CLASS(ULineDynamicMesh)
-IMPLEMENT_CLASS(UTextQuad)
+IMPLEMENT_CLASS(UQuad)
+
+IMPLEMENT_CLASS(UBillboardComponent)

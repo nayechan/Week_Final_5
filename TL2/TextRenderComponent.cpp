@@ -8,7 +8,7 @@
 UTextRenderComponent::UTextRenderComponent()
 {
     auto& RM = UResourceManager::GetInstance();
-    TextQuad = RM.Get<UTextQuad>("TextBillboard");
+    TextQuad = RM.Get<UQuad>("TextBillboard");
     if (auto* M = RM.Get<UMaterial>("TextBillboard"))
     {
         Material = M;
@@ -18,7 +18,6 @@ UTextRenderComponent::UTextRenderComponent()
         Material = NewObject<UMaterial>();
         RM.Add<UMaterial>("TextBillboard", Material);
     }
-
     InitCharInfoMap();
 }
 
@@ -147,8 +146,11 @@ void UTextRenderComponent::Render(URenderer* Renderer, const FMatrix& View, cons
         UResourceManager::GetInstance().UpdateDynamicVertexBuffer("TextBillboard", vertices);
 
         Renderer->OMSetDepthStencilState(EComparisonFunc::Always);
-        Renderer->RSSetState(EViewModeIndex::VMI_Unlit);
+        // 텍스트 빌보드도 이 구간에서만 백페이스 컬링 비활성화
+        Renderer->RSSetNoCullState();
         Renderer->DrawIndexedPrimitiveComponent(this, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        // 상태 복원
+        //Renderer->RSSetState(EViewModeIndex::VMI_Unlit);
     }
 }
 

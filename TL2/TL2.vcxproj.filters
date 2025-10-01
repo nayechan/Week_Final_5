@@ -354,7 +354,7 @@
     <ClCompile Include="UI\Window\PropertyWindow.cpp">
       <Filter>소스 파일\UI\Window</Filter>
     </ClCompile>
-    <ClCompile Include="TextQuad.cpp">
+    <ClCompile Include="Quad.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="SSplitter.cpp">
@@ -411,6 +411,12 @@
     <ClCompile Include="PipelineStateManager.cpp">
       <Filter>소스 파일\Manager</Filter>
     </ClCompile>
+    <ClCompile Include="BillboardComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="QuadManager.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
     <ClCompile Include="Level.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -429,6 +435,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="StaticMeshPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Billboard.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
@@ -709,7 +718,7 @@
     <ClInclude Include="UI\Window\PropertyWindow.h">
       <Filter>헤더 파일\UI\Window</Filter>
     </ClInclude>
-    <ClInclude Include="TextQuad.h">
+    <ClInclude Include="Quad.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="SceneIOWindow.h">
@@ -761,6 +770,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="PipelineStateObject.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BillboardComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="QuadManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="Level.h">

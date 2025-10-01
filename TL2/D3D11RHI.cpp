@@ -130,6 +130,7 @@ void D3D11RHI::Release()
 
     if (DefaultRasterizerState) { DefaultRasterizerState->Release();   DefaultRasterizerState = nullptr; }
     if (WireFrameRasterizerState) { WireFrameRasterizerState->Release();   WireFrameRasterizerState = nullptr; }
+    if (NoCullRasterizerState) { NoCullRasterizerState->Release();   NoCullRasterizerState = nullptr; }
     if (BlendState) { BlendState->Release();        BlendState = nullptr; }
 
     // RTV/DSV/FrameBuffer
@@ -415,6 +416,11 @@ void D3D11RHI::RSSetState(EViewModeIndex ViewModeIndex)
     }
 }
 
+void D3D11RHI::RSSetNoCullState()
+{
+    DeviceContext->RSSetState(NoCullRasterizerState);
+}
+
 void D3D11RHI::RSSetViewport()
 {
     DeviceContext->RSSetViewports(1, &ViewportInfo);
@@ -536,6 +542,13 @@ void D3D11RHI::CreateRasterizerState()
     wireframerasterizerdesc.DepthClipEnable = TRUE; // 근/원거리 평면 클리핑
 
     Device->CreateRasterizerState(&wireframerasterizerdesc, &WireFrameRasterizerState);
+
+    D3D11_RASTERIZER_DESC nocullRasterizerDesc = {};
+    nocullRasterizerDesc.FillMode = D3D11_FILL_SOLID;
+    nocullRasterizerDesc.CullMode = D3D11_CULL_NONE;
+    nocullRasterizerDesc.DepthClipEnable = TRUE;
+
+    Device->CreateRasterizerState(&nocullRasterizerDesc, &NoCullRasterizerState);
 }
 
 void D3D11RHI::CreateConstantBuffer()
@@ -656,6 +669,11 @@ void D3D11RHI::ReleaseRasterizerState()
         WireFrameRasterizerState->Release();
         WireFrameRasterizerState = nullptr;
     }
+    if (NoCullRasterizerState)
+    {
+        NoCullRasterizerState->Release();
+        NoCullRasterizerState = nullptr;
+    }
     DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
 }
 
@@ -692,6 +710,15 @@ void D3D11RHI::ReleaseDeviceAndSwapChain()
         DeviceContext->Release();
         DeviceContext = nullptr;
     }
+
+#if defined(_DEBUG)
+    ID3D11Debug* pDebug = nullptr;
+    if (SUCCEEDED(Device->QueryInterface(__uuidof(ID3D11Debug), (void**)&pDebug)))
+    {
+        pDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+        pDebug->Release();
+    }
+#endif
 
     if (Device)
     {

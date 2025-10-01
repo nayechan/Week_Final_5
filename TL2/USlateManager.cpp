@@ -64,23 +64,7 @@ USlateManager::USlateManager()
 
 USlateManager::~USlateManager()
 {
-    //스플리터 정보 editor.ini 정보 저장
-    OnShutdown();
-    delete RootSplitter; RootSplitter = nullptr;
-    delete TopPanel; TopPanel = nullptr;
-    delete LeftTop; LeftTop = nullptr;
-    delete LeftBottom; LeftBottom = nullptr;
-    delete LeftPanel; LeftPanel = nullptr;
-    delete BottomPanel; BottomPanel = nullptr;
-    delete SceneIOPanel; SceneIOPanel = nullptr;
-    // 아래쪽 UI
-    delete ControlPanel; ControlPanel = nullptr;
-    delete DetailPanel; DetailPanel = nullptr;
-
-    for (int i = 0; i < 4; i++)
-    {
-        if (Viewports[i]) { delete Viewports[i]; Viewports[i] = nullptr; }
-    }
+    Shutdown();
 }
 
 void USlateManager::Initialize(ID3D11Device* InDevice, UWorld* InWorld, const FRect& InRect)
@@ -140,7 +124,7 @@ void USlateManager::Initialize(ID3D11Device* InDevice, UWorld* InWorld, const FR
 
     Viewports[1]->Initialize(Rect.GetWidth() / 2, 0,
         Rect.GetWidth(), Rect.GetHeight() / 2,
-        World, Device, EViewportType::Orthographic_Front);
+        GEngine.GetWorldContexts()[1].World, Device, EViewportType::Orthographic_Front);
 
     Viewports[2]->Initialize(0, Rect.GetHeight() / 2,
         Rect.GetWidth() / 2, Rect.GetHeight(),
@@ -202,7 +186,7 @@ void USlateManager::Render()
 void USlateManager::Update(float DeltaSeconds)
 {
     ProcessInput();
-    if (RootSplitter) 
+    if (RootSplitter)
     {
         // 메뉴바 높이만큼 아래로 이동
         float menuBarHeight = ImGui::GetFrameHeight();
@@ -292,4 +276,29 @@ void USlateManager::OnMouseUp(FVector2D MousePos, uint32 Button)
 void USlateManager::OnShutdown()
 {
     SaveSplitterConfig();
+}
+
+void USlateManager::Shutdown()
+{
+    // Save layout/config
+    SaveSplitterConfig();
+
+    // Delete UI panels and viewports explicitly to release any held D3D contexts
+    if (RootSplitter) { delete RootSplitter; RootSplitter = nullptr; }
+    if (TopPanel) { delete TopPanel; TopPanel = nullptr; }
+    if (LeftTop) { delete LeftTop; LeftTop = nullptr; }
+    if (LeftBottom) { delete LeftBottom; LeftBottom = nullptr; }
+    if (LeftPanel) { delete LeftPanel; LeftPanel = nullptr; }
+    if (BottomPanel) { delete BottomPanel; BottomPanel = nullptr; }
+
+    if (SceneIOPanel) { delete SceneIOPanel; SceneIOPanel = nullptr; }
+    if (ControlPanel) { delete ControlPanel; ControlPanel = nullptr; }
+    if (DetailPanel) { delete DetailPanel; DetailPanel = nullptr; }
+
+    for (int i = 0; i < 4; ++i)
+    {
+        if (Viewports[i]) { delete Viewports[i]; Viewports[i] = nullptr; }
+    }
+    MainViewport = nullptr;
+    ActiveViewport = nullptr;
 }

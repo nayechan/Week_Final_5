@@ -21,11 +21,11 @@ void UStaticMesh::Load(const FString& InFilePath, ID3D11Device* InDevice, EVerte
     IndexCount = static_cast<uint32>(StaticMeshAsset->Indices.size());
 
     // Cache or build BVH once per OBJ asset and keep reference
-    if (StaticMeshAsset)
-    {
-        const FString& Key = StaticMeshAsset->PathFileName;
-        MeshBVH = UResourceManager::GetInstance().GetOrBuildMeshBVH(Key, StaticMeshAsset);
-    }
+    //if (StaticMeshAsset)
+    //{
+    //    const FString& Key = StaticMeshAsset->PathFileName;
+    //    MeshBVH = UResourceManager::GetInstance().GetOrBuildMeshBVH(Key, StaticMeshAsset);
+    //}
 }
 
 void UStaticMesh::Load(FMeshData* InData, ID3D11Device* InDevice, EVertexLayoutType InVertexType)

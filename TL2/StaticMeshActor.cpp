@@ -3,12 +3,14 @@
 #include "StaticMeshActor.h"
 #include "StaticMeshComponent.h"
 #include "ObjectFactory.h"
-
+#include "BillboardComponent.h"
 AStaticMeshActor::AStaticMeshActor()
 {
     Name = "Static Mesh Actor";
     StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("StaticMeshComponent");
     StaticMeshComponent->SetupAttachment(RootComponent);
+    //BillboardComp = CreateDefaultSubobject<UBillboardComponent>("BillboardBox");
+
     //StaticMeshComponent->SetOwnedActor(this);
     //bTickInEditor = true; // 테스트 용
 }

@@ -7,7 +7,7 @@ AGridActor::AGridActor()
 {
     LineComponent = NewObject<ULineComponent>();
     LineComponent->SetupAttachment(RootComponent);
-    AddComponent(LineComponent);
+    AddOwnedComponent(LineComponent);
 }
 
 void AGridActor::Initialize()

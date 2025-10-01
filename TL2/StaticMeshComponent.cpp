@@ -22,6 +22,11 @@ UStaticMeshComponent::~UStaticMeshComponent()
 
 void UStaticMeshComponent::Render(URenderer* Renderer, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix)
 {
+    UStaticMesh* Mesh = GetStaticMesh();
+    if (!Mesh)
+    {
+        return; // 아직 메쉬가 지정되지 않은 새 컴포넌트는 렌더 패스에서 건너뛴다.
+    }
     Renderer->UpdateConstantBuffer(GetWorldMatrix(), ViewMatrix, ProjectionMatrix);
     Renderer->PrepareShader(GetMaterial()->GetShader());
     Renderer->DrawIndexedPrimitiveComponent(GetStaticMesh(), D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST, MaterailSlots);

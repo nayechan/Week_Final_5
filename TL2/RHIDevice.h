@@ -27,6 +27,7 @@ public:
     virtual void Initialize(HWND hWindow) = 0;
     virtual void Release() = 0;
 public:
+
     //getter
     virtual ID3D11Device* GetDevice() = 0;
     virtual ID3D11DeviceContext* GetDeviceContext() = 0;
@@ -55,6 +56,7 @@ public:
     virtual void IASetPrimitiveTopology() = 0;
     virtual void RSSetViewport() = 0;
     virtual void RSSetState(EViewModeIndex ViewModeIndex) = 0;
+    virtual void RSSetNoCullState() = 0;
     virtual void OMSetRenderTargets() = 0;
     virtual void OMSetBlendState(bool bIsBlendMode) = 0;
     virtual void OmSetDepthStencilState(EComparisonFunc Func) = 0;
@@ -64,4 +66,5 @@ public:
     virtual void Present() = 0;
     virtual void PSSetDefaultSampler(UINT StartSlot) = 0;
 };
+
 

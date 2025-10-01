@@ -47,9 +47,9 @@ AGizmoActor::AGizmoActor()
 	if (ArrowZ) ArrowZ->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, -90, 0)));
 
 
-	AddComponent(ArrowX);
-	AddComponent(ArrowY);
-	AddComponent(ArrowZ);
+	AddOwnedComponent(ArrowX);
+	AddOwnedComponent(ArrowY);
+	AddOwnedComponent(ArrowZ);
 	GizmoArrowComponents.Add(ArrowX);
 	GizmoArrowComponents.Add(ArrowY);
 	GizmoArrowComponents.Add(ArrowZ);
@@ -75,9 +75,9 @@ AGizmoActor::AGizmoActor()
 	RotateY->SetDefaultScale({ 0.02f, 0.02f, 0.02f });
 	RotateZ->SetDefaultScale({ 0.02f, 0.02f, 0.02f });
 
-	AddComponent(RotateX);
-	AddComponent(RotateY);
-	AddComponent(RotateZ);
+	AddOwnedComponent(RotateX);
+	AddOwnedComponent(RotateY);
+	AddOwnedComponent(RotateZ);
 	GizmoRotateComponents.Add(RotateX);
 	GizmoRotateComponents.Add(RotateY);
 	GizmoRotateComponents.Add(RotateZ);
@@ -111,24 +111,24 @@ AGizmoActor::AGizmoActor()
 	if (ScaleY) ScaleY->SetRelativeRotation(FQuat::MakeFromEuler(FVector(-90, 0, 0)));
 	if (ScaleZ) ScaleZ->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 0, 0)));
 
-	AddComponent(ScaleX);
-	AddComponent(ScaleY);
-	AddComponent(ScaleZ);
+	AddOwnedComponent(ScaleX);
+	AddOwnedComponent(ScaleY);
+	AddOwnedComponent(ScaleZ);
 	GizmoScaleComponents.Add(ScaleX);
 	GizmoScaleComponents.Add(ScaleY);
 	GizmoScaleComponents.Add(ScaleZ);
 
 	CurrentMode = EGizmoMode::Translate;
 
-	// 매니저 참조 초기화
-	SelectionManager = &USelectionManager::GetInstance();
+	// 매니저 참조 초기화 (월드 소유)
+	SelectionManager = GetWorld() ? GetWorld()->GetSelectionManager() : nullptr;
 	InputManager = &UInputManager::GetInstance();
 	UIManager = &UUIManager::GetInstance();
 }
 
 void AGizmoActor::Tick(float DeltaSeconds)
 {
-	if (!SelectionManager) SelectionManager = &USelectionManager::GetInstance();
+	if (!SelectionManager) SelectionManager = GetWorld() ? GetWorld()->GetSelectionManager() : nullptr;
 	if (!InputManager) InputManager = &UInputManager::GetInstance();
 	if (!UIManager) UIManager = &UUIManager::GetInstance();
 

@@ -40,4 +40,5 @@ public:
 protected:
     UMaterial* Material = nullptr;
     bool bIsCulled = false;
+
 };

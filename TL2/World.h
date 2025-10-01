@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Object.h"
 #include "Enums.h"
 #include "RenderSettings.h"
@@ -25,7 +25,7 @@ class AStaticMeshActor;
 class BVHierachy;
 class UStaticMesh;
 class FOcclusionCullingManagerCPU;
-class Frustum;
+struct Frustum;
 struct FCandidateDrawable;
 
 class UWorld final : public UObject
@@ -102,6 +102,9 @@ private:
 
     //partition
     std::unique_ptr<UWorldPartitionManager> Partition = nullptr;
+
+    // Per-world selection manager
+    std::unique_ptr<USelectionManager> SelectionMgr;
 };
 
 template<class T>

@@ -7,6 +7,11 @@ class UWorld;
 
 struct FWorldContext
 {
+    FWorldContext();
+    FWorldContext(UWorld* InWorld, EWorldType InWorldType)
+    {
+        World = InWorld; WorldType = InWorldType;
+    }
     UWorld* World;
     EWorldType WorldType;
 };
@@ -30,6 +35,7 @@ public:
     URenderer* GetRenderer() const { return Renderer.get(); }
     D3D11RHI* GetRHIDevice() { return &RHIDevice; }
     UWorld* GetDefaultWorld();
+    const TArray<FWorldContext>& GetWorldContexts() { return WorldContexts; }
 
     void AddWorldContext(const FWorldContext& InWorldContext)
     {

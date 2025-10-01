@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "Actor.h"
 #include "SceneComponent.h"
 #include "ObjectFactory.h"
@@ -7,6 +7,7 @@
 #include "MeshComponent.h"
 #include "TextRenderComponent.h"
 #include "WorldPartitionManager.h"
+#include "BillboardComponent.h"
 
 #include "World.h"
 AActor::AActor()
@@ -17,45 +18,193 @@ AActor::AActor()
 	TextComp = CreateDefaultSubobject<UTextRenderComponent>("TextBox");
 
 	// TODO (동민) - 임시로 루트 컴포넌트에 붙임. 추후 계층 구조 관리 기능 구현 필요
-	CollisionComponent->SetupAttachment(RootComponent);
-	TextComp->SetupAttachment(RootComponent);
+	if (CollisionComponent)
+	{
+		CollisionComponent->SetupAttachment(RootComponent);
+	}
+	if (TextComp)
+	{
+		TextComp->SetupAttachment(RootComponent);
+	}
 }
 
 AActor::~AActor()
 {
-	for (USceneComponent*& Comp : Components)
-	{
-		if (Comp)
-		{
-			ObjectFactory::DeleteObject(Comp);
-			Comp = nullptr;
-		}
-	}
-	Components.Empty();
+	// UE처럼 역순/안전 소멸: 모든 컴포넌트 DestroyComponent
+	for (UActorComponent* Comp : OwnedComponents)
+		if (Comp) Comp->DestroyComponent();  // 안에서 Unregister/Detach 처리한다고 가정
+	OwnedComponents.clear();
+	SceneComponents.Empty();
+	RootComponent = nullptr;
 }
 
 void AActor::BeginPlay()
 {
+	// 컴포넌트들 Initialize/BeginPlay 순회
+	for (UActorComponent* Comp : OwnedComponents)
+		if (Comp) Comp->InitializeComponent();
+	for (UActorComponent* Comp : OwnedComponents)
+		if (Comp) Comp->BeginPlay();
 }
 
 void AActor::Tick(float DeltaSeconds)
 {
-	
-}
+	// 에디터에서 틱 Off면 스킵
+	if (!bTickInEditor && /*에디터 중*/ true) return;
 
+	for (UActorComponent* Comp : OwnedComponents)
+	{
+		if (Comp && Comp->IsComponentTickEnabled())
+		{
+			Comp->TickComponent(DeltaSeconds /*, … 필요 인자*/);
+		}
+	}
+}
+void AActor::EndPlay(EEndPlayReason Reason)
+{
+	for (UActorComponent* Comp : OwnedComponents)
+		if (Comp) Comp->EndPlay(Reason);
+}
 void AActor::Destroy()
 {
-	if (!bCanEverTick) return;
-	// Prefer world-managed destruction to remove from world actor list
-	if (World)
+	// 재진입/중복 방지
+	if (IsPendingDestroy())
 	{
-		// Avoid using 'this' after the call
-		World->DestroyActor(this);
 		return;
 	}
-	// Fallback: directly delete the actor via factory
+	MarkPendingDestroy();
+	// 월드가 있으면 월드에 위임 (여기서 더 이상 this 만지지 않기)
+	if (World) 
+	{ 
+		World->DestroyActor(this); 
+		return; 
+	}
+
+	// 월드가 없을 때만 자체 정리
+	EndPlay(EEndPlayReason::Destroyed);
+	UnregisterAllComponents(true);
+	DestroyAllComponents();
+	ClearSceneComponentCaches();
+	// 최종 delete (ObjectFactory가 소유권 관리 중이면 그 경로 사용)
 	ObjectFactory::DeleteObject(this);
 }
+
+
+
+void AActor::SetRootComponent(USceneComponent* InRoot)
+{
+	if (RootComponent == InRoot)
+	{
+		return;
+	}
+
+	// 기존 루트가 있으면 Detach 처리 (필요 시)
+	RootComponent = InRoot;
+	if (RootComponent)
+	{
+		RootComponent->SetOwner(this);
+		// 월드 등록/트리 등록
+		RegisterComponentTree(RootComponent);
+	}
+}
+
+void AActor::AddOwnedComponent(UActorComponent* Component)
+{
+	
+	if (!Component)
+	{
+		return;
+	}
+	if (OwnedComponents.count(Component))
+	{
+		return;
+	}
+
+	OwnedComponents.insert(Component);
+	Component->SetOwner(this);
+	Component->RegisterComponent(); // Register(씬이면 트리 포함)
+
+	if (USceneComponent* SC = Cast<USceneComponent>(Component))
+	{
+		SceneComponents.AddUnique(SC);
+		// 루트가 없으면 자동 루트 지정
+		if (!RootComponent)
+		{
+			SetRootComponent(SC);
+		}
+	}
+}
+
+void AActor::RemoveOwnedComponent(UActorComponent* Component)
+{
+	if (!Component)
+	{
+		return;
+	}
+	if (!OwnedComponents.erase(Component))
+	{
+		return;
+	}
+
+	if (USceneComponent* SC = Cast<USceneComponent>(Component))
+	{
+		// 루트면 처리 금지/교체 전략
+		if (SC == RootComponent)
+		{
+			// 루트 교체(간단히 null) - 필요시 자식 중 하나로 승급도 가능
+			RootComponent = nullptr;
+		}
+		SceneComponents.Remove(SC);
+		UnregisterComponentTree(SC);
+		SC->DetachFromParent(true);
+	}
+	Component->UnregisterComponent();
+	Component->DestroyComponent();
+}
+
+void AActor::UnregisterAllComponents(bool bCallEndPlayOnBegun)
+{
+	// 파괴 경로에서 안전하게 등록 해제
+	// 복사본으로 순회 (컨테이너 변형 중 안전)
+	TArray<UActorComponent*> Temp;
+	Temp.reserve(OwnedComponents.size());
+	for (UActorComponent* C : OwnedComponents) Temp.push_back(C);
+
+	for (UActorComponent* C : Temp)
+	{
+		if (!C) continue;
+
+		// BeginPlay가 이미 호출된 컴포넌트라면 EndPlay(RemovedFromWorld) 보장
+		if (bCallEndPlayOnBegun && C->HasBegunPlay())
+		{
+			C->EndPlay(EEndPlayReason::RemovedFromWorld);
+		}
+		C->UnregisterComponent(); // 내부 OnUnregister/리소스 해제
+	}
+}
+
+void AActor::DestroyAllComponents()
+{
+	// Unregister 이후 최종 파괴
+	TArray<UActorComponent*> Temp;
+	Temp.reserve(OwnedComponents.size());
+	for (UActorComponent* C : OwnedComponents) Temp.push_back(C);
+
+	for (UActorComponent* C : Temp)
+	{
+		if (!C) continue;
+		C->DestroyComponent(); // 내부에서 Owner=nullptr 등도 처리
+	}
+	OwnedComponents.clear();
+}
+
+void AActor::ClearSceneComponentCaches()
+{
+	SceneComponents.Empty();
+	RootComponent = nullptr;
+}
+
+
 
 // ───────────────
 // Transform API
@@ -74,7 +223,6 @@ void AActor::SetActorTransform(const FTransform& NewTransform)
 		MarkPartitionDirty();
 	}
 }
-
 
 FTransform AActor::GetActorTransform() const
 {
@@ -220,11 +368,6 @@ void AActor::AddActorLocalLocation(const FVector& DeltaLocation)
 	}
 }
 
-const TArray<USceneComponent*>& AActor::GetComponents() const
-{
-	return Components;
-}
-
 void AActor::DuplicateSubObjects()
 {
 	Super::DuplicateSubObjects();
@@ -244,7 +387,7 @@ void AActor::DuplicateSubObjects()
 
 	World = nullptr; // TODO: World를 PIE World로 할당해야 함.
 
-	for (USceneComponent*& Component : Components)
+	for (USceneComponent*& Component : SceneComponents)
 	{
 		Component = Component->Duplicate();
 		Component->SetOwner(this);
@@ -260,29 +403,30 @@ void AActor::DuplicateSubObjects()
 //	return nullptr;
 //}
 
-void AActor::AddComponent(USceneComponent* Component)
+void AActor::RegisterComponentTree(USceneComponent* SceneComp)
 {
-	if (!Component)
+	if (!SceneComp)
 	{
 		return;
 	}
-
-	Components.push_back(Component);
-	if (!RootComponent)
+	// 씬 그래프 등록(월드에 등록/렌더 시스템 캐시 등)
+	SceneComp->RegisterComponent();
+	// 자식들도 재귀적으로
+	for (USceneComponent* Child : SceneComp->GetAttachChildren())
 	{
-		RootComponent = Component;
-		//Component->SetupAttachment(RootComponent);
+		RegisterComponentTree(Child);
 	}
-
-	// Registration is handled at actor spawn time; no per-component registration needed here.
 }
-void AActor::RemoveComponent(USceneComponent* Component)
-{
-	if (!Component || Component == RootComponent)
-		return;
 
-	Components.Remove(Component);
-	Component->DetachFromParent(true);
-	ObjectFactory::DeleteObject(Component);
-	MarkPartitionDirty();
+void AActor::UnregisterComponentTree(USceneComponent* SceneComp)
+{
+	if (!SceneComp)
+	{
+		return;
+	}
+	for (USceneComponent* Child : SceneComp->GetAttachChildren())
+	{
+		UnregisterComponentTree(Child);
+	}
+	SceneComp->UnregisterComponent();
 }

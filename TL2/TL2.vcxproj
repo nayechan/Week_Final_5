@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ActorComponent.cpp" />
+    <ClCompile Include="BillboardComponent.cpp" />
     <ClCompile Include="BVHierachy.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="MeshBVH.cpp" />
@@ -167,6 +168,7 @@
     <ClCompile Include="PipelineStateManager.cpp" />
     <ClCompile Include="PipelineStateObject.cpp" />
     <ClCompile Include="PlatformTime.cpp" />
+    <ClCompile Include="QuadManager.cpp" />
     <ClCompile Include="WorldPartitionManager.cpp" />
     <ClCompile Include="AllClassesRegistration.cpp" />
     <ClCompile Include="AABoundingBoxComponent.cpp" />
@@ -270,7 +272,7 @@
     <ClCompile Include="StaticMeshComponent.cpp" />
     <ClCompile Include="SViewportWindow.cpp" />
     <ClCompile Include="SWindow.cpp" />
-    <ClCompile Include="TextQuad.cpp" />
+    <ClCompile Include="Quad.cpp" />
     <ClCompile Include="TextRenderComponent.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="UEContainer.cpp" />
@@ -300,6 +302,10 @@
     <ClCompile Include="UI\StatsOverlayD2D.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Billboard.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Primitive.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -336,6 +342,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ActorComponent.h" />
+    <ClInclude Include="BillboardComponent.h" />
     <ClInclude Include="BVHierachy.h" />
     <ClInclude Include="Level.h" />
     <ClInclude Include="MeshBVH.h" />
@@ -343,6 +350,7 @@
     <ClInclude Include="PipelineStateManager.h" />
     <ClInclude Include="PipelineStateObject.h" />
     <ClInclude Include="PlatformTime.h" />
+    <ClInclude Include="QuadManager.h" />
     <ClInclude Include="WorldPartitionManager.h" />
     <ClInclude Include="AABoundingBoxComponent.h" />
     <ClInclude Include="Archive.h" />
@@ -411,7 +419,7 @@
     <ClInclude Include="StaticMeshComponent.h" />
     <ClInclude Include="SViewportWindow.h" />
     <ClInclude Include="SWindow.h" />
-    <ClInclude Include="TextQuad.h" />
+    <ClInclude Include="Quad.h" />
     <ClInclude Include="TextRenderComponent.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="ObjectIterator.h" />
