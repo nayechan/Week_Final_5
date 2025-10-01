@@ -72,7 +72,7 @@ void UActorComponent::DestroyComponent()
     if (bRegistered) UnregisterComponent();
 
     // Owner 참조 끊기
-    Owner = nullptr;
+    //Owner = nullptr;
 }
 
 // ─────────────── Lifecycle (게임 수명)

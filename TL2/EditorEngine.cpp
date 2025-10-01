@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "EditorEngine.h"
 #include "USlateManager.h"
 #include <ObjManager.h>
@@ -281,6 +281,23 @@ void UEditorEngine::MainLoop()
             bRunning = false;
         }
 
+        if (bChangedPieToEditor)
+        {
+            if (GWorld && bPIEActive)
+            {
+                WorldContexts.pop_back();
+                ObjectFactory::DeleteObject(GWorld);
+            }
+
+            GWorld = WorldContexts[0].World;
+            SLATE.SetPIEWorld(GWorld);
+
+            bPIEActive = false;
+            UE_LOG("END PIE CLICKED");
+
+            bChangedPieToEditor = false;
+        }
+
         Tick(DeltaSeconds);
         Render();
     }
@@ -325,15 +342,17 @@ void UEditorEngine::StartPIE()
 
 void UEditorEngine::EndPIE()
 {
-    if (GWorld && bPIEActive)
+    bChangedPieToEditor = true;
+
+    /*if (GWorld && bPIEActive)
     {
         WorldContexts.pop_back();
-        delete GWorld;
+        ObjectFactory::DeleteObject(GWorld);
     }
 
     GWorld = WorldContexts[0].World;
     SLATE.SetWorld(GWorld);
 
     bPIEActive = false;
-    UE_LOG("END PIE CLICKED");
+    UE_LOG("END PIE CLICKED");*/
 }

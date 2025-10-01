@@ -19,6 +19,8 @@ struct FWorldContext
 class UEditorEngine final 
 {
 public:
+    bool bChangedPieToEditor = false;
+
     UEditorEngine();
     ~UEditorEngine();
 
