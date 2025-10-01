@@ -23,12 +23,11 @@ public:
 
     float GetWidth() const { return Width; }
     float GetHeight() const { return Height; }
+    UQuad* GetStaticMesh() const { return Quad; }
+
 
 private:
-    // 이거 수정 -> 쿼드 매니저에서 가져오도록 하자 
     UQuad* Quad = nullptr;
-
-    // 텍스쳐는 여기서 관리 
     UMaterial* BillboardMaterial = nullptr;
 
     float Width = 100.f;
