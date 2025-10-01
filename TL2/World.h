@@ -25,7 +25,7 @@ class AStaticMeshActor;
 class BVHierachy;
 class UStaticMesh;
 class FOcclusionCullingManagerCPU;
-class Frustum;
+struct Frustum;
 struct FCandidateDrawable;
 
 class UWorld final : public UObject

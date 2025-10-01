@@ -18,7 +18,7 @@ using namespace std;
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
 
-// ★ 고정 오더: ZYX (Yaw-Pitch-Roll) — 기즈모의 Delta 곱(Z * Y * X)과 동일
+// ★ 고정 오더: ZYX (Yaw-Pitch-Roll) ? 기즈모의 Delta 곱(Z * Y * X)과 동일
 static inline FQuat QuatFromEulerZYX_Deg(const FVector& Deg)
 {
 	const float Rx = DegreeToRadian(Deg.X); // Roll (X)
@@ -67,15 +67,50 @@ namespace
 		static TArray<FAddableComponentDescriptor> Options = []()
 			{
 				TArray<FAddableComponentDescriptor> Result;
-				Result.push_back({ "Static Mesh Component", UStaticMeshComponent::StaticClass(), "Static mesh 렌더링용 컴포넌트" });
-				Result.push_back({ "Camera Component", UCameraComponent::StaticClass(), "카메라 뷰/프로젝션 제공" });
+				Result.push_back({ "Static Mesh Component", UStaticMeshComponent::StaticClass(), "Static mesh 컴포넌트" });
 				Result.push_back({ "Text Render Component", UTextRenderComponent::StaticClass(), "빌보드 텍스트 표시" });
-				Result.push_back({ "Line Component", ULineComponent::StaticClass(), "라인/디버그 드로잉" });
-				Result.push_back({ "AABB Component", UAABoundingBoxComponent::StaticClass(), "바운딩 박스 시각화" });
 				return Result;
 			}();
 		return Options;
 	}
+	bool IsProtectedSceneComponent(const AActor& Actor, const USceneComponent* Component)
+	{
+		if (!Component)
+		{
+			return false;
+		}
+
+		if (Component == Actor.GetRootComponent())
+		{
+			return true;
+		}
+
+		if (Component == Actor.CollisionComponent)
+		{
+			return true;
+		}
+
+		if (Component == Actor.TextComp)
+		{
+			return true;
+		}
+
+		if (const AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(&Actor))
+		{
+			if (Component == StaticMeshActor->GetStaticMeshComponent())
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	bool CanRemoveSceneComponent(const AActor& Actor, const USceneComponent* Component)
+	{
+		return !IsProtectedSceneComponent(Actor, Component);
+	}
+
 	bool TryAttachComponentToActor(AActor& Actor, UClass* ComponentClass)
 	{
 		if (!ComponentClass || !ComponentClass->IsChildOf(UActorComponent::StaticClass()))
@@ -102,7 +137,9 @@ namespace
 			SceneComp->SetWorldTransform(Actor.GetActorTransform()); // 초기 트랜스폼
 			if (USceneComponent* Root = Actor.GetRootComponent())
 			{
-				SceneComp->SetupAttachment(Root, EAttachmentRule::KeepRelative);
+				const bool bIsStaticMeshComponent = SceneComp->IsA(UStaticMeshComponent::StaticClass());
+				const EAttachmentRule AttachRule = bIsStaticMeshComponent ? EAttachmentRule::KeepWorld : EAttachmentRule::KeepRelative;
+				SceneComp->SetupAttachment(Root, AttachRule);
 			}
 		}
 
@@ -171,7 +208,7 @@ namespace
 
 		if (ImGui::BeginPopupContextItem("ComponentContext"))
 		{
-			const bool bCanRemove = (Component != Actor.GetRootComponent());
+			const bool bCanRemove = CanRemoveSceneComponent(Actor, Component);
 			if (ImGui::MenuItem("삭제", "Delete", false, bCanRemove))
 			{
 				ComponentPendingRemoval = Component;
@@ -251,6 +288,34 @@ AActor* UTargetActorTransformWidget::GetCurrentSelectedActor() const
 		return nullptr;
 		
 	return UIManager->GetSelectedActor();
+}
+
+USceneComponent* UTargetActorTransformWidget::GetEditingComponent() const
+{
+	if (!SelectedActor)
+		return nullptr;
+
+	USceneComponent* RootComponent = SelectedActor->GetRootComponent();
+	if (!SelectedComponent || SelectedComponent == RootComponent)
+		return nullptr;
+
+	// 기본 보호 컴포넌트(텍스트, AABB, 초기 스태틱 메쉬 등)는 항상 액터 트랜스폼과 함께 움직인다.
+	if (IsProtectedSceneComponent(*SelectedActor, SelectedComponent))
+		return nullptr;
+
+	return SelectedComponent;
+}
+
+UStaticMeshComponent* UTargetActorTransformWidget::GetEditingStaticMeshComponent() const
+{
+	if (USceneComponent* EditingComp = GetEditingComponent())
+		return Cast<UStaticMeshComponent>(EditingComp);
+
+	if (SelectedActor)
+		if (AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(SelectedActor))
+			return StaticMeshActor->GetStaticMeshComponent();
+
+	return nullptr;
 }
 
 void UTargetActorTransformWidget::Update()
@@ -333,7 +398,7 @@ void UTargetActorTransformWidget::RenderWidget()
 		{
 			CachedActorName.clear();
 		}
-		
+
 	}
 	// 컴포넌트 관리 UI
 	if (SelectedActor)
@@ -382,6 +447,7 @@ void UTargetActorTransformWidget::RenderWidget()
 		AActor* ActorPendingRemoval = nullptr;
 		USceneComponent* ComponentPendingRemoval = nullptr;
 		USceneComponent* RootComponent = SelectedActor->GetRootComponent();
+		USceneComponent* PreviousSelectedComponent = SelectedComponent;   // ← 추가
 		const bool bActorSelected = (SelectedActor != nullptr && SelectedComponent == nullptr);
 
 		// 1) 컴포넌트 트리 박스 크기 관련
@@ -449,7 +515,7 @@ void UTargetActorTransformWidget::RenderWidget()
 				if (ImGui::BeginPopupContextItem("ComponentContext"))
 				{
 					// 루트 컴포넌트가 아닌 경우에만 제거 가능
-					const bool bCanRemove = (Component != RootComponent);
+					const bool bCanRemove = CanRemoveSceneComponent(*SelectedActor, Component);
 					if (ImGui::MenuItem("삭제", "Delete", false, bCanRemove))
 					{
 						ComponentPendingRemoval = Component;
@@ -459,6 +525,18 @@ void UTargetActorTransformWidget::RenderWidget()
 				ImGui::PopID();
 			}
 		}
+
+		if (PreviousSelectedComponent != SelectedComponent)
+		{
+			UpdateTransformFromActor();          // 새 대상을 기준으로 Location/Rotation/Scale 갱신
+			PrevEditRotationUI = EditRotation;   // 회전 슬라이더 기준값 초기화
+			bRotationEditing = false;
+
+			const FVector ScaleRef = EditScale;
+			bUniformScale = (std::fabs(ScaleRef.X - ScaleRef.Y) < 0.01f &&
+				std::fabs(ScaleRef.Y - ScaleRef.Z) < 0.01f);
+		}
+
 		const bool bDeletePressed =
 			ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
 			ImGui::IsKeyPressed(ImGuiKey_Delete);
@@ -470,7 +548,7 @@ void UTargetActorTransformWidget::RenderWidget()
 				// 액터 Row가 선택된 상태 → 액터 삭제
 				ActorPendingRemoval = SelectedActor;
 			}
-			else if (SelectedComponent != RootComponent)
+			else if (SelectedComponent && CanRemoveSceneComponent(*SelectedActor, SelectedComponent))
 			{
 				// 컴포넌트 선택 상태(루트 아님) → 해당 컴포넌트 삭제
 				ComponentPendingRemoval = SelectedComponent;
@@ -481,13 +559,17 @@ void UTargetActorTransformWidget::RenderWidget()
 			}
 		}
 
-		if (ComponentPendingRemoval)
+		if (ComponentPendingRemoval && SelectedActor)
 		{
-			SelectedActor->RemoveOwnedComponent(ComponentPendingRemoval);
-			if (SelectedComponent == ComponentPendingRemoval)
+			if (CanRemoveSceneComponent(*SelectedActor, ComponentPendingRemoval))
 			{
-				SelectedComponent = nullptr;
+				SelectedActor->RemoveOwnedComponent(ComponentPendingRemoval);
+				if (SelectedComponent == ComponentPendingRemoval)
+				{
+					SelectedComponent = nullptr;
+				}
 			}
+			ComponentPendingRemoval = nullptr;
 		}
 
 		if (ActorPendingRemoval)
@@ -538,13 +620,13 @@ void UTargetActorTransformWidget::RenderWidget()
 		ImGui::PopStyleVar();
 		ImGui::PopStyleColor();
 		ImGui::Spacing();
-		
+
 		// Location 편집
 		if (ImGui::DragFloat3("Location", &EditLocation.X, 0.1f))
 		{
 			bPositionChanged = true;
 		}
-		
+
 		// ───────── Rotation: DragFloat3 하나로 "드래그=증분", "입력=절대" 처리 ─────────
 		{
 			// 1) 컨트롤 그리기 전에 이전값 스냅
@@ -630,7 +712,7 @@ void UTargetActorTransformWidget::RenderWidget()
 
 		// Scale 편집
 		ImGui::Checkbox("Uniform Scale", &bUniformScale);
-		
+
 		if (bUniformScale)
 		{
 			float UniformScale = EditScale.X;
@@ -647,188 +729,142 @@ void UTargetActorTransformWidget::RenderWidget()
 				bScaleChanged = true;
 			}
 		}
-		
+
 		ImGui::Spacing();
-		
-		// 실시간 적용 버튼
-		// TODO (동민) : 아마 이 부분은 나중에 삭제될 것 같습니다. 기즈모 조작이 실시간으로 반영되기 때문에.
-		//if (ImGui::Button("Apply Transform"))
-		//{
-		//	ApplyTransformToActor();
-		//}
-		//
-		//ImGui::SameLine();
-		//if (ImGui::Button("Reset Transform"))
-		//{
-		//	UpdateTransformFromActor();
-		//	ResetChangeFlags();
-		//}
-		
+
 		ImGui::Spacing();
 		ImGui::Separator();
 
 		// Actor가 AStaticMeshActor인 경우 StaticMesh 변경 UI
+		if (UStaticMeshComponent* TargetSMC = GetEditingStaticMeshComponent())
 		{
-			if (AStaticMeshActor* SMActor = Cast<AStaticMeshActor>(SelectedActor))
+			ImGui::Separator();
+			ImGui::Text("Static Mesh Override");
+
+			FString CurrentPath;
+			if (UStaticMesh* CurMesh = TargetSMC->GetStaticMesh())
 			{
-				UStaticMeshComponent* SMC = SMActor->GetStaticMeshComponent();
-
-				ImGui::Text("Static Mesh Override");
-				if (!SMC)
-				{
-					ImGui::TextColored(ImVec4(1, 0.6f, 0.6f, 1), "StaticMeshComponent not found.");
-				}
-				else
-				{
-					// 현재 메시 경로 표시
-					FString CurrentPath;
-					UStaticMesh* CurMesh = SMC->GetStaticMesh();
-					if (CurMesh)
-					{
-						CurrentPath = CurMesh->GetAssetPathFileName();
-						ImGui::Text("Current: %s", CurrentPath.c_str());
-					}
-					else
-					{
-						ImGui::Text("Current: <None>");
-					}
-
-					// 리소스 매니저에서 로드된 모든 StaticMesh 경로 수집
-					auto& RM = UResourceManager::GetInstance();
-					TArray<FString> Paths = RM.GetAllStaticMeshFilePaths();
-
-					if (Paths.empty())
-					{
-						ImGui::TextColored(ImVec4(1, 0.6f, 0.6f, 1), "No StaticMesh resources loaded.");
-					}
-					else
-					{
-						// 표시용 이름(파일명 스템)
-						TArray<FString> DisplayNames;
-						DisplayNames.reserve(Paths.size());
-						for (const FString& p : Paths)
-							DisplayNames.push_back(GetBaseNameNoExt(p));
-
-						// ImGui 콤보 아이템 배열
-						TArray<const char*> Items;
-						Items.reserve(DisplayNames.size());
-						for (const FString& n : DisplayNames)
-							Items.push_back(n.c_str());
-
-						// 선택 인덱스 유지
-						static int SelectedMeshIdx = -1;
-
-						// 기본 선택: Cube가 있으면 자동 선택
-						if (SelectedMeshIdx == -1)
-						{
-							for (int i = 0; i < static_cast<int>(Paths.size()); ++i)
-							{
-								if (DisplayNames[i] == "Cube" || Paths[i] == "Data/Cube.obj")
-								{
-									SelectedMeshIdx = i;
-									break;
-								}
-							}
-						}
-
-						ImGui::SetNextItemWidth(240);
-						ImGui::Combo("StaticMesh", &SelectedMeshIdx, Items.data(), static_cast<int>(Items.size()));
-						if (ImGui::Button("Apply Mesh"))
-						{
-							if (SelectedMeshIdx >= 0 && SelectedMeshIdx < static_cast<int>(Paths.size()))
-							{
-								const FString& NewPath = Paths[SelectedMeshIdx];
-								SMC->SetStaticMesh(NewPath);
-
-								// Sphere 충돌 특례
-								if (GetBaseNameNoExt(NewPath) == "Sphere")
-									SMActor->SetCollisionComponent(EPrimitiveType::Sphere);
-								else
-									SMActor->SetCollisionComponent();
-
-								UE_LOG("Applied StaticMesh: %s", NewPath.c_str());
-							}
-						}
-
-						// 현재 메시로 선택 동기화 버튼 (옵션)
-						ImGui::SameLine();
-						if (ImGui::Button("Select Current"))
-						{
-							SelectedMeshIdx = -1;
-							if (!CurrentPath.empty())
-							{
-								for (int i = 0; i < static_cast<int>(Paths.size()); ++i)
-								{
-									if (Paths[i] == CurrentPath ||
-										DisplayNames[i] == GetBaseNameNoExt(CurrentPath))
-									{
-										SelectedMeshIdx = i;
-										break;
-									}
-								}
-							}
-						}
-					}
-
-					// Material 설정
-					ImGui::Separator();
-
-					const TArray<FString> MaterialNames = UResourceManager::GetInstance().GetAllFilePaths<UMaterial>();
-					// ImGui 콤보 아이템 배열
-					TArray<const char*> MaterialNamesCharP;
-					MaterialNamesCharP.reserve(MaterialNames.size());
-					for (const FString& n : MaterialNames)
-						MaterialNamesCharP.push_back(n.c_str());
-
-					if (CurMesh)
-					{
-						const uint64 MeshGroupCount = CurMesh->GetMeshGroupCount();
-
-						static TArray<int32> SelectedMaterialIdxAt; // i번 째 Material Slot이 가지고 있는 MaterialName이 MaterialNames의 몇번쩨 값인지.
-						if (SelectedMaterialIdxAt.size() < MeshGroupCount)
-						{
-							SelectedMaterialIdxAt.resize(MeshGroupCount);
-						}
-
-						// 현재 SMC의 MaterialSlots 정보를 UI에 반영
-						const TArray<FMaterialSlot>& MaterialSlots = SMC->GetMaterailSlots();
-						for (uint64 MaterialSlotIndex = 0; MaterialSlotIndex < MeshGroupCount; ++MaterialSlotIndex)
-						{
-							for (uint32 MaterialIndex = 0; MaterialIndex < MaterialNames.size(); ++MaterialIndex)
-							{
-								if (MaterialSlots[MaterialSlotIndex].MaterialName == MaterialNames[MaterialIndex])
-								{
-									SelectedMaterialIdxAt[MaterialSlotIndex] = MaterialIndex;
-								}
-							}
-						}
-
-						// Material 선택
-						for (uint64 MaterialSlotIndex = 0; MaterialSlotIndex < MeshGroupCount; ++MaterialSlotIndex)
-						{
-							ImGui::PushID(static_cast<int>(MaterialSlotIndex));
-							if (ImGui::Combo("Material", &SelectedMaterialIdxAt[MaterialSlotIndex], MaterialNamesCharP.data(), static_cast<int>(MaterialNamesCharP.size())))
-							{
-								SMC->SetMaterialByUser(static_cast<uint32>(MaterialSlotIndex), MaterialNames[SelectedMaterialIdxAt[MaterialSlotIndex]]);
-							}
-							ImGui::PopID();
-						}
-					}
-				}
+				CurrentPath = CurMesh->GetAssetPathFileName();
+				ImGui::Text("Current: %s", CurrentPath.c_str());
 			}
 			else
 			{
-				ImGui::Text("Selected actor is not a StaticMeshActor.");
+				ImGui::Text("Current: <None>");
+			}
+
+			auto& RM = UResourceManager::GetInstance();
+			TArray<FString> Paths = RM.GetAllStaticMeshFilePaths();
+
+			if (Paths.empty())
+			{
+				ImGui::TextColored(ImVec4(1, 0.6f, 0.6f, 1), "No StaticMesh resources loaded.");
+			}
+			else
+			{
+				TArray<FString> DisplayNames;
+				DisplayNames.reserve(Paths.size());
+				for (const FString& p : Paths)
+					DisplayNames.push_back(GetBaseNameNoExt(p));
+
+				TArray<const char*> Items;
+				Items.reserve(DisplayNames.size());
+				for (const FString& n : DisplayNames)
+					Items.push_back(n.c_str());
+
+				static int SelectedMeshIdx = -1;
+				if (SelectedMeshIdx == -1 && !CurrentPath.empty())
+				{
+					for (int i = 0; i < static_cast<int>(Paths.size()); ++i)
+						if (Paths[i] == CurrentPath || DisplayNames[i] == GetBaseNameNoExt(CurrentPath))
+						{
+							SelectedMeshIdx = i;
+							break;
+						}
+				}
+
+				ImGui::SetNextItemWidth(240);
+				ImGui::Combo("StaticMesh", &SelectedMeshIdx, Items.data(), static_cast<int>(Items.size()));
+				if (ImGui::Button("Apply Mesh"))
+				{
+					if (SelectedMeshIdx >= 0 && SelectedMeshIdx < static_cast<int>(Paths.size()))
+					{
+						const FString& NewPath = Paths[SelectedMeshIdx];
+						TargetSMC->SetStaticMesh(NewPath);
+
+						if (AStaticMeshActor* SMActorOwner = Cast<AStaticMeshActor>(SelectedActor))
+						{
+							if (GetBaseNameNoExt(NewPath) == "Sphere")
+								SMActorOwner->SetCollisionComponent(EPrimitiveType::Sphere);
+							else
+								SMActorOwner->SetCollisionComponent();
+						}
+
+						UE_LOG("Applied StaticMesh: %s", NewPath.c_str());
+					}
+				}
+
+				ImGui::SameLine();
+				if (ImGui::Button("Select Current"))
+				{
+					SelectedMeshIdx = -1;
+					if (!CurrentPath.empty())
+					{
+						for (int i = 0; i < static_cast<int>(Paths.size()); ++i)
+							if (Paths[i] == CurrentPath || DisplayNames[i] == GetBaseNameNoExt(CurrentPath))
+							{
+								SelectedMeshIdx = i;
+								break;
+							}
+					}
+				}
+			}
+
+			ImGui::Separator();
+
+			// ---- 기존 Material UI 유지 ----
+			const TArray<FString> MaterialNames = UResourceManager::GetInstance().GetAllFilePaths<UMaterial>();
+			TArray<const char*> MaterialNamesCharP;
+			MaterialNamesCharP.reserve(MaterialNames.size());
+			for (const FString& n : MaterialNames)
+				MaterialNamesCharP.push_back(n.c_str());
+
+			if (UStaticMesh* CurMesh = TargetSMC->GetStaticMesh())
+			{
+				const TArray<FGroupInfo>& GroupInfos = CurMesh->GetMeshGroupInfo();
+				const uint32 NumGroupInfos = static_cast<uint32>(GroupInfos.size());
+
+				for (uint32 i = 0; i < NumGroupInfos; ++i)
+				{
+					ImGui::PushID(i);
+					const char* Label = GroupInfos[i].InitialMaterialName.c_str();
+					int SelectedMaterialIdx = -1;
+
+					if (i < TargetSMC->GetMaterailSlots().size())
+					{
+						const FString& AssignedName = TargetSMC->GetMaterailSlots()[i].MaterialName.ToString();
+						for (int idx = 0; idx < static_cast<int>(MaterialNames.size()); ++idx)
+							if (MaterialNames[idx] == AssignedName)
+							{
+								SelectedMaterialIdx = idx;
+								break;
+							}
+					}
+
+					ImGui::SetNextItemWidth(240);
+					if (ImGui::Combo(Label, &SelectedMaterialIdx, MaterialNamesCharP.data(),
+						static_cast<int>(MaterialNamesCharP.size())))
+					{
+						if (SelectedMaterialIdx >= 0 && SelectedMaterialIdx < static_cast<int>(MaterialNames.size()))
+						{
+							TargetSMC->SetMaterialByUser(i, MaterialNames[SelectedMaterialIdx]);
+							UE_LOG("Set material slot %u to %s", i, MaterialNames[SelectedMaterialIdx].c_str());
+						}
+					}
+					ImGui::PopID();
+				}
 			}
 		}
 	}
-	else
-	{
-		ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "No Actor Selected");
-		ImGui::TextUnformatted("Select an actor to edit its transform.");
-	}
-	
-	ImGui::Separator();
 }
 
 void UTargetActorTransformWidget::PostProcess()
@@ -845,14 +881,20 @@ void UTargetActorTransformWidget::UpdateTransformFromActor()
 {
 	if (!SelectedActor)
 		return;
-		
-	// 액터의 현재 트랜스폼을 UI 변수로 복사
-	EditLocation = SelectedActor->GetActorLocation();
-	//EditRotation = SelectedActor->GetActorRotation().ToEuler();
-	// ★ 표시는 ZYX 기준으로
-	EditRotation = EulerZYX_DegFromQuat(SelectedActor->GetActorRotation());
-	EditScale = SelectedActor->GetActorScale();
-	
+
+	if (USceneComponent* EditingComponent = GetEditingComponent())
+	{
+		EditLocation = EditingComponent->GetRelativeLocation();
+		EditRotation = EulerZYX_DegFromQuat(EditingComponent->GetRelativeRotation());
+		EditScale = EditingComponent->GetRelativeScale();
+	}
+	else
+	{
+		EditLocation = SelectedActor->GetActorLocation();
+		EditRotation = EulerZYX_DegFromQuat(SelectedActor->GetActorRotation());
+		EditScale = SelectedActor->GetActorScale();
+	}
+
 	ResetChangeFlags();
 }
 
@@ -860,31 +902,53 @@ void UTargetActorTransformWidget::ApplyTransformToActor() const
 {
 	if (!SelectedActor)
 		return;
-		
-	// 변경사항이 있는 경우에만 적용
+
+	if (USceneComponent* EditingComponent = GetEditingComponent())
+	{
+		bool bDirty = false;
+
+		if (bPositionChanged)
+		{
+			EditingComponent->SetRelativeLocation(EditLocation);
+			bDirty = true;
+		}
+
+		if (bRotationChanged)
+		{
+			FQuat NewRotation = FQuat::MakeFromEuler(EditRotation);
+			EditingComponent->SetRelativeRotation(NewRotation);
+			bDirty = true;
+		}
+
+		if (bScaleChanged)
+		{
+			EditingComponent->SetRelativeScale(EditScale);
+			bDirty = true;
+		}
+
+		if (bDirty)
+		{
+			SelectedActor->MarkPartitionDirty();
+		}
+		return;
+	}
+
+	// 기존 액터 적용 분기
 	if (bPositionChanged)
 	{
 		SelectedActor->SetActorLocation(EditLocation);
-		UE_LOG("Transform: Applied location (%.2f, %.2f, %.2f)", 
-		       EditLocation.X, EditLocation.Y, EditLocation.Z);
 	}
-	
+
 	if (bRotationChanged)
 	{
 		FQuat NewRotation = FQuat::MakeFromEuler(EditRotation);
 		SelectedActor->SetActorRotation(NewRotation);
-		UE_LOG("Transform: Applied rotation (%.1f, %.1f, %.1f)", 
-		       EditRotation.X, EditRotation.Y, EditRotation.Z);
 	}
-	
+
 	if (bScaleChanged)
 	{
 		SelectedActor->SetActorScale(EditScale);
-		UE_LOG("Transform: Applied scale (%.2f, %.2f, %.2f)", 
-		       EditScale.X, EditScale.Y, EditScale.Z);
 	}
-	
-	// 플래그 리셋은 const 메서드에서 할 수 없으므로 PostProcess에서 처리
 }
 
 void UTargetActorTransformWidget::ResetChangeFlags()
