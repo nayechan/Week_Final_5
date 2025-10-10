@@ -101,7 +101,7 @@ public:
     bool GetTickInEditor() const { return bTickInEditor; }
 
     // 바운드 및 피킹
-    virtual FBound GetBounds() const { return FBound(); }
+    virtual FAABB GetBounds() const { return FAABB(); }
     void SetIsPicked(bool picked) { bIsPicked = picked; }
     bool GetIsPicked() { return bIsPicked; }
     void SetCulled(bool InCulled) 

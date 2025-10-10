@@ -3,7 +3,7 @@
 
 struct FMeshBVHNode
 {
-	FBound Bounds;     // 이 노드가 감싸는 AABB
+	FAABB Bounds;     // 이 노드가 감싸는 AABB
 	int Left = -1;     // 왼쪽 자식 인덱스
 	int Right = -1;    // 오른쪽 자식 인덱스
 	uint32 Start = 0;  // TriIndices 배열에서 시작 위치
@@ -28,11 +28,11 @@ public:
 
 private:
 	// Helper 함수들
-	FBound ComputeTriBounds(uint32 TriangleID, const TArray<FNormalVertex>& Vertices, const TArray<uint32>& Indices) const;
+	FAABB ComputeTriBounds(uint32 TriangleID, const TArray<FNormalVertex>& Vertices, const TArray<uint32>& Indices) const;
 
 	FVector ComputeTriCenter(uint32 TriangleID, const TArray<FNormalVertex>& Vertices, const TArray<uint32>& Indices) const;
 
-	FBound ComputeBounds(uint32 Start, uint32 Count, const TArray<FNormalVertex>& Vertices, const TArray<uint32>& Indices) const;
+	FAABB ComputeBounds(uint32 Start, uint32 Count, const TArray<FNormalVertex>& Vertices, const TArray<uint32>& Indices) const;
 
 	int BuildRecursive(uint32 Start, uint32 Count, const TArray<FNormalVertex>& Vertices, const TArray<uint32>& Indices);
 

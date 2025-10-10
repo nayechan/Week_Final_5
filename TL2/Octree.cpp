@@ -2,7 +2,7 @@
 #include "Octree.h"
 #include "Actor.h"
 
-FOctree::FOctree(const FBound& InBounds, int InDepth, int InMaxDepth, int InMaxObjects)
+FOctree::FOctree(const FAABB& InBounds, int InDepth, int InMaxDepth, int InMaxObjects)
 	: Bounds(InBounds), Depth(InDepth), MaxDepth(InMaxDepth), MaxObjects(InMaxObjects)
 {
 	// 안전하게 nullpter 
@@ -43,7 +43,7 @@ void FOctree::Clear()
 }
 
 // 벌크 삽입 최적화 - 대량 액터 처리용
-void FOctree::BulkInsert(const TArray<std::pair<AActor*, FBound>>& ActorsAndBounds)
+void FOctree::BulkInsert(const TArray<std::pair<AActor*, FAABB>>& ActorsAndBounds)
 {
     if (ActorsAndBounds.empty()) return;
     
@@ -67,7 +67,7 @@ void FOctree::BulkInsert(const TArray<std::pair<AActor*, FBound>>& ActorsAndBoun
         }
         
         // 대량 데이터를 옥탄트별로 그룹화
-        TArray<std::pair<AActor*, FBound>> OctantGroups[8];
+        TArray<std::pair<AActor*, FAABB>> OctantGroups[8];
         const size_t EstimatedPerOctant = (Actors.size() / 8) + 1;
         for (int i = 0; i < 8; i++)
         {
@@ -78,7 +78,7 @@ void FOctree::BulkInsert(const TArray<std::pair<AActor*, FBound>>& ActorsAndBoun
         for (int idx = static_cast<int>(Actors.size()) - 1; idx >= 0; --idx)
         {
             AActor* ActorPtr = Actors[idx];
-            const FBound& Box = ActorBoundsCache[idx];
+            const FAABB& Box = ActorBoundsCache[idx];
             
             int OptimalOctant = GetOctantIndex(Box);
             int TargetOctant = -1;
@@ -124,7 +124,7 @@ void FOctree::BulkInsert(const TArray<std::pair<AActor*, FBound>>& ActorsAndBoun
     }
 }
 
-void FOctree::Insert(AActor* InActor, const FBound& ActorBounds)
+void FOctree::Insert(AActor* InActor, const FAABB& ActorBounds)
 {
     // 마지막 바운드 캐시 갱신
     ActorLastBounds[InActor] = ActorBounds;
@@ -169,7 +169,7 @@ void FOctree::Insert(AActor* InActor, const FBound& ActorBounds)
         {
             AActor* ActorPtr = *It;
             size_t idx = static_cast<size_t>(std::distance(Actors.begin(), It));
-            FBound Box = ActorBoundsCache[idx];
+            FAABB Box = ActorBoundsCache[idx];
 
             bool bMoved = false;
             // 최적 옥탄트부터 시도
@@ -201,12 +201,12 @@ void FOctree::Insert(AActor* InActor, const FBound& ActorBounds)
         }
     }
 }
-bool FOctree::Contains(const FBound& Box) const
+bool FOctree::Contains(const FAABB& Box) const
 {
     return Bounds.Contains(Box);
 }
 
-bool FOctree::Remove(AActor* InActor, const FBound& ActorBounds)
+bool FOctree::Remove(AActor* InActor, const FAABB& ActorBounds)
 {
     // 현재 노드에 있는 경우
     auto It = std::find(Actors.begin(), Actors.end(), InActor);
@@ -241,7 +241,7 @@ bool FOctree::Remove(AActor* InActor, const FBound& ActorBounds)
     return false;
 }
 
-void FOctree::Update(AActor* InActor, const FBound& OldBounds, const FBound& NewBounds)
+void FOctree::Update(AActor* InActor, const FAABB& OldBounds, const FAABB& NewBounds)
 {
     Remove(InActor, OldBounds);
     Insert(InActor, NewBounds);
@@ -272,7 +272,7 @@ void FOctree::Update(AActor* InActor)
 
 
 // 최적화된 옥탄트 계산 - Contains() 대신 사용
-int FOctree::GetOctantIndex(const FBound& ActorBounds) const
+int FOctree::GetOctantIndex(const FAABB& ActorBounds) const
 {
     FVector Center = Bounds.GetCenter();
     FVector ActorCenter = ActorBounds.GetCenter();
@@ -285,7 +285,7 @@ int FOctree::GetOctantIndex(const FBound& ActorBounds) const
     return OctantIndex;
 }
 
-bool FOctree::CanFitInOctant(const FBound& ActorBounds, int OctantIndex) const
+bool FOctree::CanFitInOctant(const FAABB& ActorBounds, int OctantIndex) const
 {
     if (!Children[0]) return false; // 자식이 없으면 확인 불가
     return Children[OctantIndex]->Contains(ActorBounds);
@@ -294,14 +294,14 @@ bool FOctree::CanFitInOctant(const FBound& ActorBounds, int OctantIndex) const
 void FOctree::Split()
 {
     FVector Center = Bounds.GetCenter();
-    FVector Extent = Bounds.GetExtent() * 0.5f;
+    FVector Extent = Bounds.GetHalfExtent() * 0.5f;
 
     for (int i = 0; i < 8; i++)
     {
-        FBound ChildBounds = Bounds.CreateOctant(i);
+        FAABB ChildBounds = Bounds.CreateOctant(i);
         FVector ChildCenter = ChildBounds.GetCenter();
-        FVector ChildExtent = ChildBounds.GetExtent() * LooseFactor;
-        FBound LooseChildBounds(ChildCenter - ChildExtent, ChildCenter + ChildExtent);
+        FVector ChildExtent = ChildBounds.GetHalfExtent() * LooseFactor;
+        FAABB LooseChildBounds(ChildCenter - ChildExtent, ChildCenter + ChildExtent);
 
         Children[i] = new FOctree(LooseChildBounds, Depth + 1, MaxDepth, MaxObjects);
         Children[i]->LooseFactor = this->LooseFactor; // propagate
@@ -366,7 +366,7 @@ void FOctree::DebugDump() const
 
         const FOctree* N = it.Node;
         char buf[256];
-        FVector extent = N->GetBounds().GetExtent();
+        FVector extent = N->GetBounds().GetHalfExtent();
         float length = sqrtf(extent.X * extent.X +
             extent.Y * extent.Y +
             extent.Z * extent.Z);
@@ -436,7 +436,7 @@ void FOctree::QueryRayClosest(const FRay& Ray, AActor*& OutActor, OUT float& Out
 
     float NodeTMin, NodeTMax;
     // 먼저 레이가 박스에 교차하지 않으면 함수 바로 종료 
-    if (!Bounds.RayAABB_IntersectT(Ray, NodeTMin, NodeTMax))
+    if (!Bounds.IntersectsRay(Ray, NodeTMin, NodeTMax))
         return;
 
     // BFS 사용해서 가까운 노드부터 탐색 시작 
@@ -476,7 +476,7 @@ void FOctree::QueryRayClosest(const FRay& Ray, AActor*& OutActor, OUT float& Out
             }
 
 
-            FBound ActorBounds;
+            FAABB ActorBounds;
             //// 1. 배열 캐시에서 찾기 (빠름)
             if (i < Node->ActorBoundsCache.size())
             {
@@ -494,7 +494,7 @@ void FOctree::QueryRayClosest(const FRay& Ray, AActor*& OutActor, OUT float& Out
             //}
 
             float Tmin, Tmax;
-            if (!ActorBounds.RayAABB_IntersectT(Ray, Tmin, Tmax))
+            if (!ActorBounds.IntersectsRay(Ray, Tmin, Tmax))
                 continue;
 
             if (OutActor && Tmin > OutBestT + Epsilon)
@@ -517,7 +517,7 @@ void FOctree::QueryRayClosest(const FRay& Ray, AActor*& OutActor, OUT float& Out
                 FOctree* Child = Node->Children[i];
                 if (!Child) continue;
                 float Cmin, Cmax;
-                if (Child->Bounds.RayAABB_IntersectT(Ray, Cmin, Cmax))
+                if (Child->Bounds.IntersectsRay(Ray, Cmin, Cmax))
                 {
                     if (!OutActor || Cmin <= OutBestT + Epsilon)
                         Heap.push({ Child, Cmin });

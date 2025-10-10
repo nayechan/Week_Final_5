@@ -12,7 +12,7 @@
 #include <queue>
 
 namespace {
-    inline bool RayAABB_IntersectT(const FRay& ray, const FBound& box, float& outTMin, float& outTMax)
+    inline bool RayAABB_IntersectT(const FRay& ray, const FAABB& box, float& outTMin, float& outTMax)
     {
         float tmin = -FLT_MAX;
         float tmax =  FLT_MAX;
@@ -44,7 +44,7 @@ namespace {
     }
 }
 
-FBVHierachy::FBVHierachy(const FBound& InBounds, int InDepth, int InMaxDepth, int InMaxObjects)
+FBVHierachy::FBVHierachy(const FAABB& InBounds, int InDepth, int InMaxDepth, int InMaxObjects)
     : Depth(InDepth)
     , MaxDepth(InMaxDepth)
     , MaxObjects(InMaxObjects)
@@ -60,15 +60,15 @@ FBVHierachy::~FBVHierachy()
 void FBVHierachy::Clear()
 {
     Actors = TArray<AActor*>();
-    ActorLastBounds = TMap<AActor*, FBound>();
+    ActorLastBounds = TMap<AActor*, FAABB>();
     ActorArray = TArray<AActor*>();
     Nodes = TArray<FLBVHNode>();
-    Bounds = FBound();
+    Bounds = FAABB();
     bPendingRebuild = false;
 
 }
 
-void FBVHierachy::Insert(AActor* InActor, const FBound& ActorBounds)
+void FBVHierachy::Insert(AActor* InActor, const FAABB& ActorBounds)
 {
     if (!InActor) return;
 
@@ -76,7 +76,7 @@ void FBVHierachy::Insert(AActor* InActor, const FBound& ActorBounds)
     bPendingRebuild = true;
 }
 
-void FBVHierachy::BulkInsert(const TArray<std::pair<AActor*, FBound>>& ActorsAndBounds)
+void FBVHierachy::BulkInsert(const TArray<std::pair<AActor*, FAABB>>& ActorsAndBounds)
 {
     for (const auto& kv : ActorsAndBounds)
     {
@@ -88,12 +88,12 @@ void FBVHierachy::BulkInsert(const TArray<std::pair<AActor*, FBound>>& ActorsAnd
     bPendingRebuild = false;
 }
 
-bool FBVHierachy::Contains(const FBound& Box) const
+bool FBVHierachy::Contains(const FAABB& Box) const
 {
     return Bounds.Contains(Box);
 }
 
-bool FBVHierachy::Remove(AActor* InActor, const FBound& ActorBounds)
+bool FBVHierachy::Remove(AActor* InActor, const FAABB& ActorBounds)
 {
     if (!InActor) return false;
     bool existed = ActorLastBounds.Remove(InActor);
@@ -101,7 +101,7 @@ bool FBVHierachy::Remove(AActor* InActor, const FBound& ActorBounds)
     return existed;
 }
 
-void FBVHierachy::Update(AActor* InActor, const FBound& OldBounds, const FBound& NewBounds)
+void FBVHierachy::Update(AActor* InActor, const FAABB& OldBounds, const FAABB& NewBounds)
 {
     if (!InActor) return;
     ActorLastBounds.Add(InActor, NewBounds);
@@ -162,8 +162,8 @@ void FBVHierachy::QueryFrustum(const Frustum& InFrustum)
                 AActor* A = ActorArray[node.First + i];
                 if (!A || ActorLastBounds.find(A) == ActorLastBounds.end())
                     continue;
-                const FBound* Cached = ActorLastBounds.Find(A);
-                const FBound Box = Cached ? *Cached : A->GetBounds();
+                const FAABB* Cached = ActorLastBounds.Find(A);
+                const FAABB Box = Cached ? *Cached : A->GetBounds();
                 if (IsAABBVisible(InFrustum, Box))
                 {
                     A->SetCulled(false);
@@ -257,9 +257,9 @@ void FBVHierachy::DebugDump() const
 }
 
 
-FBound FBVHierachy::UnionBounds(const FBound& A, const FBound& B)
+FAABB FBVHierachy::UnionBounds(const FAABB& A, const FAABB& B)
 {
-    FBound out;
+    FAABB out;
     out.Min = FVector(
         std::min(A.Min.X, B.Min.X),
         std::min(A.Min.Y, B.Min.Y),
@@ -299,7 +299,7 @@ void FBVHierachy::BuildLBVHFromMap()
 
     if (N == 0)
     {
-        Bounds = FBound();
+        Bounds = FAABB();
         return;
     }
 
@@ -312,10 +312,10 @@ void FBVHierachy::BuildLBVHFromMap()
     TArray<uint32> codes;
     codes.resize(N);
     FVector gmin = Bounds.Min;
-    FVector ext = Bounds.GetExtent();
+    FVector ext = Bounds.GetHalfExtent();
     for (int i = 0; i < N; ++i)
     {
-        const FBound* b = ActorLastBounds.Find(ActorArray[i]);
+        const FAABB* b = ActorLastBounds.Find(ActorArray[i]);
         FVector c = b ? b->GetCenter() : ActorArray[i]->GetBounds().GetCenter();
         float nx = (ext.X > 0) ? (c.X - gmin.X) / (ext.X * 2.0f) : 0.5f;
         float ny = (ext.Y > 0) ? (c.Y - gmin.Y) / (ext.Y * 2.0f) : 0.5f;
@@ -362,10 +362,10 @@ int FBVHierachy::BuildRange(int s, int e)
         node.First = s;
         node.Count = count;
         bool inited = false;
-        FBound acc;
+        FAABB acc;
         for (int i = s; i < e; ++i)
         {
-            const FBound* b = ActorLastBounds.Find(ActorArray[i]);
+            const FAABB* b = ActorLastBounds.Find(ActorArray[i]);
             if (!b) continue;
             if (!inited) { acc = *b; inited = true; }
             else acc = UnionBounds(acc, *b);
@@ -424,8 +424,8 @@ void FBVHierachy::QueryRayClosest(const FRay& Ray, AActor*& OutActor, OUT float&
                 if (!A) continue;
                 if (A->GetActorHiddenInGame()) continue;
 
-                const FBound* Cached = ActorLastBounds.Find(A);
-                const FBound Box = Cached ? *Cached : A->GetBounds();
+                const FAABB* Cached = ActorLastBounds.Find(A);
+                const FAABB Box = Cached ? *Cached : A->GetBounds();
 
                 float tmin, tmax;
                 if (!RayAABB_IntersectT(Ray, Box, tmin, tmax))

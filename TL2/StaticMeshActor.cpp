@@ -35,13 +35,13 @@ AStaticMeshActor::~AStaticMeshActor()
     StaticMeshComponent = nullptr;
 }
 
-FBound AStaticMeshActor::GetBounds() const
+FAABB AStaticMeshActor::GetBounds() const
 {
     if (CollisionComponent)
     {
         return CollisionComponent->GetWorldBoundFromCube();
     }
-    return FBound();
+    return FAABB();
 }
 
 void AStaticMeshActor::SetStaticMeshComponent(UStaticMeshComponent* InStaticMeshComponent)

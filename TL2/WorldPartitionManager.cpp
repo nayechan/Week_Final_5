@@ -23,11 +23,11 @@ namespace
 UWorldPartitionManager::UWorldPartitionManager()
 {
 	//FBound WorldBounds(FVector(-50, -50, -50), FVector(50, 50, 50));
-	FBound WorldBounds(FVector(-50, -50, -50), FVector(50, 50, 50));
+	FAABB WorldBounds(FVector(-50, -50, -50), FVector(50, 50, 50));
 	SceneOctree = new FOctree(WorldBounds, 0, 8, 10);
 	// BVH도 동일 월드 바운드로 초기화 (더 깊고 작은 리프 설정)
 	//BVH = new FBVHierachy(FBound(), 0, 5, 1); 
-	BVH = new FBVHierachy(FBound(), 0, 8, 1); 
+	BVH = new FBVHierachy(FAABB(), 0, 8, 1); 
 	//BVH = new FBVHierachy(FBound(), 0, 10, 3);
 }
 
@@ -68,7 +68,7 @@ void UWorldPartitionManager::BulkRegister(const TArray<AActor*>& Actors)
 {
 	if (Actors.empty()) return;
 
-	TArray<std::pair<AActor*, FBound>> ActorsAndBounds;
+	TArray<std::pair<AActor*, FAABB>> ActorsAndBounds;
 	ActorsAndBounds.reserve(Actors.size());
 
 	for (AActor* Actor : Actors)

@@ -9,7 +9,7 @@ class FOctree;
 class FBVHierachy;
 
 struct FRay;
-struct FBound;
+struct FAABB;
 struct Frustum;
 
 class UWorldPartitionManager : public UObject

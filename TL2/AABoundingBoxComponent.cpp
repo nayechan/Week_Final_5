@@ -49,14 +49,14 @@ void UAABoundingBoxComponent::Render(URenderer* Renderer, const FMatrix& ViewMat
         TArray<FVector4> Color;
 
         // Arvo 방식으로 월드 AABB
-        FBound WorldBound = GetWorldBound();
+        FAABB WorldBound = GetWorldBound();
         CreateLineData(WorldBound.Min, WorldBound.Max, Start, End, Color);
         Renderer->AddLines(Start, End, Color);
     }
 }
 
 
-FBound UAABoundingBoxComponent::GetWorldBound() const
+FAABB UAABoundingBoxComponent::GetWorldBound() const
 {
     // 1) 로컬 중심/익스텐트
     const FVector LocalCenter = (LocalMin + LocalMax) * 0.5f;
@@ -76,7 +76,7 @@ FBound UAABoundingBoxComponent::GetWorldBound() const
     const FVector WorldExtents = ComputeWorldExtentsArvo(LocalExtents, WorldMat);
 
     // 5) AABB 재조립
-    return FBound(WorldCenter - WorldExtents, WorldCenter + WorldExtents);
+    return FAABB(WorldCenter - WorldExtents, WorldCenter + WorldExtents);
 }
 
 FVector UAABoundingBoxComponent::TransformVectorSIMD(const FVector& v, const FMatrix& M) const
@@ -110,7 +110,7 @@ FVector UAABoundingBoxComponent::TransformVectorSIMD(const FVector& v, const FMa
 #endif
 }
 
-FBound UAABoundingBoxComponent::GetWorldBoundFromCube() 
+FAABB UAABoundingBoxComponent::GetWorldBoundFromCube() 
 {
     auto corners = GetLocalCorners();
 
@@ -125,7 +125,7 @@ FBound UAABoundingBoxComponent::GetWorldBoundFromCube()
         MaxW = MaxW.ComponentMax(wc);
     }
 
-    Bound = FBound({ MinW.X, MinW.Y, MinW.Z }, { MaxW.X, MaxW.Y, MaxW.Z });
+    Bound = FAABB({ MinW.X, MinW.Y, MinW.Z }, { MaxW.X, MaxW.Y, MaxW.Z });
     return Bound;
 }
 

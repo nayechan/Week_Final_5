@@ -28,7 +28,7 @@ bool FMeshBVH::IntersectRay(const FRay& InLocalRay,
 	}
 
 	float RootEntry, RootExit;
-	if (!Nodes[0].Bounds.RayAABB_IntersectT(InLocalRay, RootEntry, RootExit))
+	if (!Nodes[0].Bounds.IntersectsRay(InLocalRay, RootEntry, RootExit))
 	{
 		return false;
 	}
@@ -79,7 +79,7 @@ bool FMeshBVH::IntersectRay(const FRay& InLocalRay,
 			if (Node.Left >= 0)
 			{
 				float ChildEntry, ChildExit;
-				if (Nodes[Node.Left].Bounds.RayAABB_IntersectT(InLocalRay, ChildEntry, ChildExit))
+				if (Nodes[Node.Left].Bounds.IntersectsRay(InLocalRay, ChildEntry, ChildExit))
 				{
 					Heap.push({ Node.Left, ChildEntry });
 				}
@@ -87,7 +87,7 @@ bool FMeshBVH::IntersectRay(const FRay& InLocalRay,
 			if (Node.Right >= 0)
 			{
 				float ChildEntry, ChildExit;
-				if (Nodes[Node.Right].Bounds.RayAABB_IntersectT(InLocalRay, ChildEntry, ChildExit))
+				if (Nodes[Node.Right].Bounds.IntersectsRay(InLocalRay, ChildEntry, ChildExit))
 				{
 					Heap.push({ Node.Right, ChildEntry });
 				}
@@ -188,7 +188,7 @@ bool FMeshBVH::IntersectRay(const FRay& InLocalRay,
 //	return false;
 //}
 
-FBound FMeshBVH::ComputeTriBounds(uint32 TriangleID, const TArray<FNormalVertex>& Vertices, const TArray<uint32>& Indices) const
+FAABB FMeshBVH::ComputeTriBounds(uint32 TriangleID, const TArray<FNormalVertex>& Vertices, const TArray<uint32>& Indices) const
 {
 	// TriangleID : 몇 번째 삼각형인지 (0번, 1번 , 2번)
 	uint32 VertexIndex0, VertexIndex1, VertexIndex2;
@@ -218,7 +218,7 @@ FBound FMeshBVH::ComputeTriBounds(uint32 TriangleID, const TArray<FNormalVertex>
 	);
 
 	// 삼각형의 바운딩 박스 반환
-	return FBound(MinCorner, MaxCorner);
+	return FAABB(MinCorner, MaxCorner);
 }
 
 FVector FMeshBVH::ComputeTriCenter(uint32 TriangleID, const TArray<FNormalVertex>& Vertices, const TArray<uint32>& Indices) const
@@ -241,15 +241,15 @@ FVector FMeshBVH::ComputeTriCenter(uint32 TriangleID, const TArray<FNormalVertex
 }
 
 // 여러 삼각형을 한 번에 감싸는 AABB를 계산 
-FBound FMeshBVH::ComputeBounds(uint32 Start, uint32 Count, const TArray<FNormalVertex>& Vertices, const TArray<uint32>& Indices) const
+FAABB FMeshBVH::ComputeBounds(uint32 Start, uint32 Count, const TArray<FNormalVertex>& Vertices, const TArray<uint32>& Indices) const
 {
 	// 첫 번째 삼각형 ID로 AABB 초기화 
-	FBound Bounds = ComputeTriBounds(TriIndices[Start], Vertices, Indices);
+	FAABB Bounds = ComputeTriBounds(TriIndices[Start], Vertices, Indices);
 	// Start+1 ~ Start+Count-1 까지 모든 삼각형에 대해 반복 
 	// 가장 큰 MIN , MAX 찾아낸다. 
 	for (uint32 i = 1; i < Count; i++)
 	{
-		FBound TB = ComputeTriBounds(TriIndices[Start + i], Vertices, Indices);
+		FAABB TB = ComputeTriBounds(TriIndices[Start + i], Vertices, Indices);
 		Bounds.Min = Bounds.Min.ComponentMin(TB.Min);
 		Bounds.Max = Bounds.Max.ComponentMax(TB.Max);
 	}

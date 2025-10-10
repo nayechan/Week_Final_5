@@ -173,7 +173,7 @@ bool Intersects(const Plane& P, const FVector4& Center, const FVector4& Extents)
     return Distance + radius >= 0.0f;
 }
 
-bool IsAABBVisible(const Frustum& Frustum, const FBound& Bound)
+bool IsAABBVisible(const Frustum& Frustum, const FAABB& Bound)
 {
     // AABB 중심/반길이
     const FVector Center3 = (Bound.Min + Bound.Max) * 0.5f;
@@ -189,7 +189,7 @@ bool IsAABBVisible(const Frustum& Frustum, const FBound& Bound)
            Intersects(Frustum.FarFace, Center, Extents);
 }
 
-bool IsAABBIntersects(const Frustum& F, const FBound& B)
+bool IsAABBIntersects(const Frustum& F, const FAABB& B)
 {
     // 부분 교차(Intersect)만 true. 완전 내부/완전 외부는 false.
     const FVector Center3 = (B.Min + B.Max) * 0.5f;
@@ -326,7 +326,7 @@ bool IsAABBVisible(const Frustum& F, const FBound& B)
 */
 
 // AVX-optimized culling for 8 AABBs
-uint8_t AreAABBsVisible_8_AVX(const Frustum& Frustum, const FBound Bounds[8])
+uint8_t AreAABBsVisible_8_AVX(const Frustum& Frustum, const FAABB Bounds[8])
 {
     // This function performs frustum culling for 8 AABBs simultaneously using AVX2.
     // It works by testing all 8 boxes against each of the 6 frustum planes.

@@ -15,7 +15,7 @@ static inline float LinearizeZ01(float zView, float zNear, float zFar) {
 }
 
 // FBound(Min/Max) → 8코너
-static inline void MakeAabbCornersMinMax(const FBound& B, FVector Corners[8])
+static inline void MakeAabbCornersMinMax(const FAABB& B, FVector Corners[8])
 {
 	const FVector& mn = B.Min;
 	const FVector& mx = B.Max;

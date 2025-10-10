@@ -29,19 +29,19 @@ class FOctree
 {
 public:
     // 생성자/소멸자
-    FOctree(const FBound& InBounds, int InDepth = 0, int InMaxDepth = 5, int InMaxObjects = 15);
+    FOctree(const FAABB& InBounds, int InDepth = 0, int InMaxDepth = 5, int InMaxObjects = 15);
     ~FOctree();
 
 	// 초기화
 	void Clear();
 
 	// 삽입 / 제거 / 갱신
-	void Insert(AActor* InActor, const FBound& ActorBounds);
+	void Insert(AActor* InActor, const FAABB& ActorBounds);
 	// 벌크 삽입 최적화 - 대량 액터 처리용
-	void BulkInsert(const TArray<std::pair<AActor*, FBound>>& ActorsAndBounds);
-	bool Contains(const FBound& Box) const;
-	bool Remove(AActor* InActor, const FBound& ActorBounds);
-    void Update(AActor* InActor, const FBound& OldBounds, const FBound& NewBounds);
+	void BulkInsert(const TArray<std::pair<AActor*, FAABB>>& ActorsAndBounds);
+	bool Contains(const FAABB& Box) const;
+	bool Remove(AActor* InActor, const FAABB& ActorBounds);
+    void Update(AActor* InActor, const FAABB& OldBounds, const FAABB& NewBounds);
 
     //void QueryRayOrdered(const FRay& Ray, TArray<std::pair<AActor*, float>>& OutCandidates) ;
     // for Partition Manager Query
@@ -59,20 +59,20 @@ public:
     int MaxOccupiedDepth() const;
     void DebugDump() const;
 
-    const FBound& GetBounds() const { return Bounds; }
+    const FAABB& GetBounds() const { return Bounds; }
 
 private:
 	// 내부 함수
 	void Split();
 	// 최적화된 옥탄트 계산 - Contains() 대신 사용
-	int GetOctantIndex(const FBound& ActorBounds) const;
-	bool CanFitInOctant(const FBound& ActorBounds, int OctantIndex) const;
+	int GetOctantIndex(const FAABB& ActorBounds) const;
+	bool CanFitInOctant(const FAABB& ActorBounds, int OctantIndex) const;
 
 private:
 	int Depth;
 	int MaxDepth;
 	int MaxObjects;
-	FBound Bounds;
+	FAABB Bounds;
 
 	// Loose octree factor: expand child bounds to reduce parent crowding
 	float LooseFactor = 1.25f;
@@ -80,8 +80,8 @@ private:
 	TArray<AActor*> Actors;
 	FOctree* Children[8]; // 8분할 
     // TODO 리팩토링 -> 하나의 TMAP으로 관리하던 , 해야할 것 같다 . 
-    TMap<AActor*, FBound> ActorLastBounds;
-    TArray<FBound> ActorBoundsCache;
+    TMap<AActor*, FAABB> ActorLastBounds;
+    TArray<FAABB> ActorBoundsCache;
     TArray<AActor*> ActorArray;
     
     // 메모리 풀링을 위한 정적 스택
