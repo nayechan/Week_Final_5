@@ -420,6 +420,12 @@
     <ClCompile Include="Level.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="AABB.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="OBB.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Primitive.hlsl">
@@ -438,6 +444,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Billboard.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="DecalPS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="DecalVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
@@ -779,6 +791,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="FViewport.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="AABB.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="OBB.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
