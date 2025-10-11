@@ -14,9 +14,11 @@ public:
     void SetShowFPS(bool b); 
     void SetShowMemory(bool b);
     void SetShowPicking(bool b);
+    void SetShowDecal(bool b);
     void ToggleFPS();
     void ToggleMemory();
     void TogglePicking();
+    void ToggleDecal();
     bool IsFPSVisible() const { return bShowFPS; }
     bool IsMemoryVisible() const { return bShowMemory; }
 
@@ -34,6 +36,7 @@ private:
     bool bShowFPS = false;
     bool bShowMemory = false;
     bool bShowPicking = false;
+    bool bShowDecal = true;     // NOTE: Week06 에서는 데칼 stat을 기본으로 표시
 
     ID3D11Device* D3DDevice = nullptr;
     ID3D11DeviceContext* D3DContext = nullptr;
