@@ -197,7 +197,9 @@ void UWorld::OnActorSpawned(AActor* Actor)
 {
 	if (Actor)
 	{
-		Partition->Register(Actor);
+		// UWorld::AddActorToLevel에서 중복호출 중이어서 주석처리.
+		// OnActorSpawned만 호출되는 로직 생성시 주석 해제 바람.
+		// Partition->Register(Actor);
 	}
 }
 
@@ -283,7 +285,6 @@ void UWorld::AddActorToLevel(AActor* Actor)
 	if (Level) 
 	{
 		Level->AddActor(Actor);
-		// OnActorSpawned에서 등록해주고 있어서 삭제
-		// Partition->Register(Actor);
+		Partition->Register(Actor);
 	}
 }

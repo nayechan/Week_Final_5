@@ -62,10 +62,10 @@ void UWorldPartitionManager::Clear()
 	ComponentDirtySet.Empty();
 }
 
-void UWorldPartitionManager::Register(AActor* Owner)
+void UWorldPartitionManager::Register(AActor* Actor)
 {
-	if (!Owner) return;
-	if (UStaticMeshComponent* Component = ResolveStaticMeshComponent(Owner))
+	if (!Actor) return;
+	if (UStaticMeshComponent* Component = ResolveStaticMeshComponent(Actor))
 	{
 		MarkDirty(Component);
 	}
@@ -92,10 +92,10 @@ void UWorldPartitionManager::BulkRegister(const TArray<AActor*>& Actors)
 	if (BVH) BVH->BulkInsert(ComponentsAndBounds);
 }
 
-void UWorldPartitionManager::Unregister(AActor* Owner)
+void UWorldPartitionManager::Unregister(AActor* Actor)
 {
-	if (!Owner) return;
-	if (UStaticMeshComponent* Component = ResolveStaticMeshComponent(Owner))
+	if (!Actor) return;
+	if (UStaticMeshComponent* Component = ResolveStaticMeshComponent(Actor))
 	{
 		//if (SceneOctree) SceneOctree->Remove(Owner);
 		if (BVH) BVH->Remove(Component);
@@ -104,10 +104,10 @@ void UWorldPartitionManager::Unregister(AActor* Owner)
 	}
 }
 
-void UWorldPartitionManager::MarkDirty(AActor* Owner)
+void UWorldPartitionManager::MarkDirty(AActor* Actor)
 {
-	if (!Owner) return;
-	if (UStaticMeshComponent* Component = ResolveStaticMeshComponent(Owner))
+	if (!Actor) return;
+	if (UStaticMeshComponent* Component = ResolveStaticMeshComponent(Actor))
 	{
 		MarkDirty(Component);
 	}
@@ -126,11 +126,11 @@ void UWorldPartitionManager::MarkDirty(UStaticMeshComponent* Component)
 	}
 }
 
-void UWorldPartitionManager::Update(float DeltaTime, uint32 InBugetCount)
+void UWorldPartitionManager::Update(float DeltaTime, const uint32 BudgetCount)
 {
 	// 프레임 히칭 방지를 위해 컴포넌트 카운트 제한
 	uint32 processed = 0;
-	while (processed < InBugetCount)
+	while (processed < BudgetCount)
 	{
 		UStaticMeshComponent* Component = nullptr;
 		if (!ComponentDirtyQueue.Dequeue(Component))

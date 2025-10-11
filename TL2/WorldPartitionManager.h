@@ -30,7 +30,7 @@ public:
 	void MarkDirty(AActor* Actor);
 	void MarkDirty(UStaticMeshComponent* Component);
 
-	void Update(float DeltaTime, uint32 budgetItems = 256);
+	void Update(float DeltaTime, const uint32 BudgetCount = 256);
 
     //void RayQueryOrdered(FRay InRay, OUT TArray<std::pair<AActor*, float>>& Candidates);
     void RayQueryClosest(FRay InRay, OUT AActor*& OutActor, OUT float& OutBestT);
