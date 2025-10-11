@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "Texture.h"
 #include <DDSTextureLoader.h>
+#include "d3dtk/WICTextureLoader.h"
 #include <Windows.h>
 
 UTexture::UTexture()
@@ -37,12 +38,31 @@ void UTexture::Load(const FString& InFilePath, ID3D11Device* InDevice)
 		}
 	}
 
-	HRESULT hr = DirectX::CreateDDSTextureFromFile(
-		InDevice,
-		WFilePath.c_str(),
-		reinterpret_cast<ID3D11Resource**>(&Texture2D),
-		&ShaderResourceView
-	);
+	// 확장자 판별 (안전)
+	std::filesystem::path realPath(InFilePath);
+	std::wstring ext = realPath.has_extension() ? realPath.extension().wstring() : L"";
+	for (auto& ch : ext) ch = static_cast<wchar_t>(::towlower(ch));
+
+	HRESULT hr = E_FAIL;
+	if (ext == L".dds")
+	{
+		hr = DirectX::CreateDDSTextureFromFile(
+			InDevice,
+			WFilePath.c_str(),
+			reinterpret_cast<ID3D11Resource**>(&Texture2D),
+			&ShaderResourceView
+		);
+	}
+	else
+	{
+		hr = DirectX::CreateWICTextureFromFile(
+			InDevice, 
+			WFilePath.c_str(), 
+			reinterpret_cast<ID3D11Resource**>(&Texture2D), 
+			&ShaderResourceView
+		);
+	}
+
 	if (FAILED(hr))
 	{
 		UE_LOG("!!!LOAD TEXTIRE FAILED!!!");

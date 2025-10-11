@@ -49,6 +49,10 @@ void FObjManager::Preload()
                 ++LoadedCount;
             }
         }
+        else if (Extension == ".dds" || Extension == ".jpg" || Extension == ".png")
+        {
+            UResourceManager::GetInstance().Load<UTexture>(Path.string()); // 데칼 텍스쳐를 ui에서 고를 수 있게 하기 위해 임시로 만듬.
+        }
     }
 
     // 4) 모든 StaticMeshs 가져오기

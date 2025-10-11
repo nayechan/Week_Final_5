@@ -941,27 +941,27 @@ void UTargetActorTransformWidget::RenderWidget()
 				ImGui::Text("Current: <None>");
 			}
 
-			const TArray<FString> MaterialNames = UResourceManager::GetInstance().GetAllFilePaths<UMaterial>();
-			TArray<const char*> MaterialNamesCharP;
-			MaterialNamesCharP.reserve(MaterialNames.size());
-			for (const FString& n : MaterialNames)
-				MaterialNamesCharP.push_back(n.c_str());
+			const TArray<FString> TexturePaths = UResourceManager::GetInstance().GetAllFilePaths<UTexture>();
+			TArray<const char*> TexturePathsCharP;
+			TexturePathsCharP.reserve(TexturePaths.size());
+			for (const FString& n : TexturePaths)
+				TexturePathsCharP.push_back(n.c_str());
 
-			if (MaterialNames.empty())
+			if (TexturePaths.empty())
 			{
 				ImGui::TextColored(ImVec4(1, 0.6f, 0.6f, 1), "No Material resources loaded.");
 			}
 			else
 			{
-				int SelectedMaterialIdx = -1;
-				if (ImGui::Combo("Material", &SelectedMaterialIdx, MaterialNamesCharP.data(),
-					static_cast<int>(MaterialNamesCharP.size())))
+				int SelectedTextureIdx = -1;
+				if (ImGui::Combo("Material", &SelectedTextureIdx, TexturePathsCharP.data(),
+					static_cast<int>(TexturePathsCharP.size())))
 				{
-					if (SelectedMaterialIdx >= 0 && SelectedMaterialIdx < static_cast<int>(MaterialNames.size()))
+					if (SelectedTextureIdx >= 0 && SelectedTextureIdx < static_cast<int>(TexturePaths.size()))
 					{
-						DecalCmp->SetDecalTexture(MaterialNames[SelectedMaterialIdx]);
+						DecalCmp->SetDecalTexture(TexturePaths[SelectedTextureIdx]);
 						//TargetSMC->SetMaterialByUser(i, MaterialNames[SelectedMaterialIdx]);
-						UE_LOG("Set Decal Texture to %s", MaterialNames[SelectedMaterialIdx].c_str());
+						UE_LOG("Set Decal Texture to %s", TexturePaths[SelectedTextureIdx].c_str());
 					}
 				}
 			}

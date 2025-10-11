@@ -32,6 +32,7 @@ public:
     void Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* InContext);
 
     ID3D11Device* GetDevice() { return Device; }
+    ID3D11DeviceContext* GetDeviceContext() { return Context; }
 
     //font 렌더링을 위함(dynamicVertexBuffer 만듦.)
     //FResourceData* CreateOrGetResourceData(const FString& Name, uint32 Size, const TArray<uint32>& Indicies);
