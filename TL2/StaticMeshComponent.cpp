@@ -95,7 +95,7 @@ void UStaticMeshComponent::Serialize(bool bIsLoading, FPrimitiveData& InOut)
 
 void UStaticMeshComponent::SetMaterialByUser(const uint32 InMaterialSlotIndex, const FString& InMaterialName)
 {
-    assert((0 <= InMaterialSlotIndex && InMaterialSlotIndex < MaterailSlots.size()) && "out of range InMaterialSlotIndex");
+    assert((0 <= InMaterialSlotIndex && InMaterialSlotIndex < MaterialSlots.size()) && "out of range InMaterialSlotIndex");
 
     if (0 <= InMaterialSlotIndex && InMaterialSlotIndex < MaterialSlots.size())
     {
@@ -109,7 +109,7 @@ void UStaticMeshComponent::SetMaterialByUser(const uint32 InMaterialSlotIndex, c
         UE_LOG("out of range InMaterialSlotIndex: %d", InMaterialSlotIndex);
     }
 
-    assert(MaterailSlots[InMaterialSlotIndex].bChangedByUser == true);
+    assert(MaterialSlots[InMaterialSlotIndex].bChangedByUser == true);
 }
 
 void UStaticMeshComponent::DuplicateSubObjects()
