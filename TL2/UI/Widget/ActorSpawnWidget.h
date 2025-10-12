@@ -24,6 +24,8 @@ public:
 	UActorSpawnWidget();
 	~UActorSpawnWidget() override;
 
+	void HandleActorSelection(AActor* Actor);
+
 private:
 	/**
 	 * @brief 지정된 클래스의 액터 하나를 월드에 스폰합니다.

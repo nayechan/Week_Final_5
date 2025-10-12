@@ -658,7 +658,7 @@ void UTargetActorTransformWidget::RenderSelectedComponentDetails()
 		}
 		else
 		{
-			TargetComponentForDetails = StaticMeshActor->GetRootComponent();
+			TargetComponentForDetails = SelectedActor->GetRootComponent();
 		}
 	}
 
@@ -866,16 +866,18 @@ void UTargetActorTransformWidget::RenderSelectedComponentDetails()
 	if (UPerspectiveDecalComponent* PerDecalComp = Cast<UPerspectiveDecalComponent>(TargetComponentForDetails))
 	{
 		ImGui::Separator();
-		ImGui::Text("Perspective Decal Properties");
+		// UI 헤더 텍스트를 "원뿔 데칼 속성"으로 변경
+		ImGui::Text("원뿔 데칼 속성 (Perspective Decal)");
 
-		// 1. Getter를 호출하여 현재 FovY 값을 로컬 변수로 가져옵니다.
-		float currentFov = PerDecalComp->GetFovY();
+		// 1. Getter를 호출하여 현재 FovY 값을 가져옵니다. 이 값이 원뿔의 꼭지각(apex angle)입니다.
+		float coneAngle = PerDecalComp->GetFovY();
 
-		// 2. ImGui는 이 로컬 변수의 주소를 받아 값을 수정합니다.
-		if (ImGui::SliderFloat("Field of View (Y)", &currentFov, 0.1f, 90.0f, "%.1f deg"))
+		// 2. ImGui 슬라이더의 라벨을 "원뿔 각도"로 변경하고, 로컬 변수 coneAngle의 주소를 전달합니다.
+		//    사용자가 더 다양한 형태를 만들 수 있도록 범위를 1.0 ~ 80.0으로 확장합니다.
+		if (ImGui::SliderFloat("Cone Angle", &coneAngle, 1.0f, 80.0f, "%.1f deg"))
 		{
-			// 3. SliderFloat가 true를 반환하면 (값이 변경되면) Setter를 호출하여 실제 값을 업데이트합니다.
-			PerDecalComp->SetFovY(currentFov);
+			// 3. 값이 변경되면 Setter를 호출하여 컴포넌트의 실제 각도를 업데이트합니다.
+			PerDecalComp->SetFovY(coneAngle);
 		}
 	}
 }
