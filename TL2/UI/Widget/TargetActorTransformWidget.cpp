@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "TargetActorTransformWidget.h"
 #include "UI/UIManager.h"
 #include "ImGui/imgui.h"
@@ -16,6 +16,7 @@
 #include "BillboardComponent.h"
 #include "DecalComponent.h"
 #include "ActorSpawnWidget.h"
+#include "WorldPartitionManager.h"
 using namespace std;
 
 
@@ -154,7 +155,15 @@ namespace
 
 		// AddOwnedComponent 경유 (Register/Initialize 포함)
 		Actor.AddOwnedComponent(NewComp);
-		Actor.MarkPartitionDirty();
+
+		// UStaticMeshComponent라면 World Partition에 추가. (null 체크는 Register 내부에서 수행)
+		if (UWorld* ActorWorld = Actor.GetWorld())
+		{
+			if (UWorldPartitionManager* Partition = ActorWorld->GetPartitionManager())
+			{
+				Partition->Register(Cast<UStaticMeshComponent>(NewComp));
+			}
+		}
 		return true;
 	}
 	void MarkComponentSubtreeVisited(USceneComponent* Component, TSet<USceneComponent*>& Visited)
@@ -688,7 +697,6 @@ void UTargetActorTransformWidget::RenderWidget()
 					{
 						FQuat Cur = EditingComponent->GetRelativeRotation();
 						EditingComponent->SetRelativeRotation((DeltaQuat * Cur).GetNormalized());
-						if (SelectedActor) SelectedActor->MarkPartitionDirty();
 					}
 					else if (SelectedActor)
 					{
@@ -705,7 +713,6 @@ void UTargetActorTransformWidget::RenderWidget()
 					if (EditingComponent)
 					{
 						EditingComponent->SetRelativeRotation(NewQ);
-						if (SelectedActor) SelectedActor->MarkPartitionDirty();
 					}
 					else if (SelectedActor)
 					{
@@ -1039,7 +1046,7 @@ void UTargetActorTransformWidget::ApplyTransformToActor() const
 
 		if (bDirty)
 		{
-			SelectedActor->MarkPartitionDirty();
+			SelectedActor->GetRootComponent()->OnTransformUpdated();
 		}
 		return;
 	}

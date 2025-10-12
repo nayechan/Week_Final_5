@@ -57,6 +57,7 @@ void UStaticMeshComponent::SetStaticMesh(const FString& PathFileName)
             MaterialSlots[i].MaterialName = GroupInfos[i].InitialMaterialName;
         }
     }
+    MarkWorldPartitionDirty();
 }
 
 void UStaticMeshComponent::Serialize(bool bIsLoading, FPrimitiveData& InOut)
@@ -164,13 +165,12 @@ void UStaticMeshComponent::DuplicateSubObjects()
     Super::DuplicateSubObjects();
 }
 
-void UStaticMeshComponent::OnTransformUpdated()
+void UStaticMeshComponent::OnTransformUpdatedChildImpl()
 {
-    Super::OnTransformUpdated();
-    MarkBVDirty();
+    MarkWorldPartitionDirty();
 }
 
-void UStaticMeshComponent::MarkBVDirty()
+void UStaticMeshComponent::MarkWorldPartitionDirty()
 {
     if (UWorld* World = GetWorld())
     {

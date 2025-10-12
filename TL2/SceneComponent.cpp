@@ -45,7 +45,6 @@ void USceneComponent::SetRelativeLocation(const FVector& NewLocation)
     RelativeLocation = NewLocation;
     UpdateRelativeTransform();
     OnTransformUpdated();
-    PropagateTransformUpdate();
 }
 FVector USceneComponent::GetRelativeLocation() const { return RelativeLocation; }
 
@@ -54,7 +53,6 @@ void USceneComponent::SetRelativeRotation(const FQuat& NewRotation)
     RelativeRotation = NewRotation;
     UpdateRelativeTransform();
     OnTransformUpdated();
-    PropagateTransformUpdate();
 }
 FQuat USceneComponent::GetRelativeRotation() const { return RelativeRotation; }
 
@@ -63,7 +61,6 @@ void USceneComponent::SetRelativeScale(const FVector& NewScale)
     RelativeScale = NewScale;
     UpdateRelativeTransform();
     OnTransformUpdated();
-    PropagateTransformUpdate();
 }
 FVector USceneComponent::GetRelativeScale() const { return RelativeScale; }
 
@@ -72,7 +69,6 @@ void USceneComponent::AddRelativeLocation(const FVector& DeltaLocation)
     RelativeLocation = RelativeLocation + DeltaLocation;
     UpdateRelativeTransform();
     OnTransformUpdated();
-    PropagateTransformUpdate();
 }
 
 void USceneComponent::AddRelativeRotation(const FQuat& DeltaRotation)
@@ -80,7 +76,6 @@ void USceneComponent::AddRelativeRotation(const FQuat& DeltaRotation)
     RelativeRotation = DeltaRotation * RelativeRotation;
     UpdateRelativeTransform();
     OnTransformUpdated();
-    PropagateTransformUpdate();
 }
 
 void USceneComponent::AddRelativeScale3D(const FVector& DeltaScale)
@@ -90,7 +85,6 @@ void USceneComponent::AddRelativeScale3D(const FVector& DeltaScale)
         RelativeScale.Z * DeltaScale.Z);
     UpdateRelativeTransform();
     OnTransformUpdated();
-    PropagateTransformUpdate();
 }
 
 // ──────────────────────────────
@@ -119,7 +113,6 @@ void USceneComponent::SetWorldTransform(const FTransform& W)
     RelativeRotation = RelativeTransform.Rotation;
     RelativeScale = RelativeTransform.Scale3D;
     OnTransformUpdated();
-    PropagateTransformUpdate();
 }
  
 void USceneComponent::SetWorldLocation(const FVector& L)
@@ -184,7 +177,6 @@ void USceneComponent::AddLocalOffset(const FVector& Delta)
     RelativeLocation = RelativeLocation + parentDelta;
     UpdateRelativeTransform();
     OnTransformUpdated();
-    PropagateTransformUpdate();
 }
 
 void USceneComponent::AddLocalRotation(const FQuat& DeltaRot)
@@ -192,7 +184,6 @@ void USceneComponent::AddLocalRotation(const FQuat& DeltaRot)
     RelativeRotation = (RelativeRotation * DeltaRot).GetNormalized(); // 로컬: 우측곱
     UpdateRelativeTransform();
     OnTransformUpdated();
-    PropagateTransformUpdate();
 }
 
 void USceneComponent::SetLocalLocationAndRotation(const FVector& L, const FQuat& R)
@@ -201,7 +192,6 @@ void USceneComponent::SetLocalLocationAndRotation(const FVector& L, const FQuat&
     RelativeRotation = R.GetNormalized();
     UpdateRelativeTransform();
     OnTransformUpdated();
-    PropagateTransformUpdate();
 }
 
 
@@ -306,6 +296,8 @@ void USceneComponent::UpdateRelativeTransform()
 
 void USceneComponent::OnTransformUpdated()
 {
+    OnTransformUpdatedChildImpl();
+    PropagateTransformUpdate();
 }
 
 void USceneComponent::PropagateTransformUpdate()
@@ -313,6 +305,15 @@ void USceneComponent::PropagateTransformUpdate()
     for (USceneComponent*& Child : AttachChildren)
     {
         Child->OnTransformUpdated();
-        Child->PropagateTransformUpdate();
     }
+}
+
+void USceneComponent::OnTransformUpdatedChildImpl()
+{
+    // Do Nothing
+}
+
+UWorld* USceneComponent::GetWorld()
+{
+    return Owner ? Owner->GetWorld() : nullptr;
 }

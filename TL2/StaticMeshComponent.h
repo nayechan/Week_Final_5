@@ -44,14 +44,14 @@ public:
     }
 
     FAABB GetWorldAABB() const;
-
+    
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
     DECLARE_DUPLICATE(UStaticMeshComponent)
     
 protected:
-    void OnTransformUpdated() override;
-    void MarkBVDirty();
+    void OnTransformUpdatedChildImpl() override;
+    void MarkWorldPartitionDirty();
 
 protected:
     UStaticMesh* StaticMesh = nullptr;

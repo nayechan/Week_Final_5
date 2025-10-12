@@ -28,7 +28,7 @@ void UDecalComponent::DuplicateSubObjects()
 void UDecalComponent::TickComponent(float DeltaTime)
 {
 	// Opacity 업데이트
-	DecalOpacity += FadeDirection * FadeSpeed * DeltaTime;
+	DecalOpacity += static_cast<float>(FadeDirection) * FadeSpeed * DeltaTime;
 
 	// 범위 체크 및 방향 반전
 	if (DecalOpacity <= 0.0f)

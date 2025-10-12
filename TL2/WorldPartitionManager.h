@@ -22,13 +22,14 @@ public:
 	~UWorldPartitionManager();
 
 	void Clear();
-	// Actor-based API (preferred)
-	void Register(AActor* Actor);
-	// 벌크 등록 - 대량 액터 처리용
-	void BulkRegister(const TArray<AActor*>& Actors);
+	
+	void Register(UStaticMeshComponent* Smc);         // StaticMeshComponent 하나 추가
+	void Register(AActor* Actor);			          // 액터에 부착된 StaticMeshComponent 전부 추가
+	void BulkRegister(const TArray<AActor*>& Actors); // 여러 액터 한 번에 추가
+	
 	void Unregister(AActor* Actor);
 	void MarkDirty(AActor* Actor);
-	void MarkDirty(UStaticMeshComponent* Component);
+	void MarkDirty(UStaticMeshComponent* Smc);
 
 	void Update(float DeltaTime, const uint32 BudgetCount = 256);
 
@@ -50,9 +51,9 @@ private:
 	//재시작시 필요 
 	void ClearSceneOctree();
 	void ClearBVHierarchy();
-
-	TQueue<UStaticMeshComponent*> ComponentDirtyQueue;
-	TSet<UStaticMeshComponent*> ComponentDirtySet;
+	
+	TQueue<UStaticMeshComponent*> ComponentDirtyQueue; // 추가 혹은 갱신이 필요한 요소의 대기 큐
+	TSet<UStaticMeshComponent*> ComponentDirtySet;     // 더티 큐 중복 추가를 막기 위한 Set
 	FOctree* SceneOctree = nullptr;
 	FBVHierarchy* BVH = nullptr;
 };

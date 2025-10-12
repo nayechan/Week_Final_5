@@ -75,7 +75,7 @@ public:
     // ──────────────────────────────
     USceneComponent* GetAttachParent() const { return AttachParent; }
     const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
-    UWorld* GetWorld() { return AttachParent ? AttachParent->GetWorld() : nullptr; }
+    UWorld* GetWorld();
 
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
@@ -87,11 +87,17 @@ public:
         AttachParent = InParent;
     }
 
+    /**
+     * @brief 로컬 트랜스폼 변경시 생기는 영향을 처리하기 위한 메소드
+     * @note 이 메소드는 모든 SceneComponent 공통 로직을 처리.
+     * Derived class별 특수 로직은 OnTransformUpdatedChildImpl()를 이용.
+     */
+    void OnTransformUpdated();
+
 protected:
-
-    /** @brief 로컬 트랜스폼 변경시 생기는 영향을 처리하기 위한 메소드 */
-    virtual void OnTransformUpdated();
-
+    /** @brief OnTransformUpdated() 내부에서 클래스 별 특수 로직을 처리하기 위한 가상함수 */
+    virtual void OnTransformUpdatedChildImpl();
+    
     /**
      * @brief Transform 갱신시 자식 컴포넌트의 OnTransformUpdated를 강제 호출.
      * @note 부모 컴포넌트의 트랜스폼 변화로 인해 월드 관점에서 생길 영향을 처리하기 위한 메소드로,
