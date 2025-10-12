@@ -168,12 +168,21 @@ bool UWorld::DestroyActor(AActor* Actor)
 	Actor->EndPlay(EEndPlayReason::Destroyed);
 
 	// 컴포넌트 정리 (등록 해제 → 파괴)
+	TArray<USceneComponent*> Components = Actor->GetSceneComponents();
+	for(USceneComponent* Comp : Components)
+	{
+		if (Comp)
+		{
+			Comp->SetOwner(nullptr); // 소유자 해제
+		}
+	}
+
+	// 월드 자료구조에서 소유한 컴포넌트 내리기
+	OnActorDestroyed(Actor);
+
 	Actor->UnregisterAllComponents(/*bCallEndPlayOnBegun=*/true);
 	Actor->DestroyAllComponents();
 	Actor->ClearSceneComponentCaches();
-
-	// 월드 자료구조에서 제거 (옥트리/파티션/렌더 캐시 등)
-	OnActorDestroyed(Actor);
 
 // 레벨에서 제거 시도
 	if (Level && Level->RemoveActor(Actor))

@@ -275,12 +275,6 @@ void UEditorEngine::MainLoop()
 
         if (!bRunning) break;
 
-        if (UInputManager::GetInstance().IsKeyPressed(VK_ESCAPE))
-        {
-            UE_LOG("ESC Key Pressed - Exiting!\n");
-            bRunning = false;
-        }
-
         if (bChangedPieToEditor)
         {
             if (GWorld && bPIEActive)
