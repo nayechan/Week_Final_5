@@ -19,42 +19,6 @@
 #include "WorldPartitionManager.h"
 using namespace std;
 
-
-// ★ 고정 오더: ZYX (Yaw-Pitch-Roll) ? 기즈모의 Delta 곱(Z * Y * X)과 동일
-static inline FQuat QuatFromEulerZYX_Deg(const FVector& Deg)
-{
-	const float Rx = DegreeToRadian(Deg.X); // Roll (X)
-	const float Ry = DegreeToRadian(Deg.Y); // Pitch (Y)
-	const float Rz = DegreeToRadian(Deg.Z); // Yaw (Z)
-
-	const FQuat Qx = MakeQuatFromAxisAngle(FVector(1, 0, 0), Rx);
-	const FQuat Qy = MakeQuatFromAxisAngle(FVector(0, 1, 0), Ry);
-	const FQuat Qz = MakeQuatFromAxisAngle(FVector(0, 0, 1), Rz);
-	return Qz * Qy * Qx; // ZYX
-}
-
-static inline FVector EulerZYX_DegFromQuat(const FQuat& Q)
-{
-	// 표준 ZYX(roll=x, pitch=y, yaw=z) 복원식
-	// 참고: roll(X), pitch(Y), yaw(Z)
-	const float w = Q.W, x = Q.X, y = Q.Y, z = Q.Z;
-
-	const float sinr_cosp = 2.0f * (w * x + y * z);
-	const float cosr_cosp = 1.0f - 2.0f * (x * x + y * y);
-	float roll = std::atan2(sinr_cosp, cosr_cosp);
-
-	float sinp = 2.0f * (w * y - z * x);
-	float pitch;
-	if (std::fabs(sinp) >= 1.0f) pitch = std::copysign(HALF_PI, sinp);
-	else                          pitch = std::asin(sinp);
-
-	const float siny_cosp = 2.0f * (w * z + x * y);
-	const float cosy_cosp = 1.0f - 2.0f * (y * y + z * z);
-	float yaw = std::atan2(siny_cosp, cosy_cosp);
-
-	return FVector(RadianToDegree(roll), RadianToDegree(pitch), RadianToDegree(yaw));
-}
-
 namespace
 {
 	struct FAddableComponentDescriptor
