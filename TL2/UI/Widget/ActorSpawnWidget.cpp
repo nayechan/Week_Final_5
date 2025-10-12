@@ -133,15 +133,6 @@ bool UActorSpawnWidget::TrySpawnActor(UClass* ActorClass)
 		FString ActorName = World->GenerateUniqueActorName(Desc ? Desc->Label : "Actor");
 		NewActor->SetName(ActorName);
 
-		// 스폰 후 처리 (예: StaticMeshActor에 기본 메시 할당)
-		if (AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(NewActor))
-		{
-			if (auto* StaticMeshComp = StaticMeshActor->GetStaticMeshComponent())
-			{
-				StaticMeshComp->SetStaticMesh("Data/Cube.obj");
-			}
-		}
-
 		// 월드 파티션 시스템에 등록 (중요)
 		World->OnActorSpawned(NewActor);
 		UE_LOG("ActorSpawn: Successfully spawned %s.", ActorName.c_str());
