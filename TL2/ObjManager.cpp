@@ -147,29 +147,34 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 	std::replace(NormalizedPathStr.begin(), NormalizedPathStr.end(), '\\', '/');
 
 	// 1. 메모리 캐시 확인: 이미 로드된 에셋이 있으면 즉시 반환합니다.
-	if (FStaticMesh** FoundMesh = ObjStaticMeshMap.Find(NormalizedPathStr))
+	if (FStaticMesh** It = ObjStaticMeshMap.Find(NormalizedPathStr))
 	{
-		return *FoundMesh;
+		return *It;
 	}
+
+	std::filesystem::path Path(NormalizedPathStr);
 
 	// 2. 파일 경로 설정
-	fs::path ObjPath(NormalizedPathStr);
-	if (ObjPath.extension() != ".obj" && ObjPath.extension() != ".OBJ")
+	// 확장자를 소문자로 변환하여 대소문자 구분 없이 ".obj"를 처리합니다.
+	std::string Extension = Path.extension().string();
+	std::transform(Extension.begin(), Extension.end(), Extension.begin(),
+		[](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+	if (Extension != ".obj")
 	{
-		UE_LOG("Error: Not a .obj file: %s", NormalizedPathStr.c_str());
-		return nullptr;
+		UE_LOG("this file is not obj!: %s", NormalizedPathStr.c_str());
+		return nullptr; // NewFStaticMesh가 생성되지 않았으므로 delete 불필요
 	}
 
-	fs::path StemPath = ObjPath;
-	StemPath.replace_extension("");
-	const FString BinPath = StemPath.string() + ".bin";
-	const FString MatBinPath = StemPath.string() + "Mat.bin";
+	// 파일명 생성 규칙 변경 (예: cube.obj -> cube.obj.bin, cube.mtl -> cube.obj.mat.bin)
+	const FString BinPathFileName = NormalizedPathStr + ".bin";
+	const FString MatBinPathFileName = NormalizedPathStr + ".mat.bin";
 
 	// 3. 캐시 유효성 검사 및 데이터 준비
 	FStaticMesh* NewFStaticMesh = new FStaticMesh();
 	TArray<FObjMaterialInfo> MaterialInfos;
 
-	bool bRegenerate = ShouldRegenerateCache(NormalizedPathStr, BinPath, MatBinPath);
+	bool bRegenerate = ShouldRegenerateCache(NormalizedPathStr, BinPathFileName, MatBinPathFileName);
 
 	if (bRegenerate)
 	{
@@ -188,11 +193,11 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 		FObjImporter::ConvertToStaticMesh(RawObjInfo, MaterialInfos, NewFStaticMesh);
 
 		// 새로운 캐시 파일(.bin) 저장
-		FWindowsBinWriter Writer(BinPath);
+		FWindowsBinWriter Writer(BinPathFileName);
 		Writer << *NewFStaticMesh;
 		Writer.Close();
 
-		FWindowsBinWriter MatWriter(MatBinPath);
+		FWindowsBinWriter MatWriter(MatBinPathFileName);
 		Serialization::WriteArray<FObjMaterialInfo>(MatWriter, MaterialInfos);
 		MatWriter.Close();
 	}
@@ -201,10 +206,10 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 		UE_LOG("Loading '%s' from cache.", NormalizedPathStr.c_str());
 
 		// 캐시에서 FStaticMesh 데이터 로드
-		FWindowsBinReader Reader(BinPath);
+		FWindowsBinReader Reader(BinPathFileName);
 		if (!Reader.IsOpen())
 		{
-			UE_LOG("Failed to open bin file for reading: %s", BinPath.c_str());
+			UE_LOG("Failed to open bin file for reading: %s", BinPathFileName.c_str());
 			delete NewFStaticMesh;
 			return nullptr;
 		}
@@ -212,10 +217,10 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 		Reader.Close();
 
 		// 캐시에서 Material 데이터 로드
-		FWindowsBinReader MatReader(MatBinPath);
+		FWindowsBinReader MatReader(MatBinPathFileName);
 		if (!MatReader.IsOpen())
 		{
-			UE_LOG("Failed to open material bin file for reading: %s", MatBinPath.c_str());
+			UE_LOG("Failed to open material bin file for reading: %s", MatBinPathFileName.c_str());
 			delete NewFStaticMesh;
 			return nullptr;
 		}
@@ -226,7 +231,8 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 	// 4. 머티리얼 및 텍스처 경로 처리 (공통 로직)
 
 	// 텍스처 파일의 상대 경로를 .obj 파일 기준의 절대 경로로 변환
-	fs::path BaseDir = ObjPath.parent_path();
+	// [수정된 부분] FString을 fs::path로 변환 후 parent_path() 호출
+	fs::path BaseDir = fs::path(NormalizedPathStr).parent_path();
 	for (auto& MI : MaterialInfos)
 	{
 		auto FixPath = [&](FString& TexturePath)
