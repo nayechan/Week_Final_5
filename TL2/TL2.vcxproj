@@ -171,6 +171,7 @@
     <ClCompile Include="FakeSpotLightActor.cpp" />
     <ClCompile Include="FireBallComponent.cpp" />
     <ClCompile Include="FSceneRenderer.cpp" />
+    <ClCompile Include="HeightFogComponent.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="MeshBVH.cpp" />
     <ClCompile Include="OBB.cpp" />

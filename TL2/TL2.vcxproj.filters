@@ -462,6 +462,9 @@
     <ClCompile Include="FireBallComponent.cpp">
       <Filter>소스 파일\Component</Filter>
     </ClCompile>
+    <ClCompile Include="HeightFogComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Primitive.hlsl">
@@ -495,6 +498,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="SceneDepth.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="CopyTexture.ps.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="FullScreenTriangle.vs.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

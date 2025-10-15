@@ -190,6 +190,9 @@ void FSceneRenderer::PrepareView()
 	{
 		EffectiveViewMode = EViewModeIndex::VMI_Wireframe;
 	}
+
+	float ClearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	RHIDevice->GetDeviceContext()->ClearRenderTargetView(RHIDevice->GetSceneRTV(), ClearColor);
 }
 
 void FSceneRenderer::GatherVisibleProxies()
@@ -255,10 +258,10 @@ void FSceneRenderer::GatherVisibleProxies()
 					Proxies.FireBalls.Add(FireBallComponent);
 				}
 			}
-			//else if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(Component); FogComponent && bDrawFog)
-			//{
-			//	SceneGlobals.Fogs.Add(FogComponent);
-			//}
+			else if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(Component); FogComponent && bDrawFog)
+			{
+				SceneGlobals.Fogs.Add(FogComponent);
+			}
 		}
 	}
 }
@@ -391,7 +394,7 @@ void FSceneRenderer::RenderFireBallPass()
 	RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqualReadOnly); // 깊이 쓰기 OFF
 	RHIDevice->OMSetBlendState(true); // 블렌딩 ON
 
-	for (UFireBallComponent* FireBall: Proxies.FireBalls)
+	for (UFireBallComponent* FireBall : Proxies.FireBalls)
 	{
 		// FireBall 렌더링
 		TArray<UPrimitiveComponent*> TargetPrimitives;
@@ -437,7 +440,7 @@ void FSceneRenderer::RenderPostProcessingPasses()
 	{
 		if (SceneGlobals.Fogs[0])
 		{
-			// SceneGlobals.Fogs[0] 를 사용
+			UHeightFogComponent* FogComponent = SceneGlobals.Fogs[0];
 		}
 	}
 

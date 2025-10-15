@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "UI/StatsOverlayD2D.h"
 #include "Color.h"
 
@@ -1269,35 +1269,6 @@ void D3D11RHI::SetViewport(UINT width, UINT height)
 void D3D11RHI::setviewort(UINT width, UINT height)
 {
     SetViewport(width, height);
-}
-void D3D11RHI::ResizeSwapChain(UINT width, UINT height)
-{
-    if (!SwapChain) return;
-
-    // 렌더링 완료까지 대기 (중요!)
-    if (DeviceContext) {
-        DeviceContext->Flush();
-    }
-
-    // 현재 렌더 타겟 언바인딩
-    if (DeviceContext) {
-        DeviceContext->OMSetRenderTargets(0, nullptr, nullptr);
-    }
-
-    // 기존 뷰 해제
-    if (BackBufferRTV) { BackBufferRTV->Release(); BackBufferRTV = nullptr; }
-    if (DepthStencilView) { DepthStencilView->Release(); DepthStencilView = nullptr; }
-    if (FrameBuffer) { FrameBuffer->Release(); FrameBuffer = nullptr; }
-
-    // 스왑체인 버퍼 리사이즈
-    HRESULT hr = SwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, 0);
-    if (FAILED(hr)) { UE_LOG("ResizeBuffers failed!\n"); return; }
-
-    // 다시 RTV/DSV 만들기
-    CreateBackBufferAndDepthStencil(width, height);
-
-    // 뷰포트도 갱신
-    setviewort(width, height);
 }
 
 void D3D11RHI::PSSetDefaultSampler(UINT StartSlot)

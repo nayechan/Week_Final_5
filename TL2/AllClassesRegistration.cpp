@@ -27,6 +27,7 @@
 #include "DecalComponent.h"
 #include "PerspectiveDecalComponent.h"
 #include "FireBallComponent.h"
+#include "HeightFogComponent.h"
 
 #include "UI/Factory/UIWindowFactory.h"
 #include "UI/ImGui/ImGuiHelper.h"
@@ -77,6 +78,7 @@ IMPLEMENT_CLASS(UBillboardComponent)
 IMPLEMENT_CLASS(UDecalComponent)
 IMPLEMENT_CLASS(UPerspectiveDecalComponent)
 IMPLEMENT_CLASS(UFireBallComponent)
+IMPLEMENT_CLASS(UHeightFogComponent)
 
 IMPLEMENT_CLASS(AActor)
 IMPLEMENT_CLASS(ACameraActor)

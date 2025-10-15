@@ -21,6 +21,10 @@ UHeightFogComponent::~UHeightFogComponent()
 	}
 }
 
+void UHeightFogComponent::RenderHeightFog(URenderer* Renderer)
+{
+}
+
 void UHeightFogComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 {
 	if (bInIsLoading)
@@ -30,7 +34,7 @@ void UHeightFogComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 		{
 			FVector4 ColorVec;
 			FJsonSerializer::ReadVector4(InOutHandle, "FogInscatteringColor", ColorVec);
-			*FogInscatteringColor = ColorVec;
+			FogInscatteringColor = new FLinearColor(ColorVec);
 		}
 
 		// Load FullScreenQuadMesh
