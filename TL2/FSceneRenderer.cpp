@@ -656,9 +656,10 @@ void FSceneRenderer::RenderEditorPrimitivesPass()
 			{
 				if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
 				{
-					// 기즈모는 오버레이 Primitive라서 나중에 따로 그림
 					// NOTE: 추후 깔끔하게 World Editor Actors 와 World Overlay Actors 랑 비슷한 느낌으로 분리가 필요할듯
-					if (Cast<UGizmoArrowComponent>(Primitive) || Cast<UGizmoRotateComponent>(Primitive) || Cast<UGizmoScaleComponent>(Primitive))
+					// 기즈모는 오버레이 Primitive라서 나중에 따로 그림
+					// UGizmoArrowComponent를 다른 기즈모도 상속하고 있어서 Arrow만 검사해도 충분
+					if (Cast<UGizmoArrowComponent>(Primitive))
 					{
 						continue;
 					}
@@ -721,7 +722,8 @@ void FSceneRenderer::RenderOverayEditorPrimitivesPass()
 			{
 				if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
 				{
-					if (Cast<UGizmoArrowComponent>(Primitive) || Cast<UGizmoRotateComponent>(Primitive) || Cast<UGizmoScaleComponent>(Primitive))
+					// UGizmoArrowComponent를 다른 기즈모도 상속하고 있어서 Arrow만 검사해도 충분
+					if (Cast<UGizmoArrowComponent>(Primitive))
 					{
 						RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual);
 						Primitive->Render(OwnerRenderer, ViewMatrix, ProjectionMatrix);
