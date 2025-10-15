@@ -190,6 +190,9 @@ void FSceneRenderer::PrepareView()
 	{
 		EffectiveViewMode = EViewModeIndex::VMI_Wireframe;
 	}
+
+	float ClearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	RHIDevice->GetDeviceContext()->ClearRenderTargetView(RHIDevice->GetSceneRTV(), ClearColor);
 }
 
 void FSceneRenderer::GatherVisibleProxies()
