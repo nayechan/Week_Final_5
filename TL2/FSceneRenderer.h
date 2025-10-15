@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Frustum.h"
 
 // 전방 선언 (헤더 파일 의존성 최소화)
@@ -68,6 +68,9 @@ private:
 
 	/** @brief 데칼(Decal)을 렌더링하는 패스입니다. */
 	void RenderDecalPass();
+
+	/** @brief FireBall component들을 렌더링하는 패스입니다. */
+	void RenderFireBallPass();
 
 	void RenderPostProcessingPasses();
 	void RenderSceneDepthPostProcess();

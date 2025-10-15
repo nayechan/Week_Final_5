@@ -112,6 +112,12 @@
     <Filter Include="헤더 파일\Utility">
       <UniqueIdentifier>{79276fdf-f13b-46b2-b407-498de0e494dd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\Collision">
+      <UniqueIdentifier>{21a633a9-41d0-46da-83fb-8c27bea36da9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\Collision">
+      <UniqueIdentifier>{11493bf3-68a0-4328-beef-20472a426899}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -417,12 +423,6 @@
     <ClCompile Include="Level.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="AABB.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="OBB.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="DecalComponent.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -445,10 +445,22 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Collision.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>소스 파일\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="OBB.cpp">
+      <Filter>소스 파일\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="AABB.cpp">
+      <Filter>소스 파일\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="BoundingSphere.cpp">
+      <Filter>소스 파일\Collision</Filter>
     </ClCompile>
     <ClCompile Include="Color.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="FireBallComponent.cpp">
+      <Filter>소스 파일\Component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -474,6 +486,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="DecalVS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="FireBallShader.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Fog.hlsl">
@@ -814,12 +829,6 @@
     <ClInclude Include="FViewport.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="AABB.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="OBB.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="DecalComponent.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -847,8 +856,20 @@
     <ClInclude Include="JsonSerializer.h">
       <Filter>헤더 파일\Utility</Filter>
     </ClInclude>
+    <ClInclude Include="AABB.h">
+      <Filter>헤더 파일\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="OBB.h">
+      <Filter>헤더 파일\Collision</Filter>
+    </ClInclude>
     <ClInclude Include="Collision.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>헤더 파일\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingSphere.h">
+      <Filter>헤더 파일\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="FireBallComponent.h">
+      <Filter>헤더 파일\Component</Filter>
     </ClInclude>
     <ClInclude Include="Color.h">
       <Filter>헤더 파일</Filter>

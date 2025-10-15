@@ -24,6 +24,8 @@
 #include "BillboardComponent.h"
 #include "TextRenderComponent.h"
 #include "OBB.h"
+#include "BoundingSphere.h"
+#include "FireBallComponent.h"
 
 FSceneRenderer::FSceneRenderer(UWorld* InWorld, ACameraActor* InCamera, FViewport* InViewport, URenderer* InOwnerRenderer)
 	: World(InWorld)
@@ -94,6 +96,7 @@ void FSceneRenderer::RenderLitPath()
 	// Base Pass
 	RenderOpaquePass();
 	RenderDecalPass();
+	RenderFireBallPass();
 
 	// 후처리 체인 실행
 	RenderPostProcessingPasses();
@@ -247,10 +250,10 @@ void FSceneRenderer::GatherVisibleProxies()
 				{
 					Proxies.Decals.Add(DecalComponent);
 				}
-				//else if (UFireBallComponent* FireBallComponent = Cast<UFireBallComponent>(Primitive))
-				//{
-				//	Proxies.FireBalls.Add(FireBallComponent);
-				//}
+				else if (UFireBallComponent* FireBallComponent = Cast<UFireBallComponent>(PrimitiveComponent))
+				{
+					Proxies.FireBalls.Add(FireBallComponent);
+				}
 			}
 			//else if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(Component); FogComponent && bDrawFog)
 			//{
@@ -368,6 +371,54 @@ void FSceneRenderer::RenderDecalPass()
 
 	RHIDevice->RSSetState(ERasterizerMode::Solid);
 	RHIDevice->OMSetBlendState(false); // 상태 복구
+}
+
+void FSceneRenderer::RenderFireBallPass()
+{
+	if (Proxies.Decals.empty())
+		return;
+
+	UWorldPartitionManager* Partition = World->GetPartitionManager();
+	if (!Partition)
+		return;
+
+	const FBVHierarchy* BVH = Partition->GetBVH();
+	if (!BVH)
+		return;
+
+	// 데칼과 같은 설정 사용
+	RHIDevice->RSSetState(ERasterizerMode::Decal); // z-fighting 방지용 DepthBias 포함
+	RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqualReadOnly); // 깊이 쓰기 OFF
+	RHIDevice->OMSetBlendState(true); // 블렌딩 ON
+
+	for (UFireBallComponent* FireBall: Proxies.FireBalls)
+	{
+		// FireBall 렌더링
+		TArray<UPrimitiveComponent*> TargetPrimitives;
+
+		FBoundingSphere FireBallSphere = FireBall->GetBoundingSphere();
+		TArray<UStaticMeshComponent*> IntersectedStaticMeshComponents = BVH->QueryIntersectedComponents(FireBallSphere);
+
+		for (UStaticMeshComponent* SMC : IntersectedStaticMeshComponents)
+		{
+			if (!SMC)
+				continue;
+
+			AActor* Owner = SMC->GetOwner();
+			if (!Owner || !Owner->IsActorVisible())
+				continue;
+
+			TargetPrimitives.push_back(SMC);
+		}
+
+		for (UPrimitiveComponent* Target : TargetPrimitives)
+		{
+			FireBall->RenderAffectedPrimitives(OwnerRenderer, Target, ViewMatrix, ProjectionMatrix);
+		}
+	}
+
+	RHIDevice->RSSetState(ERasterizerMode::Solid);
+	RHIDevice->OMSetBlendState(false);
 }
 
 void FSceneRenderer::RenderPostProcessingPasses()

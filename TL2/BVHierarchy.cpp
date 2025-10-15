@@ -166,91 +166,6 @@ void FBVHierarchy::QueryFrustum(const Frustum& InFrustum)
     }
 }
 
-// DFS 방식으로 BVH 순회하며 InBounds와 bounding volume이 충돌한 액터들 추출
-TArray<UStaticMeshComponent*> FBVHierarchy::QueryIntersectedComponents(const FAABB& InBound) const
-{
-    TSet<UStaticMeshComponent*> IntersectedComponents;
-    if (Nodes.empty())
-        return TArray<UStaticMeshComponent*>();
-    TArray<int32> IdxStack;
-    IdxStack.push_back({ 0 }); // Index 0 is always root node (BuildLBVHFromMap 참고)
-
-    while (!IdxStack.empty())
-    {
-        int32 Idx = IdxStack.back();
-        IdxStack.pop_back();
-        const FLBVHNode& Node = Nodes[Idx];
-        if (Node.Bounds.Intersects(InBound))
-        {
-            // 현재 노드와 InBound가 겹쳤고 leaf인 경우 -> 각 액터 순회 돌면서 InBound와 겹치는지 검사
-            if (Node.IsLeaf())
-            {
-                for (int32 i = 0; i < Node.Count; ++i)
-                {
-                    UStaticMeshComponent* Component = StaticMeshComponentArray[Node.First + i];
-                    if (!Component || StaticMeshComponentBounds.find(Component) == StaticMeshComponentBounds.end())
-                        continue;
-                    const FAABB* Cached = StaticMeshComponentBounds.Find(Component);
-                    const FAABB Box = Cached ? *Cached : Component->GetWorldAABB();
-                    if (InBound.Intersects(Box))
-                    {
-                        IntersectedComponents.insert(Component);
-                    }
-                }
-            }
-            // 현재 노드가 leaf가 아닌 경우 -> child 있으면 search stack에 추가
-            else
-            {
-                if (Node.Left >= 0) IdxStack.push_back({ Node.Left });
-                if (Node.Right >= 0) IdxStack.push_back({ Node.Right });
-            }
-        }
-    }
-    return IntersectedComponents.Array();
-}
-
-TArray<UStaticMeshComponent*> FBVHierarchy::QueryIntersectedComponents(const FOBB& InBound) const
-{
-    TSet<UStaticMeshComponent*> IntersectedComponents;
-    if (Nodes.empty())
-        return TArray<UStaticMeshComponent*>();
-    TArray<int32> IdxStack;
-    IdxStack.push_back({ 0 }); // Index 0 is always root node (BuildLBVHFromMap 참고)
-
-    while (!IdxStack.empty())
-    {
-        int32 Idx = IdxStack.back();
-        IdxStack.pop_back();
-        const FLBVHNode& Node = Nodes[Idx];
-        if (Collision::Intersects(Node.Bounds, InBound))
-        {
-            // 현재 노드와 InBound가 겹쳤고 leaf인 경우 -> 각 액터 순회 돌면서 InBound와 겹치는지 검사
-            if (Node.IsLeaf())
-            {
-                for (int32 i = 0; i < Node.Count; ++i)
-                {
-                    UStaticMeshComponent* Component = StaticMeshComponentArray[Node.First + i];
-                    if (!Component || StaticMeshComponentBounds.find(Component) == StaticMeshComponentBounds.end())
-                        continue;
-                    const FAABB* Cached = StaticMeshComponentBounds.Find(Component);
-                    const FAABB Box = Cached ? *Cached : Component->GetWorldAABB();
-                    if (Collision::Intersects(Box, InBound))
-                    {
-                        IntersectedComponents.insert(Component);
-                    }
-                }
-            }
-            // 현재 노드가 leaf가 아닌 경우 -> child 있으면 search stack에 추가
-            else
-            {
-                if (Node.Left >= 0) IdxStack.push_back({ Node.Left });
-                if (Node.Right >= 0) IdxStack.push_back({ Node.Right });
-            }
-        }
-    }
-    return IntersectedComponents.Array();
-}
-
 void FBVHierarchy::DebugDraw(URenderer* Renderer) const
 {
     if (!Renderer) return;
@@ -576,4 +491,78 @@ void FBVHierarchy::FlushRebuild()
         BuildLBVH();
         bPendingRebuild = false;
     }
+}
+
+template<typename BoundType, typename NodeIntersectFunc, typename ComponentIntersectFunc>
+TArray<UStaticMeshComponent*> FBVHierarchy::QueryIntersectedComponentsGeneric(
+    const BoundType& InBound,
+    NodeIntersectFunc NodeIntersects,
+    ComponentIntersectFunc ComponentIntersects) const
+{
+    TSet<UStaticMeshComponent*> IntersectedComponents;
+    if (Nodes.empty())
+        return TArray<UStaticMeshComponent*>();
+    TArray<int32> IdxStack;
+    IdxStack.push_back({ 0 });
+
+    while (!IdxStack.empty())
+    {
+        int32 Idx = IdxStack.back();
+        IdxStack.pop_back();
+        const FLBVHNode& Node = Nodes[Idx];
+        if (NodeIntersects(Node.Bounds, InBound))
+        {
+            if (Node.IsLeaf())
+            {
+                for (int32 i = 0; i < Node.Count; ++i)
+                {
+                    UStaticMeshComponent* Component = StaticMeshComponentArray[Node.First + i];
+                    if (!Component || StaticMeshComponentBounds.find(Component) == StaticMeshComponentBounds.end())
+                        continue;
+                    const FAABB* Cached = StaticMeshComponentBounds.Find(Component);
+                    const FAABB Box = Cached ? *Cached : Component->GetWorldAABB();
+                    if (ComponentIntersects(Box, InBound))
+                    {
+                        IntersectedComponents.insert(Component);
+                    }
+                }
+            }
+            else
+            {
+                if (Node.Left >= 0) IdxStack.push_back({ Node.Left });
+                if (Node.Right >= 0) IdxStack.push_back({ Node.Right });
+            }
+        }
+    }
+    return IntersectedComponents.Array();
+}
+
+// FAABB 오버로드
+TArray<UStaticMeshComponent*> FBVHierarchy::QueryIntersectedComponents(const FAABB& InBound) const
+{
+    return QueryIntersectedComponentsGeneric(
+        InBound,
+        [](const FAABB& nodeBound, const FAABB& inBound) { return nodeBound.Intersects(inBound); },
+        [](const FAABB& compBound, const FAABB& inBound) { return inBound.Intersects(compBound); }
+    );
+}
+
+// FOBB 오버로드
+TArray<UStaticMeshComponent*> FBVHierarchy::QueryIntersectedComponents(const FOBB& InBound) const
+{
+    return QueryIntersectedComponentsGeneric(
+        InBound,
+        [](const FAABB& nodeBound, const FOBB& inBound) { return Collision::Intersects(nodeBound, inBound); },
+        [](const FAABB& compBound, const FOBB& inBound) { return Collision::Intersects(compBound, inBound); }
+    );
+}
+
+// FBoundingSphere 오버로드
+TArray<UStaticMeshComponent*> FBVHierarchy::QueryIntersectedComponents(const FBoundingSphere& InBound) const
+{
+    return QueryIntersectedComponentsGeneric(
+        InBound,
+        [](const FAABB& nodeBound, const FBoundingSphere& inBound) { return Collision::Intersects(nodeBound, inBound); },
+        [](const FAABB& compBound, const FBoundingSphere& inBound) { return Collision::Intersects(compBound, inBound); }
+    );
 }

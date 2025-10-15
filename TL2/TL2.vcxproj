@@ -162,12 +162,14 @@
     <ClCompile Include="AABB.cpp" />
     <ClCompile Include="ActorComponent.cpp" />
     <ClCompile Include="BillboardComponent.cpp" />
+    <ClCompile Include="BoundingSphere.cpp" />
     <ClCompile Include="BVHierarchy.cpp" />
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="DecalActor.cpp" />
     <ClCompile Include="DecalComponent.cpp" />
     <ClCompile Include="FakeSpotLightActor.cpp" />
+    <ClCompile Include="FireBallComponent.cpp" />
     <ClCompile Include="FSceneRenderer.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="MeshBVH.cpp" />
@@ -333,6 +335,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="FireBallShader.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="FullScreenTriangle.vs.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
@@ -390,6 +398,7 @@
   <ItemGroup>
     <ClInclude Include="AABB.h" />
     <ClInclude Include="ActorComponent.h" />
+    <ClInclude Include="BoundingSphere.h" />
     <ClInclude Include="Collision.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="DecalActor.h" />
@@ -398,6 +407,7 @@
     <ClInclude Include="DecalComponent.h" />
     <ClInclude Include="DecalStatManager.h" />
     <ClInclude Include="FakeSpotLightActor.h" />
+    <ClInclude Include="FireBallComponent.h" />
     <ClInclude Include="FSceneRenderer.h" />
     <ClInclude Include="JsonSerializer.h" />
     <ClInclude Include="Level.h" />

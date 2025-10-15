@@ -6,9 +6,9 @@ struct FLinearColor
     float R, G, B, A;
 
     FLinearColor() : R(0), G(0), B(0), A(0) {}
-    FLinearColor(float InR, float InG, float InB, float InA = 1.0f) : R(InR), G(InG), B(InB), A(InA) {};
-    FLinearColor(const FVector& RGB) : R(RGB.X), G(RGB.Y), B(RGB.Z), A(1.0f) {};
-    FLinearColor(const FVector4& RGBA) : R(RGBA.X), G(RGBA.Y), B(RGBA.Z), A(RGBA.W) {};;
+    explicit FLinearColor(float InR, float InG, float InB, float InA = 1.0f) : R(InR), G(InG), B(InB), A(InA) {};
+    explicit FLinearColor(const FVector& RGB) : R(RGB.X), G(RGB.Y), B(RGB.Z), A(1.0f) {};
+    explicit FLinearColor(const FVector4& RGBA) : R(RGBA.X), G(RGBA.Y), B(RGBA.Z), A(RGBA.W) {};;
 
 	inline FLinearColor& operator=(const FVector4& Other);
 

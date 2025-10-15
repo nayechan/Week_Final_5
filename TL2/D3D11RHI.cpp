@@ -1,5 +1,6 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "UI/StatsOverlayD2D.h"
+#include "Color.h"
 
 struct FConstants
 {
@@ -117,6 +118,16 @@ struct BillboardBufferType
     FVector cameraUp;*/
 };
 
+struct FireBallBufferType
+{
+	FVector Center;
+    float Radius;
+	float Intensity;
+    float Falloff;
+    float Padding[2];
+    FLinearColor Color;
+};
+
 void D3D11RHI::Initialize(HWND hWindow)
 {
     // 이곳에서 Device, DeviceContext, viewport, swapchain를 초기화한다
@@ -158,6 +169,7 @@ void D3D11RHI::Release()
     if (PixelConstCB) { PixelConstCB->Release(); PixelConstCB = nullptr; }
     if (UVScrollCB) { UVScrollCB->Release(); UVScrollCB = nullptr; }
     if (DecalCB) { DecalCB->Release(); DecalCB = nullptr; }
+    if (FireBallCB) { FireBallCB->Release(); FireBallCB = nullptr; }
     if (ConstantBuffer) { ConstantBuffer->Release(); ConstantBuffer = nullptr; }
 
     // PostProcess 상수버퍼
@@ -838,6 +850,14 @@ void D3D11RHI::CreateConstantBuffer()
     decalDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     Device->CreateBuffer(&decalDesc, nullptr, &DecalCB);
 
+    // b7: FireBallCB
+    D3D11_BUFFER_DESC fireBallDesc = {};
+    fireBallDesc.Usage = D3D11_USAGE_DYNAMIC;
+    fireBallDesc.ByteWidth = sizeof(FireBallBufferType);
+    fireBallDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    fireBallDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    Device->CreateBuffer(&fireBallDesc, nullptr, &FireBallCB);
+
     // ──────────────────────────────────────────────────────
     // PostProcess 상수 버퍼 생성
     // ──────────────────────────────────────────────────────
@@ -906,6 +926,32 @@ void D3D11RHI::UpdateDecalBuffer(const FMatrix& DecalMatrix, const float InOpaci
     DeviceContext->Unmap(DecalCB, 0);
     DeviceContext->VSSetConstantBuffers(6, 1, &DecalCB); // b6 슬롯
     DeviceContext->PSSetConstantBuffers(6, 1, &DecalCB); // b6 슬롯
+}
+
+void D3D11RHI::UpdateFireBallConstantBuffers(const FVector& Center, float Radius, float Intensity, float Falloff, const FLinearColor& Color)
+{
+	if (!FireBallCB)
+	{
+		return;
+	}
+
+	D3D11_MAPPED_SUBRESOURCE mapped;
+	if (FAILED(DeviceContext->Map(FireBallCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+	{
+		return;
+	}
+
+	auto* dataPtr = reinterpret_cast<FireBallBufferType*>(mapped.pData);
+	dataPtr->Center = Center;
+	dataPtr->Radius = Radius;
+	dataPtr->Intensity = Intensity;
+	dataPtr->Falloff = Falloff;
+	dataPtr->Padding[0] = 0.0f;
+	dataPtr->Padding[1] = 0.0f;
+	dataPtr->Color = Color;
+
+	DeviceContext->Unmap(FireBallCB, 0);
+	DeviceContext->PSSetConstantBuffers(7, 1, &FireBallCB); // b7 슬롯
 }
 
 
