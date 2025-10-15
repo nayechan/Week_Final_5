@@ -330,7 +330,7 @@ void FSceneRenderer::RenderDecalPass()
 
 void FSceneRenderer::RenderFireBallPass()
 {
-	if (Proxies.Decals.empty())
+	if (Proxies.FireBalls.empty())
 		return;
 
 	UWorldPartitionManager* Partition = World->GetPartitionManager();
