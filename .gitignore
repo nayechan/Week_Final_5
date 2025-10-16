@@ -446,15 +446,14 @@ gmae.ini
 ClassDiagram.cd
 editor.ini
 
-TL2/Scene/*
-!TL2/Scene/Default.scene	# 5주차 과제용 테스트 씬
+Mundi/Scene/*
 
-!TL2/ThirdParty/DirectXTK/Bin**
+!Mundi/ThirdParty/DirectXTK/Bin**
 
 WARP.md
 
-# Ignore bin files in TL2/Data
-/TL2/Data/**/*.bin
+# Ignore bin files in Mundi/Data
+/Mundi/Data/**/*.bin
 
 # JetBrains IDEs' User-specific stuff
 .idea/**/workspace.xml

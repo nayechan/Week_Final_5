@@ -9,11 +9,21 @@ cbuffer ViewProjBuffer : register(b1)
     row_major float4x4 ProjectionMatrix;
 }
 
+cbuffer PSScrollCB : register(b5)
+{
+    float2 UVScrollSpeed;
+    float UVScrollTime;
+    float _pad_scrollcb;
+}
+
 cbuffer DecalBuffer : register(b6)
 {
     row_major float4x4 DecalMatrix;
     float DecalOpacity;
 }
+
+Texture2D g_DecalTexColor : register(t0);
+SamplerState g_Sample : register(s0);
 
 struct VS_INPUT
 {
@@ -42,4 +52,26 @@ PS_INPUT mainVS(VS_INPUT input)
     output.position = mul(worldPos, VP);
     
     return output;
+}
+
+float4 mainPS(PS_INPUT input) : SV_TARGET
+{
+    float3 ndc = input.decalPos.xyz / input.decalPos.w;
+    
+    // decal의 forward가 +x임 -> x방향 projection
+    if (ndc.x < 0.0f || 1.0f < ndc.x || ndc.y < -1.0f || 1.0f < ndc.y || ndc.z < -1.0f || 1.0f < ndc.z)
+    {
+        discard;
+    }
+    
+    // ndc to uv
+    float2 uv = (ndc.yz + 1.0f) / 2.0f;
+    uv.y = 1.0f - uv.y;
+    
+    uv += UVScrollSpeed * UVScrollTime;
+    
+    float4 finalColor = g_DecalTexColor.Sample(g_Sample, uv);
+    finalColor *= DecalOpacity; // ui로 조절한 decal의 opacity
+    
+    return finalColor;
 }

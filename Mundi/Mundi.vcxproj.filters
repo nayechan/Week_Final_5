@@ -132,12 +132,6 @@
     <FxCompile Include="Shaders\Effects\Fog.hlsl">
       <Filter>Shaders\Effects</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\Effects\DecalVS.hlsl">
-      <Filter>Shaders\Effects</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\Effects\DecalPS.hlsl">
-      <Filter>Shaders\Effects</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\PostProcess\FXAA.ps.hlsl">
       <Filter>Shaders\PostProcess</Filter>
     </FxCompile>
@@ -159,6 +153,7 @@
     <FxCompile Include="Shaders\UI\ShaderLine.hlsl">
       <Filter>Shaders\UI</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\Effects\Decal.hlsl" />
   </ItemGroup>
   <!-- Root Files -->
   <ItemGroup>
