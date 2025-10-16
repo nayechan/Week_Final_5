@@ -60,7 +60,7 @@ void FSceneRenderer::Render()
 	// 2. 렌더링할 대상 수집 (Cull + Gather)
 	GatherVisibleProxies();
 
-	RenderEditorPrimitivesPass();	// 기즈모, 그리드 출력
+	RenderEditorPrimitivesPass();	// 그리드 출력
 	RenderDebugPass();	// 빌보드나 선택한 물체의 경계 출력
 
 	if (EffectiveViewMode == EViewModeIndex::VMI_Lit)
@@ -77,7 +77,7 @@ void FSceneRenderer::Render()
 	}
 
 	// 3. 공통 오버레이(Overlay) 렌더링
-	RenderOverayEditorPrimitivesPass();	// 기즈모, 그리드 출력
+	RenderOverayEditorPrimitivesPass();	// 기즈모 출력
 
 	// FXAA 등 화면에서 최종 이미지 품질을 위해 적용되는 효과를 적용
 	ApplyScreenEffectsPass();
