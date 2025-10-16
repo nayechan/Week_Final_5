@@ -220,6 +220,8 @@ private:
 	ID3D11SamplerState* PointClampSamplerState = nullptr;
 
 	UShader* PreShader = nullptr; // Shaders, Inputlayout
+
+	bool bReleased = false; // Prevent double Release() calls
 };
 
 

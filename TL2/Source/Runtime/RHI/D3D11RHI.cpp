@@ -158,6 +158,10 @@ void D3D11RHI::Initialize(HWND hWindow)
 
 void D3D11RHI::Release()
 {
+    // Prevent double Release() calls
+    if (bReleased) return;
+    bReleased = true;
+
     if (DeviceContext)
     {
         // 파이프라인에서 바인딩된 상태/리소스를 명시적으로 해제
@@ -165,6 +169,16 @@ void D3D11RHI::Release()
         DeviceContext->OMSetDepthStencilState(nullptr, 0);
         DeviceContext->RSSetState(nullptr);
         DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff);
+
+        // 모든 SRV 언바인드
+        ID3D11ShaderResourceView* nullSRVs[16] = { nullptr };
+        DeviceContext->PSSetShaderResources(0, 16, nullSRVs);
+        DeviceContext->VSSetShaderResources(0, 16, nullSRVs);
+
+        // 모든 샘플러 언바인드
+        ID3D11SamplerState* nullSamplers[16] = { nullptr };
+        DeviceContext->PSSetSamplers(0, 16, nullSamplers);
+        DeviceContext->VSSetSamplers(0, 16, nullSamplers);
 
         DeviceContext->ClearState();
         DeviceContext->Flush();
