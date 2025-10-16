@@ -45,8 +45,8 @@ UEditorEngine::UEditorEngine()
 
 UEditorEngine::~UEditorEngine()
 {
-    // ObjManager 정리
-    FObjManager::Clear();
+    // Cleanup is now handled in Shutdown()
+    // Do not call FObjManager::Clear() here due to static destruction order
 }
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -299,8 +299,26 @@ void UEditorEngine::MainLoop()
 
 void UEditorEngine::Shutdown()
 {
+    // Release ImGui first (it may hold D3D11 resources)
     UUIManager::GetInstance().Release();
+
+    // Delete all UObjects (Components, Actors, Resources)
+    // Resource destructors will properly release D3D resources
     ObjectFactory::DeleteAll(true);
+
+    // Clear FObjManager's static map BEFORE static destruction
+    // This must be done in Shutdown() (before main() exits) rather than ~UEditorEngine()
+    // because ObjStaticMeshMap is a static member variable that may be destroyed
+    // before the global GEngine variable's destructor runs
+    FObjManager::Clear();
+
+    // IMPORTANT: Explicitly release Renderer before RHIDevice destructor runs
+    // Renderer may hold references to D3D resources
+    Renderer.reset();
+
+    // Explicitly release D3D11RHI resources before global destruction
+    RHIDevice.Release();
+
     SaveIniFile();
 }
 
