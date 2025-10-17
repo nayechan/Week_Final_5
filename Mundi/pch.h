@@ -51,7 +51,7 @@
 #include "D3D11RHI.h"
 #include "ObjectFactory.h"
 #include "World.h"
-
+#include "LightInfo.h"
 #include "ConstantBufferType.h"
 // d3dtk
 #include "DirectXTK/SimpleMath.h"

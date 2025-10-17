@@ -11,6 +11,10 @@ class UPrimitiveComponent;
 class UDecalComponent;
 class UFireBallComponent;
 class UHeightFogComponent;
+class UAmbientLightComponent;
+class UDirectionalLightComponent;
+class UPointLightComponent;
+class USpotLightComponent;
 
 struct FCandidateDrawable;
 
@@ -25,10 +29,18 @@ struct FVisibleRenderProxySet
 	TArray<UFireBallComponent*> FireBalls;
 };
 
+struct FSceneLocals
+{
+	TArray<UPointLightComponent*> PointLights;
+	TArray<USpotLightComponent*> SpotLights;
+};
+
 // NOTE: 추후 UWorld로 이동해서 등록/해지 방식으로 변경?
 // 전역 효과 및 설정을 담는 구조체
 struct FSceneGlobals
 {
+	TArray<UDirectionalLightComponent*> DirectionalLights;
+	TArray<UAmbientLightComponent*> AmbientLights;
 	TArray<UHeightFogComponent*> Fogs;	// 첫 번째로 찾은 Fog를 사용함
 };
 
@@ -62,6 +74,9 @@ private:
 
 	/** @brief 씬을 순회하며 컬링을 통과한 모든 렌더링 대상을 수집합니다. */
 	void GatherVisibleProxies();
+
+	/** @brief 수집한 라이트 정보들로부터 상수 버퍼를 업데이트합니다.*/
+	void UpdateLightConstant();
 
 	/** @brief 불투명(Opaque) 객체들을 렌더링하는 패스입니다. */
 	void RenderOpaquePass();
@@ -107,6 +122,9 @@ private:
 
 	// 수집된 렌더링 대상 목록
 	FVisibleRenderProxySet Proxies;
+
+	// 씬 지역 설정
+	FSceneLocals SceneLocals;
 
 	// 씬 전역 설정
 	FSceneGlobals SceneGlobals;

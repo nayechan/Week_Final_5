@@ -826,6 +826,9 @@
     <ClInclude Include="Source\Runtime\RHI\ConstantBufferType.h">
       <Filter>Source\Runtime\RHI</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Renderer\LightInfo.h">
+      <Filter>Source\Runtime\Renderer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">

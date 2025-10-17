@@ -1,6 +1,7 @@
 ﻿#pragma once
 // b0 in VS    
 #include "Color.h"
+#include "LightInfo.h"
 
 struct ModelBufferType
 {
@@ -153,9 +154,16 @@ struct FireBallBufferType
     FLinearColor Color;
 };
 
-struct LightType
+struct FLightBufferType
 {
-    float amibent;
+    FAmbientLightInfo AmbientLight;
+    FDirectionalLightInfo DirectionalLight;
+    FPointLightInfo PointLights[NUM_POINT_LIGHT_MAX];
+    FSpotLightInfo SpotLights[NUM_SPOT_LIGHT_MAX];
+    uint32 DirectionalLightCount;
+    uint32 PointLightCount;
+    uint32 SpotLightCount;
+    uint32 Padding;
 };
 
 #define CONSTANT_BUFFER_INFO(TYPE, SLOT, VS, PS) \
@@ -177,8 +185,10 @@ MACRO(HighLightBufferType)          \
 MACRO(ColorBufferType)              \
 MACRO(BillboardBufferType)          \
 MACRO(FireBallBufferType)           \
-MACRO(LightType)
+MACRO(FLightBufferType)
 
+//VS, PS 세팅은 함수 파라미터로 결정하게 하는게 훨씬 나을듯 나중에 수정 필요
+//그리고 UV Scroll 상수버퍼도 처리해줘야함
 CONSTANT_BUFFER_INFO(ModelBufferType, 0, true, false)
 CONSTANT_BUFFER_INFO(DecalBufferType, 6, true, true)
 CONSTANT_BUFFER_INFO(PostProcessBufferType, 0, false, true)
@@ -191,5 +201,5 @@ CONSTANT_BUFFER_INFO(HighLightBufferType, 2, true, false)
 CONSTANT_BUFFER_INFO(ColorBufferType, 3, false, true)
 CONSTANT_BUFFER_INFO(BillboardBufferType, 0, true, false)
 CONSTANT_BUFFER_INFO(FireBallBufferType, 7, false, true)
-CONSTANT_BUFFER_INFO(LightType, 8, true, true)
+CONSTANT_BUFFER_INFO(FLightBufferType, 8, true, true)
 

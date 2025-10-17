@@ -19,6 +19,50 @@ cbuffer HighLightBuffer : register(b2)
     int GIzmo;
 }
 
+struct FAmbientLightInfo
+{
+    float4 Color;
+    float Intensity;
+};
+
+struct FDirectionalLightInfo
+{
+    float4 Color;
+    float3 Direction;
+    float Intensity;
+};
+
+struct FPointLightInfo
+{
+    float4 Color;
+    float3 Position;
+    float Radius;
+    float3 Attenuation;
+    float Intensity;
+};
+
+struct FSpotLightInfo
+{
+    float4 Color;
+    float3 Position;
+    float InnerConeAngle;
+    float3 Direction;
+    float OuterConeAngle;
+    float Intensity;
+    float Radius;
+};
+
+cbuffer LightBuffer : register(b8)
+{
+    FAmbientLightInfo AmbientLight;
+    FDirectionalLightInfo DirectionalLight;
+    FPointLightInfo PointLights[16];
+    FSpotLightInfo SpotLights[16];
+    uint DirectionalLightCount;
+    uint PointLightCount;
+    uint SpotLightCount;
+}
+
 struct VS_INPUT
 {
     float3 position : POSITION; // Input position from vertex buffer

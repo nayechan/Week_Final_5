@@ -66,6 +66,7 @@ void FSceneRenderer::Render()
 
 	if (EffectiveViewMode == EViewModeIndex::VMI_Lit)
 	{
+		UpdateLightConstant();
 		RenderLitPath();
 	}
 	else if (EffectiveViewMode == EViewModeIndex::VMI_Wireframe)
@@ -214,7 +215,9 @@ void FSceneRenderer::GatherVisibleProxies()
 	const bool bDrawStaticMeshes = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_StaticMeshes);
 	const bool bDrawDecals = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Decals);
 	const bool bDrawFog = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Fog);
+	const bool bDrawLight = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Lighting);
 	const bool bUseAntiAliasing = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_FXAA);
+	
 
 	for (AActor* Actor : World->GetActors())
 	{
@@ -264,12 +267,100 @@ void FSceneRenderer::GatherVisibleProxies()
 					Proxies.FireBalls.Add(FireBallComponent);
 				}
 			}
-			else if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(Component); FogComponent && bDrawFog)
+			else 
 			{
-				SceneGlobals.Fogs.Add(FogComponent);
-			}
+				if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(Component); FogComponent && bDrawFog)
+				{
+					SceneGlobals.Fogs.Add(FogComponent);
+				}
+
+				/*else if (UDirectionalLightComponent* LightComponent = Cast<UDirectionalLightComponent>(Component); LightComponent && bDrawLight)
+				{
+					SceneGlobals.DirectionalLights.Add(LightComponent);
+				}
+				
+				else if (UAmbientLightComponent* LightComponent = Cast<UAmbientLightComponent>(Component); LightComponent && bDrawLight)
+				{
+					SceneGlobals.AmbientLights.Add(LightComponent);
+				}
+
+				else if (UPointLightComponent* LightComponent = Cast<UPointLightComponent>(Component); LightComponent && bDrawLight)
+				{
+					SceneLocals.PointLights.Add(LightComponent);
+				}
+
+				else if (USpotLightComponent* LightComponent = Cast<USpotLightComponent>(Component); LightComponent && bDrawLight)
+				{
+					SceneLocals.SpotLights.Add(LightComponent);
+				}*/
+ 			}
 		}
 	}
+}
+
+void FSceneRenderer::UpdateLightConstant()
+{
+	FLightBufferType LightBuffer{};
+
+	//테스트코드
+	//for (UAmbientLightComponent* LightComponent : SceneGlobals.AmbientLights)
+	{
+		//LightBuffer.AmbientLight = FAmbientLightInfo(LightComponent->GetLightInfo());
+		LightBuffer.AmbientLight = FAmbientLightInfo(FLinearColor(0.3f, 1.0f, 0.2f), 0.3f);
+		//break;
+	}
+
+	//for (UDirectionalLightComponent* LightComponent : SceneGlobals.DirectionalLights)
+	{
+		//LightBuffer.DirectionalLight = FDirectionalLightInfo(LightComponent->GetLightInfo());
+		LightBuffer.DirectionalLight = FDirectionalLightInfo(
+			FLinearColor(0.5f, 0.5f, 0.5f),
+			FVector(1.0f, 1.0f, 1.0f), 
+			3.0f
+			);
+		LightBuffer.DirectionalLightCount = 1;
+		//break;
+	}
+
+	//for (UPointLightComponent* LightComponent : SceneLocals.PointLights)
+	for(int Index = 0 ; Index < 15; Index++)
+	{
+		if (LightBuffer.PointLightCount >= NUM_POINT_LIGHT_MAX)
+		{
+			UE_LOG("PointLight의 최대 개수는 %d개 입니다.", NUM_POINT_LIGHT_MAX);
+			break;
+		}
+		//LightBuffer.PointLights[LightBuffer.PointLightCount++] = FPointLightInfo(LightComponent->GetLightInfo());
+		LightBuffer.PointLights[LightBuffer.PointLightCount++] = FPointLightInfo(
+			FLinearColor(3.0f, 9.4f, 2.3f),
+			FVector(4.0f, 3.0f, 6.0f),
+			3.5f,
+			FVector(3.0f, 3.5f, 3.3f),
+			3.0f * LightBuffer.PointLightCount
+		);
+
+	}
+
+	//for (USpotLightComponent* LightComponent : SceneLocals.SpotLights)
+	for(int Index = 0 ; Index < 32; Index++)
+	{
+		if (LightBuffer.SpotLightCount >= NUM_SPOT_LIGHT_MAX)
+		{
+			UE_LOG("SpotLight의 최대 개수는 %d개 입니다.", NUM_SPOT_LIGHT_MAX);
+			break;
+		}
+		//LightBuffer.SpotLights[LightBuffer.SpotLightCount++] = FSpotLightInfo(LightComponent->GetLightInfo());
+		LightBuffer.SpotLights[LightBuffer.SpotLightCount++] = FSpotLightInfo(
+			FLinearColor(0.3f, 0.6f, 1.0f),
+			FVector(9.0f, 9.0f, 9.0f),
+			30.0f,
+			FVector(14.f, 3.f, 2.3f),
+			32.0f,
+			0.3f
+		);
+	}
+
+	RHIDevice->UpdateConstantBuffer(LightBuffer);
 }
 
 void FSceneRenderer::PerformFrustumCulling()
