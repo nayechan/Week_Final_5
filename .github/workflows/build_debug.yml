@@ -32,7 +32,7 @@ jobs:
             - name: Build Solution
               run: |
                   chcp 65001
-                  msbuild TL2.sln /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:PlatformToolset=v143 /verbosity:minimal
+                  msbuild Mundi.sln /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /p:PlatformToolset=v143 /verbosity:minimal
 
             - name: Upload Build Artifacts
               if: success()
