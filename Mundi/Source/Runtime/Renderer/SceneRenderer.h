@@ -119,7 +119,6 @@ private:
 	float ZNear = 0.1f;
 	float ZFar = 1000.0f;
 	EViewModeIndex EffectiveViewMode = EViewModeIndex::None;
-	ELightingModel EffectiveLightingModel = ELightingModel::Phong; // 기본값: Phong
 
 	// 수집된 렌더링 대상 목록
 	FVisibleRenderProxySet Proxies;

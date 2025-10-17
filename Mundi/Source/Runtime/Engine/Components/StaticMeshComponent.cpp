@@ -16,9 +16,9 @@ IMPLEMENT_CLASS(UStaticMeshComponent)
 UStaticMeshComponent::UStaticMeshComponent()
 {
 	/*SetMaterial("Shaders/Materials/UberLit.hlsl");*/
-	
+
 	SetStaticMesh("Data/cube-tex.obj");     // 임시 기본 static mesh 설정
-	SetLightingModel(ELightingModel::None); // 기본 조명 모델 설정
+	SetLightingModel(ELightingModel::Phong); // 기본 조명 모델 설정 (Phong)
 }
 
 UStaticMeshComponent::~UStaticMeshComponent()

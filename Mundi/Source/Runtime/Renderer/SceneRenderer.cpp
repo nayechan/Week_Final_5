@@ -68,9 +68,19 @@ void FSceneRenderer::Render()
 	RenderEditorPrimitivesPass();	// 그리드 출력
 	RenderDebugPass();	//  선택한 물체의 경계 출력
 
-	if (EffectiveViewMode == EViewModeIndex::VMI_Lit)
+	// ViewMode에 따라 렌더링 경로 결정
+	if (EffectiveViewMode == EViewModeIndex::VMI_Lit ||
+		EffectiveViewMode == EViewModeIndex::VMI_Lit_Gouraud ||
+		EffectiveViewMode == EViewModeIndex::VMI_Lit_Lambert ||
+		EffectiveViewMode == EViewModeIndex::VMI_Lit_Phong)
 	{
+		// 조명이 있는 모드는 LightBuffer 업데이트 필요
 		UpdateLightConstant();
+		RenderLitPath();
+	}
+	else if (EffectiveViewMode == EViewModeIndex::VMI_Unlit)
+	{
+		// Unlit 모드는 조명 없이 렌더링
 		RenderLitPath();
 	}
 	else if (EffectiveViewMode == EViewModeIndex::VMI_Wireframe)
@@ -203,10 +213,6 @@ void FSceneRenderer::PrepareView()
 	}
 
 	EffectiveViewMode = World->GetRenderSettings().GetViewModeIndex();
-	
-	// 조명 모델 결정 (추후 RenderSettings에서 가져오도록 확장 가능)
-	// 현재는 기본값인 Phong 사용
-	EffectiveLightingModel = ELightingModel::Phong;
 
 	//RHIDevice->OnResize(Viewport->GetSizeX(), Viewport->GetSizeY());
 	float ClearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -380,15 +386,38 @@ void FSceneRenderer::RenderOpaquePass()
 	RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual); // 깊이 쓰기 ON
 	RHIDevice->OMSetBlendState(false);
 
+	// ViewMode에 따라 조명 모델 결정
+	ELightingModel LightingModel = ELightingModel::None;
+
+	switch (EffectiveViewMode)
+	{
+	case EViewModeIndex::VMI_Lit:           // 기본 Lit (Phong)
+	case EViewModeIndex::VMI_Lit_Phong:     // 명시적 Phong
+		LightingModel = ELightingModel::Phong;
+		break;
+	case EViewModeIndex::VMI_Lit_Gouraud:   // Gouraud
+		LightingModel = ELightingModel::Gouraud;
+		break;
+	case EViewModeIndex::VMI_Lit_Lambert:   // Lambert
+		LightingModel = ELightingModel::Lambert;
+		break;
+	case EViewModeIndex::VMI_Unlit:         // Unlit
+		LightingModel = ELightingModel::None;
+		break;
+	default:
+		LightingModel = ELightingModel::Phong; // 기본값
+		break;
+	}
+
 	// 모든 메시에 조명 모델 적용
 	for (UMeshComponent* MeshComponent : Proxies.Meshes)
 	{
 		// StaticMeshComponent인 경우 조명 모델 설정
 		if (UStaticMeshComponent* StaticMeshComp = Cast<UStaticMeshComponent>(MeshComponent))
 		{
-			StaticMeshComp->SetLightingModel(EffectiveLightingModel);
+			StaticMeshComp->SetLightingModel(LightingModel);
 		}
-		
+
 		MeshComponent->Render(OwnerRenderer, ViewMatrix, ProjectionMatrix);
 	}
 

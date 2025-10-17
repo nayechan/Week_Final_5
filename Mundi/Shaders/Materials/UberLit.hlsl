@@ -153,20 +153,20 @@ struct PS_INPUT
 // --- 유틸리티 함수 ---
 
 // Ambient Light Calculation
-// Uses material's AmbientColor (Ka) if available, otherwise uses diffuse color
+// Uses the provided materialColor (which includes texture if available)
 float3 CalculateAmbientLight(FAmbientLightInfo light, float4 materialColor)
 {
-    float3 ambientMaterial = HasMaterial ? Material.DiffuseColor : materialColor.rgb;
-    return light.Color.rgb * light.Intensity * ambientMaterial;
+    // Use materialColor directly (already contains texture if available)
+    return light.Color.rgb * light.Intensity * materialColor.rgb;
 }
 
 // Diffuse Light Calculation (Lambert)
-// Uses material's DiffuseColor (Kd) if available
+// Uses the provided materialColor (which includes texture if available)
 float3 CalculateDiffuse(float3 lightDir, float3 normal, float4 lightColor, float intensity, float4 materialColor)
 {
     float NdotL = max(dot(normal, lightDir), 0.0f);
-    float3 diffuseMaterial = HasMaterial ? Material.DiffuseColor : materialColor.rgb;
-    return lightColor.rgb * intensity * diffuseMaterial * NdotL;
+    // Use materialColor directly (already contains texture if available)
+    return lightColor.rgb * intensity * materialColor.rgb * NdotL;
 }
 
 // Specular Light Calculation (Blinn-Phong)
@@ -460,20 +460,19 @@ float4 mainPS(PS_INPUT Input) : SV_TARGET
     float3 normal = normalize(Input.Normal);
     float4 baseColor = Input.Color;
 
-    // Apply material color if available
-    if (HasMaterial)
-    {
-        baseColor.rgb = Material.DiffuseColor;
-    }
-
-    // Multiply with texture
+    // Start with texture if available
     if (HasTexture)
     {
-        baseColor.rgb *= texColor.rgb;
+        baseColor.rgb = texColor.rgb;
     }
-    else if (!HasMaterial)
+    else if (HasMaterial)
     {
-        // Blend with LerpColor if no material/texture
+        // No texture, use material diffuse color
+        baseColor.rgb = Material.DiffuseColor;
+    }
+    else
+    {
+        // No texture and no material, blend with LerpColor
         baseColor.rgb = lerp(baseColor.rgb, LerpColor.rgb, LerpColor.a);
     }
 
@@ -517,20 +516,19 @@ float4 mainPS(PS_INPUT Input) : SV_TARGET
     float3 viewDir = normalize(CameraPosition - Input.WorldPos);
     float4 baseColor = Input.Color;
 
-    // Apply material color if available
-    if (HasMaterial)
-    {
-        baseColor.rgb = Material.DiffuseColor;
-    }
-
-    // Multiply with texture
+    // Start with texture if available
     if (HasTexture)
     {
-        baseColor.rgb *= texColor.rgb;
+        baseColor.rgb = texColor.rgb;
     }
-    else if (!HasMaterial)
+    else if (HasMaterial)
     {
-        // Blend with LerpColor if no material/texture
+        // No texture, use material diffuse color
+        baseColor.rgb = Material.DiffuseColor;
+    }
+    else
+    {
+        // No texture and no material, blend with LerpColor
         baseColor.rgb = lerp(baseColor.rgb, LerpColor.rgb, LerpColor.a);
     }
 

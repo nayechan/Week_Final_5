@@ -328,10 +328,13 @@ enum class EViewModeIndex : uint32
 {
     None,
 
-    VMI_Lit,
-    VMI_Unlit,
-    VMI_Wireframe,
-    VMI_SceneDepth,
+    VMI_Lit,                // 기본 조명 (Phong)
+    VMI_Lit_Gouraud,        // Gouraud 조명 (Per-Vertex)
+    VMI_Lit_Lambert,        // Lambert 조명 (Per-Pixel Diffuse)
+    VMI_Lit_Phong,          // Phong 조명 (Per-Pixel Full)
+    VMI_Unlit,              // 조명 없음
+    VMI_Wireframe,          // 와이어프레임
+    VMI_SceneDepth,         // 깊이 버퍼 시각화
 
     End,
 };

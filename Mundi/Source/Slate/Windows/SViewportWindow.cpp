@@ -212,13 +212,13 @@ void SViewportWindow::RenderToolbar()
 
 		if (ImGui::Button("Reset")) { /* TODO: 카메라 Reset */ }
 
-		const char* viewModes[] = { "Lit", "Unlit", "Wireframe", "SceneDepth" };
-		int currentViewMode = static_cast<int>(ViewportClient->GetViewModeIndex()) - 1; // 0=Lit, 1=Unlit, 2=Wireframe -1이유 1부터 시작이여서 
+		const char* viewModes[] = { "Lit (Phong)", "Gouraud", "Lambert", "Phong", "Unlit", "Wireframe", "SceneDepth" };
+		int currentViewMode = static_cast<int>(ViewportClient->GetViewModeIndex()) - 1; // -1이유: None=0이므로 1부터 시작
 
 		ImGui::SameLine();
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 2)); // 버튼/콤보 내부 여백 축소
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(6, 0)); // 아이템 간 간격 축소
-		ImGui::SetNextItemWidth(80.0f);                                // ✅ 폭 줄이기
+		ImGui::SetNextItemWidth(100.0f);                                // ✅ 폭 늘리기 (조명 모델 이름 표시)
 		bool changed = ImGui::Combo("##ViewMode", &currentViewMode, viewModes, IM_ARRAYSIZE(viewModes));
 		ImGui::PopStyleVar(2);
 
@@ -227,9 +227,12 @@ void SViewportWindow::RenderToolbar()
 			switch (currentViewMode)
 			{
 			case 0: ViewportClient->SetViewModeIndex(EViewModeIndex::VMI_Lit); break;
-			case 1: ViewportClient->SetViewModeIndex(EViewModeIndex::VMI_Unlit); break;
-			case 2: ViewportClient->SetViewModeIndex(EViewModeIndex::VMI_Wireframe); break;
-			case 3: ViewportClient->SetViewModeIndex(EViewModeIndex::VMI_SceneDepth); break;
+			case 1: ViewportClient->SetViewModeIndex(EViewModeIndex::VMI_Lit_Gouraud); break;
+			case 2: ViewportClient->SetViewModeIndex(EViewModeIndex::VMI_Lit_Lambert); break;
+			case 3: ViewportClient->SetViewModeIndex(EViewModeIndex::VMI_Lit_Phong); break;
+			case 4: ViewportClient->SetViewModeIndex(EViewModeIndex::VMI_Unlit); break;
+			case 5: ViewportClient->SetViewModeIndex(EViewModeIndex::VMI_Wireframe); break;
+			case 6: ViewportClient->SetViewModeIndex(EViewModeIndex::VMI_SceneDepth); break;
 			}
 		}
 		// 🔘 여기 ‘한 번 클릭’ 버튼 추가
