@@ -18,6 +18,15 @@ FVector UDirectionalLightComponent::GetLightDirection() const
 	return Rotation.RotateVector(FVector(1.0f, 0.0f, 0.0f));
 }
 
+FDirectionalLightInfo UDirectionalLightComponent::GetLightInfo() const
+{
+	FDirectionalLightInfo Info;
+	Info.Color = GetLightColor();
+	Info.Direction = GetLightDirection();
+	Info.Intensity = GetIntensity();
+	return Info;
+}
+
 void UDirectionalLightComponent::UpdateLightData()
 {
 	Super::UpdateLightData();

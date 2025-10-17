@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "PointLightComponent.h"
+#include "LightInfo.h"
 
 // 스포트라이트 (원뿔 형태로 빛 방출)
 class USpotLightComponent : public UPointLightComponent
@@ -21,8 +22,15 @@ public:
 	// 스포트라이트 방향 (Transform의 Forward 벡터 사용)
 	FVector GetDirection() const;
 
-	// 원뿔 감쇠 계산
+	// 원뿔 영역 감쇠 계산
+	// 반환값: 0.0 (영향 없음) ~ 1.0 (최대 영향)
+	// - 0.0: OuterConeAngle 밖, 원뿔 밖으로 빛이 닿지 않음
+	// - 0.0 < x < 1.0: InnerConeAngle과 OuterConeAngle 사이, 부드러운 감쇠
+	// - 1.0: InnerConeAngle 안, 원뿔 중심으로 최대 영향
 	float GetConeAttenuation(const FVector& WorldPosition) const;
+
+	// Light Info
+	FSpotLightInfo GetLightInfo() const;
 
 	// Virtual Interface
 	virtual void UpdateLightData() override;

@@ -1,5 +1,6 @@
-#pragma once
+﻿#pragma once
 #include "LocalLightComponent.h"
+#include "LightInfo.h"
 
 // 점광원 (모든 방향으로 균등하게 빛 방출)
 class UPointLightComponent : public ULocalLightComponent
@@ -14,6 +15,9 @@ public:
 	// Source Radius
 	void SetSourceRadius(float InRadius) { SourceRadius = InRadius; }
 	float GetSourceRadius() const { return SourceRadius; }
+
+	// Light Info
+	FPointLightInfo GetLightInfo() const;
 
 	// Virtual Interface
 	virtual void UpdateLightData() override;

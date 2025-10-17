@@ -7,6 +7,8 @@ ULocalLightComponent::ULocalLightComponent()
 {
 	AttenuationRadius = 1000.0f;
 	FalloffExponent = 1.0f;
+	Attenuation = FVector(1.0f, 0.0f, 0.0f);
+	bUseAttenuationCoefficients = true;
 }
 
 ULocalLightComponent::~ULocalLightComponent()
@@ -38,11 +40,15 @@ void ULocalLightComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 	{
 		FJsonSerializer::ReadFloat(InOutHandle, "AttenuationRadius", AttenuationRadius, 1000.0f);
 		FJsonSerializer::ReadFloat(InOutHandle, "FalloffExponent", FalloffExponent, 1.0f);
+		FJsonSerializer::ReadVector(InOutHandle, "Attenuation", Attenuation, FVector(1.0f, 0.0f, 0.0f));
+		FJsonSerializer::ReadBool(InOutHandle, "bUseAttenuationCoefficients", bUseAttenuationCoefficients, false);
 	}
 	else
 	{
 		InOutHandle["AttenuationRadius"] = AttenuationRadius;
 		InOutHandle["FalloffExponent"] = FalloffExponent;
+		InOutHandle["Attenuation"] = FJsonSerializer::VectorToJson(Attenuation);
+		InOutHandle["bUseAttenuationCoefficients"] = bUseAttenuationCoefficients;
 	}
 }
 

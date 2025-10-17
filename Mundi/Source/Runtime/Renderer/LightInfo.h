@@ -14,8 +14,8 @@ struct FDirectionalLightInfo
 {
     FLinearColor Color;
 
-    FVector Direction;
     float Intensity;
+    FVector Direction;
 };
 
 struct FPointLightInfo
@@ -23,13 +23,14 @@ struct FPointLightInfo
     FLinearColor Color;
 
     FVector Position;
-    float AttenuationRadius;
-
-    FVector Attenuation;    // 상수, 일차항, 이차항
     float FalloffExponent;
 
+    FVector Attenuation;    // 상수, 일차항, 이차항
+    float AttenuationRadius;
+
     float Intensity;
-    FVector Padding;
+    uint32 bUseAttenuationCoefficients;
+    FVector2D Padding;
 };
 
 struct FSpotLightInfo
@@ -41,10 +42,12 @@ struct FSpotLightInfo
 
     FVector Direction;
     float OuterConeAngle;
-    
+
     FVector Attenuation;
     float AttenuationRadius;
 
+    float FalloffExponent;
     float Intensity;
-    FVector Padding;
+    uint32 bUseAttenuationCoefficients;
+    float Padding;
 };

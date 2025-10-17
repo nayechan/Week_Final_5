@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "PointLightComponent.h"
 
 IMPLEMENT_CLASS(UPointLightComponent)
@@ -10,6 +10,20 @@ UPointLightComponent::UPointLightComponent()
 
 UPointLightComponent::~UPointLightComponent()
 {
+}
+
+FPointLightInfo UPointLightComponent::GetLightInfo() const
+{
+	FPointLightInfo Info;
+	Info.Color = GetLightColor();
+	Info.Position = GetWorldLocation();
+	Info.FalloffExponent = IsUsingAttenuationCoefficients() ? 0.0f : GetFalloffExponent();
+	Info.Attenuation = IsUsingAttenuationCoefficients() ? GetAttenuation() : FVector(1.0f, 0.0f, 0.0f);
+	Info.AttenuationRadius = GetAttenuationRadius();
+	Info.Intensity = GetIntensity();
+	Info.bUseAttenuationCoefficients = IsUsingAttenuationCoefficients() ? 1u : 0u;
+	Info.Padding = FVector2D(0.0f, 0.0f);
+	return Info;
 }
 
 void UPointLightComponent::UpdateLightData()

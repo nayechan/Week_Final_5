@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "LightComponent.h"
+#include "LightInfo.h"
 
 // 환경광 (전역 조명)
 class UAmbientLightComponent : public ULightComponent
@@ -11,6 +12,9 @@ public:
 	virtual ~UAmbientLightComponent() override;
 
 public:
+	// Light Info
+	FAmbientLightInfo GetLightInfo() const;
+
 	// Virtual Interface
 	virtual void UpdateLightData() override;
 

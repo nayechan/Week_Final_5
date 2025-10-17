@@ -313,11 +313,11 @@ void FSceneRenderer::UpdateLightConstant()
 	//for (UDirectionalLightComponent* LightComponent : SceneGlobals.DirectionalLights)
 	{
 		//LightBuffer.DirectionalLight = FDirectionalLightInfo(LightComponent->GetLightInfo());
-		LightBuffer.DirectionalLight = FDirectionalLightInfo(
+		/*LightBuffer.DirectionalLight = FDirectionalLightInfo(
 			FLinearColor(0.5f, 0.5f, 0.5f),
 			FVector(1.0f, 1.0f, 1.0f), 
 			3.0f
-			);
+			);*/
 		//break;
 	}
 

@@ -11,6 +11,15 @@ UAmbientLightComponent::~UAmbientLightComponent()
 {
 }
 
+FAmbientLightInfo UAmbientLightComponent::GetLightInfo() const
+{
+	FAmbientLightInfo Info;
+	Info.Color = GetLightColor();
+	Info.Intensity = GetIntensity();
+	Info.Padding = FVector(0.0f, 0.0f, 0.0f);
+	return Info;
+}
+
 void UAmbientLightComponent::UpdateLightData()
 {
 	Super::UpdateLightData();
