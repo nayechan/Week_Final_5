@@ -1,28 +1,23 @@
-# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
-# File Created: 26.07.2011 13:47:43
-
-newmtl Window
-	Ns 32
-	Ni 1.5000
-	d 0.8000
-	Tr 0.2000
-	Tf 1.0000 1.0000 1.0000 
-	illum 2
-	Ka 0.0000 0.0000 0.0100 
-	Kd 0.0000 0.0000 0.0100 
-	Ks 0.3500 0.3500 0.3500
-	Ke 0.0000 0.0000 0.0000
+# Blender 4.5.3 LTS MTL File: 'None'
+# www.blender.org
 
 newmtl MetalPanels
-	Ns 10.0000
-	d 1.0000
-	Tr 0.0000
-	Tf 1.0000 1.0000 1.0000 
-	illum 2
-	Ka 0.5882 0.5882 0.5882
-	Kd 0.5882 0.5882 0.5882
-	Ks 0.0000 0.0000 0.0000
-	Ke 0.0000 0.0000 0.0000
-	map_Ka metalpanel.jpg
-	map_Kd metalpanel.jpg
-	map_bump metalpanelnormals.jpg
+Ns 10.000005
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd metalpanel.jpg
+map_Bump metalpanelnormals.jpg
+
+newmtl Window
+Ns 32.000008
+Ka 1.000000 1.000000 1.000000
+Kd 0.000000 0.000000 0.010000
+Ks 0.350000 0.350000 0.350000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 0.800000
+illum 9
