@@ -1,6 +1,8 @@
 ﻿#pragma once
 #include "Property.h"
 #include "Color.h"
+#include "StaticMesh.h"
+#include "Texture.h"
 #include <type_traits>
 
 // ===== 타입 자동 감지 템플릿 =====
@@ -27,7 +29,11 @@ struct TPropertyTypeTraits
 			return EPropertyType::FName;
 		else if constexpr (std::is_pointer_v<T>)
 			return EPropertyType::ObjectPtr;  // UObject* 및 파생 타입
-		else
+		else if constexpr (std::is_same_v<T, UTexture>)
+			return EPropertyType::Texture;
+		else if constexpr (std::is_same_v<T, UStaticMesh>)
+			return EPropertyType::StaticMesh;
+		else 
 			return EPropertyType::Struct;
 	}
 };
