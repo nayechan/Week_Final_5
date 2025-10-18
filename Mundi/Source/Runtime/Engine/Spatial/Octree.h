@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include <unordered_map>
-#include "AABoundingBoxComponent.h"
 #include "Renderer.h"
 #include "Picking.h"
 

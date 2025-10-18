@@ -4,6 +4,10 @@
 
 IMPLEMENT_CLASS(ASpotLightActor)
 
+BEGIN_PROPERTIES(ASpotLightActor)
+	MARK_AS_SPAWNABLE("스포트 라이트", "스포트 라이트 액터입니다.")
+END_PROPERTIES()
+
 ASpotLightActor::ASpotLightActor()
 {
 	Name = "Spot Light Actor";

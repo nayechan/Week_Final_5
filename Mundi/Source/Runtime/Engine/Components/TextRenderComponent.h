@@ -4,6 +4,8 @@ class UTextRenderComponent : public UPrimitiveComponent
 {
 public:
 	DECLARE_CLASS(UTextRenderComponent, UPrimitiveComponent)
+	GENERATED_REFLECTION_BODY()
+
 	UTextRenderComponent();
 
 protected:
@@ -19,6 +21,9 @@ public:
 
 	UQuad* GetStaticMesh() const { return TextQuad; }
 
+	// Serialize
+	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
+
 	// ───── 복사 관련 ────────────────────────────
 	void DuplicateSubObjects() override;
 	DECLARE_DUPLICATE(UTextRenderComponent)
@@ -27,7 +32,5 @@ private:
 	FString Text;
 	static TMap<char, FBillboardVertexInfo> CharInfoMap; // shared per-process, built once
 	FString TextureFilePath;
-
-	// TODO: UStaticMesh는 UStaticMeshComponent만 사용하도록 바꿔야 한다
 	UQuad* TextQuad = nullptr;
 };

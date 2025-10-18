@@ -5,6 +5,7 @@
 
 // Forward Declarations
 class AActor;
+class USceneComponent;
 
 /**
  * SelectionManager
@@ -18,6 +19,7 @@ public:
 
     /** === 선택 관리 === */
     void SelectActor(AActor* Actor);
+    void SelectComponent(USceneComponent* Component);
     void DeselectActor(AActor* Actor);
     void ClearSelection();
     
@@ -28,6 +30,7 @@ public:
     const TArray<AActor*>& GetSelectedActors() const { return SelectedActors; }
     
     int32 GetSelectionCount() const { return SelectedActors.Num(); }
+    USceneComponent* GetSelectedComponent() const { return SelectedComponent; }
     bool HasSelection() const { return SelectedActors.Num() > 0; }
     
     /** === 삭제된 액터 정리 === */
@@ -44,4 +47,5 @@ protected:
     
     /** === 선택된 액터들 === */
     TArray<AActor*> SelectedActors;
+    USceneComponent* SelectedComponent = nullptr;
 };

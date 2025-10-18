@@ -9,7 +9,8 @@ class UHeightFogComponent : public USceneComponent
 {
 public:
     DECLARE_CLASS(UHeightFogComponent, USceneComponent)
-    
+    GENERATED_REFLECTION_BODY()
+
     UHeightFogComponent();
     ~UHeightFogComponent() override;
     

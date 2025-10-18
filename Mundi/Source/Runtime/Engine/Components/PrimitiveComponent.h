@@ -6,6 +6,8 @@
 struct FSceneCompData;
 
 class URenderer;
+class FMeshBatchElement;
+class FSceneView;
 
 class UPrimitiveComponent :public USceneComponent
 {
@@ -17,6 +19,9 @@ public:
 
     virtual void SetMaterial(const FString& FilePath);
     virtual UMaterial* GetMaterial() { return Material; }
+
+    // 이 프리미티브를 렌더링하는 데 필요한 FMeshBatchElement를 수집합니다.
+    virtual void CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View) {}
 
     virtual void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) {}
 

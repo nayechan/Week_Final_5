@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "PrimitiveComponent.h"
 #include "Object.h"
 
 class UQuad;
@@ -10,6 +11,7 @@ class UBillboardComponent : public UPrimitiveComponent
 {
 public:
     DECLARE_CLASS(UBillboardComponent, UPrimitiveComponent)
+    GENERATED_REFLECTION_BODY()
 
     UBillboardComponent();
     ~UBillboardComponent() override = default;
@@ -31,12 +33,7 @@ public:
 
 private:
     FString TextureName;
-
-    // 버텍스랑 인덱스 정보 
     UQuad* Quad = nullptr;
-
-    // 텍스쳐 & 셰이더 
-
     float Width = 100.f;
     float Height = 100.f;
 };

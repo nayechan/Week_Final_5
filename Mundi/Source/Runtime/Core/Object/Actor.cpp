@@ -2,14 +2,12 @@
 #include "Actor.h"
 #include "SceneComponent.h"
 #include "ObjectFactory.h"
-#include "ShapeComponent.h"
-#include "AABoundingBoxComponent.h"   
 #include "MeshComponent.h"
 #include "TextRenderComponent.h"
 #include "WorldPartitionManager.h"
 #include "BillboardComponent.h"
+#include "AABB.h"
 #include "JsonSerializer.h"
-
 #include "World.h"
 
 IMPLEMENT_CLASS(AActor)

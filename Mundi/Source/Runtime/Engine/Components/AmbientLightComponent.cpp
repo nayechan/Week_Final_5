@@ -3,6 +3,10 @@
 
 IMPLEMENT_CLASS(UAmbientLightComponent)
 
+BEGIN_PROPERTIES(UAmbientLightComponent)
+	MARK_AS_COMPONENT("앰비언트 라이트", "환경광 (전역 조명) 컴포넌트입니다.")
+END_PROPERTIES()
+
 UAmbientLightComponent::UAmbientLightComponent()
 {
 }
@@ -29,7 +33,9 @@ void UAmbientLightComponent::UpdateLightData()
 void UAmbientLightComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 {
 	Super::Serialize(bInIsLoading, InOutHandle);
-	// 추가 속성 없음 (베이스 클래스의 Intensity와 LightColor 사용)
+
+	// 리플렉션 기반 자동 직렬화 (추가 프로퍼티 없음)
+	AutoSerialize(bInIsLoading, InOutHandle, UAmbientLightComponent::StaticClass());
 }
 
 void UAmbientLightComponent::DuplicateSubObjects()

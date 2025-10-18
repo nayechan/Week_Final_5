@@ -7,6 +7,7 @@ class UAmbientLightComponent : public ULightComponent
 {
 public:
 	DECLARE_CLASS(UAmbientLightComponent, ULightComponent)
+	GENERATED_REFLECTION_BODY()
 
 	UAmbientLightComponent();
 	virtual ~UAmbientLightComponent() override;

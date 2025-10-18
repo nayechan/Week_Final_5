@@ -7,6 +7,15 @@ extern float CLIENTHEIGHT;
 
 IMPLEMENT_CLASS(UCameraComponent)
 
+BEGIN_PROPERTIES(UCameraComponent)
+	MARK_AS_COMPONENT("카메라 컴포넌트", "카메라를 렌더링하는 컴포넌트입니다.")
+	ADD_PROPERTY_RANGE(float, FieldOfView, "Camera", 1.0f, 179.0f, true, "시야각 (FOV, Degrees)입니다.")
+	ADD_PROPERTY_RANGE(float, AspectRatio, "Camera", 0.1f, 10.0f, true, "화면 비율입니다.")
+	ADD_PROPERTY_RANGE(float, NearClip, "Camera", 0.01f, 1000.0f, true, "근거리 클리핑 평면입니다.")
+	ADD_PROPERTY_RANGE(float, FarClip, "Camera", 1.0f, 100000.0f, true, "원거리 클리핑 평면입니다.")
+	ADD_PROPERTY_RANGE(float, ZooMFactor, "Camera", 0.1f, 10.0f, true, "줌 배율입니다.")
+END_PROPERTIES()
+
 UCameraComponent::UCameraComponent()
     : FieldOfView(60.0f)
     , AspectRatio(1.0f / 1.0f)
@@ -113,4 +122,24 @@ void UCameraComponent::DuplicateSubObjects()
     Super::DuplicateSubObjects();
 
     ProjectionMode = ECameraProjectionMode::Perspective;
+}
+
+void UCameraComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
+{
+    Super::Serialize(bInIsLoading, InOutHandle);
+
+    // 리플렉션 기반 자동 직렬화
+    AutoSerialize(bInIsLoading, InOutHandle, UCameraComponent::StaticClass());
+
+    // ProjectionMode는 수동 직렬화 (Enum 타입)
+    if (bInIsLoading)
+    {
+        int32 ModeInt = static_cast<int32>(ECameraProjectionMode::Perspective);
+        FJsonSerializer::ReadInt32(InOutHandle, "ProjectionMode", ModeInt, 0);
+        ProjectionMode = static_cast<ECameraProjectionMode>(ModeInt);
+    }
+    else
+    {
+        InOutHandle["ProjectionMode"] = static_cast<int32>(ProjectionMode);
+    }
 }

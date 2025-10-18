@@ -40,11 +40,6 @@ void UCameraControlWidget::Initialize()
 	{
 		UIManager->RegisterCameraControlWidget(this);
 	}
-	// GizmoActor 참조 획득
-	if (AGizmoActor* Gizmo = GEngine.GetDefaultWorld()->GetGizmoActor())
-	{
-		CurrentGizmoSpace = Gizmo->GetSpace();
-	}
 }
 
 void UCameraControlWidget::Update()
@@ -194,8 +189,6 @@ void UCameraControlWidget::RenderWidget()
 
 	ImGui::Text("Transform Editor");
 
-	SelectedActor = GetCurrentSelectedActor();
-
 
 	// 기즈모 스페이스 모드 선택
 	if (GizmoActor)
@@ -206,8 +199,6 @@ void UCameraControlWidget::RenderWidget()
 		if (ImGui::Combo("Gizmo Space", &currentSpaceIndex, spaceItems, IM_ARRAYSIZE(spaceItems)))
 		{
 			CurrentGizmoSpace = static_cast<EGizmoSpace>(currentSpaceIndex);
-
-			GizmoActor->SetSpaceWorldMatrix(CurrentGizmoSpace, SelectedActor);
 		}
 		ImGui::Separator();
 	}
@@ -269,13 +260,4 @@ void UCameraControlWidget::PushToCamera()
 		UE_LOG("CameraControl: Applied to camera - FOV=%.1f, Near=%.4f, Far=%.1f, Mode=%s", 
 			UiFovY, UiNearZ, UiFarZ, (CameraModeIndex == 0) ? "Perspective" : "Orthographic");
 	}
-}
-
-
-AActor* UCameraControlWidget::GetCurrentSelectedActor() const
-{
-	if (!UIManager)
-		return nullptr;
-
-	return UIManager->GetSelectedActor();
 }

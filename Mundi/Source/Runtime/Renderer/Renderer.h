@@ -9,6 +9,7 @@ class URHIDevice;
 class UShader;
 class UStaticMesh;
 class UBillboardComponent;
+class UPrimitiveComponent;
 struct FMaterialSlot;
 
 class URenderer

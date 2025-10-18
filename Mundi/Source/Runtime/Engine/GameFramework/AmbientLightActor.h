@@ -7,6 +7,7 @@ class AAmbientLightActor : public AActor
 {
 public:
 	DECLARE_CLASS(AAmbientLightActor, AActor)
+	GENERATED_REFLECTION_BODY()
 
 	AAmbientLightActor();
 protected:

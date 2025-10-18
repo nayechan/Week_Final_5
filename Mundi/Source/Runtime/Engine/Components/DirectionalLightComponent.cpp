@@ -1,8 +1,6 @@
 ﻿#include "pch.h"
 #include "DirectionalLightComponent.h"
 
-IMPLEMENT_CLASS(UDirectionalLightComponent)
-
 UDirectionalLightComponent::UDirectionalLightComponent()
 {
 }
@@ -10,6 +8,12 @@ UDirectionalLightComponent::UDirectionalLightComponent()
 UDirectionalLightComponent::~UDirectionalLightComponent()
 {
 }
+
+IMPLEMENT_CLASS(UDirectionalLightComponent)
+
+BEGIN_PROPERTIES(UDirectionalLightComponent)
+	MARK_AS_COMPONENT("디렉셔널 라이트", "방향성 라이트 (태양광 같은 평행광) 컴포넌트입니다.")
+END_PROPERTIES()
 
 FVector UDirectionalLightComponent::GetLightDirection() const
 {
@@ -38,7 +42,9 @@ void UDirectionalLightComponent::UpdateLightData()
 void UDirectionalLightComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 {
 	Super::Serialize(bInIsLoading, InOutHandle);
-	// 추가 속성 없음
+
+	// 리플렉션 기반 자동 직렬화 (추가 프로퍼티 없음)
+	AutoSerialize(bInIsLoading, InOutHandle, UDirectionalLightComponent::StaticClass());
 }
 
 void UDirectionalLightComponent::DuplicateSubObjects()

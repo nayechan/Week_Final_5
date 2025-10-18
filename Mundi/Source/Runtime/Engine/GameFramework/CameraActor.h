@@ -3,15 +3,13 @@
 class UCameraComponent;
 class UUIManager;
 class UInputManager;
-//enum class ECameraProjectionMode
-//{
-//    Perspective,
-//    Orthographic
-//};
+
 class ACameraActor : public AActor
 {
 public:
     DECLARE_CLASS(ACameraActor, AActor)
+    GENERATED_REFLECTION_BODY()
+
     ACameraActor();
    
     virtual void Tick(float DeltaSeconds) override;
@@ -31,9 +29,7 @@ protected:
 
 public:
     UCameraComponent* GetCameraComponent() const { return CameraComponent; }
-
     
-
     // Matrices
     FMatrix GetViewMatrix() const;
     FMatrix GetProjectionMatrix() const;
@@ -77,12 +73,9 @@ private:
 
     bool PerspectiveCameraInput = false;
     
-   // ECameraProjectionMode ProjectionMode = ECameraProjectionMode::Perspective;
 
     // Camera input processing methods
-
     void ProcessCameraRotation(float DeltaSeconds);
     void ProcessCameraMovement(float DeltaSeconds);
-
 };
 

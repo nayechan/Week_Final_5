@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "AABoundingBoxComponent.h"
+#include "AABB.h"
 
 struct FMeshBVHNode
 {

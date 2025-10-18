@@ -29,21 +29,43 @@ namespace
 		const char* Description;
 	};
 
-	// 스폰 가능한 액터 클래스 목록을 반환하는 함수 (변경 없음)
+	// 스폰 가능한 액터 클래스 목록을 반환하는 함수 (리플렉션 기반 자동 수집)
 	const TArray<FSpawnableActorDescriptor>& GetSpawnableActorDescriptors()
 	{
 		static TArray<FSpawnableActorDescriptor> Options = []()
 			{
 				TArray<FSpawnableActorDescriptor> Result;
-				Result.push_back({ "Empty Actor", AActor::StaticClass(), "컴포넌트가 없는 기본 액터입니다." });
-				Result.push_back({ "Static Mesh Actor", AStaticMeshActor::StaticClass(), "스태틱 메시를 표시하는 액터입니다. (기본 Cube 메시로 생성)" });
-				Result.push_back({ "Decal Actor", ADecalActor::StaticClass(), "데칼 액터입니다." });
-				Result.push_back({ "Fake Spot Light Actor", AFakeSpotLightActor::StaticClass(), "가짜 Spot Light 액터입니다." });
-				Result.push_back({ "Fire Ball Actor", AFireBallActor::StaticClass(), "파이어볼 액터입니다." });
-				Result.push_back({ "Ambient Light Actor", AAmbientLightActor::StaticClass(), "전역 환경광 액터입니다. 씬 전체에 균일하게 적용됩니다." });
-				Result.push_back({ "Directional Light Actor", ADirectionalLightActor::StaticClass(), "방향성 조명 액터입니다. 태양광처럼 평행한 빛을 생성합니다." });
-				Result.push_back({ "Point Light Actor", APointLightActor::StaticClass(), "점광원 액터입니다. 모든 방향으로 균등하게 빛을 방출합니다." });
-				Result.push_back({ "Spot Light Actor", ASpotLightActor::StaticClass(), "스포트라이트 액터입니다. 원뿔 형태로 빛을 방출합니다." });
+
+				// 리플렉션 시스템을 통해 자동으로 스폰 가능한 액터 목록 가져오기
+				TArray<UClass*> SpawnableActors = UClass::GetAllSpawnableActors();
+
+				for (UClass* Class : SpawnableActors)
+				{
+					if (Class && Class->bIsSpawnable && Class->DisplayName)
+					{
+						Result.push_back({
+							Class->DisplayName,
+							Class,
+							Class->Description ? Class->Description : ""
+						});
+					}
+				}
+
+				// 리플렉션에 등록되지 않은 레거시 액터들 (하위 호환성)
+				// 리플렉션 시스템이 완전히 적용되면 이 부분은 제거 가능
+				if (Result.IsEmpty())
+				{
+					Result.push_back({ "Empty Actor", AActor::StaticClass(), "컴포넌트가 없는 기본 액터입니다." });
+					Result.push_back({ "Static Mesh Actor", AStaticMeshActor::StaticClass(), "스태틱 메시를 표시하는 액터입니다. (기본 Cube 메시로 생성)" });
+					Result.push_back({ "Decal Actor", ADecalActor::StaticClass(), "데칼 액터입니다." });
+					Result.push_back({ "Fake Spot Light Actor", AFakeSpotLightActor::StaticClass(), "가짜 Spot Light 액터입니다." });
+					Result.push_back({ "Fire Ball Actor", AFireBallActor::StaticClass(), "파이어볼 액터입니다." });
+					Result.push_back({ "Ambient Light Actor", AAmbientLightActor::StaticClass(), "전역 환경광 액터입니다. 씬 전체에 균일하게 적용됩니다." });
+					Result.push_back({ "Directional Light Actor", ADirectionalLightActor::StaticClass(), "방향성 조명 액터입니다. 태양광처럼 평행한 빛을 생성합니다." });
+					Result.push_back({ "Point Light Actor", APointLightActor::StaticClass(), "점광원 액터입니다. 모든 방향으로 균등하게 빛을 방출합니다." });
+					Result.push_back({ "Spot Light Actor", ASpotLightActor::StaticClass(), "스포트라이트 액터입니다. 원뿔 형태로 빛을 방출합니다." });
+				}
+
 				return Result;
 			}();
 		return Options;
@@ -178,15 +200,15 @@ void UActorSpawnWidget::HandleActorSelection(AActor* Actor)
 	}
 
 	// Sync with UIManager for gizmo positioning
-	if (UIManager)
-	{
-		UIManager->SetPickedActor(Actor);
+	//if (UIManager)
+	//{
+	//	UIManager->SetPickedActor(Actor);
 
-		if (AGizmoActor* Gizmo = GEngine.GetDefaultWorld()->GetGizmoActor())
-		{
-			Gizmo->SetActorLocation(Actor->GetActorLocation());
-		}
-	}
+	//	if (AGizmoActor* Gizmo = GEngine.GetDefaultWorld()->GetGizmoActor())
+	//	{
+	//		Gizmo->SetActorLocation(Actor->GetActorLocation());
+	//	}
+	//}
 
 	UE_LOG("SceneManager: Selected actor %s", Actor->GetName().ToString().c_str());
 }

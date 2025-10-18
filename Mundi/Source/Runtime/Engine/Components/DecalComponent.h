@@ -20,6 +20,7 @@ class UDecalComponent : public UPrimitiveComponent
 {
 public:
 	DECLARE_CLASS(UDecalComponent, UPrimitiveComponent)
+	GENERATED_REFLECTION_BODY()
 
 	UDecalComponent();
 
@@ -76,6 +77,4 @@ private:
 	// for PIE Tick
 	float FadeSpeed = 0.5f;   // 초당 변화 속도 (0.5 = 2초에 완전 페이드)
 	int FadeDirection = -1;   // -1 = 감소 중, +1 = 증가 중
-
-	// TArray<UStaticMeshComponent*> AffectedComponents;
 };

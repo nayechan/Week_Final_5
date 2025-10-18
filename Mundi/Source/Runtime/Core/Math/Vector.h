@@ -992,8 +992,66 @@ struct FTransform
 	FTransform(const FVector& T, const FQuat& R, const FVector& S) : Rotation(R), Translation(T), Scale3D(S) {}
 
 	FMatrix ToMatrix() const;
-	// 합성 (this * Other)
-	FTransform operator*(const FTransform& Other) const;
+
+	// Child 로컬 좌표계의 점을 부모 좌표계 변환과 합성. 호출하는 Transform의 결과 좌표계로 변환
+	FTransform GetWorldTransform(const FTransform& ChildTransform) const
+	{
+		FTransform Result;
+
+		// 회전 결합
+		// Child 회전 후 부모 회전해야 로컬회전하므로 자식 먼저 곱해져야함
+		Result.Rotation = Rotation * ChildTransform.Rotation;
+		Result.Rotation.Normalize();
+
+		// 스케일 결합 (component-wise)
+		Result.Scale3D = FVector(
+			Scale3D.X * ChildTransform.Scale3D.X,
+			Scale3D.Y * ChildTransform.Scale3D.Y,
+			Scale3D.Z * ChildTransform.Scale3D.Z
+		);
+
+		//
+		// 부모 로컬 To World -> SRT, 자식 로컬 To 부모 -> Other.SRT
+		// 자식 로컬 To World -> Other.SRT * SRT 
+		// 자식 로컬 To World Translation -> Other.T * SRT = Translation(Rotation(Scale(Other.T)))
+		FVector Scaled(ChildTransform.Translation.X * Scale3D.X,
+			ChildTransform.Translation.Y * Scale3D.Y,
+			ChildTransform.Translation.Z * Scale3D.Z);
+		FVector Rotated = Rotation.RotateVector(Scaled);
+		Result.Translation = Translation + Rotated;
+
+		return Result;
+	}
+	//부모 로컬 좌표계로 자식 월드 Transform을 변환.
+	//
+	FTransform GetRelativeTransform(const FTransform& ChildTransform) const
+	{
+		const FTransform& Inverse = this->Inverse();
+
+		FTransform Result;
+
+		Result.Rotation = Inverse.Rotation * ChildTransform.Rotation;
+		Result.Rotation.Normalize();
+
+		Result.Scale3D = FVector(
+			Inverse.Scale3D.X * ChildTransform.Scale3D.X,
+			Inverse.Scale3D.Y * ChildTransform.Scale3D.Y,
+			Inverse.Scale3D.Z * ChildTransform.Scale3D.Z
+		);
+
+		//(자식 To 부모 T) * (부모 To World SRT) = (자식 To World T)
+		//(자식 To 부모 T) = InvScale(InvRotation(InvTranslation((자식 To World T))))
+		//(자식 To 부모 T) = InvScale(InvRotation((ChildTransform.T - this->T) ))
+		//주의할 점 : this->T랑 Inverse.T는 다름. Inverse.T는 역행렬의 Translation임.
+		FVector ResultT = ChildTransform.Translation - this->Translation;
+		ResultT = Inverse.Rotation.RotateVector(ResultT);
+		Result.Translation = FVector(
+			ResultT.X * Inverse.Scale3D.X, 
+			ResultT.Y * Inverse.Scale3D.Y, 
+			ResultT.Z * Inverse.Scale3D.Z );
+
+		return Result;
+	}
 
 	// 역변환
 	FTransform Inverse() const;
@@ -1168,32 +1226,6 @@ inline FMatrix FTransform::ToMatrix() const
 	return R;
 }
 
-// FTransform 합성 (this * Other)
-inline FTransform FTransform::operator*(const FTransform& Other) const
-{
-	FTransform Result;
-
-	// 회전 결합
-	Result.Rotation = Rotation * Other.Rotation;
-	Result.Rotation.Normalize();
-
-	// 스케일 결합 (component-wise)
-	Result.Scale3D = FVector(
-		Scale3D.X * Other.Scale3D.X,
-		Scale3D.Y * Other.Scale3D.Y,
-		Scale3D.Z * Other.Scale3D.Z
-	);
-
-	// 위치 결합: R*(S*Other.T) + T
-	FVector Scaled(Other.Translation.X * Scale3D.X,
-		Other.Translation.Y * Scale3D.Y,
-		Other.Translation.Z * Scale3D.Z);
-	FVector Rotated = Rotation.RotateVector(Scaled);
-	Result.Translation = Translation + Rotated;
-
-	return Result;
-}
-
 // FTransform 역변환
 inline FTransform FTransform::Inverse() const
 {
@@ -1207,12 +1239,13 @@ inline FTransform FTransform::Inverse() const
 	// InvRot = conjugate (단위 가정)
 	FQuat InvRot(-Rotation.X, -Rotation.Y, -Rotation.Z, Rotation.W);
 
-	// InvTrans = -(InvRot * (InvScale * T))
+	//(SRT)^(-1) = T^(-1)R^(-1)S^(-1). Translation Factor : (0,0,0,1)*T^(-1)R^(-1)S^(-1)
+	//InvTrans = -InvScale(InvRotation(Translation))
+	FVector Rotated = InvRot.RotateVector(Translation);
 	FVector Scaled(Translation.X * InvScale.X,
 		Translation.Y * InvScale.Y,
 		Translation.Z * InvScale.Z);
-	FVector Rotated = InvRot.RotateVector(Scaled);
-	FVector InvTrans(-Rotated.X, -Rotated.Y, -Rotated.Z);
+	FVector InvTrans(-Scaled);
 
 	FTransform Out;
 	Out.Rotation = InvRot;

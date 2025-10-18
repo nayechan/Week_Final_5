@@ -5,6 +5,10 @@
 
 IMPLEMENT_CLASS(AFireBallActor)
 
+BEGIN_PROPERTIES(AFireBallActor)
+	MARK_AS_SPAWNABLE("파이어볼", "구 형태의 발광 효과를 가진 액터입니다.")
+END_PROPERTIES()
+
 AFireBallActor::AFireBallActor()
 {
 	Name = "Fire Ball Actor";

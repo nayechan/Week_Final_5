@@ -8,6 +8,7 @@ class AFakeSpotLightActor : public AActor
 {
 public:
 	DECLARE_CLASS(AFakeSpotLightActor, AActor)
+	GENERATED_REFLECTION_BODY()
 
 	AFakeSpotLightActor();
 protected:

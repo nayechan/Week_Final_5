@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "SelectionManager.h"
 #include "Actor.h"
+#include "SceneComponent.h"
 
 IMPLEMENT_CLASS(USelectionManager)
 
@@ -16,6 +17,30 @@ void USelectionManager::SelectActor(AActor* Actor)
     
     // 새 액터 선택
     SelectedActors.Add(Actor);
+    SelectedComponent = Actor->GetRootComponent();
+}
+
+void USelectionManager::SelectComponent(USceneComponent* Component)
+{
+
+    if (!Component)
+    {
+        return;
+    }
+    AActor* SelectedActor = Component->GetOwner();
+    //이미 엑터가 피킹되어 있는 상황, 어느 컴포넌트든 선택 가능
+    if (IsActorSelected(SelectedActor))
+    {
+        SelectedComponent = Component;
+    }
+    //오너 엑터가 선택 안돼있음, 루트 컴포넌트 피킹
+    else
+    {
+        ClearSelection();
+        SelectedActors.Add(SelectedActor);
+        SelectedComponent = SelectedActor->GetRootComponent();
+    }
+    
 }
 
 void USelectionManager::DeselectActor(AActor* Actor)
@@ -27,6 +52,7 @@ void USelectionManager::DeselectActor(AActor* Actor)
     {
         SelectedActors.erase(it);
     }
+    SelectedComponent = nullptr;
 }
 
 void USelectionManager::ClearSelection()
@@ -39,6 +65,7 @@ void USelectionManager::ClearSelection()
         }
     }
     SelectedActors.clear();
+    SelectedComponent = nullptr;
 }
 
 bool USelectionManager::IsActorSelected(AActor* Actor) const
@@ -60,6 +87,7 @@ AActor* USelectionManager::GetSelectedActor() const
 
 void USelectionManager::CleanupInvalidActors()
 {
+
     // null이거나 삭제된 액터들을 제거
     auto it = std::remove_if(SelectedActors.begin(), SelectedActors.end(), 
         [](AActor* Actor) { return Actor == nullptr; });

@@ -29,8 +29,3 @@ void UMeshComponent::DuplicateSubObjects()
 {
     Super::DuplicateSubObjects();
 }
-
-//void UMeshComponent::SetMeshResource(const FString& FilePath)
-//{
-//	MeshResource = FObjManager::LoadObjStaticMesh(FilePath);
-//}

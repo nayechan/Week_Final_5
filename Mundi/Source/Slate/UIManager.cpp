@@ -435,28 +435,28 @@ void UUIManager::UpdateMouseRotation(float InPitch, float InYaw)
  * @brief 월드의 선택된 액터 반환
  * Widget에서 선택된 액터에 접근할 수 있도록 도움
  */
-AActor* UUIManager::GetSelectedActor() const
-{
-	// PickedActorRef의 유효성 확인
-	if (PickedActorRef)
-	{
-		try
-		{
-			// 액터가 여전히 유효한지 신벃할 수 있는 간단한 테스트
-			// 액터의 기본 메서드를 호출해보자
-			if (PickedActorRef->GetClass() != nullptr)
-			{
-				return PickedActorRef;
-			}
-		}
-		catch (...)
-		{
-			// 삭제된 액터에 접근한 경우 참조 정리
-			const_cast<UUIManager*>(this)->PickedActorRef = nullptr;
-		}
-	}
-	return nullptr;
-}
+//AActor* UUIManager::GetSelectedActor() const
+//{
+//	// PickedActorRef의 유효성 확인
+//	if (PickedActorRef)
+//	{
+//		try
+//		{
+//			// 액터가 여전히 유효한지 신벃할 수 있는 간단한 테스트
+//			// 액터의 기본 메서드를 호출해보자
+//			if (PickedActorRef->GetClass() != nullptr)
+//			{
+//				return PickedActorRef;
+//			}
+//		}
+//		catch (...)
+//		{
+//			// 삭제된 액터에 접근한 경우 참조 정리
+//			const_cast<UUIManager*>(this)->PickedActorRef = nullptr;
+//		}
+//	}
+//	return nullptr;
+//}
 
 /**
  * @brief 액터 선택 설정 (안전하게)

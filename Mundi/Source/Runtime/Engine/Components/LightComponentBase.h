@@ -1,12 +1,14 @@
 ﻿#pragma once
 #include "SceneComponent.h"
 #include "Color.h"
+#include "ObjectMacros.h"
 
 // 모든 라이트 컴포넌트의 베이스 클래스
 class ULightComponentBase : public USceneComponent
 {
 public:
 	DECLARE_CLASS(ULightComponentBase, USceneComponent)
+	GENERATED_REFLECTION_BODY()
 
 	ULightComponentBase();
 	virtual ~ULightComponentBase() override;

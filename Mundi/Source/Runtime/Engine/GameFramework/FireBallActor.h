@@ -8,6 +8,8 @@ class AFireBallActor : public AActor
 {
 public:
 	DECLARE_CLASS(AFireBallActor, AActor)
+	GENERATED_REFLECTION_BODY()
+
 	AFireBallActor();
 protected:
 	~AFireBallActor() override;

@@ -11,6 +11,8 @@ class UCameraComponent : public USceneComponent
 {
 public:
     DECLARE_CLASS(UCameraComponent, USceneComponent)
+    GENERATED_REFLECTION_BODY()
+
     UCameraComponent();
 
 protected:
@@ -37,7 +39,8 @@ public:
     FMatrix GetViewMatrix() const;
     FMatrix GetProjectionMatrix() const;
     FMatrix GetProjectionMatrix(float ViewportAspectRatio) const;
-    FMatrix GetProjectionMatrix(float ViewportAspectRatio, FViewport* Viewport) const;//직교 투영 화면 heig조정에 대응하기 위한 코드. 실제로 현재 호출되는 코드
+    FMatrix GetProjectionMatrix(float ViewportAspectRatio, FViewport* Viewport) const;
+
     // Directions in world space
     FVector GetForward() const;
     FVector GetRight() const;
@@ -46,6 +49,9 @@ public:
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
     DECLARE_DUPLICATE(UCameraComponent)
+
+    // Serialization
+    virtual void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
 private:
     float FieldOfView;   // degrees

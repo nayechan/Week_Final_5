@@ -5,6 +5,10 @@
 
 IMPLEMENT_CLASS(AFakeSpotLightActor)
 
+BEGIN_PROPERTIES(AFakeSpotLightActor)
+	MARK_AS_SPAWNABLE("가짜 스포트 라이트", "데칼을 사용한 가짜 스포트 라이트 액터입니다.")
+END_PROPERTIES()
+
 AFakeSpotLightActor::AFakeSpotLightActor()
 {
 	Name = "Fake Spot Light Actor";
@@ -80,10 +84,4 @@ void AFakeSpotLightActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			BillboardCompPre->GetOwner()->RemoveOwnedComponent(BillboardCompPre);
 		}
 	}
-	else
-	{
-
-	}
-	
-	
 }

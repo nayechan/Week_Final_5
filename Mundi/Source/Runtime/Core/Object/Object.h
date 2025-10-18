@@ -3,6 +3,7 @@
 #include "ObjectFactory.h"
 #include "MemoryManager.h"
 #include "Name.h"
+#include "Property.h"
 #include "nlohmann/json.hpp"
 //#include "GlobalConsole.h"
 
@@ -19,8 +20,17 @@ struct UClass
     const UClass* Super = nullptr;   // 루트(UObject)는 nullptr
     std::size_t   Size = 0;
 
+    // 리플렉션 시스템 확장
+    TArray<FProperty> Properties;              // 프로퍼티 목록
+    bool bIsSpawnable = false;                 // ActorSpawnWidget에 표시 여부
+    bool bIsComponent = false;                 // 컴포넌트 여부
+    const char* DisplayName = nullptr;         // UI 표시 이름
+    const char* Description = nullptr;         // 툴팁 설명
+    mutable TArray<FProperty> CachedAllProperties;  // GetAllProperties() 캐시 (성능 최적화)
+    mutable bool bAllPropertiesCached = false;      // 캐시 유효성 플래그
+
     constexpr UClass() = default;
-    constexpr UClass(const char* n, const UClass* s, std::size_t z)//언리얼도 런타임 시간에 관리해주기 때문에 문제가 없습니다.
+    constexpr UClass(const char* n, const UClass* s, std::size_t z)
         :Name(n), Super(s), Size(z) {
     }
     bool IsChildOf(const UClass* Base) const noexcept
@@ -33,7 +43,6 @@ struct UClass
 
     static TArray<UClass*>& GetAllClasses()
     {
-        // 이 함수가 최초로 호출될 때 단 한 번만 안전하게 초기화됩니다.
         static TArray<UClass*> AllClasses;
         return AllClasses;
     }
@@ -43,7 +52,6 @@ struct UClass
         if (InClass)
         {
             GetAllClasses().emplace_back(InClass);
-            //UE_LOG("UClass: Class registered: %s (Total: %llu)", InClass->Name, GetAllClasses().size());
         }
     }
     static UClass* FindClass(const FName& InClassName)
@@ -59,7 +67,66 @@ struct UClass
         return nullptr;
     }
 
-    
+    // 리플렉션 시스템 메서드
+    // 주의: 프로퍼티는 static 초기화 시점에만 등록되며, 런타임 중 추가/삭제 불가
+    void AddProperty(const FProperty& Property)
+    {
+        Properties.Add(Property);
+    }
+
+    const TArray<FProperty>& GetProperties() const
+    {
+        return Properties;
+    }
+
+    // 모든 프로퍼티 가져오기 (부모 클래스 포함, 캐싱됨)
+    const TArray<FProperty>& GetAllProperties() const
+    {
+        if (!bAllPropertiesCached)
+        {
+            CachedAllProperties.clear();
+            if (Super)
+            {
+                const TArray<FProperty>& ParentProps = Super->GetAllProperties();
+                for (const FProperty& Prop : ParentProps)
+                {
+                    CachedAllProperties.Add(Prop);
+                }
+            }
+            for (const FProperty& Prop : Properties)
+            {
+                CachedAllProperties.Add(Prop);
+            }
+            bAllPropertiesCached = true;
+        }
+        return CachedAllProperties;
+    }
+
+    static TArray<UClass*> GetAllSpawnableActors()
+    {
+        TArray<UClass*> Result;
+        for (UClass* Class : GetAllClasses())
+        {
+            if (Class && Class->bIsSpawnable)
+            {
+                Result.Add(Class);
+            }
+        }
+        return Result;
+    }
+
+    static TArray<UClass*> GetAllComponents()
+    {
+        TArray<UClass*> Result;
+        for (UClass* Class : GetAllClasses())
+        {
+            if (Class && Class->bIsComponent)
+            {
+                Result.Add(Class);
+            }
+        }
+        return Result;
+    }
 };
 
 class UObject
@@ -87,6 +154,9 @@ public:
     FString GetComparisonName(); // lower-case
 
     virtual void Serialize(const bool bInIsLoading, JSON& InOutHandle);
+
+    // 리플렉션 기반 자동 직렬화 (현재 클래스의 프로퍼티만 처리)
+    void AutoSerialize(const bool bInIsLoading, JSON& InOutHandle, UClass* TargetClass);
 public:
     // GenerateUUID()에 의해 자동 발급
     uint32_t UUID;
@@ -169,7 +239,10 @@ public:                                                                       \
     {                                                                         \
         static UClass Cls{ #ThisClass, SuperClass::StaticClass(),             \
                             sizeof(ThisClass) };                              \
-        UClass::SignUpClass(&Cls);                                              \
+        static bool bRegistered = []() {                                      \
+            UClass::SignUpClass(&Cls);                                        \
+            return true;                                                      \
+        }();                                                                  \
         return &Cls;                                                          \
     }                                                                         \
     virtual UClass* GetClass() const override { return ThisClass::StaticClass(); } \

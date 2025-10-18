@@ -9,16 +9,19 @@ class AActor;
 class AGizmoActor;
 class USceneComponent;
 class UStaticMeshComponent;   // 추가
+
 static const char* kDisplayItems[] = {
 				"Pawn_64x.png",
 				"PointLight_64x.png",
 				"SpotLight_64x.png"
 };
+
 static const char* kFullPaths[] = {
 	"Editor/Pawn_64x.png",
 	"Editor/PointLight_64x.png",
 	"Editor/SpotLight_64x.png"
 };
+
 class UTargetActorTransformWidget
 	: public UWidget
 {
@@ -30,8 +33,8 @@ public:
 	void RenderWidget() override;
 	void PostProcess() override;
 
-	void UpdateTransformFromActor();
-	void ApplyTransformToActor() const;
+	void UpdateTransformFromComponent(USceneComponent* SelectedComponent);
+	void ApplyTransformToActor(USceneComponent* SelectedComponent) const;
 
 	// Special Member Function
 	UTargetActorTransformWidget();
@@ -40,15 +43,15 @@ public:
 	// 선택된 액터가 외부에서 삭제되었을 때 호출되어 내부 상태를 정리
 	void OnSelectedActorCleared();
 
-	void RenderHeader();
-	void RenderComponentHierarchy();
-	void RenderTransformEditor();
-	void RenderSelectedComponentDetails();
+	void RenderHeader(AActor* SelectedActor, USceneComponent* SelectedComponent);
+	void RenderComponentHierarchy(AActor* SelectedActor, USceneComponent* SelectedComponent);
+	void RenderTransformEditor(AActor* SelectedActor, USceneComponent* SelectedComponent);
+	void RenderSelectedComponentDetails(USceneComponent* SelectedComponent);
 
 
 private:
 	UUIManager* UIManager = nullptr;
-	AActor* SelectedActor = nullptr;
+	//AActor* SelectedActor = nullptr;
 	FString CachedActorName; // 액터 이름 캐시 (안전한 출력을 위해)
 
 	// Transform UI 상태
@@ -71,10 +74,10 @@ private:
 	void ResetChangeFlags();
 
 	// 선택된 컴포넌트
-	USceneComponent* SelectedComponent = nullptr;
+	//USceneComponent* SelectedComponent = nullptr;
 
-	// 선택된 컴포넌트 가져오기
-	USceneComponent* GetEditingComponent() const;  // ← 추가
-	// 스태틱메쉬컴포넌트	가져오기
-	UStaticMeshComponent* GetEditingStaticMeshComponent() const;
+	//// 선택된 컴포넌트 가져오기
+	//USceneComponent* GetEditingComponent() const;  // ← 추가
+	//// 스태틱메쉬컴포넌트	가져오기
+	//UStaticMeshComponent* GetEditingStaticMeshComponent() const;
 };

@@ -1,10 +1,11 @@
 ﻿#pragma once
 #include "Object.h"
 #include "Vector.h"
-#include "AABoundingBoxComponent.h"
+#include "ActorComponent.h"
+#include "AABB.h"
+
 class UWorld;
 class USceneComponent;
-class UAABoundingBoxComponent;
 class UShapeComponent;
 class UTextRenderComponent;
 class UBillboardComponent;
@@ -134,10 +135,8 @@ public:
 
 public:
     FName Name;
-
     UWorld* World = nullptr;
     USceneComponent* RootComponent = nullptr;
-    UAABoundingBoxComponent* CollisionComponent = nullptr;
     UTextRenderComponent* TextComp = nullptr;
 
 protected:

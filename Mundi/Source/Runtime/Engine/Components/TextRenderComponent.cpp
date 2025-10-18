@@ -9,6 +9,12 @@
 
 IMPLEMENT_CLASS(UTextRenderComponent)
 
+BEGIN_PROPERTIES(UTextRenderComponent)
+	MARK_AS_COMPONENT("텍스트 렌더 컴포넌트", "3D 공간에 텍스트를 렌더링합니다.")
+	ADD_PROPERTY(FString, Text, "Text", true, "렌더링할 텍스트입니다.")
+	ADD_PROPERTY(FString, TextureFilePath, "Text", true, "텍스트 텍스처 파일 경로입니다.")
+END_PROPERTIES()
+
 UTextRenderComponent::UTextRenderComponent()
 {
     auto& RM = UResourceManager::GetInstance();
@@ -139,13 +145,12 @@ void UTextRenderComponent::Render(URenderer* Renderer, const FMatrix& View, cons
     if (!bShowBounds || !bSelected)
         return;
 
-    Material->Load("TextBillboard.dds", Renderer->GetRHIDevice()->GetDevice());//texture 불러오기 초기화는 ResourceManager Initialize() -> CreateTextBillboardTexture();
+    Material->Load("TextBillboard.dds", Renderer->GetRHIDevice()->GetDevice());
     ACameraActor* CameraActor = GetOwner()->GetWorld()->GetCameraActor();
     FVector CamRight = CameraActor->GetActorRight();
     FVector CamUp = CameraActor->GetActorUp();
 
     FVector cameraPosition = CameraActor->GetActorLocation();
-    //Renderer->GetRHIDevice()->UpdateBillboardConstantBuffers(Owner->GetActorLocation() + FVector(0.f, 0.f, 1.f) * Owner->GetActorScale().Z, View, Proj, CamRight, CamUp);
     Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(BillboardBufferType(
         Owner->GetActorLocation() + FVector(0.f, 0.f, 1.f) * Owner->GetActorScale().Z,
         View,
@@ -161,13 +166,16 @@ void UTextRenderComponent::Render(URenderer* Renderer, const FMatrix& View, cons
     // 텍스트 빌보드도 이 구간에서만 백페이스 컬링 비활성화
     Renderer->GetRHIDevice()->RSSetState(ERasterizerMode::Solid_NoCull);
     Renderer->DrawIndexedPrimitiveComponent(this, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    // 상태 복원
-    //Renderer->GetRHIDevice()->RSSetState(EViewModeIndex::VMI_Unlit);
+}
+
+void UTextRenderComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
+{
+	Super::Serialize(bInIsLoading, InOutHandle);
+
+	AutoSerialize(bInIsLoading, InOutHandle, UTextRenderComponent::StaticClass());
 }
 
 void UTextRenderComponent::DuplicateSubObjects()
 {
     Super::DuplicateSubObjects();
-    // CharInfoMap는 static 멤버이므로 디폴트 복사 생성자에서 복사하지 않음
-    // TextQuad는 얕은 복사를 수행해도 상관없음
 }

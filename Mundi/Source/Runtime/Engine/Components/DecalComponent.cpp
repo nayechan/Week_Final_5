@@ -7,13 +7,17 @@
 
 IMPLEMENT_CLASS(UDecalComponent)
 
+BEGIN_PROPERTIES(UDecalComponent)
+	MARK_AS_COMPONENT("데칼 컴포넌트", "표면에 투영되는 데칼 효과를 생성합니다.")
+	ADD_PROPERTY(bool, bIsVisible, "Decal", true, "데칼 가시성입니다.")
+	ADD_PROPERTY_RANGE(float, DecalOpacity, "Decal", 0.0f, 1.0f, true, "데칼 불투명도입니다.")
+	ADD_PROPERTY_RANGE(float, FadeSpeed, "Decal", 0.0f, 10.0f, true, "페이드 속도입니다 (초당 변화량).")
+END_PROPERTIES()
+
 UDecalComponent::UDecalComponent()
 {
 	UResourceManager::GetInstance().Load<UMaterial>("Shaders/Effects/Decal.hlsl");
-
 	DecalTexture = UResourceManager::GetInstance().Load<UTexture>("Data/Textures/grass.jpg");
-
-	// PIE에서 fade in, fade out 위함
 	SetTickEnabled(true);
 	SetCanEverTick(true);
 }
@@ -37,6 +41,9 @@ void UDecalComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 		InOutHandle["DecalTexturePath"] = DecalTexture->GetTextureName();
 		InOutHandle["DecalOpacity"] = DecalOpacity;
 	}
+
+	// 리플렉션 기반 자동 직렬화
+	AutoSerialize(bInIsLoading, InOutHandle, UDecalComponent::StaticClass());
 }
 
 void UDecalComponent::DuplicateSubObjects()
@@ -60,8 +67,6 @@ void UDecalComponent::TickComponent(float DeltaTime)
 		DecalOpacity = 1.0f;
 		FadeDirection = -1; // 다시 감소 시작
 	}
-
-	//UE_LOG("Tick: decal opacity: %.2f, uuid: %d", DecalOpacity, UUID);
 }
 
 
@@ -82,9 +87,7 @@ void UDecalComponent::RenderAffectedPrimitives(URenderer* Renderer, UPrimitiveCo
 	RHIDevice->SetAndUpdateConstantBuffer(ViewProjBufferType(View, Proj));
 
 	const FMatrix DecalMatrix = GetDecalProjectionMatrix();
-	//RHIDevice->UpdateDecalBuffer(DecalMatrix, DecalOpacity);
 	RHIDevice->SetAndUpdateConstantBuffer(DecalBufferType(DecalMatrix, DecalOpacity));
-	//UE_LOG("Render: decal opacity: %.2f, uuid: %d", DecalOpacity, UUID);
 
 	// Shader 설정
 	UShader* DecalShader = UResourceManager::GetInstance().Load<UShader>("Shaders/Effects/Decal.hlsl");

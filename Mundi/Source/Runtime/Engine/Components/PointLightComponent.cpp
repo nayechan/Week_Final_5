@@ -3,6 +3,11 @@
 
 IMPLEMENT_CLASS(UPointLightComponent)
 
+BEGIN_PROPERTIES(UPointLightComponent)
+	MARK_AS_COMPONENT("포인트 라이트", "포인트 라이트 컴포넌트를 추가합니다.")
+	ADD_PROPERTY_RANGE(float, SourceRadius, "Light", 0.0f, 1000.0f, true, "광원의 반경입니다.")
+END_PROPERTIES()
+
 UPointLightComponent::UPointLightComponent()
 {
 	SourceRadius = 0.0f;
@@ -37,14 +42,8 @@ void UPointLightComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 {
 	Super::Serialize(bInIsLoading, InOutHandle);
 
-	if (bInIsLoading)
-	{
-		FJsonSerializer::ReadFloat(InOutHandle, "SourceRadius", SourceRadius, 0.0f);
-	}
-	else
-	{
-		InOutHandle["SourceRadius"] = SourceRadius;
-	}
+	// 리플렉션 기반 자동 직렬화 (이 클래스의 프로퍼티만)
+	AutoSerialize(bInIsLoading, InOutHandle, UPointLightComponent::StaticClass());
 }
 
 void UPointLightComponent::DuplicateSubObjects()

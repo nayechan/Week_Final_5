@@ -4,6 +4,10 @@
 
 IMPLEMENT_CLASS(ADirectionalLightActor)
 
+BEGIN_PROPERTIES(ADirectionalLightActor)
+	MARK_AS_SPAWNABLE("디렉셔널 라이트", "방향성 빛을 발산하는 라이트 액터입니다.")
+END_PROPERTIES()
+
 ADirectionalLightActor::ADirectionalLightActor()
 {
 	Name = "Directional Light Actor";

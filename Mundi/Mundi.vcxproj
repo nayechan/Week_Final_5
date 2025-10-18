@@ -201,8 +201,11 @@
     <ClCompile Include="Source\Runtime\Engine\Components\SpotLightComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\AmbientLightActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\DirectionalLightActor.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\EmptyActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\PointLightActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\SpotLightActor.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\SceneView.cpp" />
+    <ClCompile Include="Source\Slate\Widgets\PropertyRenderer.cpp" />
     <ClCompile Include="ThirdParty\ImGui\imgui.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -247,11 +250,9 @@
     </ClCompile>
     <ClCompile Include="Source\Editor\Gizmo\GizmoActor.cpp" />
     <ClCompile Include="Source\Editor\Gizmo\GizmoArrowComponent.cpp" />
-    <ClCompile Include="Source\Editor\Gizmo\GizmoComponent.cpp" />
     <ClCompile Include="Source\Editor\Gizmo\GizmoRotateComponent.cpp" />
     <ClCompile Include="Source\Editor\Gizmo\GizmoScaleComponent.cpp" />
     <ClCompile Include="Source\Editor\Grid\GridActor.cpp" />
-    <ClCompile Include="Source\Editor\Grid\GridComponent.cpp" />
     <ClCompile Include="Source\Editor\ObjManager.cpp" />
     <ClCompile Include="Source\Editor\SelectionManager.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\DynamicMesh.cpp" />
@@ -278,10 +279,8 @@
     <ClCompile Include="Source\Runtime\Engine\Collision\Frustum.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Collision\OBB.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Collision\Picking.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Components\AABoundingBoxComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\BillboardComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\CameraComponent.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Components\CubeComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\DecalComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\FireBallComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\HeightFogComponent.cpp" />
@@ -290,11 +289,8 @@
     <ClCompile Include="Source\Runtime\Engine\Components\PerspectiveDecalComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\PrimitiveComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\SceneComponent.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Components\ShapeComponent.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Components\SphereComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\StaticMeshComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\TextRenderComponent.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Components\TriangleComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\CameraActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\DecalActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\EditorEngine.cpp" />
@@ -440,8 +436,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Source\Runtime\Core\Object\Property.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\AmbientLightActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\DirectionalLightActor.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\EmptyActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\PointLightActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\SpotLightActor.h" />
     <ClInclude Include="Source\Runtime\Renderer\LightInfo.h" />
@@ -452,8 +450,11 @@
     <ClInclude Include="Source\Runtime\Engine\Components\LocalLightComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\PointLightComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\SpotLightComponent.h" />
+    <ClInclude Include="Source\Runtime\Renderer\MeshBatchElement.h" />
+    <ClInclude Include="Source\Runtime\Renderer\SceneView.h" />
     <ClInclude Include="Source\Runtime\RHI\SwapGuard.h" />
     <ClInclude Include="Source\Runtime\RHI\ConstantBufferType.h" />
+    <ClInclude Include="Source\Slate\Widgets\PropertyRenderer.h" />
     <ClInclude Include="ThirdParty\ImGui\imconfig.h" />
     <ClInclude Include="ThirdParty\ImGui\imgui.h" />
     <ClInclude Include="ThirdParty\ImGui\imgui_impl_dx11.h" />
@@ -464,12 +465,10 @@
     <ClInclude Include="ThirdParty\ImGui\imstb_truetype.h" />
     <ClInclude Include="Source\Editor\Gizmo\GizmoActor.h" />
     <ClInclude Include="Source\Editor\Gizmo\GizmoArrowComponent.h" />
-    <ClInclude Include="Source\Editor\Gizmo\GizmoComponent.h" />
     <ClInclude Include="Source\Editor\Gizmo\GizmoRotateComponent.h" />
     <ClInclude Include="Source\Editor\Gizmo\GizmoScaleComponent.h" />
     <ClInclude Include="Source\Editor\Grid\Grid.h" />
     <ClInclude Include="Source\Editor\Grid\GridActor.h" />
-    <ClInclude Include="Source\Editor\Grid\GridComponent.h" />
     <ClInclude Include="Source\Editor\ImGuiConsole.h" />
     <ClInclude Include="Source\Editor\ObjManager.h" />
     <ClInclude Include="Source\Editor\SelectionManager.h" />
@@ -507,10 +506,8 @@
     <ClInclude Include="Source\Runtime\Engine\Collision\Frustum.h" />
     <ClInclude Include="Source\Runtime\Engine\Collision\OBB.h" />
     <ClInclude Include="Source\Runtime\Engine\Collision\Picking.h" />
-    <ClInclude Include="Source\Runtime\Engine\Components\AABoundingBoxComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\BillboardComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\CameraComponent.h" />
-    <ClInclude Include="Source\Runtime\Engine\Components\CubeComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\DecalComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\FireBallComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\HeightFogComponent.h" />
@@ -519,11 +516,8 @@
     <ClInclude Include="Source\Runtime\Engine\Components\PerspectiveDecalComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\PrimitiveComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\SceneComponent.h" />
-    <ClInclude Include="Source\Runtime\Engine\Components\ShapeComponent.h" />
-    <ClInclude Include="Source\Runtime\Engine\Components\SphereComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\StaticMeshComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\TextRenderComponent.h" />
-    <ClInclude Include="Source\Runtime\Engine\Components\TriangleComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\CameraActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\DecalActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\EditorEngine.h" />

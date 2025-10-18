@@ -7,6 +7,7 @@ class APointLightActor : public AActor
 {
 public:
 	DECLARE_CLASS(APointLightActor, AActor)
+	GENERATED_REFLECTION_BODY()
 
 	APointLightActor();
 protected:

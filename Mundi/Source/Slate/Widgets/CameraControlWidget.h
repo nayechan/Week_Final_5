@@ -34,11 +34,9 @@ private:
 	float CameraMoveSpeed = 5.0f;
 	bool bSyncedOnce = false;
 
-	AActor* SelectedActor = nullptr;
 	// 기즈모 설정
 	EGizmoSpace CurrentGizmoSpace = EGizmoSpace::World;
 	AGizmoActor* GizmoActor = nullptr;
-	AActor* GetCurrentSelectedActor() const;
 	// 월드 정보 (옵션)
 	uint32 WorldActorCount = 0;
 };

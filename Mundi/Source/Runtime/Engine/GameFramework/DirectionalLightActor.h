@@ -7,6 +7,7 @@ class ADirectionalLightActor : public AActor
 {
 public:
 	DECLARE_CLASS(ADirectionalLightActor, AActor)
+	GENERATED_REFLECTION_BODY()
 
 	ADirectionalLightActor();
 protected:

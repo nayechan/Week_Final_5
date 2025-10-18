@@ -3,6 +3,12 @@
 
 IMPLEMENT_CLASS(USpotLightComponent)
 
+BEGIN_PROPERTIES(USpotLightComponent)
+	MARK_AS_COMPONENT("스포트 라이트", "스포트 라이트 컴포넌트를 추가합니다.")
+	ADD_PROPERTY_RANGE(float, InnerConeAngle, "Light", 0.0f, 90.0f, true, "원뿔 내부 각도입니다. 이 각도 안에서는 빛이 최대 밝기로 표시됩니다.")
+	ADD_PROPERTY_RANGE(float, OuterConeAngle, "Light", 0.0f, 90.0f, true, "원뿔 외부 각도입니다. 이 각도 안에서는 빛이 보이지 않습니다..")
+END_PROPERTIES()
+
 USpotLightComponent::USpotLightComponent()
 {
 	InnerConeAngle = 30.0f;
@@ -169,16 +175,8 @@ void USpotLightComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 {
 	Super::Serialize(bInIsLoading, InOutHandle);
 
-	if (bInIsLoading)
-	{
-		FJsonSerializer::ReadFloat(InOutHandle, "InnerConeAngle", InnerConeAngle, 30.0f);
-		FJsonSerializer::ReadFloat(InOutHandle, "OuterConeAngle", OuterConeAngle, 45.0f);
-	}
-	else
-	{
-		InOutHandle["InnerConeAngle"] = InnerConeAngle;
-		InOutHandle["OuterConeAngle"] = OuterConeAngle;
-	}
+	// 리플렉션 기반 자동 직렬화 (이 클래스의 프로퍼티만)
+	AutoSerialize(bInIsLoading, InOutHandle, USpotLightComponent::StaticClass());
 }
 
 void USpotLightComponent::DuplicateSubObjects()

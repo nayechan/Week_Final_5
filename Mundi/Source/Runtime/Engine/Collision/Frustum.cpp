@@ -2,7 +2,6 @@
 
 #include "Vector.h"
 #include "Frustum.h"
-#include "AABoundingBoxComponent.h"
 #include "CameraComponent.h"
 #include <immintrin.h> // For SSE, AVX, FMA instructions
 

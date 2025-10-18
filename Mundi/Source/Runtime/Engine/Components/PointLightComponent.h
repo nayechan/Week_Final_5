@@ -7,6 +7,7 @@ class UPointLightComponent : public ULocalLightComponent
 {
 public:
 	DECLARE_CLASS(UPointLightComponent, ULocalLightComponent)
+	GENERATED_REFLECTION_BODY()
 
 	UPointLightComponent();
 	virtual ~UPointLightComponent() override;

@@ -12,6 +12,10 @@ static float MouseSensitivity = 0.05f;  // 적당한 값으로 조정
 
 IMPLEMENT_CLASS(ACameraActor)
 
+BEGIN_PROPERTIES(ACameraActor)
+	MARK_AS_SPAWNABLE("카메라", "씬을 렌더링하는 카메라 액터입니다.")
+END_PROPERTIES()
+
 ACameraActor::ACameraActor()
 {
 

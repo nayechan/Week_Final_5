@@ -7,6 +7,7 @@ class AStaticMeshActor : public AActor
 {
 public:
 	DECLARE_CLASS(AStaticMeshActor, AActor)
+	GENERATED_REFLECTION_BODY()
 
 	AStaticMeshActor();
 	virtual void Tick(float DeltaTime) override;
@@ -24,6 +25,7 @@ public:
 
 	// Serialize
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
+
 protected:
 	UStaticMeshComponent* StaticMeshComponent;
 };

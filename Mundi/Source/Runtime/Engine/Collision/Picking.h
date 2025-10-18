@@ -91,7 +91,7 @@ public:
                                              const FVector2D& ViewportOffset,FViewport*Viewport);
     
     // 기즈모 드래그로 액터를 이동시키는 함수
-    static void DragActorWithGizmo(AActor* Actor, AGizmoActor* GizmoActor, uint32 GizmoAxis, const FVector2D& MouseDelta, const ACameraActor* Camera, EGizmoMode InGizmoMode);
+   // static void DragActorWithGizmo(AActor* Actor, AGizmoActor* GizmoActor, uint32 GizmoAxis, const FVector2D& MouseDelta, const ACameraActor* Camera, EGizmoMode InGizmoMode);
 
     /** === 헬퍼 함수들 === */
     static bool CheckActorPicking(const AActor* Actor, const FRay& Ray, float& OutDistance);

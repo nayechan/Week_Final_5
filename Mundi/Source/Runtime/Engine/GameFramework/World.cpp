@@ -6,7 +6,6 @@
 #include "CameraComponent.h"
 #include "ObjectFactory.h"
 #include "TextRenderComponent.h"
-#include "AABoundingBoxComponent.h"
 #include "FViewport.h"
 #include "Windows/SViewportWindow.h"
 #include "USlateManager.h"
@@ -195,7 +194,11 @@ bool UWorld::DestroyActor(AActor* Actor)
 		ObjectFactory::DeleteObject(Actor);
 
 		// 삭제된 액터 정리
-		if (SelectionMgr) SelectionMgr->CleanupInvalidActors();
+		if (SelectionMgr)
+		{
+			SelectionMgr->CleanupInvalidActors();
+			SelectionMgr->ClearSelection();
+		}
 
 		return true; // 성공적으로 삭제
 	}

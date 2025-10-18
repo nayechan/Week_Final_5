@@ -13,6 +13,10 @@
 
 IMPLEMENT_CLASS(UStaticMeshComponent)
 
+BEGIN_PROPERTIES(UStaticMeshComponent)
+	MARK_AS_COMPONENT("스태틱 메시 컴포넌트", "스태틱 메시를 렌더링하는 컴포넌트입니다.")
+END_PROPERTIES()
+
 UStaticMeshComponent::UStaticMeshComponent()
 {
 	SetStaticMesh("Data/cube-tex.obj");     // 임시 기본 static mesh 설정
@@ -115,42 +119,6 @@ void UStaticMeshComponent::SetStaticMesh(const FString& PathFileName)
 	}
 }
 
-//void UStaticMeshComponent::Serialize(bool bIsLoading, FSceneCompData& InOut)
-//{
-//    // 0) 트랜스폼 직렬화/역직렬화는 상위(UPrimitiveComponent)에서 처리
-//    UPrimitiveComponent::Serialize(bIsLoading, InOut);
-//
-//    if (bIsLoading)
-//    {
-//        // 1) 신규 포맷: ObjStaticMeshAsset가 있으면 우선 사용
-//        if (!InOut.ObjStaticMeshAsset.empty())
-//        {
-//            SetStaticMesh(InOut.ObjStaticMeshAsset);
-//            return;
-//        }
-//
-//        // 2) 레거시 호환: Type을 "Data/<Type>.obj"로 매핑
-//        if (!InOut.Type.empty())
-//        {
-//            const FString LegacyPath = "Data/" + InOut.Type + ".obj";
-//            SetStaticMesh(LegacyPath);
-//        }
-//    }
-//    else
-//    {
-//        // 저장 시: 현재 StaticMesh가 있다면 실제 에셋 경로를 기록
-//        if (UStaticMesh* Mesh = GetStaticMesh())
-//        {
-//            InOut.ObjStaticMeshAsset = Mesh->GetAssetPathFileName();
-//        }
-//        else
-//        {
-//            InOut.ObjStaticMeshAsset.clear();
-//        }
-//        // Type은 상위(월드/액터) 정책에 따라 별도 기록 (예: "StaticMeshComp")
-//    }
-//}
-
 void UStaticMeshComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 {
 	Super::Serialize(bInIsLoading, InOutHandle);
@@ -175,6 +143,9 @@ void UStaticMeshComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			InOutHandle["ObjStaticMeshAsset"] = "";
 		}
 	}
+
+	// 리플렉션 기반 자동 직렬화 (추가 프로퍼티용)
+	AutoSerialize(bInIsLoading, InOutHandle, UStaticMeshComponent::StaticClass());
 }
 
 void UStaticMeshComponent::SetMaterialByUser(const uint32 InMaterialSlotIndex, const FString& InMaterialName)

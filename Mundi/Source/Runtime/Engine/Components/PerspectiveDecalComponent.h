@@ -12,6 +12,7 @@ class UPerspectiveDecalComponent : public UDecalComponent
 {
 public:
 	DECLARE_CLASS(UPerspectiveDecalComponent, UDecalComponent)
+	GENERATED_REFLECTION_BODY()
 
 	UPerspectiveDecalComponent();
 	~UPerspectiveDecalComponent() override = default;

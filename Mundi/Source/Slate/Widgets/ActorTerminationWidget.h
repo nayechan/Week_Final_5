@@ -3,6 +3,7 @@
 
 class UUIManager;
 class AActor;
+class USelectionManager;
 
 class UActorTerminationWidget
 	: public UWidget
@@ -10,7 +11,7 @@ class UActorTerminationWidget
 public:
 	DECLARE_CLASS(UActorTerminationWidget, UWidget)
 
-	void Initialize() override;
+	void Initialize() override {};
 	void Update() override;
 	void RenderWidget() override;
 	void DeleteSelectedActor();
@@ -19,7 +20,4 @@ public:
 	~UActorTerminationWidget() override;
 
 private:
-	AActor* SelectedActor;
-	UUIManager* UIManager; // UIManager 참조
-	FString CachedActorName; // 액터 이름 캐시 (안전한 출력을 위해)
 };

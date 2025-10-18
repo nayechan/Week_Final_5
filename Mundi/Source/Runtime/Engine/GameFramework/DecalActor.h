@@ -7,13 +7,13 @@ class ADecalActor : public AActor
 {
 public:
     DECLARE_CLASS(ADecalActor, AActor)
+    GENERATED_REFLECTION_BODY()
 
     ADecalActor();
 protected:
     ~ADecalActor() override;
 
 public:
-    //virtual FAABB GetBounds() const override;
     UDecalComponent* GetDecalComponent() const { return DecalComponent; }
 
     // ───── 복사 관련 ────────────────────────────
@@ -22,7 +22,7 @@ public:
 
     // Serialize
     void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
+
 protected:
-    //UBillboardComponent* BillboardComp = nullptr;
     UDecalComponent* DecalComponent;
 };

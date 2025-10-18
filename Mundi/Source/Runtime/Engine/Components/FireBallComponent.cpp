@@ -11,6 +11,15 @@
 
 IMPLEMENT_CLASS(UFireBallComponent)
 
+BEGIN_PROPERTIES(UFireBallComponent)
+	MARK_AS_COMPONENT("파이어볼 컴포넌트", "구 형태의 발광 효과를 생성합니다.")
+	ADD_PROPERTY_RANGE(float, Intensity, "FireBall", 0.0f, 100.0f, true, "발광 강도입니다.")
+	ADD_PROPERTY_RANGE(float, Radius, "FireBall", 0.0f, 1000.0f, true, "효과 반경입니다.")
+	ADD_PROPERTY_RANGE(float, RadiusFallOff, "FireBall", 0.0f, 10.0f, true, "반경 감쇠 지수입니다.")
+	ADD_PROPERTY(FLinearColor, Color, "FireBall", true)
+	ADD_PROPERTY(FString, LightingShaderPath, "FireBall", false)
+END_PROPERTIES()
+
 UFireBallComponent::UFireBallComponent()
 {
 	SetCanEverTick(false);
@@ -27,7 +36,6 @@ UFireBallComponent::UFireBallComponent()
 UFireBallComponent::~UFireBallComponent()
 {
 	LightingShader = nullptr;
-	ShadowResources = nullptr;
 }
 
 #pragma region Lifecycle
@@ -95,8 +103,6 @@ void UFireBallComponent::RenderAffectedPrimitives(URenderer* Renderer, UPrimitiv
 
 	const FVector Center = GetWorldLocation();
 	const float SafeRadius = Radius > KINDA_SMALL_NUMBER ? Radius : KINDA_SMALL_NUMBER;
-	//RHIDevice->UpdateFireBallConstantBuffers(Center, SafeRadius, Intensity, RadiusFallOff, Color);
-	float Pad[2];
 	FireBallBufferType FireBallConst{ Center, SafeRadius, Intensity, RadiusFallOff };
 	FireBallConst.Color = Color;
 	RHIDevice->SetAndUpdateConstantBuffer(FireBallConst);
@@ -155,85 +161,14 @@ FBoundingSphere UFireBallComponent::GetBoundingSphere() const
 	return FBoundingSphere(GetWorldLocation(), Radius);
 }
 
-void UFireBallComponent::SetShadowCaptureEnabled(bool bEnabled)
-{
-	bShadowCaptureEnabled = bEnabled;
-}
-
-void UFireBallComponent::SetShadowMapResolution(uint32 InResolution)
-{
-	ShadowMapResolution = std::max(128u, InResolution);
-}
 #pragma endregion
 
 void UFireBallComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 {
 	Super::Serialize(bInIsLoading, InOutHandle);
 
-	if (bInIsLoading)
-	{
-		if (InOutHandle.hasKey("Intensity"))
-		{
-			FJsonSerializer::ReadFloat(InOutHandle, "Intensity", Intensity);
-		}
-
-		if (InOutHandle.hasKey("Radius"))
-		{
-			FJsonSerializer::ReadFloat(InOutHandle, "Radius", Radius);
-		}
-
-		if (InOutHandle.hasKey("RadiusFallOff"))
-		{
-			FJsonSerializer::ReadFloat(InOutHandle, "RadiusFallOff", RadiusFallOff);
-		}
-
-		if (InOutHandle.hasKey("Color"))
-		{
-			FVector4 ColorVec;
-			FJsonSerializer::ReadVector4(InOutHandle, "Color", ColorVec);
-			Color = FLinearColor(ColorVec);
-		}
-
-		if (InOutHandle.hasKey("LightingShaderPath"))
-		{
-			FString ShaderPath = InOutHandle["LightingShaderPath"].ToString();
-			if (!ShaderPath.empty())
-			{
-				LightingShaderPath = ShaderPath;
-				LightingShader = UResourceManager::GetInstance().Load<UShader>(LightingShaderPath);
-				if (!LightingShader)
-				{
-					UE_LOG("UFireBallComponent: failed to load fireball lighting shader '%s'", LightingShaderPath.c_str());
-				}
-			}
-		}
-
-		if (InOutHandle.hasKey("bShadowCaptureEnabled"))
-		{
-			int32 Enabled = 0;
-			FJsonSerializer::ReadInt32(InOutHandle, "bShadowCaptureEnabled", Enabled);
-			bShadowCaptureEnabled = (Enabled != 0);
-		}
-
-		if (InOutHandle.hasKey("ShadowMapResolution"))
-		{
-			int32 Resolution = 0;
-			if (FJsonSerializer::ReadInt32(InOutHandle, "ShadowMapResolution", Resolution))
-			{
-				ShadowMapResolution = std::max(128u, static_cast<uint32>(Resolution));
-			}
-		}
-	}
-	else
-	{
-		InOutHandle["Intensity"] = Intensity;
-		InOutHandle["Radius"] = Radius;
-		InOutHandle["RadiusFallOff"] = RadiusFallOff;
-		InOutHandle["Color"] = FJsonSerializer::Vector4ToJson(Color.ToFVector4());
-		InOutHandle["LightingShaderPath"] = LightingShaderPath;
-		InOutHandle["bShadowCaptureEnabled"] = bShadowCaptureEnabled ? 1 : 0;
-		InOutHandle["ShadowMapResolution"] = static_cast<int32>(ShadowMapResolution);
-	}
+	// 리플렉션 기반 자동 직렬화
+	AutoSerialize(bInIsLoading, InOutHandle, UFireBallComponent::StaticClass());
 }
 
 void UFireBallComponent::DuplicateSubObjects()

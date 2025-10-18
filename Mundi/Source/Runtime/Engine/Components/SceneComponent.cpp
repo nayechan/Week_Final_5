@@ -7,6 +7,13 @@
 
 IMPLEMENT_CLASS(USceneComponent)
 
+BEGIN_PROPERTIES(USceneComponent)
+	MARK_AS_COMPONENT("씬 컴포넌트", "트랜스폼을 가진 씬 컴포넌트입니다.")
+	ADD_PROPERTY(FVector, RelativeLocation, "Transform", true, "로컬 위치입니다.")
+	ADD_PROPERTY(FVector, RelativeRotationEuler, "Transform", true, "로컬 회전입니다 (Degrees, ZYX Euler).")
+	ADD_PROPERTY(FVector, RelativeScale, "Transform", true, "로컬 스케일입니다.")
+END_PROPERTIES()
+
 // USceneComponent.cpp
 TMap<uint32, USceneComponent*> USceneComponent::SceneIdMap;
 
@@ -14,6 +21,7 @@ USceneComponent::USceneComponent()
     : RelativeLocation(0, 0, 0)
     , RelativeRotation(0, 0, 0, 1)
     , RelativeScale(1, 1, 1)
+    , RelativeRotationEuler(0, 0, 0)
     , AttachParent(nullptr)
 {
     UpdateRelativeTransform();
@@ -56,10 +64,24 @@ FVector USceneComponent::GetRelativeLocation() const { return RelativeLocation; 
 void USceneComponent::SetRelativeRotation(const FQuat& NewRotation)
 {
     RelativeRotation = NewRotation;
+    RelativeRotationEuler = NewRotation.ToEulerZYXDeg(); // Euler 동기화
     UpdateRelativeTransform();
     OnTransformUpdated();
 }
 FQuat USceneComponent::GetRelativeRotation() const { return RelativeRotation; }
+
+void USceneComponent::SetRelativeRotationEuler(const FVector& EulerDegrees)
+{
+    RelativeRotationEuler = EulerDegrees;
+    RelativeRotation = FQuat::MakeFromEulerZYX(EulerDegrees); // Quat 동기화
+    UpdateRelativeTransform();
+    OnTransformUpdated();
+}
+
+FVector USceneComponent::GetRelativeRotationEuler() const
+{
+    return RelativeRotation.ToEulerZYXDeg(); // 항상 실시간 계산
+}
 
 void USceneComponent::SetRelativeScale(const FVector& NewScale)
 {
@@ -79,6 +101,7 @@ void USceneComponent::AddRelativeLocation(const FVector& DeltaLocation)
 void USceneComponent::AddRelativeRotation(const FQuat& DeltaRotation)
 {
     RelativeRotation = DeltaRotation * RelativeRotation;
+    RelativeRotationEuler = RelativeRotation.ToEulerZYXDeg(); // Euler 동기화
     UpdateRelativeTransform();
     OnTransformUpdated();
 }
@@ -98,7 +121,7 @@ void USceneComponent::AddRelativeScale3D(const FVector& DeltaScale)
 FTransform USceneComponent::GetWorldTransform() const
 {
     if (AttachParent)
-        return AttachParent->GetWorldTransform() * RelativeTransform;
+        return AttachParent->GetWorldTransform().GetWorldTransform(RelativeTransform);
     return RelativeTransform;
 }
 
@@ -107,7 +130,7 @@ void USceneComponent::SetWorldTransform(const FTransform& W)
     if (AttachParent)
     {
         const FTransform ParentWorld = AttachParent->GetWorldTransform();
-        RelativeTransform = ParentWorld.Inverse() * W;
+        RelativeTransform = ParentWorld.GetRelativeTransform(W);
     }
     else
     {
@@ -116,6 +139,7 @@ void USceneComponent::SetWorldTransform(const FTransform& W)
 
     RelativeLocation = RelativeTransform.Translation;
     RelativeRotation = RelativeTransform.Rotation;
+    RelativeRotationEuler = RelativeRotation.ToEulerZYXDeg(); // Euler 동기화
     RelativeScale = RelativeTransform.Scale3D;
     OnTransformUpdated();
 }
@@ -135,7 +159,7 @@ void USceneComponent::SetWorldRotation(const FQuat& R)
 {
     FTransform W = GetWorldTransform();
     W.Rotation = R;
-    SetWorldTransform(W);
+    SetWorldTransform(W); // SetWorldTransform에서 Euler 동기화
 }
 FQuat USceneComponent::GetWorldRotation() const
 {
@@ -164,7 +188,7 @@ void USceneComponent::AddWorldRotation(const FQuat& DeltaRot)
 {
     FTransform W = GetWorldTransform();
     W.Rotation = DeltaRot * W.Rotation;
-    SetWorldTransform(W);
+    SetWorldTransform(W); // SetWorldTransform에서 Euler 동기화
 }
 
 
@@ -187,6 +211,7 @@ void USceneComponent::AddLocalOffset(const FVector& Delta)
 void USceneComponent::AddLocalRotation(const FQuat& DeltaRot)
 {
     RelativeRotation = (RelativeRotation * DeltaRot).GetNormalized(); // 로컬: 우측곱
+    RelativeRotationEuler = RelativeRotation.ToEulerZYXDeg(); // Euler 동기화
     UpdateRelativeTransform();
     OnTransformUpdated();
 }
@@ -195,6 +220,7 @@ void USceneComponent::SetLocalLocationAndRotation(const FVector& L, const FQuat&
 {
     RelativeLocation = L;
     RelativeRotation = R.GetNormalized();
+    RelativeRotationEuler = RelativeRotation.ToEulerZYXDeg(); // Euler 동기화
     UpdateRelativeTransform();
     OnTransformUpdated();
 }
@@ -238,7 +264,7 @@ void USceneComponent::SetupAttachment(USceneComponent* InParent, EAttachmentRule
         if (Rule == EAttachmentRule::KeepWorld)
         {
             const FTransform ParentWorld = AttachParent->GetWorldTransform();
-            RelativeTransform = ParentWorld.Inverse() * OldWorld;
+            RelativeTransform = ParentWorld.GetRelativeTransform(OldWorld);
         }
         // KeepRelative: 기존 RelativeTransform 유지
     }
@@ -304,7 +330,8 @@ void USceneComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
         FVector EulerAngle;
         FJsonSerializer::ReadVector(InOutHandle, "Rotation", EulerAngle, FVector::Zero());
         RelativeRotation = FQuat::MakeFromEulerZYX(EulerAngle);
-        
+        RelativeRotationEuler = EulerAngle; // Euler 동기화 (로드 시)
+
         FJsonSerializer::ReadVector(InOutHandle, "Scale", RelativeScale, FVector::One());
 
         // 해당 객체의 Transform을 위에서 읽은 값을 기반으로 변경 후, 자식에게 전파
@@ -313,19 +340,10 @@ void USceneComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 
         // 나중에 자식의 Serialize 호출될 때 부모인 이 객체를 찾기 위해 Map에 추가
         FJsonSerializer::ReadUint32(InOutHandle, "Id", SceneId);
-        SceneIdMap.Add(SceneId, this); 
+        SceneIdMap.Add(SceneId, this);
 
         // 부모 찾기
         FJsonSerializer::ReadUint32(InOutHandle, "ParentId", ParentId);
-
-
-        //if (ParentId != 0) // RootComponent가 아니면 부모 설정
-        //{
-        //    USceneComponent** ParentP = SceneIdMap.Find(ParentId);
-        //    USceneComponent* Parent = *ParentP;
-
-        //    SetupAttachment(Parent, EAttachmentRule::KeepRelative);
-        //}
     }
     else
     {
@@ -344,6 +362,9 @@ void USceneComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
             InOutHandle["ParentId"] = 0;
         }
     }
+
+    // 리플렉션 기반 자동 직렬화 (추가 프로퍼티용)
+    AutoSerialize(bInIsLoading, InOutHandle, USceneComponent::StaticClass());
 }
 
 void USceneComponent::OnTransformUpdated()

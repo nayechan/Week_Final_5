@@ -1,6 +1,5 @@
 ﻿#include "pch.h"
 #include "Occlusion.h"
-#include "AABoundingBoxComponent.h"
 #include "Frustum.h"
 
 // NDC Z가 [-1..1]인 프로젝션이면 아래 변환을 켜세요.

@@ -2,8 +2,6 @@
 #include "Vector.h"
 #include "ActorComponent.h"
 
-
-
 // 부착 시 로컬을 유지할지, 월드를 유지할지
 enum class EAttachmentRule
 {
@@ -16,6 +14,8 @@ class USceneComponent : public UActorComponent
 {
 public:
     DECLARE_CLASS(USceneComponent, UActorComponent)
+    GENERATED_REFLECTION_BODY()
+
     USceneComponent();
 
 protected:
@@ -31,6 +31,10 @@ public:
 
     void SetRelativeRotation(const FQuat& NewRotation);
     FQuat GetRelativeRotation() const;
+
+    // Euler Angle 접근 (UI 편집용)
+    void SetRelativeRotationEuler(const FVector& EulerDegrees);
+    FVector GetRelativeRotationEuler() const;
 
     void SetRelativeScale(const FVector& NewScale);
     FVector GetRelativeScale() const;
@@ -122,6 +126,10 @@ protected:
     FVector RelativeLocation{ 0,0,0 };
     FQuat   RelativeRotation;
     FVector RelativeScale{ 1,1,1 };
+
+    // UI 편집용 Euler Angle (Degrees)
+    // RelativeRotation과 항상 동기화됨
+    FVector RelativeRotationEuler{ 0,0,0 };
 
     
     // Hierarchy

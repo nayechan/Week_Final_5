@@ -6,8 +6,10 @@
 #include "Vector.h"
 #include "World.h"
 #include "ResourceManager.h"
+#include "SelectionManager.h"
 #include "WorldPartitionManager.h"
 #include "ActorSpawnWidget.h"
+#include "PropertyRenderer.h"
 
 #include "Actor.h"
 #include "Grid/GridActor.h"
@@ -27,6 +29,7 @@
 #include "AmbientLightComponent.h"
 #include "PointLightComponent.h"
 #include "SpotLightComponent.h"
+#include "SceneComponent.h"
 #include "Color.h"
 
 using namespace std;
@@ -47,15 +50,22 @@ namespace
 		static TArray<FAddableComponentDescriptor> Options = []()
 			{
 				TArray<FAddableComponentDescriptor> Result;
-				Result.push_back({ "Static Mesh Component", UStaticMeshComponent::StaticClass(), "Static mesh 렌더링용 컴포넌트" });
-				Result.push_back({ "Billboard Component", UBillboardComponent::StaticClass(), "빌보드 텍스쳐 표시" });
-				Result.push_back({ "Decal Component", UDecalComponent::StaticClass(), "데칼" });
-				Result.push_back({ "Fog Component", UHeightFogComponent::StaticClass(), "Fog" });
-				Result.push_back({ "FireBall Component", UFireBallComponent::StaticClass(), "파이어볼" });
-				Result.push_back({ "Directional Light Component", UDirectionalLightComponent::StaticClass(), "방향성 조명 (태양광)" });
-				Result.push_back({ "Ambient Light Component", UAmbientLightComponent::StaticClass(), "환경광 (전역 조명)" });
-				Result.push_back({ "Point Light Component", UPointLightComponent::StaticClass(), "점광원" });
-				Result.push_back({ "Spot Light Component", USpotLightComponent::StaticClass(), "스포트라이트 (원뿔형 조명)" });
+
+				// 리플렉션 시스템을 통해 자동으로 컴포넌트 목록 가져오기
+				TArray<UClass*> ComponentClasses = UClass::GetAllComponents();
+
+				for (UClass* Class : ComponentClasses)
+				{
+					if (Class && Class->bIsComponent && Class->DisplayName)
+					{
+						Result.push_back({
+							Class->DisplayName,
+							Class,
+							Class->Description ? Class->Description : ""
+						});
+					}
+				}
+
 				return Result;
 			}();
 		return Options;
@@ -249,10 +259,11 @@ UTargetActorTransformWidget::~UTargetActorTransformWidget() = default;
 void UTargetActorTransformWidget::OnSelectedActorCleared()
 {
 	// 즉시 내부 캐시/플래그 정리
-	SelectedActor = nullptr;
+	/*SelectedActor = nullptr;
 	CachedActorName.clear();
+	
+	SelectedComponent = nullptr;*/
 	ResetChangeFlags();
-	SelectedComponent = nullptr;
 }
 
 void UTargetActorTransformWidget::Initialize()
@@ -266,83 +277,76 @@ void UTargetActorTransformWidget::Initialize()
 		UIManager->RegisterTargetTransformWidget(this);
 	}
 }
-
-AActor* UTargetActorTransformWidget::GetCurrentSelectedActor() const
-{
-	if (!UIManager)
-		return nullptr;
-
-	return UIManager->GetSelectedActor();
-}
-
-USceneComponent* UTargetActorTransformWidget::GetEditingComponent() const
-{
-	if (!SelectedActor)
-		return nullptr;
-
-	USceneComponent* RootComponent = SelectedActor->GetRootComponent();
-	if (!SelectedComponent || SelectedComponent == RootComponent)
-		return nullptr;
-
-	return SelectedComponent;
-}
-
-UStaticMeshComponent* UTargetActorTransformWidget::GetEditingStaticMeshComponent() const
-{
-	if (USceneComponent* EditingComp = GetEditingComponent())
-		return Cast<UStaticMeshComponent>(EditingComp);
-
-	if (SelectedActor)
-		if (AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(SelectedActor))
-			return StaticMeshActor->GetStaticMeshComponent();
-
-	return nullptr;
-}
+//
+//USceneComponent* UTargetActorTransformWidget::GetEditingComponent() const
+//{
+//	if (!SelectedActor)
+//		return nullptr;
+//
+//	USceneComponent* RootComponent = SelectedActor->GetRootComponent();
+//	if (!SelectedComponent || SelectedComponent == RootComponent)
+//		return nullptr;
+//
+//	return SelectedComponent;
+//}
+//
+//UStaticMeshComponent* UTargetActorTransformWidget::GetEditingStaticMeshComponent() const
+//{
+//	if (USceneComponent* EditingComp = GetEditingComponent())
+//		return Cast<UStaticMeshComponent>(EditingComp);
+//
+//	if (SelectedActor)
+//		if (AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(SelectedActor))
+//			return StaticMeshActor->GetStaticMeshComponent();
+//
+//	return nullptr;
+//}
 
 void UTargetActorTransformWidget::Update()
 {
 	// UIManager를 통해 현재 선택된 액터 가져오기
-	AActor* CurrentSelectedActor = GetCurrentSelectedActor();
-	if (SelectedActor != CurrentSelectedActor)
+	//AActor* CurrentSelectedActor = GetCurrentSelectedActor();
+	//if (SelectedActor != CurrentSelectedActor)
+	//{
+	//	SelectedActor = CurrentSelectedActor;
+	//	SelectedComponent = nullptr;
+	//	// 새로 선택된 액터의 이름 캐시
+	//	if (SelectedActor)
+	//	{
+	//		try
+	//		{
+	//			CachedActorName = SelectedActor->GetName().ToString();
+
+	//			// ★ 선택 변경 시 한 번만 초기화
+	//			const FVector S = SelectedActor->GetActorScale();
+	//			bUniformScale = (fabs(S.X - S.Y) < 0.01f && fabs(S.Y - S.Z) < 0.01f);
+
+	//			// 스냅샷
+	//			UpdateTransformFromActor();
+	//			PrevEditRotationUI = EditRotation; // 회전 UI 기준값 초기화
+	//			bRotationEditing = false;          // 편집 상태 초기화
+	//		}
+	//		catch (...)
+	//		{
+	//			CachedActorName = "[Invalid Actor]";
+	//			SelectedActor = nullptr;
+	//		}
+	//	}
+	//	else
+	//	{
+	//		CachedActorName.clear();
+	//	}
+	//}
+
+	USceneComponent* SelectedComponent = GWorld->GetSelectionManager()->GetSelectedComponent();
+	if (SelectedComponent)
 	{
-		SelectedActor = CurrentSelectedActor;
-		SelectedComponent = nullptr;
-		// 새로 선택된 액터의 이름 캐시
-		if (SelectedActor)
-		{
-			try
-			{
-				CachedActorName = SelectedActor->GetName().ToString();
-
-				// ★ 선택 변경 시 한 번만 초기화
-				const FVector S = SelectedActor->GetActorScale();
-				bUniformScale = (fabs(S.X - S.Y) < 0.01f && fabs(S.Y - S.Z) < 0.01f);
-
-				// 스냅샷
-				UpdateTransformFromActor();
-				PrevEditRotationUI = EditRotation; // 회전 UI 기준값 초기화
-				bRotationEditing = false;          // 편집 상태 초기화
-			}
-			catch (...)
-			{
-				CachedActorName = "[Invalid Actor]";
-				SelectedActor = nullptr;
-			}
-		}
-		else
-		{
-			CachedActorName.clear();
-		}
-	}
-
-	if (SelectedActor)
-	{
-		// 액터가 선택되어 있으면 항상 트랜스폼 정보를 업데이트하여
+		// 컴포넌트가 선택되어 있으면 항상 트랜스폼 정보를 업데이트하여
 		// 기즈모 조작을 실시간으로 UI에 반영합니다.
 		// 회전 필드 편집 중이면 그 프레임은 엔진→UI 역동기화(회전)를 막는다.
 		if (!bRotationEditing)
 		{
-			UpdateTransformFromActor();
+			UpdateTransformFromComponent(SelectedComponent);
 			// 회전을 제외하고 위치/스케일도 여기서 갱신하고 싶다면,
 			// UpdateTransformFromActor()에서 회전만 건너뛰는 오버로드를 따로 만들어도 OK.
 		}
@@ -351,46 +355,52 @@ void UTargetActorTransformWidget::Update()
 
 void UTargetActorTransformWidget::RenderWidget()
 {
+	AActor* SelectedActor = GWorld->GetSelectionManager()->GetSelectedActor();
+	USceneComponent* SelectedComponent = GWorld->GetSelectionManager()->GetSelectedComponent();
 	if (!SelectedActor)
 	{
 		return;
 	}
+	//if (!SelectedActor)
+	//{
+	//	return;
+	//}
 
-	// 캐시 갱신
-	try
-	{
-		const FString LatestName = SelectedActor->GetName().ToString();
-		if (CachedActorName != LatestName)
-		{
-			CachedActorName = LatestName;
-		}
-	}
-	catch (...)
-	{
-		CachedActorName.clear();
-		SelectedActor = nullptr;
-		return;
-	}
+	//// 캐시 갱신
+	//try
+	//{
+	//	const FString LatestName = SelectedActor->GetName().ToString();
+	//	if (CachedActorName != LatestName)
+	//	{
+	//		CachedActorName = LatestName;
+	//	}
+	//}
+	//catch (...)
+	//{
+	//	CachedActorName.clear();
+	//	SelectedActor = nullptr;
+	//	return;
+	//}
 
 	// 1. 헤더 (액터 이름, "+추가" 버튼) 렌더링
-	RenderHeader();
+	RenderHeader(SelectedActor, SelectedComponent);
 
 	// 2. 컴포넌트 계층 구조 렌더링
-	RenderComponentHierarchy();
+	RenderComponentHierarchy(SelectedActor, SelectedComponent);
 
 	// 3. 트랜스폼 편집 UI (Location, Rotation, Scale) 렌더링
-	RenderTransformEditor();
+	RenderTransformEditor(SelectedActor, SelectedComponent);
 
 	// 4. 선택된 컴포넌트의 상세 정보 렌더링
-	RenderSelectedComponentDetails();
+	RenderSelectedComponentDetails(SelectedComponent);
 }
 
 // -----------------------------------------------------------------------------
 // 헤더 UI 렌더링
 // -----------------------------------------------------------------------------
-void UTargetActorTransformWidget::RenderHeader()
+void UTargetActorTransformWidget::RenderHeader(AActor* SelectedActor, USceneComponent* SelectedComponent)
 {
-	ImGui::Text(CachedActorName.c_str());
+	ImGui::Text(SelectedActor->GetName().ToString().c_str());
 	ImGui::SameLine();
 
 	const float ButtonWidth = 60.0f;
@@ -433,7 +443,7 @@ void UTargetActorTransformWidget::RenderHeader()
 // -----------------------------------------------------------------------------
 // [신규 분리 함수 2] 컴포넌트 계층 구조 UI 렌더링
 // -----------------------------------------------------------------------------
-void UTargetActorTransformWidget::RenderComponentHierarchy()
+void UTargetActorTransformWidget::RenderComponentHierarchy(AActor* SelectedActor, USceneComponent* SelectedComponent)
 {
 	AActor* ActorPendingRemoval = nullptr;
 	USceneComponent* ComponentPendingRemoval = nullptr;
@@ -452,7 +462,7 @@ void UTargetActorTransformWidget::RenderComponentHierarchy()
 	ImGui::PushID("ActorDisplay");
 	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.85f, 0.3f, 1.0f));
 	const bool bActorSelected = (SelectedComponent == nullptr);
-	if (ImGui::Selectable(CachedActorName.c_str(), bActorSelected, ImGuiSelectableFlags_SelectOnClick | ImGuiSelectableFlags_SpanAvailWidth))
+	if (ImGui::Selectable(SelectedActor->GetName().ToString().c_str(), bActorSelected, ImGuiSelectableFlags_SelectOnClick | ImGuiSelectableFlags_SpanAvailWidth))
 	{
 		SelectedComponent = nullptr;
 	}
@@ -484,7 +494,8 @@ void UTargetActorTransformWidget::RenderComponentHierarchy()
 	static USceneComponent* PreviousSelectedComponent = nullptr;
 	if (PreviousSelectedComponent != SelectedComponent)
 	{
-		UpdateTransformFromActor();
+		UpdateTransformFromComponent(SelectedComponent);
+		GWorld->GetSelectionManager()->SelectComponent(SelectedComponent);
 		PrevEditRotationUI = EditRotation;
 		bRotationEditing = false;
 		const FVector ScaleRef = EditScale;
@@ -541,7 +552,8 @@ void UTargetActorTransformWidget::RenderComponentHierarchy()
 // -----------------------------------------------------------------------------
 // 트랜스폼 편집 UI 렌더링
 // -----------------------------------------------------------------------------
-void UTargetActorTransformWidget::RenderTransformEditor()
+//여기서 드래그 처리를 왜 하는 건지 모르겠어서 일단 원본 유지하고 인자만 넘겨줌
+void UTargetActorTransformWidget::RenderTransformEditor(AActor* SelectedActor, USceneComponent* SelectedComponent)
 {
 	// Location 편집
 	if (ImGui::DragFloat3("Location", &EditLocation.X, 0.1f))
@@ -552,8 +564,7 @@ void UTargetActorTransformWidget::RenderTransformEditor()
 	// Rotation 편집
 	// ───────── Rotation: DragFloat3 하나로 "드래그=증분", "입력=절대" 처리 ─────────
 	{
-		USceneComponent* EditingComponent = GetEditingComponent();
-
+		
 		// 1) 컨트롤 그리기 전에 이전값 스냅
 		const FVector Before = EditRotation;
 
@@ -584,7 +595,7 @@ void UTargetActorTransformWidget::RenderTransformEditor()
 		}
 
 		// 5) 값이 변한 프레임에 처리
-		if (Edited && (SelectedActor || EditingComponent))
+		if (Edited && (SelectedActor || SelectedComponent))
 		{
 			if (Dragging)
 			{
@@ -599,10 +610,10 @@ void UTargetActorTransformWidget::RenderTransformEditor()
 				const FQuat Qz = FQuat::FromAxisAngle(FVector(0, 0, 1), DegreesToRadians(DeltaEuler.Z));
 				const FQuat DeltaQuat = (Qz * Qy * Qx).GetNormalized();
 
-				if (EditingComponent)
+				if (SelectedComponent)
 				{
-					FQuat Cur = EditingComponent->GetRelativeRotation();
-					EditingComponent->SetRelativeRotation((DeltaQuat * Cur).GetNormalized());
+					FQuat Cur = SelectedComponent->GetRelativeRotation();
+					SelectedComponent->SetRelativeRotation((DeltaQuat * Cur).GetNormalized());
 				}
 				else if (SelectedActor)
 				{
@@ -616,9 +627,9 @@ void UTargetActorTransformWidget::RenderTransformEditor()
 			else
 			{
 				const FQuat NewQ = FQuat::MakeFromEulerZYX(EditRotation).GetNormalized();
-				if (EditingComponent)
+				if (SelectedComponent)
 				{
-					EditingComponent->SetRelativeRotation(NewQ);
+					SelectedComponent->SetRelativeRotation(NewQ);
 				}
 				else if (SelectedActor)
 				{
@@ -634,9 +645,9 @@ void UTargetActorTransformWidget::RenderTransformEditor()
 		// 6) 편집 종료 시(포커스 빠짐) 최종 스냅 & 상태 리셋
 		if (Deactivated)
 		{
-			if (EditingComponent)
+			if (SelectedComponent)
 			{
-				EditRotation = EditingComponent->GetRelativeRotation().ToEulerZYXDeg();
+				EditRotation = SelectedComponent->GetRelativeRotation().ToEulerZYXDeg();
 				PrevEditRotationUI = EditRotation;
 			}
 			else if (SelectedActor)
@@ -674,7 +685,7 @@ void UTargetActorTransformWidget::RenderTransformEditor()
 // -----------------------------------------------------------------------------
 // 선택된 컴포넌트 상세 정보 UI 렌더링
 // -----------------------------------------------------------------------------
-void UTargetActorTransformWidget::RenderSelectedComponentDetails()
+void UTargetActorTransformWidget::RenderSelectedComponentDetails(USceneComponent* SelectedComponent)
 {
 	ImGui::Spacing();
 	ImGui::Separator();
@@ -682,7 +693,7 @@ void UTargetActorTransformWidget::RenderSelectedComponentDetails()
 	USceneComponent* TargetComponentForDetails = SelectedComponent;
 
 	// 액터가 선택되 경우 액터의 중요 컴포넌트를 출력
-	if (!TargetComponentForDetails && SelectedActor)
+	/*if (!TargetComponentForDetails)
 	{
 		if (AStaticMeshActor* StaticMeshActor = Cast<AStaticMeshActor>(SelectedActor))
 		{
@@ -696,7 +707,7 @@ void UTargetActorTransformWidget::RenderSelectedComponentDetails()
 		{
 			TargetComponentForDetails = SelectedActor->GetRootComponent();
 		}
-	}
+	}*/
 
 	if (!TargetComponentForDetails) return;
 
@@ -1104,137 +1115,137 @@ void UTargetActorTransformWidget::RenderSelectedComponentDetails()
 	// SpotLightComponent UI (먼저 체크하여 PointLight UI가 표시되지 않도록 함)
 	if (USpotLightComponent* SpotLight = Cast<USpotLightComponent>(TargetComponentForDetails))
 	{
-		ImGui::Separator();
-		ImGui::Text("스포트라이트 설정 (Spot Light)");
+		//ImGui::Separator();
+		//ImGui::Text("스포트라이트 설정 (Spot Light)");
 
-		// Enable/Disable
-		bool bEnabled = SpotLight->IsEnabled();
-		if (ImGui::Checkbox("활성화", &bEnabled))
-		{
-			SpotLight->SetEnabled(bEnabled);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("조명을 켜거나 끕니다");
-		}
+		//// Enable/Disable
+		//bool bEnabled = SpotLight->IsEnabled();
+		//if (ImGui::Checkbox("활성화", &bEnabled))
+		//{
+		//	SpotLight->SetEnabled(bEnabled);
+		//}
+		//if (ImGui::IsItemHovered())
+		//{
+		//	ImGui::SetTooltip("조명을 켜거나 끕니다");
+		//}
 
-		// Intensity
-		float Intensity = SpotLight->GetIntensity();
-		if (ImGui::DragFloat("강도", &Intensity, 0.01f, 0.0f, 100.0f))
-		{
-			SpotLight->SetIntensity(Intensity);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("조명의 밝기를 조절합니다 (0.0 ~ 100.0)");
-		}
+		//// Intensity
+		//float Intensity = SpotLight->GetIntensity();
+		//if (ImGui::DragFloat("강도", &Intensity, 0.01f, 0.0f, 100.0f))
+		//{
+		//	SpotLight->SetIntensity(Intensity);
+		//}
+		//if (ImGui::IsItemHovered())
+		//{
+		//	ImGui::SetTooltip("조명의 밝기를 조절합니다 (0.0 ~ 100.0)");
+		//}
 
-		// Light Color
-		FLinearColor LightColor = SpotLight->GetLightColor();
-		float ColorArr[4] = { LightColor.R, LightColor.G, LightColor.B, LightColor.A };
-		if (ImGui::ColorEdit4("조명 색상", ColorArr))
-		{
-			SpotLight->SetLightColor(FLinearColor(ColorArr[0], ColorArr[1], ColorArr[2], ColorArr[3]));
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("조명의 색상을 설정합니다");
-		}
+		//// Light Color
+		//FLinearColor LightColor = SpotLight->GetLightColor();
+		//float ColorArr[4] = { LightColor.R, LightColor.G, LightColor.B, LightColor.A };
+		//if (ImGui::ColorEdit4("조명 색상", ColorArr))
+		//{
+		//	SpotLight->SetLightColor(FLinearColor(ColorArr[0], ColorArr[1], ColorArr[2], ColorArr[3]));
+		//}
+		//if (ImGui::IsItemHovered())
+		//{
+		//	ImGui::SetTooltip("조명의 색상을 설정합니다");
+		//}
 
-		// Temperature
-		float Temperature = SpotLight->GetTemperature();
-		if (ImGui::DragFloat("색온도 (K)", &Temperature, 10.0f, 1000.0f, 15000.0f))
-		{
-			SpotLight->SetTemperature(Temperature);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("조명의 색온도를 켈빈(K) 단위로 설정합니다\n(1000K: 주황색, 6500K: 주광색, 15000K: 푸른색)");
-		}
+		//// Temperature
+		//float Temperature = SpotLight->GetTemperature();
+		//if (ImGui::DragFloat("색온도 (K)", &Temperature, 10.0f, 1000.0f, 15000.0f))
+		//{
+		//	SpotLight->SetTemperature(Temperature);
+		//}
+		//if (ImGui::IsItemHovered())
+		//{
+		//	ImGui::SetTooltip("조명의 색온도를 켈빈(K) 단위로 설정합니다\n(1000K: 주황색, 6500K: 주광색, 15000K: 푸른색)");
+		//}
 
-		// Attenuation Radius
-		float AttenuationRadius = SpotLight->GetAttenuationRadius();
-		if (ImGui::DragFloat("감쇠 반경", &AttenuationRadius, 1.0f, 0.0f, 10000.0f))
-		{
-			SpotLight->SetAttenuationRadius(AttenuationRadius);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("조명이 영향을 미치는 최대 거리를 설정합니다");
-		}
+		//// Attenuation Radius
+		//float AttenuationRadius = SpotLight->GetAttenuationRadius();
+		//if (ImGui::DragFloat("감쇠 반경", &AttenuationRadius, 1.0f, 0.0f, 10000.0f))
+		//{
+		//	SpotLight->SetAttenuationRadius(AttenuationRadius);
+		//}
+		//if (ImGui::IsItemHovered())
+		//{
+		//	ImGui::SetTooltip("조명이 영향을 미치는 최대 거리를 설정합니다");
+		//}
 
-		// Use Attenuation Coefficients
-		bool bUseCoefficients = SpotLight->IsUsingAttenuationCoefficients();
-		if (ImGui::Checkbox("감쇠 계수 사용", &bUseCoefficients))
-		{
-			SpotLight->SetUseAttenuationCoefficients(bUseCoefficients);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("감쇠 계수(C, L, Q)를 사용할지 감쇠 지수를 사용할지 선택합니다");
-		}
+		//// Use Attenuation Coefficients
+		//bool bUseCoefficients = SpotLight->IsUsingAttenuationCoefficients();
+		//if (ImGui::Checkbox("감쇠 계수 사용", &bUseCoefficients))
+		//{
+		//	SpotLight->SetUseAttenuationCoefficients(bUseCoefficients);
+		//}
+		//if (ImGui::IsItemHovered())
+		//{
+		//	ImGui::SetTooltip("감쇠 계수(C, L, Q)를 사용할지 감쇠 지수를 사용할지 선택합니다");
+		//}
 
-		if (bUseCoefficients)
-		{
-			// Attenuation Coefficients (Constant, Linear, Quadratic)
-			FVector Attenuation = SpotLight->GetAttenuation();
-			if (ImGui::DragFloat3("감쇠 계수 (C, L, Q)", &Attenuation.X, 0.01f, 0.0f, 10.0f))
-			{
-				SpotLight->SetAttenuation(Attenuation);
-			}
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("감쇠 계수 (상수, 일차, 이차)\n거리에 따른 조명 감쇠를 계산합니다\n1 / (C + L*d + Q*d²)");
-			}
-		}
-		else
-		{
-			// Falloff Exponent
-			float FalloffExponent = SpotLight->GetFalloffExponent();
-			if (ImGui::DragFloat("감쇠 지수", &FalloffExponent, 0.01f, 0.0f, 10.0f))
-			{
-				SpotLight->SetFalloffExponent(FalloffExponent);
-			}
-			if (ImGui::IsItemHovered())
-			{
-				ImGui::SetTooltip("거리에 따른 조명 감쇠 정도를 조절합니다\n값이 클수록 빠르게 감쇠됩니다");
-			}
-		}
+		//if (bUseCoefficients)
+		//{
+		//	// Attenuation Coefficients (Constant, Linear, Quadratic)
+		//	FVector Attenuation = SpotLight->GetAttenuation();
+		//	if (ImGui::DragFloat3("감쇠 계수 (C, L, Q)", &Attenuation.X, 0.01f, 0.0f, 10.0f))
+		//	{
+		//		SpotLight->SetAttenuation(Attenuation);
+		//	}
+		//	if (ImGui::IsItemHovered())
+		//	{
+		//		ImGui::SetTooltip("감쇠 계수 (상수, 일차, 이차)\n거리에 따른 조명 감쇠를 계산합니다\n1 / (C + L*d + Q*d²)");
+		//	}
+		//}
+		//else
+		//{
+		//	// Falloff Exponent
+		//	float FalloffExponent = SpotLight->GetFalloffExponent();
+		//	if (ImGui::DragFloat("감쇠 지수", &FalloffExponent, 0.01f, 0.0f, 10.0f))
+		//	{
+		//		SpotLight->SetFalloffExponent(FalloffExponent);
+		//	}
+		//	if (ImGui::IsItemHovered())
+		//	{
+		//		ImGui::SetTooltip("거리에 따른 조명 감쇠 정도를 조절합니다\n값이 클수록 빠르게 감쇠됩니다");
+		//	}
+		//}
 
-		// Source Radius
-		float SourceRadius = SpotLight->GetSourceRadius();
-		if (ImGui::DragFloat("광원 반경", &SourceRadius, 1.0f, 0.0f, 1000.0f))
-		{
-			SpotLight->SetSourceRadius(SourceRadius);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("광원의 물리적 크기를 설정합니다\n큰 값일수록 부드러운 그림자를 생성합니다");
-		}
+		//// Source Radius
+		//float SourceRadius = SpotLight->GetSourceRadius();
+		//if (ImGui::DragFloat("광원 반경", &SourceRadius, 1.0f, 0.0f, 1000.0f))
+		//{
+		//	SpotLight->SetSourceRadius(SourceRadius);
+		//}
+		//if (ImGui::IsItemHovered())
+		//{
+		//	ImGui::SetTooltip("광원의 물리적 크기를 설정합니다\n큰 값일수록 부드러운 그림자를 생성합니다");
+		//}
 
-		// Inner Cone Angle
-		float InnerConeAngle = SpotLight->GetInnerConeAngle();
-		if (ImGui::SliderFloat("내부 원뿔 각도", &InnerConeAngle, 0.0f, 90.0f, "%.1f deg"))
-		{
-			SpotLight->SetInnerConeAngle(InnerConeAngle);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("스포트라이트 중심의 밝은 영역 각도\n이 각도 내에서는 최대 밝기가 유지됩니다");
-		}
+		//// Inner Cone Angle
+		//float InnerConeAngle = SpotLight->GetInnerConeAngle();
+		//if (ImGui::SliderFloat("내부 원뿔 각도", &InnerConeAngle, 0.0f, 90.0f, "%.1f deg"))
+		//{
+		//	SpotLight->SetInnerConeAngle(InnerConeAngle);
+		//}
+		//if (ImGui::IsItemHovered())
+		//{
+		//	ImGui::SetTooltip("스포트라이트 중심의 밝은 영역 각도\n이 각도 내에서는 최대 밝기가 유지됩니다");
+		//}
 
-		// Outer Cone Angle
-		float OuterConeAngle = SpotLight->GetOuterConeAngle();
-		if (ImGui::SliderFloat("외부 원뿔 각도", &OuterConeAngle, 0.0f, 90.0f, "%.1f deg"))
-		{
-			SpotLight->SetOuterConeAngle(OuterConeAngle);
-		}
-		if (ImGui::IsItemHovered())
-		{
-			ImGui::SetTooltip("스포트라이트가 영향을 미치는 최대 각도\n내부 각도와 외부 각도 사이에서 감쇠됩니다");
-		}
+		//// Outer Cone Angle
+		//float OuterConeAngle = SpotLight->GetOuterConeAngle();
+		//if (ImGui::SliderFloat("외부 원뿔 각도", &OuterConeAngle, 0.0f, 90.0f, "%.1f deg"))
+		//{
+		//	SpotLight->SetOuterConeAngle(OuterConeAngle);
+		//}
+		//if (ImGui::IsItemHovered())
+		//{
+		//	ImGui::SetTooltip("스포트라이트가 영향을 미치는 최대 각도\n내부 각도와 외부 각도 사이에서 감쇠됩니다");
+		//}
 
-		ImGui::Separator();
+		//ImGui::Separator();
 	}
 	// PointLightComponent UI (SpotLight가 아닐 때만 표시)
 	else if (UPointLightComponent* PointLight = Cast<UPointLightComponent>(TargetComponentForDetails))
@@ -1349,6 +1360,15 @@ void UTargetActorTransformWidget::RenderSelectedComponentDetails()
 
 		ImGui::Separator();
 	}
+
+	// ===== 리플렉션 기반 자동 UI 생성 =====
+	// 리플렉션이 적용된 컴포넌트는 자동으로 UI 생성
+	if (TargetComponentForDetails && TargetComponentForDetails->GetClass()->GetProperties().Num() > 0)
+	{
+		ImGui::Separator();
+		ImGui::Text("[Reflected Properties]");
+		UPropertyRenderer::RenderAllPropertiesWithInheritance(TargetComponentForDetails);
+	}
 }
 
 void UTargetActorTransformWidget::PostProcess()
@@ -1356,17 +1376,16 @@ void UTargetActorTransformWidget::PostProcess()
 	// 자동 적용이 활성화된 경우 변경사항을 즉시 적용
 	if (bPositionChanged || bRotationChanged || bScaleChanged)
 	{
-		ApplyTransformToActor();
+		USceneComponent* SelectedComponent = GWorld->GetSelectionManager()->GetSelectedComponent();
+		ApplyTransformToActor(SelectedComponent);
 		ResetChangeFlags(); // 적용 후 플래그 리셋
 	}
 }
 
-void UTargetActorTransformWidget::UpdateTransformFromActor()
+void UTargetActorTransformWidget::UpdateTransformFromComponent(USceneComponent* SelectedComponent)
 {
-	if (!SelectedActor)
-		return;
 
-	if (USceneComponent* EditingComponent = GetEditingComponent())
+	/*if (USceneComponent* EditingComponent = GetEditingComponent())
 	{
 		EditLocation = EditingComponent->GetRelativeLocation();
 		EditRotation = EditingComponent->GetRelativeRotation().ToEulerZYXDeg();
@@ -1377,48 +1396,53 @@ void UTargetActorTransformWidget::UpdateTransformFromActor()
 		EditLocation = SelectedActor->GetActorLocation();
 		EditRotation = SelectedActor->GetActorRotation().ToEulerZYXDeg();
 		EditScale = SelectedActor->GetActorScale();
+	}*/
+	if (SelectedComponent)
+	{
+		EditLocation = SelectedComponent->GetRelativeLocation();
+		EditRotation = SelectedComponent->GetRelativeRotation().ToEulerZYXDeg();
+		EditScale = SelectedComponent->GetRelativeScale();
 	}
 
 	ResetChangeFlags();
 }
 
-void UTargetActorTransformWidget::ApplyTransformToActor() const
+void UTargetActorTransformWidget::ApplyTransformToActor(USceneComponent* SelectedComponent) const
 {
-	if (!SelectedActor)
-		return;
 
-	if (USceneComponent* EditingComponent = GetEditingComponent())
+	if (SelectedComponent)
 	{
 		bool bDirty = false;
 
 		if (bPositionChanged)
 		{
-			EditingComponent->SetRelativeLocation(EditLocation);
+			SelectedComponent->SetRelativeLocation(EditLocation);
 			bDirty = true;
 		}
 
 		if (bRotationChanged)
 		{
 			FQuat NewRotation = FQuat::MakeFromEulerZYX(EditRotation);
-			EditingComponent->SetRelativeRotation(NewRotation);
+			SelectedComponent->SetRelativeRotation(NewRotation);
 			bDirty = true;
 		}
 
 		if (bScaleChanged)
 		{
-			EditingComponent->SetRelativeScale(EditScale);
+			SelectedComponent->SetRelativeScale(EditScale);
 			bDirty = true;
 		}
 
 		if (bDirty)
 		{
-			SelectedActor->GetRootComponent()->OnTransformUpdated();
+			SelectedComponent->OnTransformUpdated();
 		}
 		return;
 	}
 
+	//왜 중복으로 Transform을 적용하는지 모르겠어서 주석 처리 해봤는데 정상작동함
 	// 기존 액터 적용 분기
-	if (bPositionChanged)
+	/*if (bPositionChanged)
 	{
 		SelectedActor->SetActorLocation(EditLocation);
 	}
@@ -1432,7 +1456,7 @@ void UTargetActorTransformWidget::ApplyTransformToActor() const
 	if (bScaleChanged)
 	{
 		SelectedActor->SetActorScale(EditScale);
-	}
+	}*/
 }
 
 void UTargetActorTransformWidget::ResetChangeFlags()

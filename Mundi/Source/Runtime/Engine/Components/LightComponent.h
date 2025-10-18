@@ -6,6 +6,7 @@ class ULightComponent : public ULightComponentBase
 {
 public:
 	DECLARE_CLASS(ULightComponent, ULightComponentBase)
+	GENERATED_REFLECTION_BODY()
 
 	ULightComponent();
 	virtual ~ULightComponent() override;

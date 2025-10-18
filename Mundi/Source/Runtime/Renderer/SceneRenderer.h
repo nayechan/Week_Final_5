@@ -15,6 +15,11 @@ class UAmbientLightComponent;
 class UDirectionalLightComponent;
 class UPointLightComponent;
 class USpotLightComponent;
+class FMeshBatchElement;
+class UMeshComponent;
+class UBillboardComponent;
+class UTextRenderComponent;
+class FSceneView;
 
 struct FCandidateDrawable;
 
@@ -51,7 +56,7 @@ struct FSceneGlobals
 class FSceneRenderer
 {
 public:
-	FSceneRenderer(UWorld* InWorld, ACameraActor* InCamera, FViewport* InViewport, URenderer* InOwnerRenderer);
+	FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* InOwnerRenderer);
 	~FSceneRenderer();
 
 	/** @brief 이 씬 렌더러의 모든 렌더링 파이프라인을 실행합니다. */
@@ -107,18 +112,9 @@ private:
 private:
 	// --- 렌더링 컨텍스트 (외부에서 주입받음) ---
 	UWorld* World;
-	ACameraActor* Camera;
-	FViewport* Viewport;
+	FSceneView* View;
 	URenderer* OwnerRenderer;
 	D3D11RHI* RHIDevice;
-
-	// --- 프레임 동안 계산되고 사용되는 데이터 ---
-	FMatrix ViewMatrix;
-	FMatrix ProjectionMatrix;
-	Frustum ViewFrustum;
-	float ZNear = 0.1f;
-	float ZFar = 1000.0f;
-	EViewModeIndex EffectiveViewMode = EViewModeIndex::None;
 
 	// 수집된 렌더링 대상 목록
 	FVisibleRenderProxySet Proxies;
@@ -131,4 +127,7 @@ private:
 
 	// 컬링을 거친 가시성 목록, NOTE: 추후 컴포넌트 단위로 수정
 	TArray<UPrimitiveComponent*> PotentiallyVisibleComponents;
+
+	// 각 패스에서 수집된 드로우 콜 정보 리스트
+	TArray<FMeshBatchElement> MeshBatchElements;
 };

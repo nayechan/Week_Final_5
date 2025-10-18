@@ -18,6 +18,8 @@ class UStaticMeshComponent : public UMeshComponent
 {
 public:
     DECLARE_CLASS(UStaticMeshComponent, UMeshComponent)
+    GENERATED_REFLECTION_BODY()
+
     UStaticMeshComponent();
 
 protected:

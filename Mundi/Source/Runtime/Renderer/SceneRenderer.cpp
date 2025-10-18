@@ -35,15 +35,16 @@
 #include "PointLightComponent.h"
 #include "SpotLightComponent.h"
 #include "SwapGuard.h"
+#include "MeshBatchElement.h"
+#include "SceneView.h"
 #include "Shader.h"
 #include "ResourceManager.h"
 
-FSceneRenderer::FSceneRenderer(UWorld* InWorld, ACameraActor* InCamera, FViewport* InViewport, URenderer* InOwnerRenderer)
+FSceneRenderer::FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* InOwnerRenderer)
 	: World(InWorld)
-	, Camera(InCamera)
-	, Viewport(InViewport)
+	, View(InView) // 전달받은 FSceneView 저장
 	, OwnerRenderer(InOwnerRenderer)
-	, RHIDevice(InOwnerRenderer->GetRHIDevice()) // OwnerRenderer를 통해 RHI를 가져옴
+	, RHIDevice(InOwnerRenderer->GetRHIDevice())
 {
 	//OcclusionCPU = std::make_unique<FOcclusionCullingManagerCPU>();
 
@@ -71,24 +72,24 @@ void FSceneRenderer::Render()
 	RenderDebugPass();	//  선택한 물체의 경계 출력
 
 	// ViewMode에 따라 렌더링 경로 결정
-	if (EffectiveViewMode == EViewModeIndex::VMI_Lit_Gouraud ||
-		EffectiveViewMode == EViewModeIndex::VMI_Lit_Lambert ||
-		EffectiveViewMode == EViewModeIndex::VMI_Lit_Phong)
+	if (View->ViewMode == EViewModeIndex::VMI_Lit_Gouraud ||
+		View->ViewMode == EViewModeIndex::VMI_Lit_Lambert ||
+		View->ViewMode == EViewModeIndex::VMI_Lit_Phong)
 	{
 		// 조명이 있는 모드는 LightBuffer 업데이트 필요
 		UpdateLightConstant();
 		RenderLitPath();
 	}
-	else if (EffectiveViewMode == EViewModeIndex::VMI_Unlit)
+	else if (View->ViewMode == EViewModeIndex::VMI_Unlit)
 	{
 		// Unlit 모드는 조명 없이 렌더링
 		RenderLitPath();
 	}
-	else if (EffectiveViewMode == EViewModeIndex::VMI_Wireframe)
+	else if (View->ViewMode == EViewModeIndex::VMI_Wireframe)
 	{
 		RenderWireframePath();
 	}
-	else if (EffectiveViewMode == EViewModeIndex::VMI_SceneDepth)
+	else if (View->ViewMode == EViewModeIndex::VMI_SceneDepth)
 	{
 		RenderSceneDepthPath();
 	}
@@ -191,44 +192,27 @@ void FSceneRenderer::RenderSceneDepthPath()
 
 bool FSceneRenderer::IsValid() const
 {
-	return World && Camera && Viewport && OwnerRenderer && RHIDevice;
+	return World && View && OwnerRenderer && RHIDevice;
 }
 
 void FSceneRenderer::PrepareView()
 {
-	// 렌더링 시작 시 현재 카메라 설정
-	OwnerRenderer->SetCurrentCamera(Camera);
+	OwnerRenderer->SetCurrentViewportSize(View->ViewRect.Width(), View->ViewRect.Height());
 
-	RHIDevice->RSSetViewport();
-
-	float ViewportAspectRatio = static_cast<float>(Viewport->GetSizeX()) / static_cast<float>(Viewport->GetSizeY());
-	if (Viewport->GetSizeY() == 0) ViewportAspectRatio = 1.0f;
-
-	OwnerRenderer->SetCurrentViewportSize(Viewport->GetSizeX(), Viewport->GetSizeY());
-
-	// FSceneRenderer의 멤버 변수로 ViewMatrix, ProjectionMatrix 등을 저장
-	ViewMatrix = Camera->GetViewMatrix();
-	ProjectionMatrix = Camera->GetProjectionMatrix(ViewportAspectRatio, Viewport);
-
-	if (UCameraComponent* CamComp = Camera->GetCameraComponent())
-	{
-		ViewFrustum = CreateFrustumFromCamera(*CamComp, ViewportAspectRatio);
-		ZNear = CamComp->GetNearClip();
-		ZFar = CamComp->GetFarClip();
-	}
-
-	EffectiveViewMode = World->GetRenderSettings().GetViewModeIndex();
+	// FSceneRenderer 멤버 변수(View->ViewMatrix, View->ProjectionMatrix)를 채우는 대신
+	// FSceneView의 멤버를 직접 사용합니다. (예: RenderOpaquePass에서 View->ViewMatrix 사용)
 
 	// 뷰포트 크기 설정
 	D3D11_VIEWPORT Vp = {};
-	Vp.TopLeftX = static_cast<float>(Viewport->GetStartX());
-	Vp.TopLeftY = static_cast<float>(Viewport->GetStartY());
-	Vp.Width = static_cast<float>(Viewport->GetSizeX());
-	Vp.Height = static_cast<float>(Viewport->GetSizeY());
+	Vp.TopLeftX = (float)View->ViewRect.MinX;
+	Vp.TopLeftY = (float)View->ViewRect.MinY;
+	Vp.Width = (float)View->ViewRect.Width();
+	Vp.Height = (float)View->ViewRect.Height();
 	Vp.MinDepth = 0.0f;
 	Vp.MaxDepth = 1.0f;
 	RHIDevice->GetDeviceContext()->RSSetViewports(1, &Vp);
 
+	// 뷰포트 상수 버퍼 설정 (View->ViewRect, RHIDevice 크기 정보 사용)
 	FViewportConstants ViewConstData;
 	// 1. 뷰포트 정보 채우기
 	ViewConstData.ViewportRect.X = Vp.TopLeftX;
@@ -255,7 +239,7 @@ void FSceneRenderer::GatherVisibleProxies()
 	const bool bDrawFog = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Fog);
 	const bool bDrawLight = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Lighting);
 	const bool bUseAntiAliasing = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_FXAA);
-	
+
 
 	for (AActor* Actor : World->GetActors())
 	{
@@ -305,7 +289,7 @@ void FSceneRenderer::GatherVisibleProxies()
 					Proxies.FireBalls.Add(FireBallComponent);
 				}
 			}
-			else 
+			else
 			{
 				if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(Component); FogComponent && bDrawFog)
 				{
@@ -316,7 +300,7 @@ void FSceneRenderer::GatherVisibleProxies()
 				{
 					SceneGlobals.DirectionalLights.Add(LightComponent);
 				}
-				
+
 				else if (UAmbientLightComponent* LightComponent = Cast<UAmbientLightComponent>(Component); LightComponent && bDrawLight)
 				{
 					SceneGlobals.AmbientLights.Add(LightComponent);
@@ -333,7 +317,7 @@ void FSceneRenderer::GatherVisibleProxies()
 						SceneLocals.PointLights.Add(LightComponent);
 					}
 				}
- 			}
+			}
 		}
 	}
 }
@@ -346,14 +330,14 @@ void FSceneRenderer::UpdateLightConstant()
 	for (UAmbientLightComponent* LightComponent : SceneGlobals.AmbientLights)
 	{
 		LightBuffer.AmbientLight = FAmbientLightInfo(LightComponent->GetLightInfo());
-		
+
 		break;
 	}
 
 	for (UDirectionalLightComponent* LightComponent : SceneGlobals.DirectionalLights)
 	{
 		LightBuffer.DirectionalLight = FDirectionalLightInfo(LightComponent->GetLightInfo());
-		
+
 		break;
 	}
 
@@ -365,7 +349,7 @@ void FSceneRenderer::UpdateLightConstant()
 			break;
 		}
 		LightBuffer.PointLights[LightBuffer.PointLightCount++] = FPointLightInfo(LightComponent->GetLightInfo());
-		
+
 
 	}
 
@@ -414,7 +398,7 @@ void FSceneRenderer::RenderOpaquePass()
 	TArray<FShaderMacro> ShaderMacros;
 	FString ShaderPath = "Shaders/Materials/UberLit.hlsl";
 
-	switch (EffectiveViewMode)
+	switch (View->ViewMode)
 	{
 	case EViewModeIndex::VMI_Lit_Phong:     // Phong
 		ShaderMacros.push_back(FShaderMacro{ "LIGHTING_MODEL_PHONG", "1" });
@@ -445,17 +429,17 @@ void FSceneRenderer::RenderOpaquePass()
 			MeshComponent->SetViewModeShader(ViewModeShader);
 		}
 
-		MeshComponent->Render(OwnerRenderer, ViewMatrix, ProjectionMatrix);
+		MeshComponent->Render(OwnerRenderer, View->ViewMatrix, View->ProjectionMatrix);
 	}
 
 	for (UBillboardComponent* BillboardComponent : Proxies.Billboards)
 	{
-		BillboardComponent->Render(OwnerRenderer, ViewMatrix, ProjectionMatrix);
+		BillboardComponent->Render(OwnerRenderer, View->ViewMatrix, View->ProjectionMatrix);
 	}
 
 	for (UTextRenderComponent* TextRenderComponent : Proxies.Texts)
 	{
-		TextRenderComponent->Render(OwnerRenderer, ViewMatrix, ProjectionMatrix);
+		TextRenderComponent->Render(OwnerRenderer, View->ViewMatrix, View->ProjectionMatrix);
 	}
 }
 
@@ -511,7 +495,7 @@ void FSceneRenderer::RenderDecalPass()
 		// 3. TargetPrimitive 순회하며 렌더링
 		for (UPrimitiveComponent* Target : TargetPrimitives)
 		{
-			Decal->RenderAffectedPrimitives(OwnerRenderer, Target, ViewMatrix, ProjectionMatrix);
+			Decal->RenderAffectedPrimitives(OwnerRenderer, Target, View->ViewMatrix, View->ProjectionMatrix);
 		}
 
 		// --- 데칼 렌더 시간 측정 종료 및 결과 저장 ---
@@ -564,7 +548,7 @@ void FSceneRenderer::RenderFireBallPass()
 
 		for (UPrimitiveComponent* Target : TargetPrimitives)
 		{
-			FireBall->RenderAffectedPrimitives(OwnerRenderer, Target, ViewMatrix, ProjectionMatrix);
+			FireBall->RenderAffectedPrimitives(OwnerRenderer, Target, View->ViewMatrix, View->ProjectionMatrix);
 		}
 	}
 
@@ -625,18 +609,18 @@ void FSceneRenderer::RenderPostProcessingPasses()
 	RHIDevice->GetDeviceContext()->PSSetSamplers(0, 2, Samplers);
 
 	// 상수 버퍼 업데이트
-	ECameraProjectionMode ProjectionMode = Camera->GetCameraComponent()->GetProjectionMode();
+	ECameraProjectionMode ProjectionMode = View->ProjectionMode;
 	//RHIDevice->UpdatePostProcessCB(ZNear, ZFar, ProjectionMode == ECameraProjectionMode::Orthographic);
-	RHIDevice->SetAndUpdateConstantBuffer(PostProcessBufferType(ZNear, ZFar, ProjectionMode == ECameraProjectionMode::Orthographic));
-	FMatrix InvView = ViewMatrix.InverseAffine();
+	RHIDevice->SetAndUpdateConstantBuffer(PostProcessBufferType(View->ZNear, View->ZFar, ProjectionMode == ECameraProjectionMode::Orthographic));
+	FMatrix InvView = View->ViewMatrix.InverseAffine();
 	FMatrix InvProjection;
 	if (ProjectionMode == ECameraProjectionMode::Perspective)
 	{
-		InvProjection = ProjectionMatrix.InversePerspectiveProjection();
+		InvProjection = View->ProjectionMatrix.InversePerspectiveProjection();
 	}
 	else
 	{
-		InvProjection = ProjectionMatrix.InverseOrthographicProjection();
+		InvProjection = View->ProjectionMatrix.InverseOrthographicProjection();
 	}
 	//RHIDevice->UpdateInvViewProjCB(InvView, InvProjection);
 	RHIDevice->SetAndUpdateConstantBuffer(InvViewProjBufferType(InvView, InvProjection));
@@ -694,9 +678,9 @@ void FSceneRenderer::RenderSceneDepthPostProcess()
 	RHIDevice->GetDeviceContext()->PSSetSamplers(1, 1, &SamplerState);
 
 	// 상수 버퍼 업데이트
-	ECameraProjectionMode ProjectionMode = Camera->GetCameraComponent()->GetProjectionMode();
+	ECameraProjectionMode ProjectionMode = View->ProjectionMode;
 	//RHIDevice->UpdatePostProcessCB(ZNear, ZFar, ProjectionMode == ECameraProjectionMode::Orthographic);
-	RHIDevice->SetAndUpdateConstantBuffer(PostProcessBufferType(ZNear, ZFar, ProjectionMode == ECameraProjectionMode::Orthographic));
+	RHIDevice->SetAndUpdateConstantBuffer(PostProcessBufferType(View->ZNear, View->ZFar, ProjectionMode == ECameraProjectionMode::Orthographic));
 
 	// Draw
 	RHIDevice->DrawFullScreenQuad();
@@ -730,7 +714,7 @@ void FSceneRenderer::RenderEditorPrimitivesPass()
 					}
 
 					RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual);
-					Primitive->Render(OwnerRenderer, ViewMatrix, ProjectionMatrix);
+					Primitive->Render(OwnerRenderer, View->ViewMatrix, View->ProjectionMatrix);
 				}
 			}
 		}
@@ -749,12 +733,12 @@ void FSceneRenderer::RenderDebugPass()
 			// Decal 디버그 볼륨
 			if (UDecalComponent* Decal = Cast<UDecalComponent>(Component))
 			{
-				Decal->RenderDebugVolume(OwnerRenderer, ViewMatrix, ProjectionMatrix);
+				Decal->RenderDebugVolume(OwnerRenderer, View->ViewMatrix, View->ProjectionMatrix);
 			}
 			// SpotLight 디버그 볼륨 (원뿔 모양)
 			else if (USpotLightComponent* SpotLight = Cast<USpotLightComponent>(Component))
 			{
-				SpotLight->RenderDebugVolume(OwnerRenderer, ViewMatrix, ProjectionMatrix);
+				SpotLight->RenderDebugVolume(OwnerRenderer, View->ViewMatrix, View->ProjectionMatrix);
 			}
 		}
 	}
@@ -769,7 +753,7 @@ void FSceneRenderer::RenderDebugPass()
 	}
 
 	// 수집된 라인을 출력하고 정리
-	OwnerRenderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
+	OwnerRenderer->EndLineBatch(FMatrix::Identity(), View->ViewMatrix, View->ProjectionMatrix);
 }
 
 void FSceneRenderer::RenderOverayEditorPrimitivesPass()
@@ -794,7 +778,7 @@ void FSceneRenderer::RenderOverayEditorPrimitivesPass()
 					if (Cast<UGizmoArrowComponent>(Primitive))
 					{
 						RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual);
-						Primitive->Render(OwnerRenderer, ViewMatrix, ProjectionMatrix);
+						Primitive->Render(OwnerRenderer, View->ViewMatrix, View->ProjectionMatrix);
 					}
 				}
 			}

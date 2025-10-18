@@ -5,6 +5,11 @@
 
 IMPLEMENT_CLASS(UPerspectiveDecalComponent)
 
+BEGIN_PROPERTIES(UPerspectiveDecalComponent)
+	MARK_AS_COMPONENT("원근 데칼 컴포넌트", "원근 투영을 사용하는 데칼 효과를 생성합니다.")
+	ADD_PROPERTY_RANGE(float, FovY, "Decal", 1.0f, 179.0f, true, "수직 시야각 (FOV, Degrees)입니다.")
+END_PROPERTIES()
+
 UPerspectiveDecalComponent::UPerspectiveDecalComponent()
 {
 	// PIE에서 fade in, fade out 하지 않도록 설정
@@ -173,4 +178,7 @@ void UPerspectiveDecalComponent::Serialize(const bool bInIsLoading, JSON& InOutH
 	{
 		InOutHandle["FovY"] = GetFovY();
 	}
+
+	// 리플렉션 기반 자동 직렬화
+	AutoSerialize(bInIsLoading, InOutHandle, UPerspectiveDecalComponent::StaticClass());
 }

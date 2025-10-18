@@ -14,6 +14,8 @@ class UFireBallComponent : public UPrimitiveComponent
 {
 public:
 	DECLARE_CLASS(UFireBallComponent, UPrimitiveComponent)
+	GENERATED_REFLECTION_BODY()
+
 	UFireBallComponent();
 	~UFireBallComponent() override;
 
@@ -44,13 +46,6 @@ public:
 
 	FBoundingSphere GetBoundingSphere() const;
 
-	// ─────────────── Shadow Capture Stub ───────────────
-	void SetShadowCaptureEnabled(bool bEnabled);
-	bool IsShadowCaptureEnabled() const { return bShadowCaptureEnabled; }
-
-	void SetShadowMapResolution(uint32 InResolution);
-	uint32 GetShadowMapResolution() const { return ShadowMapResolution; }
-
 	// ─────────────── Serialization ───────────────
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
@@ -71,9 +66,4 @@ private:
 
 	FString LightingShaderPath;                // Shader path for the lighting pass material.
 	UShader* LightingShader = nullptr;          // Cached shader instance for the lighting pass.
-
-	bool bShadowCaptureEnabled = false;        // Enables future depth cube-map capture for occlusion.
-	uint32 ShadowMapResolution = 512;          // Planned cube-map resolution for shadow capture.
-
-	FShadowResources* ShadowResources = nullptr; // Opaque handle to depth cube-map GPU resources.
 };

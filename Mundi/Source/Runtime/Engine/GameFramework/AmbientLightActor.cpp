@@ -4,6 +4,10 @@
 
 IMPLEMENT_CLASS(AAmbientLightActor)
 
+BEGIN_PROPERTIES(AAmbientLightActor)
+	MARK_AS_SPAWNABLE("앰비언트 라이트", "주변광을 발산하는 라이트 액터입니다.")
+END_PROPERTIES()
+
 AAmbientLightActor::AAmbientLightActor()
 {
 	Name = "Ambient Light Actor";

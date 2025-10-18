@@ -74,7 +74,7 @@ public:
 	void ResetPickedActor();
 	
 	// Selection management helper
-	AActor* GetSelectedActor() const;
+	//AActor* GetSelectedActor() const;
 	
 	// Camera rotation management methods
 	FVector GetTempCameraRotation() const { return TempCameraRotation; }
