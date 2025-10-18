@@ -331,35 +331,46 @@ void FSceneRenderer::UpdateLightConstant()
 {
 	FLightBufferType LightBuffer{};
 
-	//테스트코드
+	// AmbientLight 수집 (활성화된 것만)
 	for (UAmbientLightComponent* LightComponent : SceneGlobals.AmbientLights)
 	{
-		LightBuffer.AmbientLight = FAmbientLightInfo(LightComponent->GetLightInfo());
+		if (!LightComponent->IsEnabled())
+			continue;
 
+		LightBuffer.AmbientLight = FAmbientLightInfo(LightComponent->GetLightInfo());
 		break;
 	}
 
+	// DirectionalLight 수집 (활성화된 것만)
 	for (UDirectionalLightComponent* LightComponent : SceneGlobals.DirectionalLights)
 	{
-		LightBuffer.DirectionalLight = FDirectionalLightInfo(LightComponent->GetLightInfo());
+		if (!LightComponent->IsEnabled())
+			continue;
 
+		LightBuffer.DirectionalLight = FDirectionalLightInfo(LightComponent->GetLightInfo());
 		break;
 	}
 
+	// PointLight 수집 (활성화된 것만)
 	for (UPointLightComponent* LightComponent : SceneLocals.PointLights)
 	{
+		if (!LightComponent->IsEnabled())
+			continue;
+
 		if (LightBuffer.PointLightCount >= NUM_POINT_LIGHT_MAX)
 		{
 			UE_LOG("PointLight의 최대 개수는 %d개 입니다.", NUM_POINT_LIGHT_MAX);
 			break;
 		}
 		LightBuffer.PointLights[LightBuffer.PointLightCount++] = FPointLightInfo(LightComponent->GetLightInfo());
-
-
 	}
 
+	// SpotLight 수집 (활성화된 것만)
 	for (USpotLightComponent* LightComponent : SceneLocals.SpotLights)
 	{
+		if (!LightComponent->IsEnabled())
+			continue;
+
 		if (LightBuffer.SpotLightCount >= NUM_SPOT_LIGHT_MAX)
 		{
 			UE_LOG("SpotLight의 최대 개수는 %d개 입니다.", NUM_SPOT_LIGHT_MAX);
