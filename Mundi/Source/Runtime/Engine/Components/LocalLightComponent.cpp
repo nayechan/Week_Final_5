@@ -5,9 +5,8 @@ IMPLEMENT_CLASS(ULocalLightComponent)
 
 BEGIN_PROPERTIES(ULocalLightComponent)
 	ADD_PROPERTY_RANGE(float, AttenuationRadius, "Light", 0.0f, 10000.0f, true, "감쇠 반경입니다.")
-	ADD_PROPERTY(bool, bUseAttenuationCoefficients, "Light", true, "감쇠 방식 선택: true = Attenuation 사용, false = FalloffExponent 사용.")
-	ADD_PROPERTY_RANGE(float, FalloffExponent, "Light", 0.1f, 10.0f, true, "감쇠 지수입니다 (bUseAttenuationCoefficients = false일 때 사용).")
-	ADD_PROPERTY(FVector, Attenuation, "Light", true, "감쇠 계수입니다: 상수, 일차항, 이차항 (bUseAttenuationCoefficients = true일 때 사용).")
+	ADD_PROPERTY(bool, bUseInverseSquareFalloff, "Light", true, "감쇠 방식 선택: true = Inverse Square Falloff (물리 법칙), false = Exponent Falloff (예술적 제어).")
+	ADD_PROPERTY_RANGE(float, FalloffExponent, "Light", 0.1f, 10.0f, true, "감쇠 지수입니다 (bUseInverseSquareFalloff = false일 때 사용).")
 END_PROPERTIES()
 
 ULocalLightComponent::ULocalLightComponent()

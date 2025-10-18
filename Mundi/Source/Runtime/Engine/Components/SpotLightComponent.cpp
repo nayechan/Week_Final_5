@@ -96,11 +96,10 @@ FSpotLightInfo USpotLightComponent::GetLightInfo() const
 	Info.InnerConeAngle = GetInnerConeAngle();
 	Info.Direction = GetDirection();
 	Info.OuterConeAngle = GetOuterConeAngle();
-	Info.Attenuation = IsUsingAttenuationCoefficients() ? GetAttenuation() : FVector(1.0f, 0.0f, 0.0f);
 	Info.AttenuationRadius = GetAttenuationRadius();
-	Info.FalloffExponent = IsUsingAttenuationCoefficients() ? 0.0f : GetFalloffExponent();
-	Info.bUseAttenuationCoefficients = IsUsingAttenuationCoefficients() ? 1u : 0u;
-	Info.Padding = FVector2D(0.0f, 0.0f); // 패딩 초기화
+	Info.FalloffExponent = GetFalloffExponent(); // Always pass FalloffExponent (used when bUseInverseSquareFalloff = false)
+	Info.bUseInverseSquareFalloff = IsUsingInverseSquareFalloff() ? 1u : 0u;
+	Info.Padding = 0.0f; // 패딩 초기화
 
 	return Info;
 }

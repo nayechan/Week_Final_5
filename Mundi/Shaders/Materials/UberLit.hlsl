@@ -39,10 +39,9 @@ struct FPointLightInfo
     float4 Color;           // 16 bytes - FLinearColor (includes Intensity + Temperature)
     float3 Position;        // 12 bytes - FVector
     float AttenuationRadius; // 4 bytes (moved up to fill slot)
-    float3 Attenuation;     // 12 bytes - FVector (constant, linear, quadratic)
-    float FalloffExponent;  // 4 bytes
-    uint bUseAttenuationCoefficients; // 4 bytes - uint32
-    float3 Padding;         // 12 bytes - Padding for alignment
+    float FalloffExponent;  // 4 bytes - Falloff exponent for artistic control
+    uint bUseInverseSquareFalloff; // 4 bytes - uint32 (true = physically accurate, false = exponent-based)
+    float2 Padding;         // 8 bytes - Padding for alignment (Attenuation removed)
 };
 
 struct FSpotLightInfo
@@ -52,11 +51,10 @@ struct FSpotLightInfo
     float InnerConeAngle;   // 4 bytes
     float3 Direction;       // 12 bytes - FVector
     float OuterConeAngle;   // 4 bytes
-    float3 Attenuation;     // 12 bytes - FVector
     float AttenuationRadius; // 4 bytes
-    float FalloffExponent;  // 4 bytes
-    uint bUseAttenuationCoefficients; // 4 bytes - uint32
-    float2 Padding;         // 8 bytes - Padding for alignment
+    float FalloffExponent;  // 4 bytes - Falloff exponent for artistic control
+    uint bUseInverseSquareFalloff; // 4 bytes - uint32 (true = physically accurate, false = exponent-based)
+    float Padding;         // 4 bytes - Padding for alignment (Attenuation removed)
 };
 
 // --- Material 구조체 (OBJ 머티리얼 정보) ---
@@ -187,19 +185,40 @@ float3 CalculateSpecular(float3 lightDir, float3 normal, float3 viewDir, float4 
     return lightColor.rgb * specularMaterial * specular;
 }
 
-// Attenuation Calculation for Point/Spot Lights
-float CalculateAttenuation(float3 attenuation, float distance)
+// Unreal Engine: Inverse Square Falloff (Physically Accurate)
+// https://docs.unrealengine.com/en-US/BuildingWorlds/LightingAndShadows/PhysicalLightUnits/
+float CalculateInverseSquareFalloff(float distance, float attenuationRadius)
 {
-    return 1.0f / (attenuation.x + attenuation.y * distance + attenuation.z * distance * distance);
+    // Unreal Engine's inverse square falloff with smooth window function
+    float distanceSq = distance * distance;
+    float radiusSq = attenuationRadius * attenuationRadius;
+
+    // Basic inverse square law: I = 1 / (distance^2)
+    float basicFalloff = 1.0f / max(distanceSq, 0.01f * 0.01f); // Prevent division by zero
+
+    // Apply smooth window function that reaches 0 at attenuationRadius
+    // This prevents hard cutoff at radius boundary
+    float distanceRatio = saturate(distance / attenuationRadius);
+    float windowAttenuation = pow(1.0f - pow(distanceRatio, 4.0f), 2.0f);
+
+    return basicFalloff * windowAttenuation;
 }
 
-// Attenuation with Falloff Exponent (for Point Lights)
-float CalculateAttenuationWithFalloff(float3 attenuation, float distance, float falloffExponent)
+// Unreal Engine: Light Falloff Exponent (Artistic Control)
+// Non-physically accurate but provides artistic control
+float CalculateExponentFalloff(float distance, float attenuationRadius, float falloffExponent)
 {
-    float baseAttenuation = CalculateAttenuation(attenuation, distance);
-    // Apply falloff exponent to create steeper or gentler falloff curves
-    // falloffExponent = 1.0 means linear, > 1.0 means sharper falloff, < 1.0 means gentler
-    return baseAttenuation;
+    // Normalized distance (0 at light center, 1 at radius boundary)
+    float distanceRatio = saturate(distance / attenuationRadius);
+
+    // Simple exponent-based falloff: attenuation = (1 - ratio)^exponent
+    // falloffExponent controls the curve:
+    // - exponent = 1: linear falloff
+    // - exponent > 1: faster falloff (sharper)
+    // - exponent < 1: slower falloff (gentler)
+    float attenuation = pow(1.0f - distanceRatio, max(falloffExponent, 0.1f));
+
+    return attenuation;
 }
 
 // Linear to sRGB conversion (Gamma Correction)
@@ -243,29 +262,21 @@ float3 CalculatePointLight(FPointLightInfo light, float3 worldPos, float3 normal
     float3 lightVec = light.Position - worldPos;
     float distance = length(lightVec);
 
-    // Early out if beyond radius
-    if (distance > light.AttenuationRadius)
-        return float3(0.0f, 0.0f, 0.0f);
-
     // Protect against division by zero with epsilon
     distance = max(distance, 0.0001f);
     float3 lightDir = lightVec / distance;
 
-    // Calculate attenuation based on bUseAttenuationCoefficients flag
+    // Calculate attenuation based on falloff mode
     float attenuation;
-    if (light.bUseAttenuationCoefficients)
+    if (light.bUseInverseSquareFalloff)
     {
-        // Use FalloffExponent to control attenuation curve
-        attenuation = CalculateAttenuationWithFalloff(light.Attenuation, distance, light.FalloffExponent);
+        // Physically accurate inverse square falloff (Unreal Engine style)
+        attenuation = CalculateInverseSquareFalloff(distance, light.AttenuationRadius);
     }
     else
     {
-        // Inverse square falloff (physically accurate)
-        // Scale by radius squared to normalize brightness across different radius values
-        float radiusSq = light.AttenuationRadius * light.AttenuationRadius;
-        attenuation = (distance * distance) / radiusSq;
-        // Clamp to avoid over-bright values at very close distances
-        attenuation = pow(min(1.0f - attenuation, 1.0f), light.FalloffExponent);
+        // Artistic exponent-based falloff for greater control
+        attenuation = CalculateExponentFalloff(distance, light.AttenuationRadius, light.FalloffExponent);
     }
 
     // Diffuse (light.Color already includes Intensity)
@@ -287,10 +298,6 @@ float3 CalculateSpotLight(FSpotLightInfo light, float3 worldPos, float3 normal, 
     float3 lightVec = light.Position - worldPos;
     float distance = length(lightVec);
 
-    // Early out if beyond radius
-    if (distance > light.AttenuationRadius)
-        return float3(0.0f, 0.0f, 0.0f);
-
     // Protect against division by zero with epsilon
     distance = max(distance, 0.0001f);
     float3 lightDir = lightVec / distance;
@@ -301,28 +308,21 @@ float3 CalculateSpotLight(FSpotLightInfo light, float3 worldPos, float3 normal, 
     float innerCos = cos(radians(light.InnerConeAngle));
     float outerCos = cos(radians(light.OuterConeAngle));
 
-    // Early out if outside cone
-    if (cosAngle < outerCos)
-        return float3(0.0f, 0.0f, 0.0f);
+    // Smooth falloff between inner and outer cone (returns 0 if outside cone)
+    float spotAttenuation = smoothstep(outerCos, innerCos, cosAngle);
 
-    // Calculate distance attenuation based on bUseAttenuationCoefficients flag
+    // Calculate distance attenuation based on falloff mode
     float distanceAttenuation;
-    if (light.bUseAttenuationCoefficients)
+    if (light.bUseInverseSquareFalloff)
     {
-        // Use FalloffExponent to control attenuation curve
-        distanceAttenuation = CalculateAttenuationWithFalloff(light.Attenuation, distance, light.FalloffExponent);
+        // Physically accurate inverse square falloff (Unreal Engine style)
+        distanceAttenuation = CalculateInverseSquareFalloff(distance, light.AttenuationRadius);
     }
     else
     {
-        // Scale by radius squared to normalize brightness across different radius values
-        float radiusSq = light.AttenuationRadius * light.AttenuationRadius;
-        distanceAttenuation = (distance * distance) / radiusSq;
-        // Clamp to avoid over-bright values at very close distances
-        distanceAttenuation = pow(min(1.0f - distanceAttenuation, 1.0f), light.FalloffExponent);
+        // Artistic exponent-based falloff for greater control
+        distanceAttenuation = CalculateExponentFalloff(distance, light.AttenuationRadius, light.FalloffExponent);
     }
-
-    // Smooth falloff between inner and outer cone
-    float spotAttenuation = smoothstep(outerCos, innerCos, cosAngle);
 
     // Combine both attenuations
     float attenuation = distanceAttenuation * spotAttenuation;

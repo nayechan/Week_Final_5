@@ -21,11 +21,10 @@ struct FPointLightInfo
     FLinearColor Color;         // 16 bytes - Color already includes Intensity and Temperature
     FVector Position;           // 12 bytes
     float AttenuationRadius;    // 4 bytes (moved up to fill slot)
-    FVector Attenuation;        // 12 bytes (constant, linear, quadratic)
-    float FalloffExponent;      // 4 bytes
-    uint32 bUseAttenuationCoefficients; // 4 bytes
-    FVector Padding;              // 12 bytes padding to reach 64 bytes (16-byte aligned)
-	// Total: 64 bytes
+    float FalloffExponent;      // 4 bytes - Falloff exponent for artistic control
+    uint32 bUseInverseSquareFalloff; // 4 bytes - true = physically accurate, false = exponent-based
+	FVector2D Padding;            // 8 bytes padding to reach 48 bytes (16-byte aligned)
+	// Total: 48 bytes
 };
 
 struct FSpotLightInfo
@@ -35,10 +34,9 @@ struct FSpotLightInfo
     float InnerConeAngle;       // 4 bytes
     FVector Direction;          // 12 bytes
     float OuterConeAngle;       // 4 bytes
-    FVector Attenuation;        // 12 bytes
     float AttenuationRadius;    // 4 bytes
-    float FalloffExponent;      // 4 bytes
-    uint32 bUseAttenuationCoefficients; // 4 bytes
-	FVector2D Padding;          // 8 bytes padding to reach 80 bytes (16-byte aligned)
-	// Total: 80 bytes
+    float FalloffExponent;      // 4 bytes - Falloff exponent for artistic control
+    uint32 bUseInverseSquareFalloff; // 4 bytes - true = physically accurate, false = exponent-based
+	float Padding;            // 4 bytes padding to reach 64 bytes (16-byte aligned)
+	// Total: 64 bytes
 };

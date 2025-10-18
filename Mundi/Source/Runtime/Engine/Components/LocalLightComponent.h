@@ -19,13 +19,11 @@ public:
 	void SetFalloffExponent(float InExponent) { FalloffExponent = InExponent; }
 	float GetFalloffExponent() const { return FalloffExponent; }
 
-	// Attenuation 계수 설정 (상수, 일차항, 이차항)
-	void SetAttenuation(const FVector& InAttenuation) { Attenuation = InAttenuation; }
-	const FVector& GetAttenuation() const { return Attenuation; }
-
-	// 감쇠 방식 선택
-	void SetUseAttenuationCoefficients(bool bInUse) { bUseAttenuationCoefficients = bInUse; }
-	bool IsUsingAttenuationCoefficients() const { return bUseAttenuationCoefficients; }
+	// 감쇠 방식 선택 (Unreal Engine style)
+	// true: Inverse Square Falloff (물리적으로 정확한 역제곱 감쇠)
+	// false: Exponent Falloff (예술적 제어를 위한 지수 기반 감쇠)
+	void SetUseInverseSquareFalloff(bool bInUse) { bUseInverseSquareFalloff = bInUse; }
+	bool IsUsingInverseSquareFalloff() const { return bUseInverseSquareFalloff; }
 
 	// 거리 기반 감쇠 계산
 	// 반환값: 0.0 (영향 없음) ~ 1.0 (최대 영향)
@@ -40,8 +38,7 @@ public:
 	DECLARE_DUPLICATE(ULocalLightComponent)
 
 protected:
-	float AttenuationRadius = 30.0f;				 // 감쇠 반경
-	float FalloffExponent = 1.0f;					 // 감쇠 지수 (bUseAttenuationCoefficients = false일 때 사용)
-	FVector Attenuation = FVector(0.0f, 0.0f, 1.0f); // 감쇠 계수: 상수, 일차항, 이차항 (bUseAttenuationCoefficients = true일 때 사용)
-	bool bUseAttenuationCoefficients = true;		 // true: Attenuation 사용, false: FalloffExponent 사용 (기본값)
+	float AttenuationRadius = 30.0f;		// 감쇠 반경
+	float FalloffExponent = 2.0f;			// 감쇠 지수 (bUseInverseSquareFalloff = false일 때 사용)
+	bool bUseInverseSquareFalloff = true;	// true: Inverse Square Falloff (물리 법칙), false: Exponent Falloff (예술적 제어)
 };
