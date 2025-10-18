@@ -212,7 +212,7 @@ void URenderer::DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_
 	ID3D11Buffer* VertexBuff = Comp->GetStaticMesh()->GetVertexBuffer();
 	ID3D11Buffer* IndexBuff = Comp->GetStaticMesh()->GetIndexBuffer();
 
-	RHIDevice->GetDeviceContext()->IASetInputLayout(Comp->GetMaterial()->GetShader()->GetInputLayout());
+	RHIDevice->GetDeviceContext()->IASetInputLayout(Comp->GetMaterial(0)->GetShader()->GetInputLayout());
 
 	UINT offset = 0;
 	RHIDevice->GetDeviceContext()->IASetVertexBuffers(
@@ -221,7 +221,7 @@ void URenderer::DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_
 	RHIDevice->GetDeviceContext()->IASetIndexBuffer(
 		IndexBuff, DXGI_FORMAT_R32_UINT, 0
 	);
-	ID3D11ShaderResourceView* TextureSRV = Comp->GetMaterial()->GetDiffuseTexture()->GetShaderResourceView();
+	ID3D11ShaderResourceView* TextureSRV = Comp->GetMaterial(0)->GetDiffuseTexture()->GetShaderResourceView();
 	RHIDevice->PSSetDefaultSampler(0);
 	RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &TextureSRV);
 	RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(InTopology);
@@ -237,7 +237,7 @@ void URenderer::DrawIndexedPrimitiveComponent(UBillboardComponent* Comp, D3D11_P
 	ID3D11Buffer* IndexBuff = Comp->GetStaticMesh()->GetIndexBuffer();
 
 	// Input layout comes from the shader bound to the material
-	RHIDevice->GetDeviceContext()->IASetInputLayout(Comp->GetMaterial()->GetShader()->GetInputLayout());
+	RHIDevice->GetDeviceContext()->IASetInputLayout(Comp->GetMaterial(0)->GetShader()->GetInputLayout());
 
 	UINT offset = 0;
 	RHIDevice->GetDeviceContext()->IASetVertexBuffers(0, 1, &VertexBuff, &Stride, &offset);
@@ -245,7 +245,7 @@ void URenderer::DrawIndexedPrimitiveComponent(UBillboardComponent* Comp, D3D11_P
 
 	// Bind texture via ResourceManager to support DDS/PNG
 	ID3D11ShaderResourceView* srv = nullptr;
-	if (Comp->GetMaterial())
+	if (Comp->GetMaterial(0))
 	{
 		const FString& TextName = Comp->GetTextureName();
 		if (!TextName.empty())

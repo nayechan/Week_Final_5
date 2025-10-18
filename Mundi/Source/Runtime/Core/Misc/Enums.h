@@ -21,6 +21,7 @@ struct FMaterialParameters
     FVector EmissiveColor = FVector::One(); // Ke
 
     FString DiffuseTextureFileName;
+    FString NormalTextureFileName;
     FString AmbientTextureFileName;
     FString SpecularTextureFileName;
     FString EmissiveTextureFileName;

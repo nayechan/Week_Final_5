@@ -28,5 +28,6 @@ public:
 
 protected:
 	UStaticMeshComponent* StaticMeshComponent;
+
 };
 

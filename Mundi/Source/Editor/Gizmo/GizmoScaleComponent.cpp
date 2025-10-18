@@ -6,7 +6,7 @@ IMPLEMENT_CLASS(UGizmoScaleComponent)
 UGizmoScaleComponent::UGizmoScaleComponent()
 {
     SetStaticMesh("Data/Gizmo/ScaleHandle.obj");
-    SetMaterial("Shaders/StaticMesh/StaticMeshShader.hlsl");
+    SetMaterial(0, "Shaders/StaticMesh/StaticMeshShader.hlsl");
 }
 
 UGizmoScaleComponent::~UGizmoScaleComponent()

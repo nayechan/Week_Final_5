@@ -15,27 +15,27 @@
 IMPLEMENT_CLASS(UStaticMeshComponent)
 
 BEGIN_PROPERTIES(UStaticMeshComponent)
-	MARK_AS_COMPONENT("스태틱 메시 컴포넌트", "스태틱 메시를 렌더링하는 컴포넌트입니다.")
-	ADD_PROPERTY_STATICMESH(UStaticMesh*, StaticMesh, "Static Mesh", true, "렌더링할 스태틱 메시입니다.")
+MARK_AS_COMPONENT("스태틱 메시 컴포넌트", "스태틱 메시를 렌더링하는 컴포넌트입니다.")
+ADD_PROPERTY_STATICMESH(UStaticMesh*, StaticMesh, "Static Mesh", true, "렌더링할 스태틱 메시입니다.")
 END_PROPERTIES()
 
 UStaticMeshComponent::UStaticMeshComponent()
 {
 	SetStaticMesh("Data/cube-tex.obj");     // 임시 기본 static mesh 설정
 
-	// 기본 Material 생성 (기본 Phong 셰이더 사용)
-	FString ShaderPath = "Shaders/Materials/UberLit.hlsl";
-	TArray<FShaderMacro> DefaultMacros;
-	DefaultMacros.push_back(FShaderMacro{ "LIGHTING_MODEL_PHONG", "1" });
+	//// 기본 Material 생성 (기본 Phong 셰이더 사용)
+	//FString ShaderPath = "Shaders/Materials/UberLit.hlsl";
+	//TArray<FShaderMacro> DefaultMacros;
+	//DefaultMacros.push_back(FShaderMacro{ "LIGHTING_MODEL_PHONG", "1" });
 
-	UShader* DefaultShader = UResourceManager::GetInstance().Load<UShader>(ShaderPath, DefaultMacros);
-	if (DefaultShader)
-	{
-		Material = UResourceManager::GetInstance().GetOrCreateMaterial(
-			ShaderPath + "_DefaultMaterial"
-		);
-		Material->SetShader(DefaultShader);
-	}
+	//UShader* DefaultShader = UResourceManager::GetInstance().Load<UShader>(ShaderPath, DefaultMacros);
+	//if (DefaultShader)
+	//{
+	//	Material = UResourceManager::GetInstance().GetOrCreateMaterial(
+	//		ShaderPath + "_DefaultMaterial"
+	//	);
+	//	Material->SetShader(DefaultShader);
+	//}
 }
 
 UStaticMeshComponent::~UStaticMeshComponent()
@@ -51,44 +51,38 @@ void UStaticMeshComponent::SetViewModeShader(UShader* InShader)
 	if (!InShader)
 		return;
 
-	// Material이 없으면 생성
-	if (!Material)
+	for (int i = 0; i < MaterialSlots.Num(); i++)
 	{
-		Material = UResourceManager::GetInstance().GetOrCreateMaterial(
-			"Shaders/Materials/UberLit.hlsl_Material"
-		);
+		MaterialSlots[i]->SetShader(InShader);
 	}
-
-	// ViewMode에 맞는 셰이더로 교체
-	Material->SetShader(InShader);
 }
 
 void UStaticMeshComponent::Render(URenderer* Renderer, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix)
 {
-	// NOTE: 기즈모 출력을 위해 일단 남겨둠
+	//// NOTE: 기즈모 출력을 위해 일단 남겨둠
 
-	UStaticMesh* Mesh = GetStaticMesh();
-	if (Mesh && Mesh->GetStaticMeshAsset())
-	{
-		FMatrix WorldMatrix = GetWorldMatrix();
-		FMatrix WorldInverseTranspose = WorldMatrix.InverseAffine().Transpose();
-		Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(ModelBufferType(WorldMatrix, WorldInverseTranspose));
-		Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(ViewProjBufferType(ViewMatrix, ProjectionMatrix));
-		Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(ColorBufferType(FLinearColor(), this->InternalIndex));
-		// b7: CameraBuffer - Renderer에서 카메라 위치 가져오기
-		FVector CameraPos = FVector::Zero();
-		if (ACameraActor* Camera = Renderer->GetCurrentCamera())
-		{
-			if (UCameraComponent* CamComp = Camera->GetCameraComponent())
-			{
-				CameraPos = CamComp->GetWorldLocation();
-			}
-		}
-		Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(CameraBufferType(CameraPos, 0.0f));
+	//UStaticMesh* Mesh = GetStaticMesh();
+	//if (Mesh && Mesh->GetStaticMeshAsset())
+	//{
+	//	FMatrix WorldMatrix = GetWorldMatrix();
+	//	FMatrix WorldInverseTranspose = WorldMatrix.InverseAffine().Transpose();
+	//	Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(ModelBufferType(WorldMatrix, WorldInverseTranspose));
+	//	Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(ViewProjBufferType(ViewMatrix, ProjectionMatrix));
+	//	Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(ColorBufferType(FLinearColor(), this->InternalIndex));
+	//	// b7: CameraBuffer - Renderer에서 카메라 위치 가져오기
+	//	FVector CameraPos = FVector::Zero();
+	//	if (ACameraActor* Camera = Renderer->GetCurrentCamera())
+	//	{
+	//		if (UCameraComponent* CamComp = Camera->GetCameraComponent())
+	//		{
+	//			CameraPos = CamComp->GetWorldLocation();
+	//		}
+	//	}
+	//	Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(CameraBufferType(CameraPos, 0.0f));
 
-		Renderer->GetRHIDevice()->PrepareShader(GetMaterial(0)->GetShader());
-		Renderer->DrawIndexedPrimitiveComponent(GetStaticMesh(), D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST, MaterialSlots);
-	}
+	//	Renderer->GetRHIDevice()->PrepareShader(GetMaterial(0)->GetShader());
+	//	Renderer->DrawIndexedPrimitiveComponent(GetStaticMesh(), D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST, MaterialSlots);
+	//}
 }
 
 void UStaticMeshComponent::CollectMeshBatches(
@@ -240,10 +234,7 @@ void UStaticMeshComponent::SetStaticMesh(const FString& PathFileName)
 		// MaterailSlots.size()가 GroupInfos.size() 보다 클 수 있기 때문에, GroupInfos.size()로 설정
 		for (int i = 0; i < GroupInfos.size(); ++i)
 		{
-			if (MaterialSlots[i].bChangedByUser == false)
-			{
-				MaterialSlots[i].MaterialName = GroupInfos[i].InitialMaterialName;
-			}
+			MaterialSlots[i] = UResourceManager::GetInstance().Load<UMaterial>(GroupInfos[i].InitialMaterialName);
 		}
 		MarkWorldPartitionDirty();
 	}
@@ -257,20 +248,16 @@ UMaterial* UStaticMeshComponent::GetMaterial(uint32 InSectionIndex) const
 		return nullptr;
 	}
 
-	// 2. 슬롯에서 머티리얼 이름을 가져옵니다.
-	const FName& MaterialName = MaterialSlots[InSectionIndex].MaterialName;
-
 	// 3. 리소스 매니저에서 이름으로 UMaterial 객체를 찾습니다.
 	//    (Get<T>는 이미 로드된 리소스를 찾는 것을 가정합니다)
-	UMaterial* FoundMaterial = UResourceManager::GetInstance().Load<UMaterial>(MaterialName.ToString());
+	UMaterial* FoundMaterial = MaterialSlots[InSectionIndex];
 
 	if (!FoundMaterial)
 	{
 		// 리소스 매니저에 해당 이름의 머티리얼이 없습니다.
 		// 이것은 SetStaticMesh에서 머티리얼을 로드/생성하는 로직이
 		// 완벽하지 않다는 의미일 수 있습니다.
-		UE_LOG("GetMaterial: Failed to find material '%s' for Section %d",
-			MaterialName.ToString().c_str(), InSectionIndex);
+		UE_LOG("GetMaterial: Failed to find material Section %d", InSectionIndex);
 		return nullptr; // TODO: UResourceManager::GetDefaultMaterial() 반환
 	}
 
@@ -347,8 +334,7 @@ void UStaticMeshComponent::SetMaterialByUser(const uint32 InMaterialSlotIndex, c
 
 	if (0 <= InMaterialSlotIndex && InMaterialSlotIndex < MaterialSlots.size())
 	{
-		MaterialSlots[InMaterialSlotIndex].MaterialName = InMaterialName;
-		MaterialSlots[InMaterialSlotIndex].bChangedByUser = true;
+		MaterialSlots[InMaterialSlotIndex] = UResourceManager::GetInstance().Load<UMaterial>(InMaterialName);
 
 		bChangedMaterialByUser = true;
 	}
@@ -357,7 +343,19 @@ void UStaticMeshComponent::SetMaterialByUser(const uint32 InMaterialSlotIndex, c
 		UE_LOG("out of range InMaterialSlotIndex: %d", InMaterialSlotIndex);
 	}
 
-	assert(MaterialSlots[InMaterialSlotIndex].bChangedByUser == true);
+	//assert(MaterialSlots[InMaterialSlotIndex].bChangedByUser == true);
+}
+
+void UStaticMeshComponent::SetMaterial(uint32 InMaterialSlotIndex, const FString& InMaterialName)
+{
+	if (0 <= InMaterialSlotIndex && InMaterialSlotIndex < MaterialSlots.size())
+	{
+		MaterialSlots[InMaterialSlotIndex] = UResourceManager::GetInstance().Load<UMaterial>(InMaterialName);
+	}
+	else
+	{
+		UE_LOG("out of range InMaterialSlotIndex: %d", InMaterialSlotIndex);
+	}
 }
 
 FAABB UStaticMeshComponent::GetWorldAABB() const

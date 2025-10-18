@@ -19,15 +19,18 @@ UTextRenderComponent::UTextRenderComponent()
 {
     auto& RM = UResourceManager::GetInstance();
     TextQuad = RM.Get<UQuad>("TextBillboard");
-    if (auto* M = RM.Get<UMaterial>("TextBillboard"))
-    {
-        Material = M;
-    }
-    else
-    {
-        Material = NewObject<UMaterial>();
-        RM.Add<UMaterial>("TextBillboard", Material);
-    }
+    SetMaterial(0, "TextBillboard");
+
+    //if (auto* M = RM.Get<UMaterial>("TextBillboard"))
+    //{
+    //}
+    //else
+    //{
+    //    Material = NewObject<UMaterial>();
+    //    RM.Add<UMaterial>("TextBillboard", Material);
+    //    SetMaterial(0, M);
+    //}
+
     InitCharInfoMap();
 }
 
@@ -173,6 +176,18 @@ void UTextRenderComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 	Super::Serialize(bInIsLoading, InOutHandle);
 
 	AutoSerialize(bInIsLoading, InOutHandle, UTextRenderComponent::StaticClass());
+}
+
+UMaterial* UTextRenderComponent::GetMaterial(uint32 InSectionIndex) const
+{
+    // 슬롯 상관없이 항상 기본 머티리얼 반환
+    return Material;
+}
+
+void UTextRenderComponent::SetMaterial(uint32 InElementIndex, const FString& InMaterialName)
+{
+    // 슬롯 상관없이 항상 기본 머티리얼 설정
+    Material = UResourceManager::GetInstance().Load<UMaterial>(InMaterialName);
 }
 
 void UTextRenderComponent::DuplicateSubObjects()

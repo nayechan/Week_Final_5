@@ -31,7 +31,7 @@ UBillboardComponent::UBillboardComponent()
 	}
 
 	// HSLS 설정 
-	SetMaterial("Shaders/UI/Billboard.hlsl");
+	SetMaterial(0, "Shaders/UI/Billboard.hlsl");
 
 	// 일단 디폴트 텍스쳐로 설정하기 .
 	SetTextureName("Data/UI/Icons/Pawn_64x.png");
@@ -45,6 +45,16 @@ void UBillboardComponent::SetTextureName( FString TexturePath)
 	{
 		Texture->SetTextureName(TexturePath);
 	}
+}
+
+UMaterial* UBillboardComponent::GetMaterial(uint32 InSectionIndex) const
+{
+	return Material;
+}
+
+void UBillboardComponent::SetMaterial(uint32 InElementIndex, const FString& InMaterialName)
+{
+	Material = UResourceManager::GetInstance().Load<UMaterial>(InMaterialName);
 }
 
 void UBillboardComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)

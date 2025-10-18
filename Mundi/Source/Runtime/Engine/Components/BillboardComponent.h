@@ -28,12 +28,16 @@ public:
     UQuad* GetStaticMesh() const { return Quad; }
     FString& GetTextureName() { return TextureName; }
 
+    UMaterial* GetMaterial(uint32 InSectionIndex) const override;
+    void SetMaterial(uint32 InElementIndex, const FString& InMaterialName) override;
+
     // Serialize
     void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
 private:
     FString TextureName;
     UTexture* Texture = nullptr;  // 리플렉션 시스템용 Texture 포인터
+    UMaterial* Material = nullptr;
     UQuad* Quad = nullptr;
     float Width = 100.f;
     float Height = 100.f;

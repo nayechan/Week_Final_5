@@ -24,13 +24,19 @@ public:
 	// Serialize
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
+	UMaterial* GetMaterial(uint32 InSectionIndex) const override;
+	void SetMaterial(uint32 InElementIndex, const FString& InMaterialName) override;
+
 	// ───── 복사 관련 ────────────────────────────
 	void DuplicateSubObjects() override;
 	DECLARE_DUPLICATE(UTextRenderComponent)
+
+
 
 private:
 	FString Text;
 	static TMap<char, FBillboardVertexInfo> CharInfoMap; // shared per-process, built once
 	FString TextureFilePath;
+	UMaterial* Material;
 	UQuad* TextQuad = nullptr;
 };

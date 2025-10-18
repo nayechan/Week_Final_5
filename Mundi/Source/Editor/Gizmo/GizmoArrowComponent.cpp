@@ -10,7 +10,8 @@ UGizmoArrowComponent::UGizmoArrowComponent()
 {
     SetStaticMesh("Data/Gizmo/TranslationHandle.obj");
     // 임시 코드 MaterialSlots 크기 체크 필요?
-    MaterialSlots[0].MaterialName = "Shaders/StaticMesh/StaticMeshShader.hlsl";
+    MaterialSlots[0] = UResourceManager::GetInstance().Load<UMaterial>("Shaders/StaticMesh/StaticMeshShader.hlsl");
+    //MaterialSlots[0].MaterialName = "Shaders/StaticMesh/StaticMeshShader.hlsl";
     //UShader* FixedShader = UResourceManager::GetInstance().Load<UShader>("Shaders/StaticMesh/StaticMeshShader.hlsl");
 }
 
