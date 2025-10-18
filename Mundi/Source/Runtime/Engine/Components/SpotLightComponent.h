@@ -1,7 +1,6 @@
 ﻿#pragma once
 #include "PointLightComponent.h"
 #include "LightInfo.h"
-#include "ObjectMacros.h"
 
 // 스포트라이트 (원뿔 형태로 빛 방출)
 class USpotLightComponent : public UPointLightComponent

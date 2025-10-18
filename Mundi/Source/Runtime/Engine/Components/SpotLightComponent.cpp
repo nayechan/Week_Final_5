@@ -12,9 +12,9 @@ void USpotLightComponent::StaticRegisterProperties()
 	MARK_AS_COMPONENT("스포트 라이트", "스포트 라이트 컴포넌트를 추가합니다.")
 
 	// 프로퍼티 등록
-	ADD_PROPERTY(FLinearColor, LightColor, "Light");
-	ADD_PROPERTY_RANGE(float, InnerConeAngle, "Light", 0.0f, 90.0f)
-	ADD_PROPERTY_RANGE(float, OuterConeAngle, "Light", 0.0f, 90.0f)
+	ADD_PROPERTY(FLinearColor, LightColor, "Light", true);
+	ADD_PROPERTY_RANGE(float, InnerConeAngle, "Light", 0.0f, 90.0f, true)
+	ADD_PROPERTY_RANGE(float, OuterConeAngle, "Light", 0.0f, 90.0f, true)
 }
 
 USpotLightComponent::USpotLightComponent()

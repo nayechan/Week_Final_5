@@ -62,7 +62,7 @@ public:
 // }
 
 // 범위 제한이 있는 프로퍼티 추가
-#define ADD_PROPERTY_RANGE(VarType, VarName, CategoryName, MinVal, MaxVal) \
+#define ADD_PROPERTY_RANGE(VarType, VarName, CategoryName, MinVal, MaxVal, bEditAnywhere) \
 	{ \
 		FProperty Prop; \
 		Prop.Name = #VarName; \
@@ -71,13 +71,13 @@ public:
 		Prop.Category = CategoryName; \
 		Prop.MinValue = MinVal; \
 		Prop.MaxValue = MaxVal; \
-		Prop.bIsEditAnywhere = true; \
+		Prop.bIsEditAnywhere = bEditAnywhere; \
 		Class->AddProperty(Prop); \
 	}
 
 // 범위 제한이 없는 프로퍼티 추가
-#define ADD_PROPERTY(VarType, VarName, CategoryName) \
-	ADD_PROPERTY_RANGE(VarType, VarName, CategoryName, 0.0f, 0.0f)
+#define ADD_PROPERTY(VarType, VarName, CategoryName, bEditAnywhere) \
+	ADD_PROPERTY_RANGE(VarType, VarName, CategoryName, 0.0f, 0.0f, bEditAnywhere)
 
 // ===== 클래스 메타데이터 설정 매크로 =====
 // StaticRegisterProperties() 함수 내에서 사용
