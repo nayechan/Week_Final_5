@@ -77,12 +77,11 @@ struct FMaterial
 // --- 상수 버퍼 (Constant Buffers) ---
 // Extended to support both lighting and StaticMeshShader features
 
-// b0: ModelBuffer (VS) - Matches ModelBufferType exactly (64 bytes)
+// b0: ModelBuffer (VS) - Matches ModelBufferType exactly (128 bytes)
 cbuffer ModelBuffer : register(b0)
 {
-    row_major float4x4 WorldMatrix;  // 64 bytes only
-    // Note: C++ ModelBufferType doesn't include WorldInverseTranspose
-    // Must use WorldMatrix for normal transformation (works for uniform scale)
+    row_major float4x4 WorldMatrix;              // 64 bytes
+    row_major float4x4 WorldInverseTranspose;    // 64 bytes - For correct normal transformation
 };
 
 // b1: ViewProjBuffer (VS) - Matches ViewProjBufferType
@@ -359,9 +358,9 @@ PS_INPUT mainVS(VS_INPUT Input)
     Out.Position = mul(viewPos, ProjectionMatrix);
 
     // Transform normal to world space
-    // Using WorldMatrix (works correctly for uniform scale only)
-    // For non-uniform scale, would need transpose(inverse(WorldMatrix))
-    float3 worldNormal = normalize(mul(Input.Normal, (float3x3) WorldMatrix));
+    // Using WorldInverseTranspose for correct normal transformation with non-uniform scale
+    // Normal vectors transform by transpose(inverse(WorldMatrix))
+    float3 worldNormal = normalize(mul(Input.Normal, (float3x3) WorldInverseTranspose));
     Out.Normal = worldNormal;
 
     Out.TexCoord = Input.TexCoord;

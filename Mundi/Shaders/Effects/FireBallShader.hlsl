@@ -1,6 +1,7 @@
 cbuffer ModelBuffer : register(b0)
 {
     row_major float4x4 WorldMatrix;
+    row_major float4x4 WorldInverseTranspose;  // For normal transformation (not used in this shader)
 }
 
 cbuffer ViewProjBuffer : register(b1)

@@ -6,6 +6,7 @@
 struct ModelBufferType
 {
     FMatrix Model;
+    FMatrix ModelInverseTranspose;  // For correct normal transformation with non-uniform scale
 };
 
 struct DecalBufferType

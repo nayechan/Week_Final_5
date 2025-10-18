@@ -88,7 +88,9 @@ void UFireBallComponent::RenderAffectedPrimitives(URenderer* Renderer, UPrimitiv
 		return;
 	}
 
-	RHIDevice->SetAndUpdateConstantBuffer(ModelBufferType(SMC->GetWorldMatrix()));
+	FMatrix SMCWorld = SMC->GetWorldMatrix();
+	FMatrix SMCWorldInvTranspose = SMCWorld.InverseAffine().Transpose();
+	RHIDevice->SetAndUpdateConstantBuffer(ModelBufferType(SMCWorld, SMCWorldInvTranspose));
 	RHIDevice->SetAndUpdateConstantBuffer(ViewProjBufferType(View, Proj));
 
 	const FVector Center = GetWorldLocation();

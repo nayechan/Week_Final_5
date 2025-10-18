@@ -76,7 +76,9 @@ void UDecalComponent::RenderAffectedPrimitives(URenderer* Renderer, UPrimitiveCo
 
 	D3D11RHI* RHIDevice = Renderer->GetRHIDevice();
 	// Constatn Buffer 업데이트
-	RHIDevice->SetAndUpdateConstantBuffer(ModelBufferType(Target->GetWorldMatrix()));
+	FMatrix TargetWorld = Target->GetWorldMatrix();
+	FMatrix TargetWorldInvTranspose = TargetWorld.InverseAffine().Transpose();
+	RHIDevice->SetAndUpdateConstantBuffer(ModelBufferType(TargetWorld, TargetWorldInvTranspose));
 	RHIDevice->SetAndUpdateConstantBuffer(ViewProjBufferType(View, Proj));
 
 	const FMatrix DecalMatrix = GetDecalProjectionMatrix();

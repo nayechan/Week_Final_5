@@ -69,7 +69,8 @@ void UGizmoArrowComponent::Render(URenderer* Renderer, const FMatrix& View, cons
     SetWorldScale(DefaultScale * ScaleFactor);
 
     FMatrix M = GetWorldMatrix();
-    Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(ModelBufferType(M));
+    FMatrix MInvTranspose = M.InverseAffine().Transpose();
+    Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(ModelBufferType(M, MInvTranspose));
     Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(ViewProjBufferType(View, Proj));
 
     UStaticMeshComponent::Render(Renderer, View, Proj);

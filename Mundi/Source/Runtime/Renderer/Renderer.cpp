@@ -387,7 +387,8 @@ void URenderer::EndLineBatch(const FMatrix& ModelMatrix, const FMatrix& ViewMatr
 	}
 
 	// Set up rendering state
-	RHIDevice->SetAndUpdateConstantBuffer(ModelBufferType(ModelMatrix));
+	FMatrix ModelInvTranspose = ModelMatrix.InverseAffine().Transpose();
+	RHIDevice->SetAndUpdateConstantBuffer(ModelBufferType(ModelMatrix, ModelInvTranspose));
 	RHIDevice->SetAndUpdateConstantBuffer(ViewProjBufferType(ViewMatrix, ProjectionMatrix));
 	RHIDevice->PrepareShader(LineShader);
 
