@@ -11,7 +11,7 @@ class FBVHierarchy;
 
 struct FRay;
 struct FAABB;
-struct Frustum;
+struct FFrustum;
 
 class UWorldPartitionManager : public UObject
 {
@@ -39,7 +39,7 @@ public:
 
     //void RayQueryOrdered(FRay InRay, OUT TArray<std::pair<AActor*, float>>& Candidates);
     void RayQueryClosest(FRay InRay, OUT AActor*& OutActor, OUT float& OutBestT);
-	void FrustumQuery(Frustum InFrustum);
+	void FrustumQuery(FFrustum InFrustum);
 
 	/** 옥트리 게터 */
 	FOctree* GetSceneOctree() const { return SceneOctree; }

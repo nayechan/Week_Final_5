@@ -142,6 +142,17 @@ public:
         return this->back();
     }
 
+    /** 내부 데이터 포인터 반환 */
+    T* GetData()
+    {
+        return this->data();
+    }
+
+    const T* GetData() const
+    {
+        return this->data();
+    }
+
     /** Stack 기능 - std::stack 대체 */
     void Push(const T& Item)
     {

@@ -20,6 +20,7 @@ class UMeshComponent;
 class UBillboardComponent;
 class UTextRenderComponent;
 class FSceneView;
+class FTileLightCuller;
 
 struct FCandidateDrawable;
 
@@ -83,6 +84,9 @@ private:
 	/** @brief 수집한 라이트 정보들로부터 상수 버퍼를 업데이트합니다.*/
 	void UpdateLightConstant();
 
+	/** @brief 타일 기반 라이트 컬링을 수행하고 Structured Buffer를 업데이트합니다. */
+	void PerformTileLightCulling();
+
 	/** @brief 불투명(Opaque) 객체들을 렌더링하는 패스입니다. */
 	void RenderOpaquePass();
 
@@ -132,4 +136,7 @@ private:
 
 	// 각 패스에서 수집된 드로우 콜 정보 리스트
 	TArray<FMeshBatchElement> MeshBatchElements;
+
+	// 타일 기반 라이트 컬링 시스템
+	std::unique_ptr<FTileLightCuller> TileLightCuller;
 };

@@ -39,6 +39,7 @@
 #include "SceneView.h"
 #include "Shader.h"
 #include "ResourceManager.h"
+#include "TileLightCuller.h"
 
 FSceneRenderer::FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* InOwnerRenderer)
 	: World(InWorld)
@@ -47,6 +48,10 @@ FSceneRenderer::FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* I
 	, RHIDevice(InOwnerRenderer->GetRHIDevice())
 {
 	//OcclusionCPU = std::make_unique<FOcclusionCullingManagerCPU>();
+
+	// 타일 라이트 컬러 초기화
+	TileLightCuller = std::make_unique<FTileLightCuller>();
+	TileLightCuller->Initialize(RHIDevice, 16);  // 16x16 타일 크기
 
 	// 라인 수집 시작
 	OwnerRenderer->BeginLineBatch();
@@ -120,6 +125,9 @@ void FSceneRenderer::Render()
 void FSceneRenderer::RenderLitPath()
 {
 	RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTargetWithId);
+
+	// 타일 기반 라이트 컬링 수행
+	PerformTileLightCulling();
 
 	// Base Pass
 	RenderOpaquePass();
@@ -385,6 +393,64 @@ void FSceneRenderer::UpdateLightConstant()
 	// UpdateConstantBuffer only updates the buffer data but doesn't bind it to slot b8
 	// SetAndUpdateConstantBuffer both updates the data AND binds it to VS/PS
 	RHIDevice->SetAndUpdateConstantBuffer(LightBuffer);
+}
+
+void FSceneRenderer::PerformTileLightCulling()
+{
+	if (!TileLightCuller)
+		return;
+
+	// 뷰포트 크기 가져오기
+	UINT ViewportWidth = static_cast<UINT>(View->ViewRect.Width());
+	UINT ViewportHeight = static_cast<UINT>(View->ViewRect.Height());
+
+	// PointLight와 SpotLight 정보 수집
+	TArray<FPointLightInfo> PointLights;
+	TArray<FSpotLightInfo> SpotLights;
+
+	for (UPointLightComponent* LightComponent : SceneLocals.PointLights)
+	{
+		if (LightComponent && LightComponent->IsEnabled())
+		{
+			PointLights.Add(FPointLightInfo(LightComponent->GetLightInfo()));
+		}
+	}
+
+	for (USpotLightComponent* LightComponent : SceneLocals.SpotLights)
+	{
+		if (LightComponent && LightComponent->IsEnabled())
+		{
+			SpotLights.Add(FSpotLightInfo(LightComponent->GetLightInfo()));
+		}
+	}
+
+	// 타일 컬링 수행
+	TileLightCuller->CullLights(
+		PointLights,
+		SpotLights,
+		View->ViewMatrix,
+		View->ProjectionMatrix,
+		View->ZNear,
+		View->ZFar,
+		ViewportWidth,
+		ViewportHeight
+	);
+
+	// 타일 컬링 상수 버퍼 업데이트
+	FTileCullingBufferType TileCullingBuffer;
+	TileCullingBuffer.TileSize = 16;  // TileLightCuller 초기화 시 사용한 값과 일치
+	TileCullingBuffer.TileCountX = (ViewportWidth + 16 - 1) / 16;
+	TileCullingBuffer.TileCountY = (ViewportHeight + 16 - 1) / 16;
+	TileCullingBuffer.bUseTileCulling = 1;  // 타일 컬링 활성화
+
+	RHIDevice->SetAndUpdateConstantBuffer(TileCullingBuffer);
+
+	// Structured Buffer SRV를 t2 슬롯에 바인딩
+	ID3D11ShaderResourceView* TileLightIndexSRV = TileLightCuller->GetLightIndexBufferSRV();
+	if (TileLightIndexSRV)
+	{
+		RHIDevice->GetDeviceContext()->PSSetShaderResources(2, 1, &TileLightIndexSRV);
+	}
 }
 
 void FSceneRenderer::PerformFrustumCulling()

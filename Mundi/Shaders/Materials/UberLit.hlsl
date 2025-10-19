@@ -129,6 +129,21 @@ Texture2D g_NormalTexColor : register(t1);
 SamplerState g_Sample : register(s0);
 SamplerState g_Sample2 : register(s1);
 
+// --- 타일 기반 라이트 컬링 리소스 ---
+// t2: 타일별 라이트 인덱스 Structured Buffer
+// 구조:  [TileIndex * MaxLightsPerTile] = LightCount
+//        [TileIndex * MaxLightsPerTile + 1 ~ ...] = LightIndices (상위 16비트: 타입, 하위 16비트: 인덱스)
+StructuredBuffer<uint> g_TileLightIndices : register(t2);
+
+// b11: 타일 컬링 설정 상수 버퍼
+cbuffer TileCullingBuffer : register(b11)
+{
+    uint TileSize;          // 타일 크기 (픽셀, 기본 16)
+    uint TileCountX;        // 가로 타일 개수
+    uint TileCountY;        // 세로 타일 개수
+    uint bUseTileCulling;   // 타일 컬링 활성화 여부 (0=비활성화, 1=활성화)
+};
+
 // --- 셰이더 입출력 구조체 ---
 struct VS_INPUT
 {
@@ -154,6 +169,23 @@ struct PS_OUTPUT
 };
 
 // --- 유틸리티 함수 ---
+
+// 타일 인덱스 계산 (픽셀 위치로부터)
+// SV_POSITION은 픽셀 중심 좌표 (0.5, 0.5 offset)
+uint CalculateTileIndex(float4 screenPos)
+{
+    uint tileX = uint(screenPos.x) / TileSize;
+    uint tileY = uint(screenPos.y) / TileSize;
+    return tileY * TileCountX + tileX;
+}
+
+// 타일별 라이트 인덱스 데이터의 시작 오프셋 계산
+uint GetTileDataOffset(uint tileIndex)
+{
+    // MaxLightsPerTile = 256 (TileLightCuller.h와 일치)
+    const uint MaxLightsPerTile = 256;
+    return tileIndex * MaxLightsPerTile;
+}
 
 // Ambient Light Calculation
 // Uses the provided materialColor (which includes texture if available)
@@ -515,16 +547,45 @@ PS_OUTPUT mainPS(PS_INPUT Input)
     // Directional light (diffuse only)
     litColor += CalculateDirectionalLight(DirectionalLight, normal, float3(0, 0, 0), baseColor, false, 0.0f);
 
-    // Point lights (diffuse only)
-    for (int i = 0; i < PointLightCount; i++)
+    // 타일 기반 라이트 컬링 적용 (활성화된 경우)
+    if (bUseTileCulling)
     {
-        litColor += CalculatePointLight(PointLights[i], Input.WorldPos, normal, float3(0, 0, 0), baseColor, false, 0.0f);
-    }
+        // 현재 픽셀이 속한 타일 계산
+        uint tileIndex = CalculateTileIndex(Input.Position);
+        uint tileDataOffset = GetTileDataOffset(tileIndex);
 
-    // Spot lights (diffuse only)
-    for (int j = 0; j < SpotLightCount; j++)
+        // 타일에 영향을 주는 라이트 개수
+        uint lightCount = g_TileLightIndices[tileDataOffset];
+
+        // 타일 내 라이트만 순회
+        for (uint i = 0; i < lightCount; i++)
+        {
+            uint packedIndex = g_TileLightIndices[tileDataOffset + 1 + i];
+            uint lightType = (packedIndex >> 16) & 0xFFFF;  // 상위 16비트: 타입
+            uint lightIdx = packedIndex & 0xFFFF;           // 하위 16비트: 인덱스
+
+            if (lightType == 0)  // Point Light
+            {
+                litColor += CalculatePointLight(PointLights[lightIdx], Input.WorldPos, normal, float3(0, 0, 0), baseColor, false, 0.0f);
+            }
+            else if (lightType == 1)  // Spot Light
+            {
+                litColor += CalculateSpotLight(SpotLights[lightIdx], Input.WorldPos, normal, float3(0, 0, 0), baseColor, false, 0.0f);
+            }
+        }
+    }
+    else
     {
-        litColor += CalculateSpotLight(SpotLights[j], Input.WorldPos, normal, float3(0, 0, 0), baseColor, false, 0.0f);
+        // 타일 컬링 비활성화: 모든 라이트 순회 (기존 방식)
+        for (int i = 0; i < PointLightCount; i++)
+        {
+            litColor += CalculatePointLight(PointLights[i], Input.WorldPos, normal, float3(0, 0, 0), baseColor, false, 0.0f);
+        }
+
+        for (int j = 0; j < SpotLightCount; j++)
+        {
+            litColor += CalculateSpotLight(SpotLights[j], Input.WorldPos, normal, float3(0, 0, 0), baseColor, false, 0.0f);
+        }
     }
 
     // Add emissive (self-illumination) after lighting calculation
@@ -571,16 +632,45 @@ PS_OUTPUT mainPS(PS_INPUT Input)
     // Directional light (diffuse + specular)
     litColor += CalculateDirectionalLight(DirectionalLight, normal, viewDir, baseColor, true, specPower);
 
-    // Point lights (diffuse + specular)
-    for (int i = 0; i < PointLightCount; i++)
+    // 타일 기반 라이트 컬링 적용 (활성화된 경우)
+    if (bUseTileCulling)
     {
-        litColor += CalculatePointLight(PointLights[i], Input.WorldPos, normal, viewDir, baseColor, true, specPower);
-    }
+        // 현재 픽셀이 속한 타일 계산
+        uint tileIndex = CalculateTileIndex(Input.Position);
+        uint tileDataOffset = GetTileDataOffset(tileIndex);
 
-    // Spot lights (diffuse + specular)
-    for (int j = 0; j < SpotLightCount; j++)
+        // 타일에 영향을 주는 라이트 개수
+        uint lightCount = g_TileLightIndices[tileDataOffset];
+
+        // 타일 내 라이트만 순회
+        for (uint i = 0; i < lightCount; i++)
+        {
+            uint packedIndex = g_TileLightIndices[tileDataOffset + 1 + i];
+            uint lightType = (packedIndex >> 16) & 0xFFFF;  // 상위 16비트: 타입
+            uint lightIdx = packedIndex & 0xFFFF;           // 하위 16비트: 인덱스
+
+            if (lightType == 0)  // Point Light
+            {
+                litColor += CalculatePointLight(PointLights[lightIdx], Input.WorldPos, normal, viewDir, baseColor, true, specPower);
+            }
+            else if (lightType == 1)  // Spot Light
+            {
+                litColor += CalculateSpotLight(SpotLights[lightIdx], Input.WorldPos, normal, viewDir, baseColor, true, specPower);
+            }
+        }
+    }
+    else
     {
-        litColor += CalculateSpotLight(SpotLights[j], Input.WorldPos, normal, viewDir, baseColor, true, specPower);
+        // 타일 컬링 비활성화: 모든 라이트 순회 (기존 방식)
+        for (int i = 0; i < PointLightCount; i++)
+        {
+            litColor += CalculatePointLight(PointLights[i], Input.WorldPos, normal, viewDir, baseColor, true, specPower);
+        }
+
+        for (int j = 0; j < SpotLightCount; j++)
+        {
+            litColor += CalculateSpotLight(SpotLights[j], Input.WorldPos, normal, viewDir, baseColor, true, specPower);
+        }
     }
 
     // Add emissive (self-illumination) after lighting calculation

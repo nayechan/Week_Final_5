@@ -30,7 +30,6 @@ CreateConstantBuffer(&TYPE##Buffer, sizeof(TYPE));
 	}
 
 
-
 struct FLinearColor;
 
 enum class EComparisonFunc
@@ -136,6 +135,11 @@ public:
 	void PrepareShader(FShader& InShader);
 	void PrepareShader(UShader* InShader);
 	void PrepareShader(UShader* InVertexShader, UShader* InPixelShader);
+
+	// Structured Buffer 관련 메서드 (타일 기반 라이트 컬링용)
+	HRESULT CreateStructuredBuffer(UINT InElementSize, UINT InElementCount, const void* InInitData, ID3D11Buffer** OutBuffer);
+	HRESULT CreateStructuredBufferSRV(ID3D11Buffer* InBuffer, ID3D11ShaderResourceView** OutSRV);
+	void UpdateStructuredBuffer(ID3D11Buffer* InBuffer, const void* InData, UINT InDataSize);
 
 	// NOTE: 추후 private 로 이동 필요?
 	// 현재 SRV, RTV 를 다루는 함수

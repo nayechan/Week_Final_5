@@ -1055,3 +1055,60 @@ void D3D11RHI::PrepareShader(UShader* InVertexShader, UShader* InPixelShader)
 
     GetDeviceContext()->PSSetShader(InPixelShader->GetPixelShader(), nullptr, 0);
 }
+
+// ──────────────────────────────────────────────────────
+// Structured Buffer 관련 메서드 (타일 기반 라이트 컬링용)
+// ──────────────────────────────────────────────────────
+
+HRESULT D3D11RHI::CreateStructuredBuffer(UINT InElementSize, UINT InElementCount, const void* InInitData, ID3D11Buffer** OutBuffer)
+{
+    D3D11_BUFFER_DESC bufferDesc = {};
+    bufferDesc.Usage = D3D11_USAGE_DYNAMIC;  // CPU에서 업데이트 가능
+    bufferDesc.ByteWidth = InElementSize * InElementCount;
+    bufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+    bufferDesc.StructureByteStride = InElementSize;
+
+    if (InInitData)
+    {
+        D3D11_SUBRESOURCE_DATA initData = {};
+        initData.pSysMem = InInitData;
+        return Device->CreateBuffer(&bufferDesc, &initData, OutBuffer);
+    }
+    else
+    {
+        return Device->CreateBuffer(&bufferDesc, nullptr, OutBuffer);
+    }
+}
+
+HRESULT D3D11RHI::CreateStructuredBufferSRV(ID3D11Buffer* InBuffer, ID3D11ShaderResourceView** OutSRV)
+{
+    if (!InBuffer)
+        return E_INVALIDARG;
+
+    D3D11_BUFFER_DESC bufferDesc;
+    InBuffer->GetDesc(&bufferDesc);
+
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+    srvDesc.Buffer.FirstElement = 0;
+    srvDesc.Buffer.NumElements = bufferDesc.ByteWidth / bufferDesc.StructureByteStride;
+
+    return Device->CreateShaderResourceView(InBuffer, &srvDesc, OutSRV);
+}
+
+void D3D11RHI::UpdateStructuredBuffer(ID3D11Buffer* InBuffer, const void* InData, UINT InDataSize)
+{
+    if (!InBuffer || !InData)
+        return;
+
+    D3D11_MAPPED_SUBRESOURCE mappedResource;
+    HRESULT hr = DeviceContext->Map(InBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    if (SUCCEEDED(hr))
+    {
+        memcpy(mappedResource.pData, InData, InDataSize);
+        DeviceContext->Unmap(InBuffer, 0);
+    }
+}

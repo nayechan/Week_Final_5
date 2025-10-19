@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-struct Frustum;
+struct FFrustum;
 struct FRay; // forward declaration for ray type
 class UStaticMeshComponent;
 class AActor;
@@ -33,7 +33,7 @@ public:
     void FlushRebuild();
 
     void QueryRayClosest(const FRay& Ray, AActor*& OutActor, OUT float& OutBestT) const;
-    void QueryFrustum(const Frustum& InFrustum);
+    void QueryFrustum(const FFrustum& InFrustum);
     TArray<UStaticMeshComponent*> QueryIntersectedComponents(const FAABB& InBound) const;
     TArray<UStaticMeshComponent*> QueryIntersectedComponents(const FOBB& InBound) const;
     TArray<UStaticMeshComponent*> QueryIntersectedComponents(const FBoundingSphere& InBound) const;

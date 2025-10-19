@@ -111,7 +111,7 @@ void FBVHierarchy::Remove(UStaticMeshComponent* InComponent)
     }
 }
 
-void FBVHierarchy::QueryFrustum(const Frustum& InFrustum)
+void FBVHierarchy::QueryFrustum(const FFrustum& InFrustum)
 {
     if (Nodes.empty()) return;
     //프러스텀 외부에 바운드 존재

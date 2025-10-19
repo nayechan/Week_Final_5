@@ -191,6 +191,17 @@ struct CameraBufferType
 
 static_assert(sizeof(CameraBufferType) % 16 == 0, "CameraBufferType size must be multiple of 16!");
 
+// b11: 타일 기반 라이트 컬링 상수 버퍼
+struct FTileCullingBufferType
+{
+    uint32 TileSize;          // 타일 크기 (픽셀, 기본 16)
+    uint32 TileCountX;        // 가로 타일 개수
+    uint32 TileCountY;        // 세로 타일 개수
+    uint32 bUseTileCulling;   // 타일 컬링 활성화 여부 (0=비활성화, 1=활성화)
+};
+
+static_assert(sizeof(FTileCullingBufferType) % 16 == 0, "FTileCullingBufferType size must be multiple of 16!");
+
 #define CONSTANT_BUFFER_INFO(TYPE, SLOT, VS, PS) \
 constexpr uint32 TYPE##Slot = SLOT;\
 constexpr bool TYPE##IsVS = VS;\
@@ -212,7 +223,8 @@ MACRO(BillboardBufferType)          \
 MACRO(FireBallBufferType)           \
 MACRO(CameraBufferType)             \
 MACRO(FLightBufferType)             \
-MACRO(FViewportConstants)
+MACRO(FViewportConstants)           \
+MACRO(FTileCullingBufferType)
 
 //VS, PS 세팅은 함수 파라미터로 결정하게 하는게 훨씬 나을듯 나중에 수정 필요
 //그리고 UV Scroll 상수버퍼도 처리해줘야함
@@ -231,4 +243,4 @@ CONSTANT_BUFFER_INFO(FireBallBufferType, 7, false, true)
 CONSTANT_BUFFER_INFO(CameraBufferType, 7, true, true)  // b7, VS+PS (UberLit.hlsl과 일치)
 CONSTANT_BUFFER_INFO(FLightBufferType, 8, true, true)
 CONSTANT_BUFFER_INFO(FViewportConstants, 10, true, false)   // 뷰 포트 크기에 따라 전체 화면 복사를 보정하기 위해 설정 (10번 고유번호로 사용)
-
+CONSTANT_BUFFER_INFO(FTileCullingBufferType, 11, false, true)  // b11, PS only (UberLit.hlsl과 일치)

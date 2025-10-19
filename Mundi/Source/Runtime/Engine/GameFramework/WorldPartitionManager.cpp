@@ -198,9 +198,9 @@ void UWorldPartitionManager::RayQueryClosest(FRay InRay, OUT AActor*& OutActor, 
 	}
 }
 
-void UWorldPartitionManager::FrustumQuery(Frustum InFrustum)
+void UWorldPartitionManager::FrustumQuery(FFrustum InFrustum)
 {
-	if(BVH)
+	if (BVH)
 	{
 		BVH->QueryFrustum(InFrustum);
 	}

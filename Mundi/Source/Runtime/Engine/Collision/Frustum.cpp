@@ -78,10 +78,10 @@ namespace
     // 점(Point)과 법선(Normal)로 평면 생성
     //  - 입력 Normal은 정규화되지 않았을 수 있으므로, 반드시 정규화
     //  - Distance = dot(Normal, Point)  (평면 상의 임의의 점과 법선의 내적)
-    Plane MakePlane(const FVector4& Point, const FVector4& Normal)
+    FPlane MakePlane(const FVector4& Point, const FVector4& Normal)
     {
         const FVector4 UnitNormal = Normalize3(Normal); // 길이 1로 보정
-        return Plane
+        return FPlane
         {
             UnitNormal,
             Dot3(UnitNormal, Point)
@@ -90,7 +90,7 @@ namespace
     // (선택) 모든 평면을 "안쪽을 향하도록" 보정
     //  - 수치 불안정, 축/부호 실수, 미러링(det<0) 등에도 항상 안쪽 ≥ 0을 보장
     /*
-    inline void EnsureFacingInwards(Plane& P, const FVector& InsidePoint)
+    inline void EnsureFacingInwards(FPlane& P, const FVector& InsidePoint)
     {
         if (FVector::Dot(P.Normal, InsidePoint) - P.Distance < 0.0f)
         {
@@ -101,7 +101,7 @@ namespace
     */
 }
 
-Frustum CreateFrustumFromCamera(const UCameraComponent& Camera, float OverrideAspect)
+FFrustum CreateFrustumFromCamera(const UCameraComponent& Camera, float OverrideAspect)
 {
     // 카메라 파라미터
     const float NearClip = Camera.GetNearClip();
@@ -121,7 +121,7 @@ Frustum CreateFrustumFromCamera(const UCameraComponent& Camera, float OverrideAs
     const float HalfHSide = HalfVSide * Aspect;            // 가로(Horizontal) 반폭
     const FVector4 FrontMultFar = FVector4(Forward.X * FarClip, Forward.Y * FarClip, Forward.Z * FarClip, 0.0f);        // Far까지의 전방 벡터
 
-    Frustum Result;
+    FFrustum Result;
 
     // ------------------------------------------------------------
     // Near / Far
@@ -158,7 +158,7 @@ Frustum CreateFrustumFromCamera(const UCameraComponent& Camera, float OverrideAs
 //  - 규약: 안쪽 ≥ 0  ⇒  Distance + Radius >= 0 이면 그 평면을 통과(겹침)
 //  - 하나라도 실패하면(음수) 절두체 밖 → 즉시 탈락
 // ------------------------------------------------------------
-bool Intersects(const Plane& P, const FVector4& Center, const FVector4& Extents)
+bool Intersects(const FPlane& P, const FVector4& Center, const FVector4& Extents)
 {
     // 평면과 박스사이의 거리 (양수면 평면의 법선 방향, 음수면 반대 방향)
     const float Distance = Dot3(P.Normal, Center) - P.Distance;
@@ -172,7 +172,7 @@ bool Intersects(const Plane& P, const FVector4& Center, const FVector4& Extents)
     return Distance + radius >= 0.0f;
 }
 
-bool IsAABBVisible(const Frustum& Frustum, const FAABB& Bound)
+bool IsAABBVisible(const FFrustum& Frustum, const FAABB& Bound)
 {
     // AABB 중심/반길이
     const FVector Center3 = (Bound.Min + Bound.Max) * 0.5f;
@@ -188,7 +188,7 @@ bool IsAABBVisible(const Frustum& Frustum, const FAABB& Bound)
         Intersects(Frustum.FarFace, Center, Extents);
 }
 
-bool IsAABBIntersects(const Frustum& F, const FAABB& B)
+bool IsAABBIntersects(const FFrustum& F, const FAABB& B)
 {
     // 부분 교차(Intersect)만 true. 완전 내부/완전 외부는 false.
     const FVector Center3 = (B.Min + B.Max) * 0.5f;
@@ -196,12 +196,12 @@ bool IsAABBIntersects(const Frustum& F, const FAABB& B)
     const FVector4 Center = FVector4::FromPoint(Center3);
     const FVector4 Extents = FVector4::FromDirection(Extents3);
 
-    const Plane planes[6] = { F.LeftFace, F.RightFace, F.TopFace, F.BottomFace, F.NearFace, F.FarFace };
+    const FPlane planes[6] = { F.LeftFace, F.RightFace, F.TopFace, F.BottomFace, F.NearFace, F.FarFace };
 
     bool fullyInside = true;
     for (int i = 0; i < 6; ++i)
     {
-        const Plane& P = planes[i];
+        const FPlane& P = planes[i];
         const float Distance = Dot3(P.Normal, Center) - P.Distance;
         const float Radius = std::abs(P.Normal.X) * Extents.X + std::abs(P.Normal.Y) * Extents.Y + std::abs(P.Normal.Z) * Extents.Z;
 
@@ -234,7 +234,7 @@ bool IsAABBIntersects(const Frustum& F, const FAABB& B)
 // 우리의 평면식 dot(N,X) - D >= 0 과 맞추려면  N=(a,b,c), D=-d  을 사용.
 // 정규화 스케일도 Distance에 나눠 반영해야 함.
 /*
-static inline Plane MakePlaneFromRowCombo(const FVector4& R3, const FVector4& Ri, int Sign) // +1 or -1
+static inline FPlane MakePlaneFromRowCombo(const FVector4& R3, const FVector4& Ri, int Sign) // +1 or -1
 {
     // P = R3 + Sign * Ri
     const FVector4 P(R3.X + Sign * Ri.X,
@@ -243,7 +243,7 @@ static inline Plane MakePlaneFromRowCombo(const FVector4& R3, const FVector4& Ri
         R3.W + Sign * Ri.W);
 
     // 법선/거리 추출 및 정규화
-    Plane Out;
+    FPlane Out;
     const FVector4 N(P.X, P.Y, P.Z, 0.0f);
     const float    Len = Length3(N);
 
@@ -293,7 +293,7 @@ Frustum CreateFrustumFromCamera(const UCameraComponent& Camera, float)  // Overr
 }
 
 // ---------- AABB vs 평면 판정(기존 유지, std::abs 권장) ----------
-bool Intersects(const Plane& P, const FVector4& Center, const FVector4& Extents)
+bool Intersects(const FPlane& P, const FVector4& Center, const FVector4& Extents)
 {
     const float Distance = Dot3(P.Normal, Center) - P.Distance;
 
@@ -325,7 +325,7 @@ bool IsAABBVisible(const Frustum& F, const FBound& B)
 */
 
 // AVX-optimized culling for 8 AABBs
-uint8_t AreAABBsVisible_8_AVX(const Frustum& Frustum, const FAABB Bounds[8])
+uint8_t AreAABBsVisible_8_AVX(const FFrustum& Frustum, const FAABB Bounds[8])
 {
     // This function performs frustum culling for 8 AABBs simultaneously using AVX2.
     // It works by testing all 8 boxes against each of the 6 frustum planes.
@@ -384,14 +384,14 @@ uint8_t AreAABBsVisible_8_AVX(const Frustum& Frustum, const FAABB Bounds[8])
     __m256 extents_z = _mm256_mul_ps(_mm256_sub_ps(max_z, min_z), half);
 
     // 3. Perform Culling (This part was correct before)
-    const Plane* planes = &Frustum.TopFace;
+    const FPlane* planes = &Frustum.TopFace;
     uint32_t all_visible_mask = 0xFF;
 
     const __m256 sign_mask = _mm256_set1_ps(-0.0f);
 
     for (int i = 0; i < 6; ++i)
     {
-        const Plane& p = planes[i];
+        const FPlane& p = planes[i];
         __m256 plane_nx = _mm256_set1_ps(p.Normal.X);
         __m256 plane_ny = _mm256_set1_ps(p.Normal.Y);
         __m256 plane_nz = _mm256_set1_ps(p.Normal.Z);

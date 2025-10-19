@@ -37,7 +37,7 @@ public:
     // 렌더링 데이터
     FMatrix ViewMatrix{};
     FMatrix ProjectionMatrix{};
-    Frustum ViewFrustum{};
+    FFrustum ViewFrustum{};
     FVector ViewLocation{};
     FViewportRect ViewRect{}; // 이 뷰가 그려질 뷰포트상의 영역
 
