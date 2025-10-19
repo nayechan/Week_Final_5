@@ -25,6 +25,10 @@ public:
     bool IsHighlighted() const { return bHighlighted; }
     uint32 GetAxisIndex() const { return AxisIndex; }
 
+    // Screen-constant scale control (default: true for typical gizmos, false for world-space indicators)
+    void SetUseScreenConstantScale(bool bInUseScreenConstantScale) { bUseScreenConstantScale = bInUseScreenConstantScale; }
+    bool GetUseScreenConstantScale() const { return bUseScreenConstantScale; }
+
     UMaterial* GetMaterial(uint32 InSectionIndex) const override;
     void SetMaterial(uint32 InElementIndex, UMaterial* InNewMaterial) override;
 
@@ -40,7 +44,10 @@ protected:
     FVector Color;
     bool bHighlighted = false;
     uint32 AxisIndex = 0;
-    
+
+    // Screen-constant scale: true = scale with distance to maintain screen size, false = use world scale
+    bool bUseScreenConstantScale = true;
+
     // 기즈모가 항상 사용할 고정 머티리얼입니다.
     UMaterial* GizmoMaterial = nullptr;
 };

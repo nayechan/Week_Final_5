@@ -140,8 +140,11 @@ void USpotLightComponent::OnRegister()
 		DirectionGizmo->SetStaticMesh("Data/Gizmo/TranslationHandle.obj");
 		DirectionGizmo->SetMaterialByName(0, "Shaders/StaticMesh/StaticMeshShader.hlsl");
 
+		// Use world-space scale (not screen-constant scale like typical gizmos)
+		DirectionGizmo->SetUseScreenConstantScale(false);
+
 		// Set default scale
-		DirectionGizmo->SetDefaultScale(FVector(0.5f, 0.5f, 0.5f));
+		DirectionGizmo->SetDefaultScale(FVector(0.3f, 0.3f, 0.3f));
 
 		// Update gizmo properties to match light
 		UpdateDirectionGizmo();

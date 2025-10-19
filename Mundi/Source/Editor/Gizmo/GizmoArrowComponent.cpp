@@ -71,15 +71,23 @@ void UGizmoArrowComponent::CollectMeshBatches(
 	}
 
 	// --- 스케일 계산 ---
-	if (!View)
+	if (bUseScreenConstantScale)
 	{
-		UE_LOG("GizmoArrowComponent requires a valid FSceneView to compute scale. Gizmo might not scale correctly.");
-		return;
+		if (!View)
+		{
+			UE_LOG("GizmoArrowComponent requires a valid FSceneView to compute scale. Gizmo might not scale correctly.");
+			return;
+		}
+		else
+		{
+			const float ScaleFactor = ComputeScreenConstantScale(View, 30.0f);
+			SetWorldScale(DefaultScale * ScaleFactor);
+		}
 	}
 	else
 	{
-		const float ScaleFactor = ComputeScreenConstantScale(View, 30.0f);
-		SetWorldScale(DefaultScale * ScaleFactor);
+		// Use world-space scale directly (for DirectionGizmo etc.)
+		SetWorldScale(DefaultScale);
 	}
 
 	// --- 사용할 머티리얼 결정 ---
