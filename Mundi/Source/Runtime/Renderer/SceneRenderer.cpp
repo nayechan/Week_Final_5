@@ -73,9 +73,6 @@ void FSceneRenderer::Render()
 	// 2. 렌더링할 대상 수집 (Cull + Gather)
 	GatherVisibleProxies();
 
-	RenderEditorPrimitivesPass();	// 그리드 출력
-	RenderDebugPass();	//  선택한 물체의 경계 출력
-
 	// ViewMode에 따라 렌더링 경로 결정
 	if (View->ViewMode == EViewModeIndex::VMI_Lit ||
 		View->ViewMode == EViewModeIndex::VMI_Lit_Gouraud ||
@@ -105,6 +102,10 @@ void FSceneRenderer::Render()
 	{
 		RenderSceneDepthPath();
 	}
+
+	//그리드와 디버그용 Primitive는 Post Processing 적용하지 않음.
+	RenderEditorPrimitivesPass();	// 그리드 출력
+	RenderDebugPass();	//  선택한 물체의 경계 출력
 
 	// 3. 공통 오버레이(Overlay) 렌더링
 	RenderOverayEditorPrimitivesPass();	// 기즈모 출력
@@ -197,6 +198,7 @@ void FSceneRenderer::RenderSceneDepthPath()
 
 	// 4. SceneDepth Post 프로세싱 처리
 	RenderSceneDepthPostProcess();
+
 }
 
 //====================================================================================
