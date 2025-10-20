@@ -131,7 +131,7 @@ void USpotLightComponent::OnRegister()
 
 		// Set gizmo mesh (using the same mesh as GizmoActor's arrow)
 		DirectionGizmo->SetStaticMesh("Data/Gizmo/TranslationHandle.obj");
-		DirectionGizmo->SetMaterialByName(0, "Shaders/StaticMesh/Gizmo.hlsl");
+		DirectionGizmo->SetMaterialByName(0, "Shaders/UI/Gizmo.hlsl");
 
 		// Use world-space scale (not screen-constant scale like typical gizmos)
 		DirectionGizmo->SetUseScreenConstantScale(false);
