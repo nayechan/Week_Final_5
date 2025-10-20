@@ -81,14 +81,20 @@ void UInputManager::Update()
             // 커서 잠금 모드: 무한 드래그 처리
             if (bIsCursorLocked)
             {
+                // 1. 현재 실제 커서 위치를 MousePosition에 저장
                 MousePosition.X = static_cast<float>(CursorPos.x);
                 MousePosition.Y = static_cast<float>(CursorPos.y);
 
-                POINT CenterPoint = { static_cast<int>(CenterPosition.X), static_cast<int>(CenterPosition.Y) };
-                ClientToScreen(WindowHandle, &CenterPoint);
-                SetCursorPos(CenterPoint.x, CenterPoint.y);
+                // 2. 델타 계산 = MousePosition - PreviousMousePosition
+                //    (우클릭한 위치에서 얼마나 움직였는지)
 
-                PreviousMousePosition = CenterPosition;
+                // 3. 커서를 다시 원래 우클릭한 위치로 재배치
+                POINT lockedPoint = { static_cast<int>(LockedCursorPosition.X), static_cast<int>(LockedCursorPosition.Y) };
+                ClientToScreen(WindowHandle, &lockedPoint);
+                SetCursorPos(lockedPoint.x, lockedPoint.y);
+
+                // 4. 다음 프레임을 위해 PreviousMousePosition을 잠긴 위치로 설정
+                PreviousMousePosition = LockedCursorPosition;
             }
             else
             {
@@ -409,41 +415,24 @@ void UInputManager::SetCursorVisible(bool bVisible)
     ShowCursor(bVisible ? TRUE : FALSE);
 }
 
-void UInputManager::SetCursorToCenter()
+void UInputManager::LockCursor()
 {
     if (!WindowHandle) return;
 
-    // 현재 커서 위치를 저장 (나중에 복원하기 위해)
+    // 현재 커서 위치를 기준점으로 저장
     POINT currentCursor;
     if (GetCursorPos(&currentCursor))
     {
         ScreenToClient(WindowHandle, &currentCursor);
-        OriginalCursorPosition = FVector2D(static_cast<float>(currentCursor.x), static_cast<float>(currentCursor.y));
+        LockedCursorPosition = FVector2D(static_cast<float>(currentCursor.x), static_cast<float>(currentCursor.y));
     }
 
-    // 클라이언트 영역 크기 가져오기
-    RECT clientRect;
-    if (!GetClientRect(WindowHandle, &clientRect))
-        return;
-
-    // 클라이언트 영역 중앙 좌표 계산
-    int centerX = (clientRect.right - clientRect.left) / 2;
-    int centerY = (clientRect.bottom - clientRect.top) / 2;
-
-    // 클라이언트 좌표를 스크린 좌표로 변환
-    POINT centerPoint = { centerX, centerY };
-    ClientToScreen(WindowHandle, &centerPoint);
-
-    // 커서를 화면 중앙으로 이동
-    SetCursorPos(centerPoint.x, centerPoint.y);
-
-    // 중앙 위치 캐시 및 잠금 상태 설정
-    CenterPosition = FVector2D(static_cast<float>(centerX), static_cast<float>(centerY));
+    // 잠금 상태 설정
     bIsCursorLocked = true;
 
     // 마우스 위치 동기화 (델타 계산을 위해)
-    MousePosition = CenterPosition;
-    PreviousMousePosition = CenterPosition;
+    MousePosition = LockedCursorPosition;
+    PreviousMousePosition = LockedCursorPosition;
 }
 
 void UInputManager::ReleaseCursor()
@@ -454,11 +443,11 @@ void UInputManager::ReleaseCursor()
     bIsCursorLocked = false;
 
     // 원래 커서 위치로 복원
-    POINT originalPoint = { static_cast<int>(OriginalCursorPosition.X), static_cast<int>(OriginalCursorPosition.Y) };
-    ClientToScreen(WindowHandle, &originalPoint);
-    SetCursorPos(originalPoint.x, originalPoint.y);
+    POINT lockedPoint = { static_cast<int>(LockedCursorPosition.X), static_cast<int>(LockedCursorPosition.Y) };
+    ClientToScreen(WindowHandle, &lockedPoint);
+    SetCursorPos(lockedPoint.x, lockedPoint.y);
 
     // 마우스 위치 동기화
-    MousePosition = OriginalCursorPosition;
-    PreviousMousePosition = OriginalCursorPosition;
+    MousePosition = LockedCursorPosition;
+    PreviousMousePosition = LockedCursorPosition;
 }

@@ -72,7 +72,7 @@ public:
 
     // 커서 제어 함수
     void SetCursorVisible(bool bVisible);
-    void SetCursorToCenter();
+    void LockCursor();
     void ReleaseCursor();
     bool IsCursorLocked() const { return bIsCursorLocked; }
 
@@ -108,6 +108,5 @@ private:
 
     // 커서 잠금 상태
     bool bIsCursorLocked = false;
-    FVector2D CenterPosition;
-    FVector2D OriginalCursorPosition; // 우클릭 시작 시 커서 위치
+    FVector2D LockedCursorPosition; // 우클릭한 위치 (기준점)
 };

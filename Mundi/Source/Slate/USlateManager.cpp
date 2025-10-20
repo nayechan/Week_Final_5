@@ -265,7 +265,7 @@ void USlateManager::OnMouseDown(FVector2D MousePos, uint32 Button)
                 if (Button == 1)
                 {
                     INPUT.SetCursorVisible(false);
-                    INPUT.SetCursorToCenter();
+                    INPUT.LockCursor();
                 }
                 break;
             }
