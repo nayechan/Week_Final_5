@@ -71,7 +71,8 @@ bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectIn
 		break;
 
 	case EPropertyType::Material:
-		return RenderMaterialProperty(Property, ObjectInstance);
+		bChanged = RenderMaterialProperty(Property, ObjectInstance);
+		break;
 
 	case EPropertyType::Array:
 		switch (Property.InnerType)
@@ -576,32 +577,25 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterial** 
 	{
 		ImGui::Indent();
 
-		// --- 5-2a. 셰이더 렌더링 ---
+		// --- 5-2a. 셰이더 렌더링 (읽기 전용, 비활성화된 InputText 사용) ---
 		UShader* CurrentShader = CurrentMaterial->GetShader();
 		FString CurrentShaderPath = (CurrentShader) ? CurrentShader->GetFilePath() : "None";
 
-		int SelectedShaderIdx = 0;
-		// 'CachedShaderPaths' 멤버 변수 사용
-		for (int j = 0; j < (int)CachedShaderPaths.size(); ++j)
-		{
-			if (CachedShaderPaths[j] == CurrentShaderPath)
-			{
-				SelectedShaderIdx = j + 1;
-				break;
-			}
-		}
+		// ImGui::InputText에 사용하기 위해 경로를 복사할 버퍼
+		char ShaderPathBuffer[512]; // 경로 길이에 맞춰 버퍼 크기 조정
+		strncpy_s(ShaderPathBuffer, sizeof(ShaderPathBuffer), CurrentShaderPath.c_str(), _TRUNCATE);
 
 		FString ShaderLabel = "Shader##" + FString(Label);
 		ImGui::SetNextItemWidth(220);
-		// 'CachedShaderItems' 멤버 변수 사용
-		if (ImGui::Combo(ShaderLabel.c_str(), &SelectedShaderIdx, CachedShaderItems.data(), static_cast<int>(CachedShaderItems.size())))
-		{
-			if (SelectedShaderIdx > 0)
-			{
-				CurrentMaterial->SetShaderByName(CachedShaderPaths[SelectedShaderIdx - 1]);
-				bElementChanged = true;
-			}
-		}
+
+		// ImGui::BeginDisabled(true)로 감싸 위젯을 시각적으로 비활성화합니다.
+		ImGui::BeginDisabled(true);
+
+		// InputText는 계속 사용하되, 비활성화된 상태로 둡니다.
+		ImGui::InputText(ShaderLabel.c_str(), ShaderPathBuffer, sizeof(ShaderPathBuffer), ImGuiInputTextFlags_ReadOnly);
+
+		// 비활성화 상태를 해제합니다.
+		ImGui::EndDisabled();
 
 		// --- 5-2b. 텍스처 슬롯 렌더링 ---
 		for (uint8 TexSlotIndex = 0; TexSlotIndex < (uint8)EMaterialTextureSlot::Max; ++TexSlotIndex)
