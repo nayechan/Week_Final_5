@@ -14,45 +14,10 @@
 // 조명 사용 시 활성화 권장
 // #define USE_GAMMA_CORRECTION 1
 
-
-// --- 조명 정보 구조체 (LightInfo.h와 완전히 일치) ---
-// Note: Color already includes Intensity and Temperature (calculated in C++)
-// Optimized padding for minimal memory usage
-
-struct FAmbientLightInfo
-{
-    float4 Color;       // 16 bytes - FLinearColor (includes Intensity + Temperature)
-};
-
-struct FDirectionalLightInfo
-{
-    float4 Color;       // 16 bytes - FLinearColor (includes Intensity + Temperature)
-    float3 Direction;   // 12 bytes - FVector
-    float Padding;      // 4 bytes - Padding for alignment
-};
-
-struct FPointLightInfo
-{
-    float4 Color;           // 16 bytes - FLinearColor (includes Intensity + Temperature)
-    float3 Position;        // 12 bytes - FVector
-    float AttenuationRadius; // 4 bytes (moved up to fill slot)
-    float FalloffExponent;  // 4 bytes - Falloff exponent for artistic control
-    uint bUseInverseSquareFalloff; // 4 bytes - uint32 (true = physically accurate, false = exponent-based)
-    float2 Padding;         // 8 bytes - Padding for alignment (Attenuation removed)
-};
-
-struct FSpotLightInfo
-{
-    float4 Color;           // 16 bytes - FLinearColor (includes Intensity + Temperature)
-    float3 Position;        // 12 bytes - FVector
-    float InnerConeAngle;   // 4 bytes
-    float3 Direction;       // 12 bytes - FVector
-    float OuterConeAngle;   // 4 bytes
-    float AttenuationRadius; // 4 bytes
-    float FalloffExponent;  // 4 bytes - Falloff exponent for artistic control
-    uint bUseInverseSquareFalloff; // 4 bytes - uint32 (true = physically accurate, false = exponent-based)
-    float Padding;         // 4 bytes - Padding for alignment (Attenuation removed)
-};
+// --- 공통 조명 시스템 include ---
+#include "../Common/LightStructures.hlsl"
+#include "../Common/LightingBuffers.hlsl"
+#include "../Common/LightingCommon.hlsl"
 
 // --- Material 구조체 (OBJ 머티리얼 정보) ---
 struct FMaterial
@@ -104,46 +69,11 @@ cbuffer PixelConstBuffer : register(b4)
     uint bHasNormalTexture;
 };
 
-// b7: CameraBuffer (VS+PS) - Camera properties (moved from b2)
-cbuffer CameraBuffer : register(b7)
-{
-    float3 CameraPosition;
-};
-
-// b8: LightBuffer (VS+PS) - Matches FLightBufferType from ConstantBufferType.h
-cbuffer LightBuffer : register(b8)
-{
-    FAmbientLightInfo AmbientLight;
-    FDirectionalLightInfo DirectionalLight;
-
-    uint PointLightCount;
-    uint SpotLightCount;
-};
-
 // --- 텍스처 및 샘플러 리소스 ---
 Texture2D g_DiffuseTexColor : register(t0);
 Texture2D g_NormalTexColor : register(t1);
 SamplerState g_Sample : register(s0);
 SamplerState g_Sample2 : register(s1);
-
-// --- 타일 기반 라이트 컬링 리소스 ---
-// t2: 타일별 라이트 인덱스 Structured Buffer
-// 구조:  [TileIndex * MaxLightsPerTile] = LightCount
-//        [TileIndex * MaxLightsPerTile + 1 ~ ...] = LightIndices (상위 16비트: 타입, 하위 16비트: 인덱스)
-StructuredBuffer<uint> g_TileLightIndices : register(t2);
-
-//PointLight, SpotLight Structured Buffer
-StructuredBuffer<FPointLightInfo> g_PointLightList : register(t3);
-StructuredBuffer<FSpotLightInfo> g_SpotLightList : register(t4);
-
-// b11: 타일 컬링 설정 상수 버퍼
-cbuffer TileCullingBuffer : register(b11)
-{
-    uint TileSize;          // 타일 크기 (픽셀, 기본 16)
-    uint TileCountX;        // 가로 타일 개수
-    uint TileCountY;        // 세로 타일 개수
-    uint bUseTileCulling;   // 타일 컬링 활성화 여부 (0=비활성화, 1=활성화)
-};
 
 // --- 셰이더 입출력 구조체 ---
 struct VS_INPUT
@@ -171,48 +101,15 @@ struct PS_OUTPUT
     uint UUID : SV_Target1;
 };
 
-// --- 유틸리티 함수 ---
+// --- UberLit 전용: Material-aware Specular 계산 ---
+// LightingCommon.hlsl의 CalculateSpecular는 white specular를 사용
+// UberLit은 Material.SpecularColor를 지원하므로 오버라이드 필요
 
-// 타일 인덱스 계산 (픽셀 위치로부터)
-// SV_POSITION은 픽셀 중심 좌표 (0.5, 0.5 offset)
-uint CalculateTileIndex(float4 screenPos)
-{
-    uint tileX = uint(screenPos.x) / TileSize;
-    uint tileY = uint(screenPos.y) / TileSize;
-    return tileY * TileCountX + tileX;
-}
+// Material-aware Specular (Blinn-Phong) - Override for UberLit
+// This overrides the default CalculateSpecular from LightingCommon.hlsl
+#define CalculateSpecular CalculateSpecularWithMaterial
 
-// 타일별 라이트 인덱스 데이터의 시작 오프셋 계산
-uint GetTileDataOffset(uint tileIndex)
-{
-    // MaxLightsPerTile = 256 (TileLightCuller.h와 일치)
-    const uint MaxLightsPerTile = 256;
-    return tileIndex * MaxLightsPerTile;
-}
-
-// Ambient Light Calculation
-// Uses the provided materialColor (which includes texture if available)
-// Note: light.Color already includes Intensity and Temperature
-float3 CalculateAmbientLight(FAmbientLightInfo light, float4 materialColor)
-{
-    // Use materialColor directly (already contains texture if available)
-    return light.Color.rgb * materialColor.rgb;
-}
-
-// Diffuse Light Calculation (Lambert)
-// Uses the provided materialColor (which includes texture if available)
-// Note: lightColor already includes Intensity (calculated in C++)
-float3 CalculateDiffuse(float3 lightDir, float3 normal, float4 lightColor, float4 materialColor)
-{
-    float NdotL = max(dot(normal, lightDir), 0.0f);
-    // Use materialColor directly (already contains texture if available)
-    return lightColor.rgb * materialColor.rgb * NdotL;
-}
-
-// Specular Light Calculation (Blinn-Phong)
-// Uses material's SpecularColor (Ks) if available - this is important!
-// Note: lightColor already includes Intensity (calculated in C++)
-float3 CalculateSpecular(float3 lightDir, float3 normal, float3 viewDir, float4 lightColor, float specularPower)
+float3 CalculateSpecularWithMaterial(float3 lightDir, float3 normal, float3 viewDir, float4 lightColor, float specularPower)
 {
     float3 halfVec = normalize(lightDir + viewDir);
     float NdotH = max(dot(normal, halfVec), 0.0f);
@@ -221,167 +118,6 @@ float3 CalculateSpecular(float3 lightDir, float3 normal, float3 viewDir, float4 
     // Apply material's specular color (Ks) - metallic materials have colored specular!
     float3 specularMaterial = bHasMaterial ? Material.SpecularColor : float3(1.0f, 1.0f, 1.0f);
     return lightColor.rgb * specularMaterial * specular;
-}
-
-// Unreal Engine: Inverse Square Falloff (Physically Accurate)
-// https://docs.unrealengine.com/en-US/BuildingWorlds/LightingAndShadows/PhysicalLightUnits/
-float CalculateInverseSquareFalloff(float distance, float attenuationRadius)
-{
-    // Unreal Engine's inverse square falloff with smooth window function
-    float distanceSq = distance * distance;
-    float radiusSq = attenuationRadius * attenuationRadius;
-
-    // Basic inverse square law: I = 1 / (distance^2)
-    float basicFalloff = 1.0f / max(distanceSq, 0.01f * 0.01f); // Prevent division by zero
-
-    // Apply smooth window function that reaches 0 at attenuationRadius
-    // This prevents hard cutoff at radius boundary
-    float distanceRatio = saturate(distance / attenuationRadius);
-    float windowAttenuation = pow(1.0f - pow(distanceRatio, 4.0f), 2.0f);
-
-    return basicFalloff * windowAttenuation;
-}
-
-// Unreal Engine: Light Falloff Exponent (Artistic Control)
-// Non-physically accurate but provides artistic control
-float CalculateExponentFalloff(float distance, float attenuationRadius, float falloffExponent)
-{
-    // Normalized distance (0 at light center, 1 at radius boundary)
-    float distanceRatio = saturate(distance / attenuationRadius);
-
-    // Simple exponent-based falloff: attenuation = (1 - ratio)^exponent
-    // falloffExponent controls the curve:
-    // - exponent = 1: linear falloff
-    // - exponent > 1: faster falloff (sharper)
-    // - exponent < 1: slower falloff (gentler)
-    float attenuation = pow(1.0f - pow(distanceRatio, 2.0f), max(falloffExponent, 0.1f));
-
-    return attenuation;
-}
-
-// Linear to sRGB conversion (Gamma Correction)
-// Converts linear RGB values to sRGB color space for display
-float3 LinearToSRGB(float3 linearColor)
-{
-    // sRGB standard: exact formula with piecewise function
-    float3 sRGBLo = linearColor * 12.92f;
-    float3 sRGBHi = pow(max(linearColor, 0.0f), 1.0f / 2.4f) * 1.055f - 0.055f;
-    float3 sRGB = (linearColor <= 0.0031308f) ? sRGBLo : sRGBHi;
-    return sRGB;
-}
-
-// Simple gamma correction (approximation, faster but less accurate)
-float3 LinearToGamma(float3 linearColor)
-{
-    return pow(max(linearColor, 0.0f), 1.0f / 2.2f);
-}
-
-// Directional Light Calculation (Diffuse + Specular)
-float3 CalculateDirectionalLight(FDirectionalLightInfo light, float3 normal, float3 viewDir, float4 materialColor, bool includeSpecular, float specularPower)
-{
-    // if Light.Direction is zero vector, avoid normalization issues
-    if (all(light.Direction == float3(0.0f, 0.0f, 0.0f)))
-    {
-        return float3(0.0f, 0.0f, 0.0f);
-    }
-    
-    float3 lightDir = normalize(-light.Direction);
-
-    // Diffuse (light.Color already includes Intensity)
-    float3 diffuse = CalculateDiffuse(lightDir, normal, light.Color, materialColor);
-
-    // Specular (optional)
-    float3 specular = float3(0.0f, 0.0f, 0.0f);
-    if (includeSpecular)
-    {
-        specular = CalculateSpecular(lightDir, normal, viewDir, light.Color, specularPower);
-    }
-
-    return diffuse + specular;
-}
-
-// Point Light Calculation (Diffuse + Specular with Attenuation and Falloff)
-float3 CalculatePointLight(FPointLightInfo light, float3 worldPos, float3 normal, float3 viewDir, float4 materialColor, bool includeSpecular, float specularPower)
-{
-    float3 lightVec = light.Position - worldPos;
-    float distance = length(lightVec);
-
-    // Protect against division by zero with epsilon
-    distance = max(distance, 0.0001f);
-    float3 lightDir = lightVec / distance;
-
-    // Calculate attenuation based on falloff mode
-    float attenuation;
-    if (light.bUseInverseSquareFalloff)
-    {
-        // Physically accurate inverse square falloff (Unreal Engine style)
-        attenuation = CalculateInverseSquareFalloff(distance, light.AttenuationRadius);
-    }
-    else
-    {
-        // Artistic exponent-based falloff for greater control
-        attenuation = CalculateExponentFalloff(distance, light.AttenuationRadius, light.FalloffExponent);
-    }
-
-    // Diffuse (light.Color already includes Intensity)
-    float3 diffuse = CalculateDiffuse(lightDir, normal, light.Color, materialColor) * attenuation;
-
-    // Specular (optional)
-    float3 specular = float3(0.0f, 0.0f, 0.0f);
-    if (includeSpecular)
-    {
-        specular = CalculateSpecular(lightDir, normal, viewDir, light.Color, specularPower) * attenuation;
-    }
-
-    return diffuse + specular;
-}
-
-// Spot Light Calculation (Diffuse + Specular with Attenuation and Cone)
-float3 CalculateSpotLight(FSpotLightInfo light, float3 worldPos, float3 normal, float3 viewDir, float4 materialColor, bool includeSpecular, float specularPower)
-{
-    float3 lightVec = light.Position - worldPos;
-    float distance = length(lightVec);
-
-    // Protect against division by zero with epsilon
-    distance = max(distance, 0.0001f);
-    float3 lightDir = lightVec / distance;
-    float3 spotDir = normalize(light.Direction);
-
-    // Spot cone attenuation
-    float cosAngle = dot(-lightDir, spotDir);
-    float innerCos = cos(radians(light.InnerConeAngle));
-    float outerCos = cos(radians(light.OuterConeAngle));
-
-    // Smooth falloff between inner and outer cone (returns 0 if outside cone)
-    float spotAttenuation = smoothstep(outerCos, innerCos, cosAngle);
-
-    // Calculate distance attenuation based on falloff mode
-    float distanceAttenuation;
-    if (light.bUseInverseSquareFalloff)
-    {
-        // Physically accurate inverse square falloff (Unreal Engine style)
-        distanceAttenuation = CalculateInverseSquareFalloff(distance, light.AttenuationRadius);
-    }
-    else
-    {
-        // Artistic exponent-based falloff for greater control
-        distanceAttenuation = CalculateExponentFalloff(distance, light.AttenuationRadius, light.FalloffExponent);
-    }
-
-    // Combine both attenuations
-    float attenuation = distanceAttenuation * spotAttenuation;
-
-    // Diffuse (light.Color already includes Intensity)
-    float3 diffuse = CalculateDiffuse(lightDir, normal, light.Color, materialColor) * attenuation;
-
-    // Specular (optional)
-    float3 specular = float3(0.0f, 0.0f, 0.0f);
-    if (includeSpecular)
-    {
-        specular = CalculateSpecular(lightDir, normal, viewDir, light.Color, specularPower) * attenuation;
-    }
-
-    return diffuse + specular;
 }
 
 //================================================================================================

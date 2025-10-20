@@ -31,6 +31,7 @@ private:
     void RenderToolbar();
     void RenderGizmoModeButtons();
     void RenderGizmoSpaceButton();
+    void RenderCameraOptionDropdownMenu();
     void LoadToolbarIcons(ID3D11Device* Device);
 
 private:
@@ -54,4 +55,20 @@ private:
     UTexture* IconScale = nullptr;
     UTexture* IconWorldSpace = nullptr;
     UTexture* IconLocalSpace = nullptr;
+
+    // 뷰포트 모드 아이콘 텍스처
+    UTexture* IconCamera = nullptr;
+    UTexture* IconPerspective = nullptr;
+    UTexture* IconTop = nullptr;
+    UTexture* IconBottom = nullptr;
+    UTexture* IconLeft = nullptr;
+    UTexture* IconRight = nullptr;
+    UTexture* IconFront = nullptr;
+    UTexture* IconBack = nullptr;
+
+    // 뷰포트 설정 아이콘 텍스처
+    UTexture* IconSpeed = nullptr;
+    UTexture* IconFOV = nullptr;
+    UTexture* IconNearClip = nullptr;
+    UTexture* IconFarClip = nullptr;
 };

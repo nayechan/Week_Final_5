@@ -2,12 +2,15 @@
 #include "SViewportWindow.h"
 #include "World.h"
 #include "ImGui/imgui.h"
-#include"USlateManager.h"
+#include "USlateManager.h"
 
 #include "FViewport.h"
 #include "FViewportClient.h"
 #include "Texture.h"
 #include "Gizmo/GizmoActor.h"
+
+#include "CameraComponent.h"
+#include "CameraActor.h"
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
@@ -48,13 +51,13 @@ bool SViewportWindow::Initialize(float StartX, float StartY, float Width, float 
 	// 이름 설정
 	switch (ViewportType)
 	{
-	case EViewportType::Perspective:       ViewportName = "Perspective"; break;
-	case EViewportType::Orthographic_Front: ViewportName = "Front"; break;
-	case EViewportType::Orthographic_Left:  ViewportName = "Left"; break;
-	case EViewportType::Orthographic_Top:   ViewportName = "Top"; break;
-	case EViewportType::Orthographic_Back: ViewportName = "Back"; break;
-	case EViewportType::Orthographic_Right:  ViewportName = "Right"; break;
-	case EViewportType::Orthographic_Bottom:   ViewportName = "Bottom"; break;
+	case EViewportType::Perspective:		ViewportName = "원근"; break;
+	case EViewportType::Orthographic_Front: ViewportName = "정면"; break;
+	case EViewportType::Orthographic_Left:  ViewportName = "왼쪽"; break;
+	case EViewportType::Orthographic_Top:   ViewportName = "상단"; break;
+	case EViewportType::Orthographic_Back:	ViewportName = "후면"; break;
+	case EViewportType::Orthographic_Right:  ViewportName = "오른쪽"; break;
+	case EViewportType::Orthographic_Bottom:   ViewportName = "하단"; break;
 	}
 
 	// FViewport 생성
@@ -149,7 +152,7 @@ void SViewportWindow::RenderToolbar()
 	if (!Viewport) return;
 
 	// 툴바 영역 크기
-	float ToolbarHeight = 30.0f;
+	float ToolbarHeight = 35.0f;
 	ImVec2 ToolbarPosition(Rect.Left, Rect.Top);
 	ImVec2 ToolbarSize(Rect.Right - Rect.Left, ToolbarHeight);
 
@@ -343,69 +346,15 @@ void SViewportWindow::RenderToolbar()
 			case 3: ViewportClient->SetViewModeIndex(EViewModeIndex::VMI_Wireframe); break;
 			}
 		}
-		// 🔘 여기 '한 번 클릭' 버튼 추가
-		const float btnW = 60.0f;
-		const ImVec2 btnSize(btnW, 0.0f);
-
 		ImGui::SameLine();
-		float avail = ImGui::GetContentRegionAvail().x;      // 현재 라인에서 남은 가로폭
-		// 뷰포트 모드 선택 콤보박스 너비도 고려 (100px)
-		const float comboW = 100.0f;
-		if (avail > (btnW + comboW + 10.0f)) // 10은 여백
-		{
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (avail - btnW - comboW - 10.0f));
-		}
+		RenderCameraOptionDropdownMenu();
 
-		// 뷰포트 모드 선택 콤보박스
-		static const char* const viewportModes[] = {
-			"Perspective",
-			"Top",
-			"Bottom",
-			"Front",
-			"Left",
-			"Right",
-			"Back"
-		};
-
-		int currentMode = static_cast<int>(ViewportType);
-		ImGui::SetNextItemWidth(comboW);
-		if (ImGui::Combo("##ViewportMode", &currentMode, viewportModes, (int)IM_ARRAYSIZE(viewportModes)))
-		{
-			EViewportType newType = static_cast<EViewportType>(currentMode);
-			if (newType != ViewportType)
-			{
-				ViewportType = newType;
-
-				// ViewportClient 업데이트
-				if (ViewportClient)
-				{
-					ViewportClient->SetViewportType(ViewportType);
-					ViewportClient->SetupCameraMode();
-				}
-
-				// 뷰포트 이름 업데이트
-				switch (ViewportType)
-				{
-				case EViewportType::Perspective:       ViewportName = "Perspective"; break;
-				case EViewportType::Orthographic_Front: ViewportName = "Front"; break;
-				case EViewportType::Orthographic_Left:  ViewportName = "Left"; break;
-				case EViewportType::Orthographic_Top:   ViewportName = "Top"; break;
-				case EViewportType::Orthographic_Back: ViewportName = "Back"; break;
-				case EViewportType::Orthographic_Right:  ViewportName = "Right"; break;
-				case EViewportType::Orthographic_Bottom:   ViewportName = "Bottom"; break;
-				}
-			}
-		}
-
-		ImGui::SameLine();
-
-		if (ImGui::Button("Switch##ToThis", btnSize))
+		ImGui::SameLine(0, 20.0f);
+		const ImVec2 ButtonSize(60, 30);
+		if (ImGui::Button("Switch##ToThis", ButtonSize))
 		{
 			SLATE.SwitchPanel(this);
 		}
-
-		//ImGui::PopStyleVar();
-
 	}
 	ImGui::End();
 }
@@ -414,7 +363,7 @@ void SViewportWindow::LoadToolbarIcons(ID3D11Device* Device)
 {
 	if (!Device) return;
 
-	// 아이콘 텍스처 생성 및 로드
+	// 기즈모 아이콘 텍스처 생성 및 로드
 	IconSelect = NewObject<UTexture>();
 	IconSelect->Load("Data/Icon/Viewport_Toolbar_Select.png", Device);
 
@@ -432,6 +381,44 @@ void SViewportWindow::LoadToolbarIcons(ID3D11Device* Device)
 
 	IconLocalSpace = NewObject<UTexture>();
 	IconLocalSpace->Load("Data/Icon/Viewport_Toolbar_LocalSpace.png", Device);
+
+	// 뷰포트 모드 아이콘 텍스처 로드
+	IconCamera = NewObject<UTexture>();
+	IconCamera->Load("Data/Icon/Viewport_Mode_Camera.png", Device);
+
+	IconPerspective = NewObject<UTexture>();
+	IconPerspective->Load("Data/Icon/Viewport_Mode_Perspective.png", Device);
+
+	IconTop = NewObject<UTexture>();
+	IconTop->Load("Data/Icon/Viewport_Mode_Top.png", Device);
+
+	IconBottom = NewObject<UTexture>();
+	IconBottom->Load("Data/Icon/Viewport_Mode_Bottom.png", Device);
+
+	IconLeft = NewObject<UTexture>();
+	IconLeft->Load("Data/Icon/Viewport_Mode_Left.png", Device);
+
+	IconRight = NewObject<UTexture>();
+	IconRight->Load("Data/Icon/Viewport_Mode_Right.png", Device);
+
+	IconFront = NewObject<UTexture>();
+	IconFront->Load("Data/Icon/Viewport_Mode_Front.png", Device);
+
+	IconBack = NewObject<UTexture>();
+	IconBack->Load("Data/Icon/Viewport_Mode_Back.png", Device);
+
+	// 뷰포트 설정 아이콘 텍스처 로드
+	IconSpeed = NewObject<UTexture>();
+	IconSpeed->Load("Data/Icon/Viewport_Mode_Camera.png", Device);
+
+	IconFOV = NewObject<UTexture>();
+	IconFOV->Load("Data/Icon/Viewport_Setting_FOV.png", Device);
+
+	IconNearClip = NewObject<UTexture>();
+	IconNearClip->Load("Data/Icon/Viewport_Setting_NearClip.png", Device);
+
+	IconFarClip = NewObject<UTexture>();
+	IconFarClip->Load("Data/Icon/Viewport_Setting_FarClip.png", Device);
 }
 
 void SViewportWindow::RenderGizmoModeButtons()
@@ -637,4 +624,314 @@ void SViewportWindow::RenderGizmoSpaceButton()
 	}
 
 	ImGui::SameLine();
+}
+
+void SViewportWindow::RenderCameraOptionDropdownMenu()
+{
+	ImVec2 cursorPos = ImGui::GetCursorPos();
+	ImGui::SetCursorPosY(cursorPos.y - 2.0f);
+
+	const float ButtonWidth = 60.0f;
+	float Avail = ImGui::GetContentRegionAvail().x;
+
+	const ImVec2 IconSize(17, 17);
+
+	// 드롭다운 버튼 텍스트 준비
+	char ButtonText[64];
+	sprintf_s(ButtonText, "%s %s", ViewportName.ToString().c_str(), "▼");
+
+	// 텍스트 길이에 맞게 버튼 너비 계산
+	ImVec2 TextSize = ImGui::CalcTextSize(ButtonText);
+	const float Padding = 8.0f; // 좌우 여백
+	const float DropdownWidth = IconSize.x + 4.0f + TextSize.x + Padding * 2.0f;
+	const float ButtonSpacing = 15.0f;
+	if (Avail > (ButtonWidth + DropdownWidth + ButtonSpacing))
+	{
+		ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (Avail - ButtonWidth - DropdownWidth - ButtonSpacing));
+	}
+
+	// 기즈모 버튼 스타일 적용
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 0.5f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.5f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.4f, 0.4f, 0.4f, 0.6f));
+
+	// 통합된 드롭다운 버튼 (카메라 아이콘 + 현재 모드명 + 화살표)
+	ImVec2 ButtonSize(DropdownWidth, ImGui::GetFrameHeight());
+	ImVec2 CursorPos = ImGui::GetCursorPos();
+
+	// 버튼 클릭 영역
+	if (ImGui::Button("##ViewportModeBtn", ButtonSize))
+	{
+		ImGui::OpenPopup("ViewportModePopup");
+	}
+
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::SetTooltip("카메라 옵션");
+	}
+
+	// 버튼 위에 내용 렌더링 (아이콘 + 텍스트, 가운데 정렬)
+	float ContentWidth = IconSize.x + 4.0f + TextSize.x;
+	float ContentStartX = CursorPos.x + (ButtonSize.x - ContentWidth) * 0.5f;
+	ImVec2 ContentCursor = ImVec2(ContentStartX, CursorPos.y + (ButtonSize.y - IconSize.y) * 0.5f);
+	ImGui::SetCursorPos(ContentCursor);
+
+	// 현재 뷰포트 모드에 따라 아이콘 선택
+	UTexture* CurrentModeIcon = nullptr;
+	switch (ViewportType)
+	{
+	case EViewportType::Perspective:
+		CurrentModeIcon = IconCamera;
+		break;
+	case EViewportType::Orthographic_Top:
+		CurrentModeIcon = IconTop;
+		break;
+	case EViewportType::Orthographic_Bottom:
+		CurrentModeIcon = IconBottom;
+		break;
+	case EViewportType::Orthographic_Left:
+		CurrentModeIcon = IconLeft;
+		break;
+	case EViewportType::Orthographic_Right:
+		CurrentModeIcon = IconRight;
+		break;
+	case EViewportType::Orthographic_Front:
+		CurrentModeIcon = IconFront;
+		break;
+	case EViewportType::Orthographic_Back:
+		CurrentModeIcon = IconBack;
+		break;
+	default:
+		CurrentModeIcon = IconCamera;
+		break;
+	}
+
+	if (CurrentModeIcon && CurrentModeIcon->GetShaderResourceView())
+	{
+		ImGui::Image((void*)CurrentModeIcon->GetShaderResourceView(), IconSize);
+		ImGui::SameLine(0, 4);
+	}
+
+	ImGui::Text("%s", ButtonText);
+
+	ImGui::PopStyleColor(3);
+	ImGui::PopStyleVar(1);
+
+	// ===== 뷰포트 모드 드롭다운 팝업 =====
+	if (ImGui::BeginPopup("ViewportModePopup", ImGuiWindowFlags_NoMove))
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8, 4));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
+
+		// 선택된 항목의 파란 배경 제거
+		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0, 0, 0, 0));
+		ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.2f, 0.2f, 0.2f, 0.5f));
+		ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.3f, 0.3f, 0.3f, 0.6f));
+
+		// --- 섹션 1: 원근 ---
+		ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "원근");
+		ImGui::Separator();
+
+		bool bIsPerspective = (ViewportType == EViewportType::Perspective);
+		const char* RadioIcon = bIsPerspective ? "●" : "○";
+
+		// 원근 모드 선택 항목 (라디오 버튼 + 아이콘 + 텍스트 통합)
+		ImVec2 SelectableSize(180, 20);
+		ImVec2 SelectableCursorPos = ImGui::GetCursorPos();
+
+		if (ImGui::Selectable("##Perspective", bIsPerspective, 0, SelectableSize))
+		{
+			ViewportType = EViewportType::Perspective;
+			ViewportName = "원근";
+			if (ViewportClient)
+			{
+				ViewportClient->SetViewportType(ViewportType);
+				ViewportClient->SetupCameraMode();
+			}
+			ImGui::CloseCurrentPopup();
+		}
+
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("뷰포트를 원근 보기로 전환합니다.");
+		}
+
+		// Selectable 위에 내용 렌더링
+		ImVec2 ContentPos = ImVec2(SelectableCursorPos.x + 4, SelectableCursorPos.y + (SelectableSize.y - IconSize.y) * 0.5f);
+		ImGui::SetCursorPos(ContentPos);
+
+		ImGui::Text("%s", RadioIcon);
+		ImGui::SameLine(0, 4);
+
+		if (IconPerspective && IconPerspective->GetShaderResourceView())
+		{
+			ImGui::Image((void*)IconPerspective->GetShaderResourceView(), IconSize);
+			ImGui::SameLine(0, 4);
+		}
+
+		ImGui::Text("원근");
+
+		// --- 섹션 2: 직교 ---
+		ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "직교");
+		ImGui::Separator();
+
+		// 직교 모드 목록
+		struct ViewportModeEntry {
+			EViewportType type;
+			const char* koreanName;
+			UTexture** icon;
+			const char* tooltip;
+		};
+
+		ViewportModeEntry orthographicModes[] = {
+			{ EViewportType::Orthographic_Top, "상단", &IconTop, "뷰포트를 상단 보기로 전환합니다." },
+			{ EViewportType::Orthographic_Bottom, "하단", &IconBottom, "뷰포트를 하단 보기로 전환합니다." },
+			{ EViewportType::Orthographic_Left, "왼쪽", &IconLeft, "뷰포트를 왼쪽 보기로 전환합니다." },
+			{ EViewportType::Orthographic_Right, "오른쪽", &IconRight, "뷰포트를 오른쪽 보기로 전환합니다." },
+			{ EViewportType::Orthographic_Front, "정면", &IconFront, "뷰포트를 정면 보기로 전환합니다." },
+			{ EViewportType::Orthographic_Back, "후면", &IconBack, "뷰포트를 후면 보기로 전환합니다." }
+		};
+
+		for (int i = 0; i < 6; i++)
+		{
+			const auto& mode = orthographicModes[i];
+			bool bIsSelected = (ViewportType == mode.type);
+			const char* RadioIcon = bIsSelected ? "●" : "○";
+
+			// 직교 모드 선택 항목 (라디오 버튼 + 아이콘 + 텍스트 통합)
+			char SelectableID[32];
+			sprintf_s(SelectableID, "##Ortho%d", i);
+
+			ImVec2 OrthoSelectableCursorPos = ImGui::GetCursorPos();
+
+			if (ImGui::Selectable(SelectableID, bIsSelected, 0, SelectableSize))
+			{
+				ViewportType = mode.type;
+				ViewportName = mode.koreanName;
+				if (ViewportClient)
+				{
+					ViewportClient->SetViewportType(ViewportType);
+					ViewportClient->SetupCameraMode();
+				}
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("%s", mode.tooltip);
+			}
+
+			// Selectable 위에 내용 렌더링
+			ImVec2 OrthoContentPos = ImVec2(OrthoSelectableCursorPos.x + 4, OrthoSelectableCursorPos.y + (SelectableSize.y - IconSize.y) * 0.5f);
+			ImGui::SetCursorPos(OrthoContentPos);
+
+			ImGui::Text("%s", RadioIcon);
+			ImGui::SameLine(0, 4);
+
+			if (*mode.icon && (*mode.icon)->GetShaderResourceView())
+			{
+				ImGui::Image((void*)(*mode.icon)->GetShaderResourceView(), IconSize);
+				ImGui::SameLine(0, 4);
+			}
+
+			ImGui::Text("%s", mode.koreanName);
+		}
+
+		// --- 섹션 3: 이동 ---
+		ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "이동");
+		ImGui::Separator();
+
+		ACameraActor* Camera = ViewportClient ? ViewportClient->GetCamera() : nullptr;
+		if (Camera)
+		{
+			if (IconSpeed && IconSpeed->GetShaderResourceView())
+			{
+				ImGui::Image((void*)IconSpeed->GetShaderResourceView(), IconSize);
+				ImGui::SameLine();
+			}
+			ImGui::Text("카메라 이동 속도");
+
+			float speed = Camera->GetCameraSpeed();
+			ImGui::SetNextItemWidth(180);
+			if (ImGui::SliderFloat("##CameraSpeed", &speed, 1.0f, 100.0f, "%.1f"))
+			{
+				Camera->SetCameraSpeed(speed);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("WASD 키로 카메라를 이동할 때의 속도 (1-100)");
+			}
+		}
+
+		// --- 섹션 4: 뷰 ---
+		ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "뷰");
+		ImGui::Separator();
+
+		if (Camera && Camera->GetCameraComponent())
+		{
+			UCameraComponent* camComp = Camera->GetCameraComponent();
+
+			// FOV
+			if (IconFOV && IconFOV->GetShaderResourceView())
+			{
+				ImGui::Image((void*)IconFOV->GetShaderResourceView(), IconSize);
+				ImGui::SameLine();
+			}
+			ImGui::Text("필드 오브 뷰");
+
+			float fov = camComp->GetFOV();
+			ImGui::SetNextItemWidth(180);
+			if (ImGui::SliderFloat("##FOV", &fov, 30.0f, 120.0f, "%.1f"))
+			{
+				camComp->SetFOV(fov);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("카메라 시야각 (30-120도)\n값이 클수록 넓은 범위가 보입니다");
+			}
+
+			// 근평면
+			if (IconNearClip && IconNearClip->GetShaderResourceView())
+			{
+				ImGui::Image((void*)IconNearClip->GetShaderResourceView(), IconSize);
+				ImGui::SameLine();
+			}
+			ImGui::Text("근평면");
+
+			float nearClip = camComp->GetNearClip();
+			ImGui::SetNextItemWidth(180);
+			if (ImGui::SliderFloat("##NearClip", &nearClip, 0.01f, 10.0f, "%.2f"))
+			{
+				camComp->SetClipPlanes(nearClip, camComp->GetFarClip());
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("카메라에서 가장 가까운 렌더링 거리 (0.01-10)\n이 값보다 가까운 오브젝트는 보이지 않습니다");
+			}
+
+			// 원평면
+			if (IconFarClip && IconFarClip->GetShaderResourceView())
+			{
+				ImGui::Image((void*)IconFarClip->GetShaderResourceView(), IconSize);
+				ImGui::SameLine();
+			}
+			ImGui::Text("원평면");
+
+			float farClip = camComp->GetFarClip();
+			ImGui::SetNextItemWidth(180);
+			if (ImGui::SliderFloat("##FarClip", &farClip, 100.0f, 10000.0f, "%.0f"))
+			{
+				camComp->SetClipPlanes(camComp->GetNearClip(), farClip);
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("카메라에서 가장 먼 렌더링 거리 (100-10000)\n이 값보다 먼 오브젝트는 보이지 않습니다");
+			}
+		}
+
+		ImGui::PopStyleColor(3);
+		ImGui::PopStyleVar(2);
+		ImGui::EndPopup();
+	}
 }

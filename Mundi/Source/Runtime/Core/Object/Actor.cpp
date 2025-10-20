@@ -411,6 +411,14 @@ void AActor::DuplicateSubObjects()
 	{
 		if (!OriginalComp) continue;
 
+		// NOTE: 이 코드가 없으면 Direction을 나타내는 GizmoComponent가 PIE World에 복사되는 버그가 발생
+		// PIE 모드로 복사할 때, 에디터 전용 컴포넌트(bIsEditable == false)는 복사하지 않음
+		// BillboardComponent, DirectionGizmo(GizmoArrowComponent) 등이 CREATE_EDITOR_COMPONENT로 생성되며 bIsEditable = false
+		if (!OriginalComp->IsEditable())
+		{
+			continue; // 에디터 전용 컴포넌트는 PIE World로 복사하지 않음
+		}
+
 		// 컴포넌트를 깊은 복사합니다.
 		UActorComponent* NewComp = OriginalComp->Duplicate();
 		NewComp->SetOwner(this);

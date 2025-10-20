@@ -727,6 +727,10 @@ void FSceneRenderer::RenderDecalPass()
 	if (Proxies.Decals.empty())
 		return;
 
+	// WorldNormal 모드에서는 Decal 렌더링 스킵
+	if (View->ViewMode == EViewModeIndex::VMI_WorldNormal)
+		return;
+
 	UWorldPartitionManager* Partition = World->GetPartitionManager();
 	if (!Partition)
 		return;
@@ -738,10 +742,55 @@ void FSceneRenderer::RenderDecalPass()
 	FDecalStatManager::GetInstance().AddTotalDecalCount(Proxies.Decals.Num());	// TODO: 추후 월드 컴포넌트 추가/삭제 이벤트에서 데칼 컴포넌트의 개수만 추적하도록 수정 필요
 	FDecalStatManager::GetInstance().AddVisibleDecalCount(Proxies.Decals.Num());	// 그릴 Decal 개수 수집
 
+	// ViewMode에 따라 조명 모델 매크로 설정
+	TArray<FShaderMacro> ShaderMacros;
+	FString ShaderPath = "Shaders/Effects/Decal.hlsl";
+
+	switch (View->ViewMode)
+	{
+	case EViewModeIndex::VMI_Lit_Phong:
+		ShaderMacros.push_back(FShaderMacro{ "LIGHTING_MODEL_PHONG", "1" });
+		break;
+	case EViewModeIndex::VMI_Lit_Gouraud:
+		ShaderMacros.push_back(FShaderMacro{ "LIGHTING_MODEL_GOURAUD", "1" });
+		break;
+	case EViewModeIndex::VMI_Lit_Lambert:
+		ShaderMacros.push_back(FShaderMacro{ "LIGHTING_MODEL_LAMBERT", "1" });
+		break;
+	case EViewModeIndex::VMI_Lit:
+		// 기본 Lit 모드는 Phong 사용
+		ShaderMacros.push_back(FShaderMacro{ "LIGHTING_MODEL_PHONG", "1" });
+		break;
+	case EViewModeIndex::VMI_Unlit:
+		// 매크로 없음 (Unlit)
+		break;
+	default:
+		// 기타 ViewMode는 매크로 없음
+		break;
+	}
+
+	// ViewMode에 따른 Decal 셰이더 로드
+	UShader* DecalShader = UResourceManager::GetInstance().Load<UShader>(ShaderPath, ShaderMacros);
+	if (!DecalShader)
+	{
+		UE_LOG("RenderDecalPass: Failed to load Decal shader with ViewMode macros!");
+		return;
+	}
+
 	// 데칼 렌더 설정
 	RHIDevice->RSSetState(ERasterizerMode::Decal);
 	RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqualReadOnly); // 깊이 쓰기 OFF
 	RHIDevice->OMSetBlendState(true);
+
+	// Decal 셰이더 설정 (모든 Decal에 공통 적용)
+	RHIDevice->GetDeviceContext()->VSSetShader(DecalShader->GetVertexShader(), nullptr, 0);
+	RHIDevice->GetDeviceContext()->PSSetShader(DecalShader->GetPixelShader(), nullptr, 0);
+	RHIDevice->GetDeviceContext()->IASetInputLayout(DecalShader->GetInputLayout());
+
+	// CameraBuffer 설정 (조명 계산용 - 모든 Decal에 공통)
+	FMatrix ViewInverse = View->ViewMatrix.InverseAffine();
+	FVector CameraPosition(ViewInverse.M[3][0], ViewInverse.M[3][1], ViewInverse.M[3][2]);
+	RHIDevice->SetAndUpdateConstantBuffer(CameraBufferType(CameraPosition));
 
 	for (UDecalComponent* Decal : Proxies.Decals)
 	{

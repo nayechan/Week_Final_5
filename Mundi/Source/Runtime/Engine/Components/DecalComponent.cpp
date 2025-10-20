@@ -79,9 +79,9 @@ void UDecalComponent::RenderAffectedPrimitives(URenderer* Renderer, UPrimitiveCo
 		return;
 	}
 
-
 	D3D11RHI* RHIDevice = Renderer->GetRHIDevice();
-	// Constatn Buffer 업데이트
+
+	// Constant Buffer 업데이트
 	FMatrix TargetWorld = Target->GetWorldMatrix();
 	FMatrix TargetWorldInvTranspose = TargetWorld.InverseAffine().Transpose();
 	RHIDevice->SetAndUpdateConstantBuffer(ModelBufferType(TargetWorld, TargetWorldInvTranspose));
@@ -89,13 +89,6 @@ void UDecalComponent::RenderAffectedPrimitives(URenderer* Renderer, UPrimitiveCo
 
 	const FMatrix DecalMatrix = GetDecalProjectionMatrix();
 	RHIDevice->SetAndUpdateConstantBuffer(DecalBufferType(DecalMatrix, DecalOpacity));
-
-	// Shader 설정
-	UShader* DecalShader = UResourceManager::GetInstance().Load<UShader>("Shaders/Effects/Decal.hlsl");
-
-	RHIDevice->GetDeviceContext()->VSSetShader(DecalShader->GetVertexShader(), nullptr, 0);
-	RHIDevice->GetDeviceContext()->PSSetShader(DecalShader->GetPixelShader(), nullptr, 0);
-	RHIDevice->GetDeviceContext()->IASetInputLayout(DecalShader->GetInputLayout());
 
 	// VertexBuffer, IndexBuffer 설정
 	UStaticMesh* Mesh = SMC->GetStaticMesh();
