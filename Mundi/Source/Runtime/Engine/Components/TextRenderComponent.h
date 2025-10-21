@@ -14,10 +14,6 @@ protected:
 public:
 	void InitCharInfoMap();
 	TArray<FBillboardVertexInfo_GPU> CreateVerticesForString(const FString& text,const FVector& StartPos);
-	//FResourceData* GetResourceData() { return ResourceData; }
-	//FTextureData* GetTextureData() { return TextureData; }
-	virtual void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;
-	// void SetText(FString Txt);
 
 	UQuad* GetStaticMesh() const { return TextQuad; }
 
@@ -30,8 +26,6 @@ public:
 	// ───── 복사 관련 ────────────────────────────
 	void DuplicateSubObjects() override;
 	DECLARE_DUPLICATE(UTextRenderComponent)
-
-
 
 private:
 	FString Text;

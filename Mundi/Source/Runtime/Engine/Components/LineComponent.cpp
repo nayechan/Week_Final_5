@@ -93,7 +93,7 @@ void ULineComponent::ClearLines()
     Lines.Empty();
 }
 
-void ULineComponent::Render(URenderer* Renderer, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix)
+void ULineComponent::CollectLineBatches(URenderer* Renderer)
 {
     if (!HasVisibleLines() || !Renderer)
         return;

@@ -16,8 +16,6 @@ public:
     UBillboardComponent();
     ~UBillboardComponent() override = default;
 
-    // Render override
-    void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;
     void CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View) override;
 
     // Setup

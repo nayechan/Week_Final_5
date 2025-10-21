@@ -40,6 +40,7 @@
 #include "Shader.h"
 #include "ResourceManager.h"
 #include "TileLightCuller.h"
+#include "LineComponent.h"
 
 FSceneRenderer::FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* InOwnerRenderer)
 	: World(InWorld)
@@ -69,9 +70,9 @@ void FSceneRenderer::Render()
 {
 	if (!IsValid()) return;
 
-	// 1. 뷰(View) 준비: 행렬, 절두체 등 프레임에 필요한 기본 데이터 계산
+	// 뷰(View) 준비: 행렬, 절두체 등 프레임에 필요한 기본 데이터 계산
 	PrepareView();
-	// 2. 렌더링할 대상 수집 (Cull + Gather)
+	// 렌더링할 대상 수집 (Cull + Gather)
 	GatherVisibleProxies();
 
 	// ViewMode에 따라 렌더링 경로 결정
@@ -80,9 +81,7 @@ void FSceneRenderer::Render()
 		View->ViewMode == EViewModeIndex::VMI_Lit_Lambert ||
 		View->ViewMode == EViewModeIndex::VMI_Lit_Phong)
 	{
-		//UpdateLightConstant();
-		//라이트 구조체 버퍼 업데이트, 바인딩
-		GWorld->GetLightManager()->UpdateLightBuffer(RHIDevice);
+		GWorld->GetLightManager()->UpdateLightBuffer(RHIDevice);	//라이트 구조체 버퍼 업데이트, 바인딩
 		PerformTileLightCulling();	// 타일 기반 라이트 컬링 수행
 		RenderLitPath();
 		RenderPostProcessingPasses();	// 후처리 체인 실행
@@ -90,13 +89,11 @@ void FSceneRenderer::Render()
 	}
 	else if (View->ViewMode == EViewModeIndex::VMI_Unlit)
 	{
-		// Unlit 모드는 조명 없이 렌더링
-		RenderLitPath();
+		RenderLitPath();	// Unlit 모드는 조명 없이 렌더링
 	}
 	else if (View->ViewMode == EViewModeIndex::VMI_WorldNormal)
 	{
-		// World Normal 시각화 모드
-		RenderLitPath();
+		RenderLitPath();	// World Normal 시각화 모드
 	}
 	else if (View->ViewMode == EViewModeIndex::VMI_Wireframe)
 	{
@@ -108,10 +105,10 @@ void FSceneRenderer::Render()
 	}
 
 	//그리드와 디버그용 Primitive는 Post Processing 적용하지 않음.
-	RenderEditorPrimitivesPass();	// 그리드, 빌보드, 기타 화살표 출력 
-	RenderDebugPass();	//  선택한 물체의 경계 출력
+	RenderEditorPrimitivesPass();	// 빌보드, 기타 화살표 출력 (상호작용, 피킹 O)
+	RenderDebugPass();	//  그리드, 선택한 물체의 경계 출력 (상호작용, 피킹 X)
 
-	// 3. 공통 오버레이(Overlay) 렌더링
+	// 오버레이(Overlay) Primitive 렌더링
 	RenderOverayEditorPrimitivesPass();	// 기즈모 출력
 
 	// FXAA 등 화면에서 최종 이미지 품질을 위해 적용되는 효과를 적용
@@ -119,9 +116,6 @@ void FSceneRenderer::Render()
 
 	// 최종적으로 Scene에 그려진 텍스쳐를 Back 버퍼에 그힌다
 	CompositeToBackBuffer();
-
-	// --- 렌더링 종료 ---
-	FinalizeFrame();
 }
 
 //====================================================================================
@@ -274,108 +268,107 @@ void FSceneRenderer::GatherVisibleProxies()
 
 	// Helper lambda to collect components from an actor
 	auto CollectComponentsFromActor = [&](AActor* Actor, bool bIsEditorActor)
-	{
-		if (!Actor || Actor->GetActorHiddenInEditor())
 		{
-			return;
-		}
-
-		for (USceneComponent* Component : Actor->GetSceneComponents())
-		{
-			if (!Component || !Component->IsVisible())
+			if (!Actor || Actor->GetActorHiddenInEditor())
 			{
-				continue;
+				return;
 			}
 
-			if (UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(Component); PrimitiveComponent)
+			for (USceneComponent* Component : Actor->GetSceneComponents())
 			{
+				if (!Component || !Component->IsVisible())
+				{
+					continue;
+				}
+
 				// 엔진 에디터 액터 컴포넌트
 				if (bIsEditorActor)
 				{
 					if (UGizmoArrowComponent* GizmoComponent = Cast<UGizmoArrowComponent>(Component))
 					{
-						// 조작 기즈모
 						Proxies.OverlayPrimitives.Add(GizmoComponent);
 					}
-					else
+					else if (ULineComponent* LineComponent = Cast<ULineComponent>(Component))
+					{
+						Proxies.EditorLines.Add(LineComponent);
+					}
+
+					continue;
+				}
+
+				if (UPrimitiveComponent* PrimitiveComponent = Cast<UPrimitiveComponent>(Component); PrimitiveComponent)
+				{
+					// 에디터 보조 컴포넌트 (빌보드 등)
+					if (!PrimitiveComponent->IsEditable())
 					{
 						Proxies.EditorPrimitives.Add(PrimitiveComponent);
+						continue;
 					}
 
-					continue;
-				}
-
-				// 에디터 보조 컴포넌트
-				if (!PrimitiveComponent->IsEditable())
-				{
-					Proxies.EditorPrimitives.Add(PrimitiveComponent);
-					continue;
-				}
-
-				// 일반 컴포넌트
-				if (UMeshComponent* MeshComponent = Cast<UMeshComponent>(PrimitiveComponent))
-				{
-					bool bShouldAdd = true;
-
-					// 메시 타입이 '스태틱 메시'인 경우에만 ShowFlag를 검사하여 추가 여부를 결정
-					if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(MeshComponent))
+					// 일반 컴포넌트
+					if (UMeshComponent* MeshComponent = Cast<UMeshComponent>(PrimitiveComponent))
 					{
-						bShouldAdd = bDrawStaticMeshes;
+						bool bShouldAdd = true;
+
+						// 메시 타입이 '스태틱 메시'인 경우에만 ShowFlag를 검사하여 추가 여부를 결정
+						if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(MeshComponent))
+						{
+							bShouldAdd = bDrawStaticMeshes;
+						}
+						// else if (USkeletalMeshComponent* SkeletalMeshComponent = ...)
+						// {
+						//     bShouldAdd = bDrawSkeletalMeshes;
+						// }
+
+						if (bShouldAdd)
+						{
+							Proxies.Meshes.Add(MeshComponent);
+						}
 					}
-					// else if (USkeletalMeshComponent* SkeletalMeshComponent = ...)
-					// {
-					//     bShouldAdd = bDrawSkeletalMeshes;
-					// }
-
-					if (bShouldAdd)
+					else if (UBillboardComponent* BillboardComponent = Cast<UBillboardComponent>(PrimitiveComponent); BillboardComponent && bUseBillboard)
 					{
-						Proxies.Meshes.Add(MeshComponent);
+						Proxies.Billboards.Add(BillboardComponent);
+					}
+					else if (UDecalComponent* DecalComponent = Cast<UDecalComponent>(PrimitiveComponent); DecalComponent && bDrawDecals)
+					{
+						Proxies.Decals.Add(DecalComponent);
+					}
+					else if (UFireBallComponent* FireBallComponent = Cast<UFireBallComponent>(PrimitiveComponent))
+					{
+						Proxies.FireBalls.Add(FireBallComponent);
 					}
 				}
-				else if (UBillboardComponent* BillboardComponent = Cast<UBillboardComponent>(PrimitiveComponent); BillboardComponent && bUseBillboard)
+				else
 				{
-					Proxies.Billboards.Add(BillboardComponent);
-				}
-				else if (UDecalComponent* DecalComponent = Cast<UDecalComponent>(PrimitiveComponent); DecalComponent && bDrawDecals)
-				{
-					Proxies.Decals.Add(DecalComponent);
-				}
-				else if (UFireBallComponent* FireBallComponent = Cast<UFireBallComponent>(PrimitiveComponent))
-				{
-					Proxies.FireBalls.Add(FireBallComponent);
-				}
-			}
-			else
-			{
-				if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(Component); FogComponent && bDrawFog)
-				{
-					SceneGlobals.Fogs.Add(FogComponent);
-				}
-
-				else if (UDirectionalLightComponent* LightComponent = Cast<UDirectionalLightComponent>(Component); LightComponent && bDrawLight)
-				{
-					SceneGlobals.DirectionalLights.Add(LightComponent);
-				}
-
-				else if (UAmbientLightComponent* LightComponent = Cast<UAmbientLightComponent>(Component); LightComponent && bDrawLight)
-				{
-					SceneGlobals.AmbientLights.Add(LightComponent);
-				}
-
-				else if (UPointLightComponent* LightComponent = Cast<UPointLightComponent>(Component); LightComponent && bDrawLight)
-				{
-					if (USpotLightComponent* SpotLightComponent = Cast<USpotLightComponent>(LightComponent); SpotLightComponent)
+					if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(Component); FogComponent && bDrawFog)
 					{
-						SceneLocals.SpotLights.Add(SpotLightComponent);
+						SceneGlobals.Fogs.Add(FogComponent);
 					}
-					else
+
+					else if (UDirectionalLightComponent* LightComponent = Cast<UDirectionalLightComponent>(Component); LightComponent && bDrawLight)
 					{
-						SceneLocals.PointLights.Add(LightComponent);
+						SceneGlobals.DirectionalLights.Add(LightComponent);
+					}
+
+					else if (UAmbientLightComponent* LightComponent = Cast<UAmbientLightComponent>(Component); LightComponent && bDrawLight)
+					{
+						SceneGlobals.AmbientLights.Add(LightComponent);
+					}
+
+					else if (UPointLightComponent* LightComponent = Cast<UPointLightComponent>(Component); LightComponent && bDrawLight)
+					{
+						if (USpotLightComponent* SpotLightComponent = Cast<USpotLightComponent>(LightComponent); SpotLightComponent)
+						{
+							SceneLocals.SpotLights.Add(SpotLightComponent);
+						}
+						else
+						{
+							SceneLocals.PointLights.Add(LightComponent);
+						}
 					}
 				}
 			}
-		}
-	};
+		};
 
 	// Collect from Editor Actors (Gizmo, Grid, etc.)
 	for (AActor* EditorActor : World->GetEditorActors())
@@ -388,64 +381,6 @@ void FSceneRenderer::GatherVisibleProxies()
 	{
 		CollectComponentsFromActor(Actor, false);
 	}
-}
-
-void FSceneRenderer::UpdateLightConstant()
-{
-//	FLightBufferType LightBuffer{};
-//
-//	// AmbientLight 수집 (활성화된 것만)
-//	for (UAmbientLightComponent* LightComponent : SceneGlobals.AmbientLights)
-//	{
-//		if (!LightComponent->IsEnabled())
-//			continue;
-//
-//		LightBuffer.AmbientLight = FAmbientLightInfo(LightComponent->GetLightInfo());
-//		break;
-//	}
-//
-//	// DirectionalLight 수집 (활성화된 것만)
-//	for (UDirectionalLightComponent* LightComponent : SceneGlobals.DirectionalLights)
-//	{
-//		if (!LightComponent->IsEnabled())
-//			continue;
-//
-//		LightBuffer.DirectionalLight = FDirectionalLightInfo(LightComponent->GetLightInfo());
-//		break;
-//	}
-//
-//	// PointLight 수집 (활성화된 것만)
-//	for (UPointLightComponent* LightComponent : SceneLocals.PointLights)
-//	{
-//		if (!LightComponent->IsEnabled())
-//			continue;
-//
-//		if (LightBuffer.PointLightCount >= NUM_POINT_LIGHT_MAX)
-//		{
-//			UE_LOG("PointLight의 최대 개수는 %d개 입니다.", NUM_POINT_LIGHT_MAX);
-//			break;
-//		}
-//		LightBuffer.PointLights[LightBuffer.PointLightCount++] = FPointLightInfo(LightComponent->GetLightInfo());
-//	}
-//
-//	// SpotLight 수집 (활성화된 것만)
-//	for (USpotLightComponent* LightComponent : SceneLocals.SpotLights)
-//	{
-//		if (!LightComponent->IsEnabled())
-//			continue;
-//
-//		if (LightBuffer.SpotLightCount >= NUM_SPOT_LIGHT_MAX)
-//		{
-//			UE_LOG("SpotLight의 최대 개수는 %d개 입니다.", NUM_SPOT_LIGHT_MAX);
-//			break;
-//		}
-//		LightBuffer.SpotLights[LightBuffer.SpotLightCount++] = FSpotLightInfo(LightComponent->GetLightInfo());
-//	}
-
-	// CRITICAL FIX: Use SetAndUpdateConstantBuffer instead of UpdateConstantBuffer
-	// UpdateConstantBuffer only updates the buffer data but doesn't bind it to slot b8
-	// SetAndUpdateConstantBuffer both updates the data AND binds it to VS/PS
-	//RHIDevice->SetAndUpdateConstantBuffer(LightBuffer);
 }
 
 void FSceneRenderer::PerformTileLightCulling()
@@ -676,23 +611,23 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 			// 2순위: 머티리얼 텍스처 (스태틱 메시)
 			else if (Batch.Material)
 			{
-			    const FMaterialInfo& MaterialInfo = Batch.Material->GetMaterialInfo();
-			    if (!MaterialInfo.DiffuseTextureFileName.empty())
-			    {
-			        if (UTexture* TextureData = Batch.Material->GetTexture(EMaterialTextureSlot::Diffuse))
-			        {
-			            DiffuseTextureSRV = TextureData->GetShaderResourceView();
-			            PixelConst.bHasDiffuseTexture = (DiffuseTextureSRV != nullptr);
-			        }
-			    }
-			    if (!MaterialInfo.NormalTextureFileName.empty())
-			    {
-			        if (UTexture* TextureData = Batch.Material->GetTexture(EMaterialTextureSlot::Normal))
-			        {
-			            NormalTextureSRV = TextureData->GetShaderResourceView();
-			            PixelConst.bHasNormalTexture = (NormalTextureSRV != nullptr);
-			        }
-			    }
+				const FMaterialInfo& MaterialInfo = Batch.Material->GetMaterialInfo();
+				if (!MaterialInfo.DiffuseTextureFileName.empty())
+				{
+					if (UTexture* TextureData = Batch.Material->GetTexture(EMaterialTextureSlot::Diffuse))
+					{
+						DiffuseTextureSRV = TextureData->GetShaderResourceView();
+						PixelConst.bHasDiffuseTexture = (DiffuseTextureSRV != nullptr);
+					}
+				}
+				if (!MaterialInfo.NormalTextureFileName.empty())
+				{
+					if (UTexture* TextureData = Batch.Material->GetTexture(EMaterialTextureSlot::Normal))
+					{
+						NormalTextureSRV = TextureData->GetShaderResourceView();
+						PixelConst.bHasNormalTexture = (NormalTextureSRV != nullptr);
+					}
+				}
 			}			// --- RHI 상태 업데이트 ---
 			// 1. 텍스처(SRV) 바인딩
 			ID3D11ShaderResourceView* Srvs[2] = { DiffuseTextureSRV, NormalTextureSRV };
@@ -1082,52 +1017,29 @@ void FSceneRenderer::RenderTileCullingDebug()
 	SwapGuard.Commit();
 }
 
+// 빌보드, 에디터 화살표 그리기 (상호 작용, 피킹 O)
 void FSceneRenderer::RenderEditorPrimitivesPass()
 {
 	RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTargetWithId);
-	// 빌보드, 에디터 화살표 그리기
 	for (UPrimitiveComponent* GizmoComp : Proxies.EditorPrimitives)
 	{
 		GizmoComp->CollectMeshBatches(MeshBatchElements, View);
 	}
-
-	// 수집된 배치를 그립니다.
 	DrawMeshBatches(MeshBatchElements, true);
-
-	RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTarget);
-	// 그리드 그리기
-	for (AActor* EngineActor : World->GetEditorActors())
-	{
-		if (!EngineActor || EngineActor->GetActorHiddenInEditor()) continue;
-		if (Cast<AGridActor>(EngineActor) && !World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Grid)) continue;
-
-		for (USceneComponent* Component : EngineActor->GetSceneComponents())
-		{
-			if (Component && Component->IsVisible())
-			{
-				if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
-				{
-					// NOTE: 추후 깔끔하게 World Editor Actors 와 World Overlay Actors 랑 비슷한 느낌으로 분리가 필요할듯
-					// 기즈모는 오버레이 Primitive라서 나중에 따로 그림
-					// UGizmoArrowComponent를 다른 기즈모도 상속하고 있어서 Arrow만 검사해도 충분
-					if (Cast<UGizmoArrowComponent>(Primitive))
-					{
-						continue;
-					}
-
-					RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual);
-					Primitive->Render(OwnerRenderer, View->ViewMatrix, View->ProjectionMatrix);
-				}
-			}
-		}
-	}
 }
 
+// 경계, 외곽선 등 표시 (상호 작용, 피킹 X)
 void FSceneRenderer::RenderDebugPass()
 {
 	RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTarget);
 
-	// 선택된 액터의 디버그 볼륨 렌더링 (다형성 활용)
+	// 그리드 라인 수집
+	for (ULineComponent* LineComponent : Proxies.EditorLines)
+	{
+		LineComponent->CollectLineBatches(OwnerRenderer);
+	}
+
+	// 선택된 액터의 디버그 볼륨 렌더링
 	for (AActor* SelectedActor : World->GetSelectionManager()->GetSelectedActors())
 	{
 		for (USceneComponent* Component : SelectedActor->GetSceneComponents())
@@ -1269,18 +1181,4 @@ void FSceneRenderer::CompositeToBackBuffer()
 
 	// 7. 모든 작업이 성공했으므로 Commit
 	SwapGuard.Commit();
-}
-
-void FSceneRenderer::FinalizeFrame()
-{
-	//RHIDevice->UpdateHighLightConstantBuffers(false, FVector(1, 1, 1), 0, 0, 0, 0);
-	// No need to reset GizmoBuffer - it's set per-gizmo during rendering
-
-
-	if (World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Culling))
-	{
-		int totalActors = static_cast<int>(World->GetActors().size());
-		uint64 visiblePrimitives = Proxies.Meshes.size();
-		UE_LOG("Total Actors: %d, Visible Primitives: %llu\r\n", totalActors, visiblePrimitives);
-	}
 }

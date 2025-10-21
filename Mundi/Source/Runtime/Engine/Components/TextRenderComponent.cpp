@@ -140,8 +140,9 @@ TArray<FBillboardVertexInfo_GPU> UTextRenderComponent::CreateVerticesForString(c
     return vertices;
 }
 
-void UTextRenderComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
-{
+// NOTE: 추후 UTextRenderComponent 복구 시 도움이 될 것 같아서 주석으로 남겨둠
+//void UTextRenderComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
+//{
     //UWorld* World = GetOwner() ? GetOwner()->GetWorld() : nullptr;
     //const bool bShowBounds = World && World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText);
     //const bool bSelected = (World && World->GetSelectionManager()->GetSelectedActor() == GetOwner());
@@ -164,7 +165,7 @@ void UTextRenderComponent::Render(URenderer* Renderer, const FMatrix& View, cons
     //// 텍스트 빌보드도 이 구간에서만 백페이스 컬링 비활성화
     //Renderer->GetRHIDevice()->RSSetState(ERasterizerMode::Solid_NoCull);
     //Renderer->DrawIndexedPrimitiveComponent(this, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-}
+//}
 
 void UTextRenderComponent::OnSerialized()
 {

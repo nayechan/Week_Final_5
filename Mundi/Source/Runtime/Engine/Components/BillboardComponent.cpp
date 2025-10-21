@@ -74,33 +74,6 @@ void UBillboardComponent::DuplicateSubObjects()
 	// Texture는 TextureName을 통해 리소스 매니저에서 가져오므로 복제하지 않음
 }
 
-// 여기서만 Cull_Back을 꺼야함. 
-void UBillboardComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
-{
-	//// 빌보드를 위한 업데이트
-	//ACameraActor* CameraActor = GetOwner()->GetWorld()->GetCameraActor();
-	//FVector CamRight = CameraActor->GetActorRight();
-	//FVector CamUp = CameraActor->GetActorUp();
-	//FVector cameraPosition = CameraActor->GetActorLocation();
-
-
-	//FLinearColor Color{ 1,1,1,1 };
-	//if (ULightComponentBase* LightBase = Cast<ULightComponentBase>(this->GetAttachParent()))
-	//{
-	//	Color = LightBase->GetLightColor();
-	//}
-
-	////Renderer->GetRHIDevice()->UpdateBillboardConstantBuffers(Owner->GetActorLocation() + GetRelativeLocation() + FVector(0.f, 0.f, 1.f) * Owner->GetActorScale().Z, View, Proj, CamRight, CamUp);
-	////정작 location, view proj만 사용하고 있길래 그냥 Identity넘김
-	//Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(ColorBufferType(Color, this->InternalIndex));
-	//Renderer->GetRHIDevice()->SetAndUpdateConstantBuffer(BillboardBufferType(GetWorldLocation(), View, Proj, View.InverseAffineFast()));
-
-	//Renderer->GetRHIDevice()->PrepareShader(Material->GetShader());
-	//Renderer->GetRHIDevice()->OMSetDepthStencilState(EComparisonFunc::LessEqual);
-	//Renderer->GetRHIDevice()->RSSetState(ERasterizerMode::Solid_NoCull);
-	//Renderer->DrawIndexedPrimitiveComponent(this, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-}
-
 void UBillboardComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View)
 {
 	// 1. 렌더링할 애셋이 유효한지 검사

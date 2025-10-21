@@ -22,6 +22,7 @@ class UTextRenderComponent;
 class UGizmoArrowComponent;
 class FSceneView;
 class FTileLightCuller;
+class ULineComponent;
 
 struct FCandidateDrawable;
 
@@ -36,7 +37,8 @@ struct FVisibleRenderProxySet
 	TArray<UTextRenderComponent*> Texts;
 
 	// --- Type 2: In-Scene Editor (PP X, Depth-Test O) ---
-	TArray<UPrimitiveComponent*> EditorPrimitives; // 그리드, 빛 기즈모, *에디터 아이콘 빌보드*
+	TArray<ULineComponent*> EditorLines;	// 그리드
+	TArray<UPrimitiveComponent*> EditorPrimitives; // 빛 기즈모, *에디터 아이콘 빌보드*
 
 	// --- Type 3: Overlay (PP X, Depth-Test X) ---
 	TArray<UPrimitiveComponent*> OverlayPrimitives; // 트랜스폼 기즈모
