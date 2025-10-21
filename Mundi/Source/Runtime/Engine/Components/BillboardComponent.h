@@ -35,6 +35,10 @@ public:
     // Serialize
     void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
+    // Duplication
+    void DuplicateSubObjects() override;
+    DECLARE_DUPLICATE(UBillboardComponent)
+
 private:
     FString TextureName;
     UTexture* Texture = nullptr;  // 리플렉션 시스템용 Texture 포인터

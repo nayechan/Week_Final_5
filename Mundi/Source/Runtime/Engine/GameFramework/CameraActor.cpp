@@ -164,15 +164,51 @@ FVector ACameraActor::GetUp() const
 void ACameraActor::ProcessEditorCameraInput(float DeltaSeconds)
 {
     UInputManager& InputManager = UInputManager::GetInstance();
-    
+
     bool bRightButtonDown = InputManager.IsMouseButtonDown(RightButton);
-    
+
     // 우클릭 드래그로 카메라 회전 및 이동
     if (bRightButtonDown)
     {
         ProcessCameraRotation(DeltaSeconds);
         ProcessCameraMovement(DeltaSeconds);
     }
+}
+
+void ACameraActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
+{
+    Super::Serialize(bInIsLoading, InOutHandle);
+
+    // 수동 직렬화 (프로퍼티로 등록되지 않은 변수들)
+    if (bInIsLoading)
+    {
+        FJsonSerializer::ReadFloat(InOutHandle, "MouseSensitivity", MouseSensitivity, 0.1f);
+        FJsonSerializer::ReadFloat(InOutHandle, "CameraMoveSpeed", CameraMoveSpeed, 10.0f);
+        FJsonSerializer::ReadFloat(InOutHandle, "CameraYawDeg", CameraYawDeg, 0.0f);
+        FJsonSerializer::ReadFloat(InOutHandle, "CameraPitchDeg", CameraPitchDeg, 0.0f);
+        FJsonSerializer::ReadBool(InOutHandle, "PerspectiveCameraInput", PerspectiveCameraInput, false);
+
+        // CameraComponent 포인터는 DuplicateSubObjects()에서 복원됨
+        for (UActorComponent* Component : OwnedComponents)
+        {
+            if (UCameraComponent* CameraComp = Cast<UCameraComponent>(Component))
+            {
+                CameraComponent = CameraComp;
+                break;
+            }
+        }
+    }
+    else
+    {
+        InOutHandle["MouseSensitivity"] = MouseSensitivity;
+        InOutHandle["CameraMoveSpeed"] = CameraMoveSpeed;
+        InOutHandle["CameraYawDeg"] = CameraYawDeg;
+        InOutHandle["CameraPitchDeg"] = CameraPitchDeg;
+        InOutHandle["PerspectiveCameraInput"] = PerspectiveCameraInput;
+    }
+
+    // 등록된 프로퍼티 자동 직렬화
+    AutoSerialize(bInIsLoading, InOutHandle, ACameraActor::StaticClass());
 }
 
 void ACameraActor::DuplicateSubObjects()

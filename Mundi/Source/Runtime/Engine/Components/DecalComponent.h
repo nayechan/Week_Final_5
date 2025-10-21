@@ -50,14 +50,6 @@ public:
 	// Projection & UV Mapping API
 	virtual FMatrix GetDecalProjectionMatrix() const;   // NOTE: FakeSpotLight 를 위해서 가상 함수로 선언
 
-	// Affected Objects Management API
-	// TArray<UStaticMeshComponent*> FindAffectedComponents() const;
-	// void AddAffectedComponent(UStaticMeshComponent* Component);
-	// void RemoveAffectedComponent(UStaticMeshComponent* Component);
-	// void ClearAffectedComponents();
-	// const TArray<UStaticMeshComponent*>& GetAffectedComponents() const { return AffectedComponents; }
-	// void RefreshAffectedComponents();
-
 	// Serialization API
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 

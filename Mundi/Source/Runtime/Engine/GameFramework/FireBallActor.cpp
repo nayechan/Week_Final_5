@@ -44,8 +44,23 @@ void AFireBallActor::DuplicateSubObjects()
 void AFireBallActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 {
 	Super::Serialize(bInIsLoading, InOutHandle);
+
+	// 로딩 시 Native 컴포넌트 중복 방지 로직:
+	// 
+	// 1. 생성자에서 생성된 native StaticMeshComponent들이 IsNative() 플래그로 표시됨
+	// 2. 씬 파일에서 직렬화된 컴포넌트들이 로드되면 OwnedComponents에 추가됨
+	// 3. 이 로직은 다음 순서로 동작:
+	//    a) IsNative() 플래그가 true인 모든 StaticMeshComponent를 수집
+	//    b) 직렬화된 FireBallComponent로 포인터 갱신 (RootComponent 또는 SceneComponents에서 검색)
+	//    c) Native StaticMeshComponent들을 detach하고 제거
+	// 4. 이를 통해 PIE나 씬 로드 시 생성자에서 만든 컴포넌트와 직렬화된 컴포넌트가 중복되는 것을 방지
+	// 
+	// 주의사항:
+	// - IsNative() 플래그가 정확하게 설정되어야 함
+	// - 플래그가 잘못 설정되면 필요한 컴포넌트가 잘못 제거될 수 있음
 	if (bInIsLoading)
 	{
+		// 1단계: Native StaticMeshComponent 수집
 		TArray<UStaticMeshComponent*> NativeStaticMeshes;
 		for (UActorComponent* Component : OwnedComponents)
 		{
@@ -58,13 +73,14 @@ void AFireBallActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			}
 		}
 
-		// 씬에서 역직렬화된 FireBallComponent를 우선시하여 포인터를 갱신.
+		// 2단계: 씬에서 역직렬화된 FireBallComponent를 우선시하여 포인터를 갱신
 		if (UFireBallComponent* LoadedFireBall = Cast<UFireBallComponent>(RootComponent))
 		{
 			FireBallComponent = LoadedFireBall;
 		}
 		else
 		{
+			// RootComponent가 아니면 SceneComponents에서 검색
 			for (USceneComponent* SceneComp : SceneComponents)
 			{
 				if (UFireBallComponent* Candidate = Cast<UFireBallComponent>(SceneComp))
@@ -75,7 +91,7 @@ void AFireBallActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			}
 		}
 
-		// 생성자에서 만든 기본 스태틱메시 컴포넌트를 제거해 중복을 방지.
+		// 3단계: 생성자에서 만든 Native StaticMeshComponent들을 제거하여 중복 방지
 		for (UStaticMeshComponent* NativeMesh : NativeStaticMeshes)
 		{
 			if (!NativeMesh)

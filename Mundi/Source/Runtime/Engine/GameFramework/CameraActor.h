@@ -57,6 +57,9 @@ public:
 
     void ProcessEditorCameraInput(float DeltaSeconds);
 
+    // ───── 직렬화 관련 ────────────────────────────
+    void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
+
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
     DECLARE_DUPLICATE(ACameraActor)
