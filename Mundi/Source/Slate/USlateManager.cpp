@@ -2,7 +2,6 @@
 #include "USlateManager.h"
 #include "Windows/SWindow.h"
 #include "Windows/SSplitterV.h"
-#include "Windows/SceneIOWindow.h"
 #include "Windows/SDetailsWindow.h"
 #include "Windows/SControlPanel.h"
 #include "Windows/SViewportWindow.h"
@@ -190,29 +189,34 @@ void USlateManager::Render()
         TopPanel->OnRender();
     }
 
-    // Console overlay rendering (on top of everything)
+    // 콘솔 오버레이 렌더링 (모든 것 위에 표시)
     if (ConsoleWindow && ConsoleAnimationProgress > 0.0f)
     {
         extern float CLIENTWIDTH;
         extern float CLIENTHEIGHT;
 
-        // Apply ease-out curve for smooth deceleration
+        // 부드러운 감속을 위한 ease-out 곡선 적용
         float EasedProgress = 1.0f - (1.0f - ConsoleAnimationProgress) * (1.0f - ConsoleAnimationProgress);
 
-        // Calculate console dimensions
+        // 좌우 여백을 포함한 콘솔 크기 계산
         float ConsoleHeight = CLIENTHEIGHT * ConsoleHeightRatio;
-        float ConsoleWidth = CLIENTWIDTH;
+        float ConsoleWidth = CLIENTWIDTH - (ConsoleHorizontalMargin * 2.0f);
+        float ConsoleXPos = ConsoleHorizontalMargin;
 
-        // Calculate Y position (slide up from bottom)
-        float YPosWhenHidden = CLIENTHEIGHT; // Off-screen at bottom
-        float YPosWhenVisible = CLIENTHEIGHT - ConsoleHeight; // Visible at bottom
+        // Y 위치 계산 (하단에서 슬라이드 업)
+        float YPosWhenHidden = CLIENTHEIGHT; // 화면 밖 (하단)
+        float YPosWhenVisible = CLIENTHEIGHT - ConsoleHeight; // 화면 내 (하단)
         float CurrentYPos = YPosWhenHidden + (YPosWhenVisible - YPosWhenHidden) * EasedProgress;
 
-        // Set window position and size
-        ImGui::SetNextWindowPos(ImVec2(0, CurrentYPos));
+        // 둥근 모서리 스타일 적용
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 10.0f));
+
+        // 윈도우 위치 및 크기 설정
+        ImGui::SetNextWindowPos(ImVec2(ConsoleXPos, CurrentYPos));
         ImGui::SetNextWindowSize(ImVec2(ConsoleWidth, ConsoleHeight));
 
-        // Window flags - Remove NoBringToFrontOnFocus to ensure it appears on top
+        // 윈도우 플래그
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoMove
             | ImGuiWindowFlags_NoResize
             | ImGuiWindowFlags_NoCollapse
@@ -220,26 +224,43 @@ void USlateManager::Render()
             | ImGuiWindowFlags_NoScrollbar
             | ImGuiWindowFlags_NoScrollWithMouse;
 
-        // Push window to front
-        ImGui::SetNextWindowFocus();
-
-        // Render console
-        if (ImGui::Begin("ConsoleOverlay", nullptr, flags))
+        // 처음 열렸을 때 콘솔에 포커스
+        if (bConsoleShouldFocus)
         {
-            // Add semi-transparent background
+            ImGui::SetNextWindowFocus();
+            bConsoleShouldFocus = false;
+        }
+
+        // 콘솔 렌더링
+        bool isWindowOpen = true;
+        if (ImGui::Begin("ConsoleOverlay", &isWindowOpen, flags))
+        {
+            // 콘솔이 포커스를 잃으면 닫기
+            if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
+                bIsConsoleVisible &&
+                !bIsConsoleAnimating)
+            {
+                ToggleConsole(); // 콘솔 닫기
+            }
+
+            // 둥근 모서리가 있는 반투명 배경 추가
             ImDrawList* DrawList = ImGui::GetWindowDrawList();
             ImVec2 WindowPos = ImGui::GetWindowPos();
             ImVec2 WindowSize = ImGui::GetWindowSize();
             DrawList->AddRectFilled(
                 WindowPos,
                 ImVec2(WindowPos.x + WindowSize.x, WindowPos.y + WindowSize.y),
-                IM_COL32(20, 20, 20, 240) // Dark background with high opacity
+                IM_COL32(20, 20, 20, 240), // 높은 불투명도의 어두운 배경
+                12.0f // 둥근 정도
             );
 
-            // Render console widget
+            // 콘솔 위젯 렌더링
             ConsoleWindow->RenderWidget();
         }
         ImGui::End();
+
+        // 스타일 변수 복원
+        ImGui::PopStyleVar(2);
     }
 }
 
@@ -254,12 +275,12 @@ void USlateManager::Update(float DeltaSeconds)
         TopPanel->OnUpdate(DeltaSeconds);
     }
 
-    // Console animation update
+    // 콘솔 애니메이션 업데이트
     if (bIsConsoleAnimating)
     {
         if (bIsConsoleVisible)
         {
-            // Animating in (showing)
+            // 애니메이션 인 (나타남)
             ConsoleAnimationProgress += DeltaSeconds / ConsoleAnimationDuration;
             if (ConsoleAnimationProgress >= 1.0f)
             {
@@ -269,7 +290,7 @@ void USlateManager::Update(float DeltaSeconds)
         }
         else
         {
-            // Animating out (hiding)
+            // 애니메이션 아웃 (사라짐)
             ConsoleAnimationProgress -= DeltaSeconds / ConsoleAnimationDuration;
             if (ConsoleAnimationProgress <= 0.0f)
             {
@@ -279,7 +300,7 @@ void USlateManager::Update(float DeltaSeconds)
         }
     }
 
-    // Update ConsoleWindow
+    // ConsoleWindow 업데이트
     if (ConsoleWindow && ConsoleAnimationProgress > 0.0f)
     {
         ConsoleWindow->Update();
@@ -320,7 +341,7 @@ void USlateManager::ProcessInput()
     }
     OnMouseMove(MousePosition);
 
-    // Console toggle with Alt + ` (Grave Accent)
+    // Alt + ` (억음 부호 키)로 콘솔 토글
     if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent) && ImGui::GetIO().KeyAlt)
     {
         ToggleConsole();
@@ -395,10 +416,10 @@ void USlateManager::OnShutdown()
 
 void USlateManager::Shutdown()
 {
-    // Save layout/config
+    // 레이아웃/설정 저장
     SaveSplitterConfig();
 
-    // Delete console window
+    // 콘솔 윈도우 삭제
     if (ConsoleWindow)
     {
         delete ConsoleWindow;
@@ -406,7 +427,7 @@ void USlateManager::Shutdown()
         UE_LOG("USlateManager: ConsoleWindow destroyed");
     }
 
-    // Delete UI panels and viewports explicitly to release any held D3D contexts
+    // D3D 컨텍스트를 해제하기 위해 UI 패널과 뷰포트를 명시적으로 삭제
     if (TopPanel) { delete TopPanel; TopPanel = nullptr; }
     if (LeftTop) { delete LeftTop; LeftTop = nullptr; }
     if (LeftBottom) { delete LeftBottom; LeftBottom = nullptr; }
@@ -434,5 +455,9 @@ void USlateManager::ToggleConsole()
     bIsConsoleVisible = !bIsConsoleVisible;
     bIsConsoleAnimating = true;
 
-    UE_LOG("USlateManager: Console toggled - %s", bIsConsoleVisible ? "SHOWING" : "HIDING");
+    // 콘솔을 열 때 포커스 플래그 설정
+    if (bIsConsoleVisible)
+    {
+        bConsoleShouldFocus = true;
+    }
 }

@@ -339,9 +339,6 @@
     <ClCompile Include="Source\Slate\Windows\ControlPanelWindow.cpp" />
     <ClCompile Include="Source\Slate\Windows\ExperimentalFeatureWindow.cpp" />
     <ClCompile Include="Source\Slate\Windows\PropertyWindow.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SceneIOWindow.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="Source\Slate\Windows\SceneWindow.cpp" />
     <ClCompile Include="Source\Slate\Windows\SControlPanel.cpp" />
     <ClCompile Include="Source\Slate\Windows\SDetailsWindow.cpp" />
@@ -573,9 +570,6 @@
     <ClInclude Include="Source\Slate\Windows\ControlPanelWindow.h" />
     <ClInclude Include="Source\Slate\Windows\ExperimentalFeatureWindow.h" />
     <ClInclude Include="Source\Slate\Windows\PropertyWindow.h" />
-    <ClInclude Include="Source\Slate\Windows\SceneIOWindow.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="Source\Slate\Windows\SceneWindow.h" />
     <ClInclude Include="Source\Slate\Windows\SControlPanel.h" />
     <ClInclude Include="Source\Slate\Windows\SDetailsWindow.h" />

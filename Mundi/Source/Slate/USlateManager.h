@@ -8,7 +8,7 @@
 class SSceneIOWindow; // 새로 추가할 UI
 class SDetailsWindow;
 class UMenuBarWidget;
-class UConsoleWindow; // Overlay console window
+class UConsoleWindow; // 오버레이 콘솔 윈도우
 
 // 중앙 레이아웃/입력 라우팅/뷰포트 관리 매니저 (위젯 아님)
 class USlateManager : public UObject
@@ -16,7 +16,7 @@ class USlateManager : public UObject
 public:
     DECLARE_CLASS(USlateManager, UObject)
 
-    // Singleton accessor
+    // 싱글톤 접근자
     static USlateManager& GetInstance();
 
     // 구성 저장/로드
@@ -61,7 +61,7 @@ public:
 
     void SetPIEWorld(UWorld* InWorld);
 
-    // Console management
+    // 콘솔 관리
     void ToggleConsole();
     bool IsConsoleVisible() const { return bIsConsoleVisible; }
 
@@ -97,11 +97,13 @@ private:
     // 메뉴바 관련
     UMenuBarWidget* MenuBar;
 
-    // Console overlay
+    // 콘솔 오버레이
     UConsoleWindow* ConsoleWindow = nullptr;
     bool bIsConsoleVisible = false;
     bool bIsConsoleAnimating = false;
-    float ConsoleAnimationProgress = 0.0f; // 0.0 = hidden, 1.0 = fully visible
-    const float ConsoleAnimationDuration = 0.25f; // seconds
-    const float ConsoleHeightRatio = 0.3f; // 30% of screen height
+    bool bConsoleShouldFocus = false; // 콘솔 열렸을 때 포커싱
+    float ConsoleAnimationProgress = 0.0f; // 0.0 = 숨김, 1.0 = 완전히 표시
+    const float ConsoleAnimationDuration = 0.25f; // 초 단위
+    const float ConsoleHeightRatio = 0.3f; // 화면 높이의 30%
+    const float ConsoleHorizontalMargin = 10.0f; // 좌/우 여백 (픽셀 단위)
 };
