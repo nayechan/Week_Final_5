@@ -23,6 +23,10 @@ private:
     void RenderActorSpawnButton();
     void RenderPIEButtons();
 
+    // UI 헬퍼 메서드
+    void BeginButtonGroup();
+    void EndButtonGroup();
+
     // 아이콘 로딩
     void LoadToolbarIcons();
 
@@ -62,6 +66,10 @@ private:
     UTexture* IconPlay = nullptr;
     UTexture* IconStop = nullptr;
     UTexture* IconAddActor = nullptr;
+    UTexture* LogoTexture = nullptr;
+
+    // 아이콘 설정
+    float IconSize = 25.0f;
 
     // 명령 큐
     EToolbarCommand PendingCommand = EToolbarCommand::None;

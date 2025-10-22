@@ -49,6 +49,7 @@ void UMainToolbarWidget::LoadToolbarIcons()
     IconPlay = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Toolbar_Play.png");
     IconStop = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Toolbar_Stop.png");
     IconAddActor = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Toolbar_AddActor.png");
+    LogoTexture = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Mundi_Logo.png");
 }
 
 void UMainToolbarWidget::RenderToolbar()
@@ -64,12 +65,25 @@ void UMainToolbarWidget::RenderToolbar()
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration |
                              ImGuiWindowFlags_NoMove |
                              ImGuiWindowFlags_NoSavedSettings |
-                             ImGuiWindowFlags_NoBringToFrontOnFocus;
+                             ImGuiWindowFlags_NoBringToFrontOnFocus |
+                             ImGuiWindowFlags_NoScrollWithMouse |
+                             ImGuiWindowFlags_NoScrollbar;
 
     if (ImGui::Begin("##MainToolbar", nullptr, flags))
     {
-        // 수직 중앙 정렬 (34px 아이콘을 50px 높이에 중앙 배치)
-        float cursorY = (ToolbarHeight - 34.0f) / 2.0f;
+        // 상단 테두리 박스 렌더링
+        ImVec2 windowPos = ImGui::GetWindowPos();
+        ImVec2 windowSize = ImGui::GetWindowSize();
+        const float BoxHeight = 8.0f;
+
+        ImGui::GetWindowDrawList()->AddRectFilled(
+            windowPos,
+            ImVec2(windowPos.x + windowSize.x, windowPos.y + BoxHeight),
+            ImGui::GetColorU32(ImVec4(0.15f, 0.45f, 0.25f, 1.0f))  // 진한 초록색 악센트
+        );
+
+        // 수직 중앙 정렬
+        float cursorY = (ToolbarHeight - IconSize) / 2.0f;
         ImGui::SetCursorPosY(cursorY);
         ImGui::SetCursorPosX(8.0f); // 왼쪽 여백
 
@@ -78,7 +92,15 @@ void UMainToolbarWidget::RenderToolbar()
 
         // 구분선
         ImGui::SameLine(0, 12.0f);
-        ImGui::TextColored(ImVec4(0.4f, 0.4f, 0.4f, 1.0f), "|");
+        ImVec2 separatorStart = ImGui::GetCursorScreenPos();
+        separatorStart.y += 4.0f;  // 5픽셀 아래로 이동
+        ImGui::GetWindowDrawList()->AddLine(
+            separatorStart,
+            ImVec2(separatorStart.x, separatorStart.y + IconSize),
+            ImGui::GetColorU32(ImVec4(0.25f, 0.25f, 0.25f, 0.8f)),
+            2.0f
+        );
+        ImGui::Dummy(ImVec2(2.0f, IconSize));
 
         // Actor Spawn 버튼
         ImGui::SameLine(0, 12.0f);
@@ -86,31 +108,88 @@ void UMainToolbarWidget::RenderToolbar()
 
         // 구분선
         ImGui::SameLine(0, 12.0f);
-        ImGui::TextColored(ImVec4(0.4f, 0.4f, 0.4f, 1.0f), "|");
+        separatorStart = ImGui::GetCursorScreenPos();
+        separatorStart.y += 4.0f;  // 5픽셀 아래로 이동
+        ImGui::GetWindowDrawList()->AddLine(
+            separatorStart,
+            ImVec2(separatorStart.x, separatorStart.y + IconSize),
+            ImGui::GetColorU32(ImVec4(0.25f, 0.25f, 0.25f, 0.8f)),
+            2.0f
+        );
+        ImGui::Dummy(ImVec2(2.0f, IconSize));
 
         // PIE 제어 버튼들
         ImGui::SameLine(0, 12.0f);
         RenderPIEButtons();
+
+        // 로고를 오른쪽에 배치
+        if (LogoTexture && LogoTexture->GetShaderResourceView())
+        {
+            const float LogoHeight = ToolbarHeight * 0.9f;  // 툴바 높이의 70%
+            const float LogoWidth = LogoHeight * 3.42f;     // 820:240 비율
+            const float RightPadding = 16.0f;
+
+            ImVec2 logoPos;
+            logoPos.x = ImGui::GetWindowWidth() - LogoWidth - RightPadding;
+            logoPos.y = (ToolbarHeight - LogoHeight) / 2.0f;
+
+            ImGui::SetCursorPos(logoPos);
+            ImGui::Image((void*)LogoTexture->GetShaderResourceView(), ImVec2(LogoWidth, LogoHeight));
+        }
     }
     ImGui::End();
 }
 
+void UMainToolbarWidget::BeginButtonGroup()
+{
+    ImGui::BeginGroup();
+}
+
+void UMainToolbarWidget::EndButtonGroup()
+{
+    ImGui::EndGroup();
+
+    // 그룹 영역 계산
+    ImVec2 groupMin = ImGui::GetItemRectMin();
+    ImVec2 groupMax = ImGui::GetItemRectMax();
+
+    const float Padding = 1.0f;
+    groupMin.x -= Padding;
+    groupMin.y -= Padding;
+    groupMax.x += Padding;
+    groupMax.y += Padding;
+
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+    // 테두리만 그리기 (배경 제거)
+    drawList->AddRect(
+        groupMin,
+        groupMax,
+        ImGui::GetColorU32(ImVec4(0.4f, 0.45f, 0.5f, 0.8f)),
+        4.0f,
+        0,
+        1.3f
+    );
+}
+
 void UMainToolbarWidget::RenderSceneButtons()
 {
-    const ImVec2 IconSize(34, 34);
+    const ImVec2 IconSizeVec(IconSize, IconSize);
 
     // 버튼 스타일 설정 (SViewportWindow 스타일)
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(9, 0));
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.2f, 0.2f, 0.5f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.3f, 0.3f, 0.3f, 0.7f));
 
+    BeginButtonGroup();
+
     // New 버튼
     if (IconNew && IconNew->GetShaderResourceView())
     {
-        if (ImGui::ImageButton("##NewBtn", (void*)IconNew->GetShaderResourceView(), IconSize))
+        if (ImGui::ImageButton("##NewBtn", (void*)IconNew->GetShaderResourceView(), IconSizeVec))
         {
             PendingCommand = EToolbarCommand::NewScene;
         }
@@ -123,7 +202,7 @@ void UMainToolbarWidget::RenderSceneButtons()
     // Save 버튼
     if (IconSave && IconSave->GetShaderResourceView())
     {
-        if (ImGui::ImageButton("##SaveBtn", (void*)IconSave->GetShaderResourceView(), IconSize))
+        if (ImGui::ImageButton("##SaveBtn", (void*)IconSave->GetShaderResourceView(), IconSizeVec))
         {
             PendingCommand = EToolbarCommand::SaveScene;
         }
@@ -136,7 +215,7 @@ void UMainToolbarWidget::RenderSceneButtons()
     // Load 버튼
     if (IconLoad && IconLoad->GetShaderResourceView())
     {
-        if (ImGui::ImageButton("##LoadBtn", (void*)IconLoad->GetShaderResourceView(), IconSize))
+        if (ImGui::ImageButton("##LoadBtn", (void*)IconLoad->GetShaderResourceView(), IconSizeVec))
         {
             PendingCommand = EToolbarCommand::LoadScene;
         }
@@ -144,39 +223,90 @@ void UMainToolbarWidget::RenderSceneButtons()
             ImGui::SetTooltip("씬을 불러옵니다 [Ctrl+O]");
     }
 
+    EndButtonGroup();
+
     ImGui::PopStyleColor(3);
     ImGui::PopStyleVar(3);
 }
 
 void UMainToolbarWidget::RenderActorSpawnButton()
 {
-    const ImVec2 IconSize(34, 34);
+    const ImVec2 IconSizeVec(IconSize, IconSize);
 
     // 드롭다운 버튼 스타일
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8, 4));
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.14f, 0.16f, 0.16f, 1.00f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.18f, 0.22f, 0.21f, 1.00f));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.22f, 0.28f, 0.26f, 1.00f));
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.2f, 0.2f, 0.5f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.3f, 0.3f, 0.3f, 0.7f));
 
-    // 아이콘만 표시하는 버튼
+    ImGui::BeginGroup();
+
+    // 아이콘과 화살표를 포함하는 버튼
     bool bButtonClicked = false;
     if (IconAddActor && IconAddActor->GetShaderResourceView())
     {
-        // 아이콘 버튼
-        if (ImGui::ImageButton("##AddActorBtn", (void*)IconAddActor->GetShaderResourceView(), IconSize))
+        // 커서 위치 저장
+        ImVec2 buttonStartPos = ImGui::GetCursorScreenPos();
+
+        // 아이콘+텍스트를 포함하는 투명 버튼 (전체 영역)
+        const float ButtonWidth = IconSize + 20.0f;  // 아이콘 + 화살표 공간
+        const float ButtonHeight = IconSize + 9.0f;
+
+        if (ImGui::Button("##AddActorBtnInvisible", ImVec2(ButtonWidth, ButtonHeight)))
         {
             bButtonClicked = true;
         }
+        bool bIsHovered = ImGui::IsItemHovered();
 
-        // 드롭다운 화살표 (아이콘 오른쪽에)
-        ImGui::SameLine(0, 2);
-        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 8); // 화살표를 약간 아래로
-        ImGui::Text("∨");
+        // 버튼 위에 아이콘과 텍스트를 오버레이
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-        if (ImGui::IsItemHovered())
+        // 아이콘 그리기
+        ImVec2 iconPos = buttonStartPos;
+        iconPos.x += 4.0f;
+        iconPos.y += 4.0f;
+        drawList->AddImage(
+            (void*)IconAddActor->GetShaderResourceView(),
+            iconPos,
+            ImVec2(iconPos.x + IconSize, iconPos.y + IconSize)
+        );
+
+        // 화살표 그리기
+        ImVec2 arrowPos = buttonStartPos;
+        arrowPos.x += IconSize + 5.0f;
+        arrowPos.y += (ButtonHeight - 20.0f) / 2.0f;
+
+        ImVec4 textColor = bIsHovered ? ImVec4(1.0f, 1.0f, 1.0f, 1.0f) : ImVec4(0.7f, 0.7f, 0.7f, 1.0f);
+        drawList->AddText(arrowPos, ImGui::GetColorU32(textColor), "∨");
+
+        // 툴팁
+        if (bIsHovered)
             ImGui::SetTooltip("액터를 월드에 추가합니다");
     }
+
+    // Actor Spawn 버튼만 테두리를 아래로 5픽셀 추가 확장
+    ImVec2 groupMin = ImGui::GetItemRectMin();
+    ImVec2 groupMax = ImGui::GetItemRectMax();
+
+   // const float Padding = 1.0f;
+   // groupMin.x -= Padding;
+   // groupMin.y -= Padding;
+   // groupMax.x += Padding;
+   // groupMax.y += Padding + 7.0f;  // 아래쪽으로 5픽셀 추가
+
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+    drawList->AddRect(
+        groupMin,
+        groupMax,
+        ImGui::GetColorU32(ImVec4(0.4f, 0.45f, 0.5f, 0.8f)),
+        4.0f,
+        0,
+        1.3f
+    );
+
+    ImGui::EndGroup();
 
     // 팝업 열기
     if (bButtonClicked)
@@ -187,7 +317,7 @@ void UMainToolbarWidget::RenderActorSpawnButton()
     // Actor Spawn 팝업 렌더링
     if (ImGui::BeginPopup("ActorSpawnPopup"))
     {
-        ImGui::TextUnformatted("Add Actor");
+        ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "액터 추가");
         ImGui::Separator();
 
         TArray<UClass*> SpawnableActors = UClass::GetAllSpawnableActors();
@@ -219,15 +349,17 @@ void UMainToolbarWidget::RenderActorSpawnButton()
 
 void UMainToolbarWidget::RenderPIEButtons()
 {
-    const ImVec2 IconSize(34, 34);
+    const ImVec2 IconSizeVec(IconSize, IconSize);
 
     // 버튼 스타일
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.2f, 0.2f, 0.5f));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.3f, 0.3f, 0.3f, 0.7f));
+
+    BeginButtonGroup();
 
 #ifdef _EDITOR
     extern UEditorEngine GEngine;
@@ -239,7 +371,7 @@ void UMainToolbarWidget::RenderPIEButtons()
     {
         ImVec4 tint = isPIE ? ImVec4(0.5f, 0.5f, 0.5f, 0.5f) : ImVec4(1, 1, 1, 1);
         if (ImGui::ImageButton("##PlayBtn", (void*)IconPlay->GetShaderResourceView(),
-                                IconSize, ImVec2(0,0), ImVec2(1,1), ImVec4(0,0,0,0), tint))
+                                IconSizeVec, ImVec2(0,0), ImVec2(1,1), ImVec4(0,0,0,0), tint))
         {
             PendingCommand = EToolbarCommand::StartPIE;
         }
@@ -256,7 +388,7 @@ void UMainToolbarWidget::RenderPIEButtons()
     {
         ImVec4 tint = !isPIE ? ImVec4(0.5f, 0.5f, 0.5f, 0.5f) : ImVec4(1, 1, 1, 1);
         if (ImGui::ImageButton("##StopBtn", (void*)IconStop->GetShaderResourceView(),
-                                IconSize, ImVec2(0,0), ImVec2(1,1), ImVec4(0,0,0,0), tint))
+                                IconSizeVec, ImVec2(0,0), ImVec2(1,1), ImVec4(0,0,0,0), tint))
         {
             PendingCommand = EToolbarCommand::EndPIE;
         }
@@ -265,6 +397,8 @@ void UMainToolbarWidget::RenderPIEButtons()
     }
     ImGui::EndDisabled();
 #endif
+
+    EndButtonGroup();
 
     ImGui::PopStyleColor(3);
     ImGui::PopStyleVar(3);
