@@ -1,6 +1,5 @@
 ﻿#include "pch.h"
 #include "ControlPanelWindow.h"
-#include "Widgets/ActorTerminationWidget.h"
 
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
@@ -26,10 +25,6 @@ UControlPanelWindow::UControlPanelWindow()
 
 	Config.UpdateWindowFlags();
 	SetConfig(Config);
-
-	UActorTerminationWidget* ActorTerminationWidget = NewObject<UActorTerminationWidget>();
-	ActorTerminationWidget->Initialize();
-	AddWidget(ActorTerminationWidget);
 }
 
 /**

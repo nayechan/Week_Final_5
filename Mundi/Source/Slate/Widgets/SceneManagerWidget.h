@@ -7,6 +7,7 @@ class UUIManager;
 class UWorld;
 class AActor;
 class USelectionManager;
+class UTexture;
 
 /**
  * SceneManagerWidget
@@ -93,6 +94,9 @@ private:
     void HandleActorRename(AActor* Actor);
     void HandleActorDelete(AActor* Actor);
     void HandleActorDuplicate(AActor* Actor);
+
+    // Icon loading
+    void LoadIcons();
     
     // Context Menu
     AActor* ContextMenuTarget = nullptr;
@@ -129,4 +133,9 @@ private:
     // Delayed refresh (to avoid iterator invalidation during rendering)
     bool bNeedRefreshNextFrame = false;
     void RequestDelayedRefresh() { bNeedRefreshNextFrame = true; }
+
+    // Visibility icons
+    UTexture* IconVisible = nullptr;
+    UTexture* IconHidden = nullptr;
+    float IconSize = 16.0f;
 };

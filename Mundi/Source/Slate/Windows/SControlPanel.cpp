@@ -24,7 +24,7 @@ void SControlPanel::OnRender()
         | ImGuiWindowFlags_NoResize
         | ImGuiWindowFlags_NoMove;
 
-    if (ImGui::Begin("Control", nullptr, flags))
+    if (ImGui::Begin("아웃라이너", nullptr, flags))
     {
         if (SceneWindow) {
             SceneWindow->RenderWidget();

@@ -10,7 +10,7 @@ IMPLEMENT_CLASS(USceneWindow)
 USceneWindow::USceneWindow()
 {
 	FUIWindowConfig Config;
-	Config.WindowTitle = "Scene Manager";
+	Config.WindowTitle = "씬 매니저";
 	Config.DefaultSize = ImVec2(350, 500);
 	Config.DefaultPosition = ImVec2(1225, 10);
 	Config.MinSize = ImVec2(300, 400);

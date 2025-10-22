@@ -10,6 +10,8 @@
 #include "StaticMeshActor.h"
 #include "SelectionManager.h"
 #include "Gizmo/GizmoActor.h"
+#include "ResourceManager.h"
+#include "Texture.h"
 #include <algorithm>
 #include <string>
 #include <EditorEngine.h>
@@ -24,6 +26,7 @@ USceneManagerWidget::USceneManagerWidget()
 	, UIManager(&UUIManager::GetInstance())
 	, SelectionManager(nullptr)
 {
+	LoadIcons();
 }
 
 USceneManagerWidget::~USceneManagerWidget()
@@ -33,8 +36,12 @@ USceneManagerWidget::~USceneManagerWidget()
 
 void USceneManagerWidget::Initialize()
 {
-	UIManager = &UUIManager::GetInstance();
-	SelectionManager = nullptr;
+}
+
+void USceneManagerWidget::LoadIcons()
+{
+	IconVisible = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Eye_Visible.png");
+	IconHidden = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Eye_Hidden.png");
 }
 
 void USceneManagerWidget::Update()
@@ -131,7 +138,9 @@ void USceneManagerWidget::RenderWidget()
 	}
 
 	// Actor tree view
-	ImGui::BeginChild("ActorTreeView", ImVec2(0, 240), true);
+	// 사용 가능한 영역에서 하단 상태 표시줄을 위한 공간을 제외하고 모두 사용
+	float availableHeight = ImGui::GetContentRegionAvail().y - 30.0f; // 하단 액터 카운트 공간 확보
+	ImGui::BeginChild("ActorTreeView", ImVec2(0, availableHeight), true);
 
 	// 유효성 검사는 Update()에서 처리했으므로 여기서는 바로 렌더링
 	if (bNeedRefreshNextFrame)
@@ -156,7 +165,8 @@ void USceneManagerWidget::RenderWidget()
 
 	ImGui::EndChild();
 
-	ImGui::Text("Actor: %zu", World->GetActors().size());
+	ImGui::Dummy(ImVec2(0, 1.0f));
+	ImGui::Text("%zu개 액터", World->GetActors().size());
 
 	// Context menu
 	if (bShowContextMenu)
@@ -165,7 +175,7 @@ void USceneManagerWidget::RenderWidget()
 	}
 
 	// Status bar
-	ImGui::Separator();
+	ImGui::SameLine();
 	AActor* SelectedActor = nullptr;
 	if (UWorld* W = GetCurrentWorld())
 	{
@@ -176,11 +186,11 @@ void USceneManagerWidget::RenderWidget()
 		// 액터 이름을 가져오기 전에 안전성 확인
 		try
 		{
-			ImGui::Text("Selected: %s", SelectedActor->GetName().ToString().c_str());
+			ImGui::Text("(%s 선택됨)", SelectedActor->GetName().ToString().c_str());
 		}
 		catch (...)
 		{
-			ImGui::Text("Selected: [Invalid Actor]");
+			ImGui::Text("([Invalid Actor] 선택됨)");
 			// 유효하지 않은 액터를 정리
 			if (SelectionManager)
 			{
@@ -190,7 +200,7 @@ void USceneManagerWidget::RenderWidget()
 	}
 	else
 	{
-		ImGui::Text("No selection");
+		ImGui::Text("(선택된 액터 없음)");
 	}
 }
 
@@ -282,18 +292,35 @@ void USceneManagerWidget::RenderActorNode(FActorTreeNode* Node, int32 Depth)
 	Node->bIsVisible = Actor->IsActorVisible();
 
 	// Visibility toggle button (only for actors)
-	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-	const char* VisibilityIcon = Node->bIsVisible ? "O" : "X";
-	if (ImGui::SmallButton(VisibilityIcon))
+	UTexture* CurrentIcon = Node->bIsVisible ? IconVisible : IconHidden;
+	if (CurrentIcon && CurrentIcon->GetShaderResourceView())
 	{
-		HandleActorVisibilityToggle(Actor);
-	}
-	ImGui::PopStyleColor();
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.2f, 0.2f, 0.5f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.3f, 0.3f, 0.3f, 0.7f));
 
-	ImGui::SameLine();
+		if (ImGui::ImageButton("##VisibilityBtn", (void*)CurrentIcon->GetShaderResourceView(), ImVec2(IconSize, IconSize)))
+		{
+			HandleActorVisibilityToggle(Actor);
+		}
+
+		ImGui::PopStyleColor(3);
+	}
+	else
+	{
+		// Fallback to text if icon not loaded
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+		const char* VisibilityIcon = Node->bIsVisible ? "O" : "X";
+		if (ImGui::SmallButton(VisibilityIcon))
+		{
+			HandleActorVisibilityToggle(Actor);
+		}
+		ImGui::PopStyleColor();
+	}
+
+	ImGui::SameLine(0, 1.0f);
 
 	// Actor name and tree node
-
 	bool bNodeOpen = ImGui::TreeNodeEx(Actor->GetName().ToString().c_str(), NodeFlags);
 
 	// Handle selection
@@ -443,7 +470,7 @@ void USceneManagerWidget::RenderContextMenu()
 	{
 		if (ContextMenuTarget)
 		{
-			ImGui::Text("Actor: %s", ContextMenuTarget->GetName().ToString().c_str());
+			ImGui::Text("%s개 액터", ContextMenuTarget->GetName().ToString().c_str());
 			const char* ClassName = "Unknown";
 			if (ContextMenuTarget->GetClass())
 			{
@@ -514,93 +541,6 @@ void USceneManagerWidget::RenderContextMenu()
 
 void USceneManagerWidget::RenderToolbar()
 {
-	//// Filter toggles
-	//ImGui::Checkbox("Selected Only", &bShowOnlySelectedObjects);
-	//ImGui::SameLine();
-	//ImGui::Checkbox("Show Hidden", &bShowHiddenObjects);
-
-	//// View Mode selection
-	//ImGui::Text("View Mode:");
-	//ImGui::SameLine();
-
-	//const char* ViewModeNames[] = { "Lit", "Unlit", "WorldNormal", "Wireframe" };
-
-	//UWorld* World = GetCurrentWorld();
-	//if (World)
-	//{
-	//	// Convert enum value to UI index (subtract 1 because enum starts with None=0)
-	//	EViewModeIndex CurrentEnum = World->GetRenderSettings().GetViewModeIndex();
-	//	int CurrentViewMode = 0; // Default to Phong
-
-	//	switch (CurrentEnum)
-	//	{
-	//	case EViewModeIndex::VMI_Lit:
-	//	case EViewModeIndex::VMI_Lit_Phong:
-	//	case EViewModeIndex::VMI_Lit_Gouraud:
-	//	case EViewModeIndex::VMI_Lit_Lambert:
-	//		CurrentViewMode = 0;
-	//		break;
-	//	case EViewModeIndex::VMI_Unlit:
-	//		CurrentViewMode = 1;
-	//		break;
-	//	case EViewModeIndex::VMI_WorldNormal:
-	//		CurrentViewMode = 2;
-	//		break;
-	//	case EViewModeIndex::VMI_Wireframe:
-	//		CurrentViewMode = 3;
-	//		break;
-	//	default:
-	//		CurrentViewMode = 0;
-	//		break;
-	//	}
-
-	//	if (ImGui::Combo("##ViewMode", &CurrentViewMode, ViewModeNames, IM_ARRAYSIZE(ViewModeNames)))
-	//	{
-	//		// Convert UI index back to enum value
-	//		EViewModeIndex NewEnum = EViewModeIndex::VMI_Lit_Phong;
-	//		switch (CurrentViewMode)
-	//		{
-	//		case 0:
-	//			NewEnum = EViewModeIndex::VMI_Lit_Phong;
-	//			break;
-	//		case 1:
-	//			NewEnum = EViewModeIndex::VMI_Unlit;
-	//			break;
-	//		case 2:
-	//			NewEnum = EViewModeIndex::VMI_WorldNormal;
-	//			break;
-	//		case 3:
-	//			NewEnum = EViewModeIndex::VMI_Wireframe;
-	//			break;
-	//		}
-	//		World->GetRenderSettings().SetViewModeIndex(NewEnum);
-	//	}
-	//}
-	//else
-	//{
-	//	// Disabled combo when no world is available
-	//	ImGui::BeginDisabled();
-	//	int DummyViewMode = 0;
-	//	ImGui::Combo("##ViewMode", &DummyViewMode, ViewModeNames, IM_ARRAYSIZE(ViewModeNames));
-	//	ImGui::EndDisabled();
-	//}
-
-	//if (ImGui::Button("Refresh"))
-	//{
-	//	RefreshActorTree();
-	//}
-
-	//ImGui::SameLine();
-	//if (ImGui::Button("Expand All"))
-	//{
-	//	ExpandAllCategories();
-	//}
-
-	//ImGui::SameLine();
-	//if (ImGui::Button("Collapse All"))
-	//{
-	//	CollapseAllCategories();
-	//}
 }
 
 void USceneManagerWidget::ClearActorTree()
@@ -662,8 +602,6 @@ void USceneManagerWidget::SyncSelectionFromViewport()
 
 void USceneManagerWidget::SyncSelectionToViewport(AActor* Actor)
 {
-	// Selection is already handled via SelectionManager
-	// The 3D viewport will automatically respond to selection changes
 }
 
 // Category Management Implementation
@@ -805,15 +743,33 @@ void USceneManagerWidget::RenderCategoryNode(FActorTreeNode* CategoryNode, int32
 	ImGui::PushID(CategoryNode->CategoryName.c_str());
 
 	// Category visibility toggle button
-	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-	const char* VisibilityIcon = CategoryNode->bIsVisible ? "O" : "X";
-	if (ImGui::SmallButton(VisibilityIcon))
+	UTexture* CurrentIcon = CategoryNode->bIsVisible ? IconVisible : IconHidden;
+	if (CurrentIcon && CurrentIcon->GetShaderResourceView())
 	{
-		HandleCategoryVisibilityToggle(CategoryNode);
-	}
-	ImGui::PopStyleColor();
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.2f, 0.2f, 0.5f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.3f, 0.3f, 0.3f, 0.7f));
 
-	ImGui::SameLine();
+		if (ImGui::ImageButton("##CategoryVisibilityBtn", (void*)CurrentIcon->GetShaderResourceView(), ImVec2(IconSize, IconSize)))
+		{
+			HandleCategoryVisibilityToggle(CategoryNode);
+		}
+
+		ImGui::PopStyleColor(3);
+	}
+	else
+	{
+		// Fallback to text if icon not loaded
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+		const char* VisibilityIcon = CategoryNode->bIsVisible ? "O" : "X";
+		if (ImGui::SmallButton(VisibilityIcon))
+		{
+			HandleCategoryVisibilityToggle(CategoryNode);
+		}
+		ImGui::PopStyleColor();
+	}
+
+	ImGui::SameLine(0, 2.0f); // 간격 2픽셀로 설정
 
 	// Category name with object count
 	FString DisplayText = CategoryNode->CategoryName + " (" + std::to_string(CategoryNode->Children.size()) + ")";

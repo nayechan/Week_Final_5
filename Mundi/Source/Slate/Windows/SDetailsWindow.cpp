@@ -30,7 +30,7 @@ void SDetailsWindow::OnRender()
         | ImGuiWindowFlags_NoResize
         | ImGuiWindowFlags_NoMove;
 
-    if (ImGui::Begin("Details", nullptr, flags))
+    if (ImGui::Begin("디테일", nullptr, flags))
     {
         if (DetailsWidget)
             DetailsWidget->RenderWidget();
