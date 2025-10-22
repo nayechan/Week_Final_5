@@ -16,9 +16,9 @@
 IMPLEMENT_CLASS(UStaticMeshComponent)
 
 BEGIN_PROPERTIES(UStaticMeshComponent)
-	MARK_AS_COMPONENT("스태틱 메시 컴포넌트", "스태틱 메시를 렌더링하는 컴포넌트입니다.")
-	ADD_PROPERTY_STATICMESH(UStaticMesh*, StaticMesh, "Static Mesh", true, "렌더링할 스태틱 메시입니다.")
-	ADD_PROPERTY_ARRAY(EPropertyType::Material, MaterialSlots, "Materials", true, "메시 섹션에 할당된 머티리얼 슬롯입니다.")
+MARK_AS_COMPONENT("스태틱 메시 컴포넌트", "스태틱 메시를 렌더링하는 컴포넌트입니다.")
+ADD_PROPERTY_STATICMESH(UStaticMesh*, StaticMesh, "Static Mesh", true, "렌더링할 스태틱 메시입니다.")
+ADD_PROPERTY_ARRAY(EPropertyType::Material, MaterialSlots, "Materials", true, "메시 섹션에 할당된 머티리얼 슬롯입니다.")
 END_PROPERTIES()
 
 UStaticMeshComponent::UStaticMeshComponent()
@@ -409,8 +409,9 @@ void UStaticMeshComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 
 			for (int i = 0; i < SlotsArrayJson.size(); ++i)
 			{
+				// .at()은 FJsonSerializer에 없으므로 JSON 래퍼 클래스의 기능 사용
 				const JSON& SlotJson = SlotsArrayJson.at(i);
-				if (SlotJson.IsNull())
+				if (SlotJson.IsNull()) // .IsNull()도 JSON 래퍼 클래스의 기능
 				{
 					MaterialSlots[i] = nullptr;
 					continue;
@@ -436,21 +437,58 @@ void UStaticMeshComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 					JSON OverridesJson;
 					if (NewMID && FJsonSerializer::ReadObject(SlotJson, "Overrides", OverridesJson, JSON::Make(JSON::Class::Object), false))
 					{
+						// 텍스처 로드
 						JSON TexturesJson;
 						if (FJsonSerializer::ReadObject(OverridesJson, "Textures", TexturesJson, JSON::Make(JSON::Class::Object), false))
 						{
 							TMap<EMaterialTextureSlot, UTexture*> LoadedTextures;
-							// FJsonSerializer에 TMap<string, string> 리더가 없으므로 nlohmann::json의 items() 사용
+							// FJsonSerializer에 맵 순회 헬퍼가 없으므로 JSON 래퍼의 ObjectRange() 사용
 							for (auto& [SlotKey, PathJson] : TexturesJson.ObjectRange())
 							{
 								uint8 SlotIndex = static_cast<uint8>(std::stoi(SlotKey));
-								FString TexPath = PathJson.ToString();
+								FString TexPath = PathJson.ToString(); // .ToString()은 JSON 래퍼 기능
 								UTexture* Tex = (TexPath == "None" || TexPath.empty()) ? nullptr : UResourceManager::GetInstance().Load<UTexture>(TexPath);
 								LoadedTextures.Add(static_cast<EMaterialTextureSlot>(SlotIndex), Tex);
 							}
-							NewMID->SetOverriddenTextures(LoadedTextures);
+							NewMID->SetOverriddenTextureParameters(LoadedTextures);
 						}
-						// (향후 스칼라, 벡터 파라미터도 여기에 추가)
+
+						// 스칼라 파라미터 로드
+						JSON ScalarsJson;
+						if (FJsonSerializer::ReadObject(OverridesJson, "Scalars", ScalarsJson, JSON::Make(JSON::Class::Object), false))
+						{
+							TMap<FString, float> LoadedScalars;
+							// FJsonSerializer에 맵 순회 헬퍼가 없으므로 JSON 래퍼의 ObjectRange() 사용
+							for (auto& [ParamName, ValueJson] : ScalarsJson.ObjectRange())
+							{
+								// .ToFloat()는 FJsonSerializer.h의 ReadFloat에서 사용하는 JSON 래퍼 기능
+								LoadedScalars.Add(ParamName, static_cast<float>(ValueJson.ToFloat()));
+							}
+							NewMID->SetOverriddenScalarParameters(LoadedScalars);
+						}
+
+						// 벡터 파라미터 로드
+						JSON VectorsJson;
+						if (FJsonSerializer::ReadObject(OverridesJson, "Vectors", VectorsJson, JSON::Make(JSON::Class::Object), false))
+						{
+							TMap<FString, FLinearColor> LoadedVectors;
+							// FJsonSerializer에 맵 순회 헬퍼가 없으므로 JSON 래퍼의 ObjectRange() 사용
+							for (auto& [ParamName, ColorArrayJson] : VectorsJson.ObjectRange())
+							{
+								// .JSONType(), .size(), .at(), .ToFloat() 모두 JSON 래퍼 기능
+								if (ColorArrayJson.JSONType() == JSON::Class::Array && ColorArrayJson.size() == 4)
+								{
+									// FLinearColor (R, G, B, A) 순서로 로드
+									LoadedVectors.Add(ParamName, FLinearColor(
+										static_cast<float>(ColorArrayJson.at(0).ToFloat()),
+										static_cast<float>(ColorArrayJson.at(1).ToFloat()),
+										static_cast<float>(ColorArrayJson.at(2).ToFloat()),
+										static_cast<float>(ColorArrayJson.at(3).ToFloat())
+									));
+								}
+							}
+							NewMID->SetOverriddenVectorParameters(LoadedVectors);
+						}
 					}
 				}
 				else // UMaterial 애셋인 경우
@@ -462,8 +500,9 @@ void UStaticMeshComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			}
 		}
 	}
-	else
+	else // 저장
 	{
+		// FJsonSerializer에 쓰기 헬퍼가 없으므로 JSON 래퍼의 기능(Make, append, []) 사용
 		JSON SlotsArrayJson = JSON::Make(JSON::Class::Array);
 		for (UMaterialInterface* Mtl : MaterialSlots)
 		{
@@ -481,16 +520,41 @@ void UStaticMeshComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 				SlotJson["ParentPath"] = Parent ? Parent->GetFilePath() : "None";
 
 				JSON OverridesJson = JSON::Make(JSON::Class::Object);
+
+				// 텍스처 저장
 				JSON TexturesJson = JSON::Make(JSON::Class::Object);
 				const TMap<EMaterialTextureSlot, UTexture*>& OverriddenTextures = MID->GetOverriddenTextures();
-
 				for (const auto& Pair : OverriddenTextures)
 				{
 					// DDS 캐시 경로가 아닌 원본 소스 경로 저장
 					TexturesJson[std::to_string(static_cast<uint8>(Pair.first))] = Pair.second ? Pair.second->GetSourceFilePath() : "None";
 				}
 				OverridesJson["Textures"] = TexturesJson;
-				// (향후 스칼라, 벡터 파라미터도 여기에 추가)
+
+				// 스칼라 파라미터 저장
+				JSON ScalarsJson = JSON::Make(JSON::Class::Object);
+				const TMap<FString, float>& OverriddenScalars = MID->GetOverriddenScalarParameters();
+				for (const auto& Pair : OverriddenScalars)
+				{
+					ScalarsJson[Pair.first] = Pair.second;
+				}
+				OverridesJson["Scalars"] = ScalarsJson;
+
+				// 벡터 파라미터 저장
+				JSON VectorsJson = JSON::Make(JSON::Class::Object);
+				const TMap<FString, FLinearColor>& OverriddenVectors = MID->GetOverriddenVectorParameters();
+				for (const auto& Pair : OverriddenVectors)
+				{
+					// FJsonSerializer의 Vector4ToJson은 FVector4를 받으므로,
+					// FLinearColor를 직접 배열로 만듭니다.
+					JSON ColorArray = JSON::Make(JSON::Class::Array);
+					ColorArray.append(Pair.second.R);
+					ColorArray.append(Pair.second.G);
+					ColorArray.append(Pair.second.B);
+					ColorArray.append(Pair.second.A);
+					VectorsJson[Pair.first] = ColorArray;
+				}
+				OverridesJson["Vectors"] = VectorsJson;
 
 				SlotJson["Overrides"] = OverridesJson;
 				SlotsArrayJson.append(SlotJson);

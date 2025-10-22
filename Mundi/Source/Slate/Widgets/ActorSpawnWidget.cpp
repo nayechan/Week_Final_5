@@ -8,7 +8,6 @@
 #include "StaticMeshComponent.h"
 #include "CameraActor.h"
 #include "DecalActor.h"
-#include "FireBallActor.h"
 #include "AmbientLightActor.h"
 #include "DirectionalLightActor.h"
 #include "PointLightActor.h"
@@ -59,7 +58,6 @@ namespace
 					Result.push_back({ "Static Mesh Actor", AStaticMeshActor::StaticClass(), "스태틱 메시를 표시하는 액터입니다. (기본 Cube 메시로 생성)" });
 					Result.push_back({ "Decal Actor", ADecalActor::StaticClass(), "데칼 액터입니다." });
 					Result.push_back({ "Fake Spot Light Actor", AFakeSpotLightActor::StaticClass(), "가짜 Spot Light 액터입니다." });
-					Result.push_back({ "Fire Ball Actor", AFireBallActor::StaticClass(), "파이어볼 액터입니다." });
 					Result.push_back({ "Ambient Light Actor", AAmbientLightActor::StaticClass(), "전역 환경광 액터입니다. 씬 전체에 균일하게 적용됩니다." });
 					Result.push_back({ "Directional Light Actor", ADirectionalLightActor::StaticClass(), "방향성 조명 액터입니다. 태양광처럼 평행한 빛을 생성합니다." });
 					Result.push_back({ "Point Light Actor", APointLightActor::StaticClass(), "점광원 액터입니다. 모든 방향으로 균등하게 빛을 방출합니다." });

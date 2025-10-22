@@ -483,7 +483,6 @@ void UResourceManager::InitShaderILMap()
     layout.Add({ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 48, D3D11_INPUT_PER_VERTEX_DATA, 0 });
    
     ShaderToInputLayoutMap["Shaders/Effects/Decal.hlsl"] = layout;
-    ShaderToInputLayoutMap["Shaders/Effects/FireBallShader.hlsl"] = layout;
 	ShaderToInputLayoutMap["Shaders/Materials/UberLit.hlsl"] = layout;
     layout.clear();
 

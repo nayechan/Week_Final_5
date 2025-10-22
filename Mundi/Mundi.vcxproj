@@ -285,7 +285,6 @@
     <ClCompile Include="Source\Runtime\Engine\Components\BillboardComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\CameraComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\DecalComponent.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Components\FireBallComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\HeightFogComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\LineComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\MeshComponent.cpp" />
@@ -298,7 +297,6 @@
     <ClCompile Include="Source\Runtime\Engine\GameFramework\DecalActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\EditorEngine.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\FakeSpotLightActor.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\GameFramework\FireBallActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Level.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\StaticMeshActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\World.cpp" />
@@ -396,12 +394,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="Shaders\Effects\FireBallShader.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Shaders\UI\Gizmo.hlsl">
@@ -526,7 +518,6 @@
     <ClInclude Include="Source\Runtime\Engine\Components\BillboardComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\CameraComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\DecalComponent.h" />
-    <ClInclude Include="Source\Runtime\Engine\Components\FireBallComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\HeightFogComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\LineComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\MeshComponent.h" />
@@ -539,7 +530,6 @@
     <ClInclude Include="Source\Runtime\Engine\GameFramework\DecalActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\EditorEngine.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\FakeSpotLightActor.h" />
-    <ClInclude Include="Source\Runtime\Engine\GameFramework\FireBallActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Level.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\StaticMeshActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\World.h" />

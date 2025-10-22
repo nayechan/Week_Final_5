@@ -107,16 +107,6 @@ struct ColorBufferType // b3
     FVector Padding;
 };
 
-struct FireBallBufferType
-{
-    FVector Center;
-    float Radius;
-    float Intensity;
-    float Falloff;
-    float Padding[2];
-    FLinearColor Color;
-};
-
 struct FLightBufferType
 {
     FAmbientLightInfo AmbientLight;
@@ -173,7 +163,6 @@ MACRO(FXAABufferType)               \
 MACRO(FPixelConstBufferType)        \
 MACRO(ViewProjBufferType)           \
 MACRO(ColorBufferType)              \
-MACRO(FireBallBufferType)           \
 MACRO(CameraBufferType)             \
 MACRO(FLightBufferType)             \
 MACRO(FViewportConstants)           \
@@ -194,7 +183,6 @@ CONSTANT_BUFFER_INFO(FXAABufferType, 2, false, true)
 CONSTANT_BUFFER_INFO(ColorBufferType, 3, true, true)   // b3 color
 CONSTANT_BUFFER_INFO(FPixelConstBufferType, 4, true, true) // GOURAUD에도 사용되므로 VS도 true
 CONSTANT_BUFFER_INFO(DecalBufferType, 6, true, true)
-CONSTANT_BUFFER_INFO(FireBallBufferType, 7, false, true)
 CONSTANT_BUFFER_INFO(CameraBufferType, 7, true, true)  // b7, VS+PS (UberLit.hlsl과 일치)
 CONSTANT_BUFFER_INFO(FLightBufferType, 8, true, true)
 CONSTANT_BUFFER_INFO(FViewportConstants, 10, true, false)   // 뷰 포트 크기에 따라 전체 화면 복사를 보정하기 위해 설정 (10번 고유번호로 사용)

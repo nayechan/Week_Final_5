@@ -23,7 +23,6 @@
 #include "DirectionalLightActor.h"
 #include "Frustum.h"
 #include "Level.h"
-#include "FireBallActor.h"
 #include "LightManager.h"
 
 IMPLEMENT_CLASS(UWorld)
@@ -214,11 +213,6 @@ bool UWorld::DestroyActor(AActor* Actor)
 
 void UWorld::OnActorSpawned(AActor* Actor)
 {
-	if (Actor && Actor->IsA<AFireBallActor>())
-	{
-		// 파이어볼은 스폰 직후 스태틱메시컴포넌트 추가되므로 파티션 등록 재수행
-		Partition->Register(Actor);
-	}
 }
 
 void UWorld::OnActorDestroyed(AActor* Actor)

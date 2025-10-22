@@ -8,9 +8,6 @@
     <FxCompile Include="Shaders\Effects\Decal.hlsl">
       <Filter>Shaders\Effects</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\Effects\FireBallShader.hlsl">
-      <Filter>Shaders\Effects</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\PostProcess\HeightFog_PS.hlsl">
       <Filter>Shaders\PostProcess</Filter>
     </FxCompile>
@@ -130,9 +127,6 @@
     <ClCompile Include="Source\Runtime\Engine\GameFramework\FakeSpotLightActor.cpp">
       <Filter>Source\Runtime\Engine\GameFramework</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Engine\GameFramework\FireBallActor.cpp">
-      <Filter>Source\Runtime\Engine\GameFramework</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Level.cpp">
       <Filter>Source\Runtime\Engine\GameFramework</Filter>
     </ClCompile>
@@ -173,9 +167,6 @@
       <Filter>Source\Runtime\Engine\Components</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Engine\Components\DecalComponent.cpp">
-      <Filter>Source\Runtime\Engine\Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Engine\Components\FireBallComponent.cpp">
       <Filter>Source\Runtime\Engine\Components</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Engine\Components\HeightFogComponent.cpp">
@@ -580,9 +571,6 @@
     <ClInclude Include="Source\Runtime\Engine\GameFramework\FakeSpotLightActor.h">
       <Filter>Source\Runtime\Engine\GameFramework</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Engine\GameFramework\FireBallActor.h">
-      <Filter>Source\Runtime\Engine\GameFramework</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Level.h">
       <Filter>Source\Runtime\Engine\GameFramework</Filter>
     </ClInclude>
@@ -620,9 +608,6 @@
       <Filter>Source\Runtime\Engine\Components</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Engine\Components\DecalComponent.h">
-      <Filter>Source\Runtime\Engine\Components</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Engine\Components\FireBallComponent.h">
       <Filter>Source\Runtime\Engine\Components</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Engine\Components\HeightFogComponent.h">

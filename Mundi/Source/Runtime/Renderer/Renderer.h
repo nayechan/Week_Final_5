@@ -31,11 +31,6 @@ public:
 	uint32 GetCurrentViewportHeight() const { return CurrentViewportHeight; }
 	UPrimitiveComponent* GetPrimitiveCollided(int MouseX, int MouseY) const;
 
-	// 추후 다른 곳을 이동
-	void DrawIndexedPrimitiveComponent(UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology, const TArray<FMaterialSlot>& InComponentMaterialSlots);
-	void DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology);
-	void DrawIndexedPrimitiveComponent(UBillboardComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology);
-
 	// Batch Line Rendering System
 	void BeginLineBatch();
 	void AddLine(const FVector& Start, const FVector& End, const FVector4& Color = FVector4(1.0f, 1.0f, 1.0f, 1.0f));

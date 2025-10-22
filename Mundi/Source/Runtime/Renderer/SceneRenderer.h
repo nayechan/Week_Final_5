@@ -9,7 +9,6 @@ class URenderer;
 class D3D11RHI;
 class UPrimitiveComponent;
 class UDecalComponent;
-class UFireBallComponent;
 class UHeightFogComponent;
 class UAmbientLightComponent;
 class UDirectionalLightComponent;
@@ -33,7 +32,6 @@ struct FVisibleRenderProxySet
 	TArray<UMeshComponent*> Meshes;
 	TArray<UBillboardComponent*> Billboards; // 인게임 빌보드 (파티클, 잔디 등)
 	TArray<UDecalComponent*> Decals;
-	TArray<UFireBallComponent*> FireBalls;
 	TArray<UTextRenderComponent*> Texts;
 
 	// --- Type 2: In-Scene Editor (PP X, Depth-Test O) ---
@@ -104,9 +102,6 @@ private:
 
 	/** @brief 데칼(Decal)을 렌더링하는 패스입니다. */
 	void RenderDecalPass();
-
-	/** @brief FireBall component들을 렌더링하는 패스입니다. */
-	void RenderFireBallPass();
 
 	void RenderPostProcessingPasses();
 	void RenderSceneDepthPostProcess();

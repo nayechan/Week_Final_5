@@ -23,7 +23,6 @@
 #include "BillboardComponent.h"
 #include "DecalComponent.h"
 #include "PerspectiveDecalComponent.h"
-#include "FireBallComponent.h"
 #include "HeightFogComponent.h"
 #include "DirectionalLightComponent.h"
 #include "AmbientLightComponent.h"

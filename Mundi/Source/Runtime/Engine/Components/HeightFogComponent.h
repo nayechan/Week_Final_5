@@ -24,7 +24,7 @@ public:
     float GetStartDistance() const { return StartDistance; }
     float GetFogCutoffDistance() const { return FogCutoffDistance; }
     float GetFogMaxOpacity() const { return FogMaxOpacity; }
-    FLinearColor* GetFogInscatteringColor() const { return FogInscatteringColor; }
+    FLinearColor GetFogInscatteringColor() const { return FogInscatteringColor; }
     float GetFogHeight() const { return GetWorldLocation().Z; }
     
     // Fog Parameters Setters
@@ -33,7 +33,7 @@ public:
     void SetStartDistance(float InDistance) { StartDistance = InDistance; }
     void SetFogCutoffDistance(float InDistance) { FogCutoffDistance = InDistance; }
     void SetFogMaxOpacity(float InOpacity) { FogMaxOpacity = InOpacity; }
-    void SetFogInscatteringColor(FLinearColor* InColor) { FogInscatteringColor = InColor; }
+    void SetFogInscatteringColor(FLinearColor InColor) { FogInscatteringColor = InColor; }
     
     // Rendering
     void RenderHeightFog(URenderer* Renderer);
@@ -56,7 +56,7 @@ private:
     float FogCutoffDistance = 6000.0f;
     float FogMaxOpacity = 1.0f;
 
-    FLinearColor* FogInscatteringColor = nullptr;
+    FLinearColor FogInscatteringColor;
 
     // Full Screen Quad Resources
     class UShader* HeightFogShader = nullptr;

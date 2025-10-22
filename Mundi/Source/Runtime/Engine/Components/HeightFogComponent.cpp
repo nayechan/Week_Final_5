@@ -19,7 +19,7 @@ END_PROPERTIES()
 UHeightFogComponent::UHeightFogComponent()
 {
 	// 사막 느낌
-	FogInscatteringColor = new FLinearColor(0.93f, 0.79f, 0.69f, 1.0f);
+	FogInscatteringColor = FLinearColor(0.93f, 0.79f, 0.69f, 1.0f);
 	HeightFogShader = UResourceManager::GetInstance().Load<UShader>("Shaders/PostProcess/HeightFog_PS.hlsl");
 
 	
@@ -27,11 +27,6 @@ UHeightFogComponent::UHeightFogComponent()
 
 UHeightFogComponent::~UHeightFogComponent()
 {
-	if (FogInscatteringColor != nullptr)
-	{
-		delete FogInscatteringColor;
-		FogInscatteringColor = nullptr;
-	}
 }
 
 void UHeightFogComponent::OnRegister(UWorld* InWorld)
@@ -60,7 +55,7 @@ void UHeightFogComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 		{
 			FVector4 ColorVec;
 			FJsonSerializer::ReadVector4(InOutHandle, "FogInscatteringColor", ColorVec);
-			FogInscatteringColor = new FLinearColor(ColorVec);
+			FogInscatteringColor = FLinearColor(ColorVec);
 		}
 
 		// Load HeightFogShader
@@ -83,9 +78,9 @@ void UHeightFogComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 	else
 	{
 		// Save FogInscatteringColor
-		if (FogInscatteringColor != nullptr)
+		if (FogInscatteringColor != FLinearColor::Zero())
 		{
-			InOutHandle["FogInscatteringColor"] = FJsonSerializer::Vector4ToJson(FogInscatteringColor->ToFVector4());
+			InOutHandle["FogInscatteringColor"] = FJsonSerializer::Vector4ToJson(FogInscatteringColor.ToFVector4());
 		}
 
 		// Save HeightFogShader

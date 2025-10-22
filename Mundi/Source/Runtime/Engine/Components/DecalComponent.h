@@ -28,8 +28,6 @@ protected:
 	~UDecalComponent() override = default;
 
 public:
-	// Render API
-	void RenderAffectedPrimitives(URenderer* Renderer, UPrimitiveComponent* Target);
 	virtual void RenderDebugVolume(URenderer* Renderer) const override;
 
 	// Decal Resource API

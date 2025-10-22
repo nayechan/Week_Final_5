@@ -52,60 +52,6 @@ void UDecalComponent::TickComponent(float DeltaTime)
 	}
 }
 
-
-void UDecalComponent::RenderAffectedPrimitives(URenderer* Renderer, UPrimitiveComponent* Target)
-{
-	UStaticMeshComponent* SMC = Cast<UStaticMeshComponent>(Target);
-	if (!SMC || !SMC->GetStaticMesh())
-	{
-		return;
-	}
-
-	D3D11RHI* RHIDevice = Renderer->GetRHIDevice();
-
-	// Constant Buffer 업데이트
-	FMatrix TargetWorld = Target->GetWorldMatrix();
-	FMatrix TargetWorldInvTranspose = TargetWorld.InverseAffine().Transpose();
-	RHIDevice->SetAndUpdateConstantBuffer(ModelBufferType(TargetWorld, TargetWorldInvTranspose));
-
-	const FMatrix DecalMatrix = GetDecalProjectionMatrix();
-	RHIDevice->SetAndUpdateConstantBuffer(DecalBufferType(DecalMatrix, DecalOpacity));
-
-	// VertexBuffer, IndexBuffer 설정
-	UStaticMesh* Mesh = SMC->GetStaticMesh();
-
-	ID3D11Buffer* VertexBuffer = Mesh->GetVertexBuffer();
-	ID3D11Buffer* IndexBuffer = Mesh->GetIndexBuffer();
-	uint32 VertexCount = Mesh->GetVertexCount();
-	uint32 IndexCount = Mesh->GetIndexCount();
-	UINT Stride = sizeof(FVertexDynamic);
-	UINT Offset = 0;
-
-	RHIDevice->GetDeviceContext()->IASetVertexBuffers(
-		0, 1, &VertexBuffer, &Stride, &Offset
-	);
-	RHIDevice->GetDeviceContext()->IASetIndexBuffer(
-		IndexBuffer, DXGI_FORMAT_R32_UINT, 0
-	);
-
-	RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	RHIDevice->PSSetClampSampler(0); // decal rendering에는 clamp sampler가 적절함
-
-	if (DecalTexture)
-	{
-		ID3D11ShaderResourceView* SRV = DecalTexture->GetShaderResourceView();
-		RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &SRV);
-	}
-	else
-	{
-		UE_LOG("Decal Texture is nullptr!");
-	}
-
-	// DrawCall
-	RHIDevice->GetDeviceContext()->DrawIndexed(IndexCount, 0, 0);
-	
-}
-
 void UDecalComponent::RenderDebugVolume(URenderer* Renderer) const
 {
 	// 라인 색상
