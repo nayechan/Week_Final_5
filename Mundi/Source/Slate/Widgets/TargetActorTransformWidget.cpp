@@ -415,28 +415,42 @@ void UTargetActorTransformWidget::RenderComponentHierarchy(AActor* SelectedActor
 	// 컴포넌트 삭제 실행
 	if (ComponentPendingRemoval)
 	{
-		if (SelectedComponent == ComponentPendingRemoval)
-			SelectedComponent = nullptr;
-
+		// 삭제 전에 선택 해제 (dangling pointer 방지)
+		USceneComponent* NewSelection = nullptr;
 		if (ComponentPendingRemoval->GetAttachParent())
 		{
-			SelectedComponent = ComponentPendingRemoval->GetAttachParent();
+			NewSelection = ComponentPendingRemoval->GetAttachParent();
 		}
 		else
 		{
-			SelectedComponent = ComponentPendingRemoval->GetOwner()->RootComponent;
+			NewSelection = ComponentPendingRemoval->GetOwner()->RootComponent;
 		}
 
+		// SelectionManager를 통해 선택 해제
+		GWorld->GetSelectionManager()->ClearSelection();
+
+		// 컴포넌트 삭제
 		SelectedActor->RemoveOwnedComponent(ComponentPendingRemoval);
 		ComponentPendingRemoval = nullptr;
+
+		// 삭제 후 새로운 컴포넌트 선택
+		if (NewSelection)
+		{
+			GWorld->GetSelectionManager()->SelectComponent(NewSelection);
+		}
 	}
 
 	// 액터 삭제 실행
 	if (ActorPendingRemoval)
 	{
+		// 삭제 전에 선택 해제 (dangling pointer 방지)
+		GWorld->GetSelectionManager()->ClearSelection();
+
+		// 액터 삭제
 		if (UWorld* World = ActorPendingRemoval->GetWorld()) World->DestroyActor(ActorPendingRemoval);
 		else ActorPendingRemoval->Destroy();
-		OnSelectedActorCleared(); // 여기서 SelectedActor가 nullptr이 되므로 루프가 안전하게 종료됨
+
+		OnSelectedActorCleared();
 	}
 
 	ImGui::EndChild();

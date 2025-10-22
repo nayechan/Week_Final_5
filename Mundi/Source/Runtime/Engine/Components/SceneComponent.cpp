@@ -37,9 +37,10 @@ USceneComponent::~USceneComponent()
     AttachChildren.clear();
     for (USceneComponent* Child : ChildrenCopy)
     {
-        if (Child)
+        if (Child && !Child->IsPendingDestroy())
         {
-            ObjectFactory::DeleteObject(Child);
+            // DestroyComponent를 통한 적절한 정리
+            Child->DestroyComponent();
         }
     }
 
@@ -125,14 +126,19 @@ void USceneComponent::AddRelativeScale3D(const FVector& DeltaScale)
 // ──────────────────────────────
 FTransform USceneComponent::GetWorldTransform() const
 {
-    if (AttachParent)
+    // Dangling pointer 방지를 위한 체크
+    if (AttachParent && !AttachParent->IsPendingDestroy())
+    {
         return AttachParent->GetWorldTransform().GetWorldTransform(RelativeTransform);
+    }
+
     return RelativeTransform;
 }
 
 void USceneComponent::SetWorldTransform(const FTransform& W)
 {
-    if (AttachParent)
+    // Dangling pointer 방지를 위한 체크
+    if (AttachParent && !AttachParent->IsPendingDestroy())
     {
         const FTransform ParentWorld = AttachParent->GetWorldTransform();
         RelativeTransform = ParentWorld.GetRelativeTransform(W);

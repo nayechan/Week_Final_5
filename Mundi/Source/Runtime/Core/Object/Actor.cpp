@@ -100,11 +100,11 @@ void AActor::SetRootComponent(USceneComponent* InRoot)
 
 void AActor::AddOwnedComponent(UActorComponent* Component)
 {
-	
 	if (!Component)
 	{
 		return;
 	}
+
 	if (OwnedComponents.count(Component))
 	{
 		return;
@@ -112,7 +112,6 @@ void AActor::AddOwnedComponent(UActorComponent* Component)
 
 	OwnedComponents.insert(Component);
 	Component->SetOwner(this);
-
 	if (USceneComponent* SC = Cast<USceneComponent>(Component))
 	{
 		SceneComponents.AddUnique(SC);
@@ -130,28 +129,37 @@ void AActor::RemoveOwnedComponent(UActorComponent* Component)
 	{
 		return;
 	}
-	if (!OwnedComponents.erase(Component))
+
+	if (!OwnedComponents.count(Component))
 	{
 		return;
 	}
 
-	if (USceneComponent* SC = Cast<USceneComponent>(Component))
+	if (USceneComponent* SceneComponent = Cast<USceneComponent>(Component))
 	{
-		// 루트면 처리 금지/교체 전략
-		if (SC == RootComponent)
+		// 자식 컴포넌트들을 먼저 재귀적으로 삭제
+		// (자식을 먼저 삭제하면 부모의 AttachChildren이 변경되므로 복사본으로 순회)
+		TArray<USceneComponent*> ChildrenCopy = SceneComponent->GetAttachChildren();
+		for (USceneComponent* Child : ChildrenCopy)
 		{
-			// 루트 교체(간단히 null) - 필요시 자식 중 하나로 승급도 가능
+			RemoveOwnedComponent(Child); // 재귀 호출로 자식들 먼저 삭제
+		}
+
+		if (SceneComponent == RootComponent)
+		{
 			RootComponent = nullptr;
 		}
-		SceneComponents.Remove(SC);
-		GWorld->GetPartitionManager()->Unregister(SC);
-		UnregisterComponentTree(SC);
-		SC->DetachFromParent(true);
+
+		SceneComponents.Remove(SceneComponent);
+		GWorld->GetPartitionManager()->Unregister(SceneComponent);
+		SceneComponent->DetachFromParent(true);
 	}
+
+	// OwnedComponents에서 제거
+	OwnedComponents.erase(Component);
+
 	Component->UnregisterComponent();
 	Component->DestroyComponent();
-	
-	
 }
 
 void AActor::RegisterAllComponents(UWorld* InWorld)
