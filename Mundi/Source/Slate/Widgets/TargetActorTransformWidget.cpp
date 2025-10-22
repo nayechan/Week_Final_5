@@ -466,8 +466,21 @@ void UTargetActorTransformWidget::RenderComponentHierarchy(AActor* SelectedActor
 
 void UTargetActorTransformWidget::RenderSelectedActorDetails(AActor* SelectedActor)
 {
+	if (!SelectedActor)
+	{
+		return;
+	}
+	USceneComponent* RootComponent = SelectedActor->GetRootComponent();
+	const TArray<FProperty>& Properties = USceneComponent::StaticClass()->GetProperties();
+	
 
+	UPropertyRenderer::RenderProperties(Properties, RootComponent);
 
+	bool bActorHiddenInGame = SelectedActor->GetActorHiddenInGame();
+	if (ImGui::Checkbox("bActorHiddendInGame", &bActorHiddenInGame))
+	{
+		SelectedActor->SetActorHiddenInGame(bActorHiddenInGame);
+	}
 }
 
 void UTargetActorTransformWidget::RenderSelectedComponentDetails(USceneComponent* SelectedComponent)

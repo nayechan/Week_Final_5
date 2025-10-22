@@ -11,6 +11,9 @@ public:
 	// 단일 프로퍼티 렌더링
 	static bool RenderProperty(const FProperty& Property, void* ObjectInstance);
 
+	// 객체의 원하는 프로퍼티를 카테고리별로 렌더링
+	static void RenderProperties(const TArray<FProperty>& Properties, UObject* Object);
+
 	// 객체의 모든 프로퍼티를 카테고리별로 렌더링
 	static void RenderAllProperties(UObject* Object);
 

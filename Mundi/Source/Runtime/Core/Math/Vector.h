@@ -425,26 +425,28 @@ struct FQuat
 	// ZYX 순서 (Roll → Yaw → Pitch) - 로컬 축 회전
 	static FQuat MakeFromEulerZYX(const FVector& EulerDeg)
 	{
-		float PitchDeg = DegreesToRadians(EulerDeg.X);
-		float YawDeg = DegreesToRadians(EulerDeg.Y);
-		float RollDeg = DegreesToRadians(EulerDeg.Z);
+		const float RollRad = DegreesToRadians(EulerDeg.X); // Roll about X
+		const float PitchRad = DegreesToRadians(EulerDeg.Y); // Pitch about Y
+		const float YawRad = DegreesToRadians(EulerDeg.Z); // Yaw about Z
 
-		const float PX = PitchDeg * 0.5f; // Pitch about X
-		const float PY = YawDeg * 0.5f; // Yaw   about Y
-		const float PZ = RollDeg * 0.5f; // Roll  about Z
+		const float PR = RollRad * 0.5f;
+		const float PP = PitchRad * 0.5f;
+		const float PY = YawRad * 0.5f;
 
-		const float CX = cosf(PX), SX = sinf(PX);
+		const float CR = cosf(PR), SR = sinf(PR);
+		const float CP = cosf(PP), SP = sinf(PP);
 		const float CY = cosf(PY), SY = sinf(PY);
-		const float CZ = cosf(PZ), SZ = sinf(PZ);
 
-		// Order: Rx * Ry * Rz  (intrinsic X→Y→Z)
-		// Mapping: X=Pitch, Y=Yaw, Z=Roll
+		// 2. 올바른 회전 순서: Q = Q_Yaw * Q_Pitch * Q_Roll (Qz * Qy * Qx)
 		FQuat Quat;
-		Quat.X = SX * CY * CZ + CX * SY * SZ;
-		Quat.Y = CX * SY * CZ - SX * CY * SZ;
-		Quat.Z = CX * CY * SZ + SX * SY * CZ;
-		Quat.W = CX * CY * CZ - SX * SY * SZ;
-		return Quat.GetNormalized(); // 필요하면 정규화
+		Quat.X = SR * CP * CY - CR * SP * SY;
+		Quat.Y = CR * SP * CY + SR * CP * SY;
+		Quat.Z = CR * CP * SY - SR * SP * CY;
+		Quat.W = CR * CP * CY + SR * SP * SY;
+
+		// (결과 쿼터니언은 이미 정규화되어 있으므로 GetNormalized()는 
+		//  부동 소수점 오차 보정 외에는 수학적으로 불필요합니다.)
+		return Quat;
 	}
 
 	/**

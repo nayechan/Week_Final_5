@@ -140,14 +140,8 @@ bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectIn
 	return bChanged;
 }
 
-void UPropertyRenderer::RenderAllProperties(UObject* Object)
+void UPropertyRenderer::RenderProperties(const TArray<FProperty>& Properties, UObject* Object)
 {
-	if (!Object)
-		return;
-
-	UClass* Class = Object->GetClass();
-	const TArray<FProperty>& Properties = Class->GetProperties();
-
 	if (Properties.IsEmpty())
 		return;
 
@@ -183,6 +177,17 @@ void UPropertyRenderer::RenderAllProperties(UObject* Object)
 	}
 }
 
+void UPropertyRenderer::RenderAllProperties(UObject* Object)
+{
+	if (!Object)
+		return;
+
+	UClass* Class = Object->GetClass();
+	const TArray<FProperty>& Properties = Class->GetProperties();
+
+	RenderProperties(Properties, Object);
+}
+
 void UPropertyRenderer::RenderAllPropertiesWithInheritance(UObject* Object)
 {
 	if (!Object)
@@ -191,39 +196,7 @@ void UPropertyRenderer::RenderAllPropertiesWithInheritance(UObject* Object)
 	UClass* Class = Object->GetClass();
 	const TArray<FProperty>& AllProperties = Class->GetAllProperties();
 
-	if (AllProperties.IsEmpty())
-		return;
-
-	// 카테고리별로 그룹화
-	TMap<FString, TArray<const FProperty*>> CategorizedProps;
-
-	for (const FProperty& Prop : AllProperties)
-	{
-		if (Prop.bIsEditAnywhere)
-		{
-			FString CategoryName = Prop.Category ? Prop.Category : "Default";
-			if (!CategorizedProps.Contains(CategoryName))
-			{
-				CategorizedProps.Add(CategoryName, TArray<const FProperty*>());
-			}
-			CategorizedProps[CategoryName].Add(&Prop);
-		}
-	}
-
-	// 카테고리별로 렌더링
-	for (auto& Pair : CategorizedProps)
-	{
-		const FString& Category = Pair.first;
-		const TArray<const FProperty*>& Props = Pair.second;
-
-		ImGui::Separator();
-		ImGui::Text("%s", Category.c_str());
-
-		for (const FProperty* Prop : Props)
-		{
-			RenderProperty(*Prop, Object);
-		}
-	}
+	RenderProperties(AllProperties, Object);
 }
 
 // ===== 리소스 캐싱 =====
