@@ -93,6 +93,8 @@ LRESULT CALLBACK UEditorEngine::WndProc(HWND hWnd, UINT message, WPARAM wParam, 
             UINT NewWidth = static_cast<UINT>(ClientWidth);
             UINT NewHeight = static_cast<UINT>(ClientHeight);
             GEngine.RHIDevice.OnResize(NewWidth, NewHeight);
+
+            // Save CLIENT AREA size (will be converted back to window size on load)
             EditorINI["WindowWidth"] = std::to_string(NewWidth);
             EditorINI["WindowHeight"] = std::to_string(NewHeight);
 
@@ -135,17 +137,30 @@ bool UEditorEngine::CreateMainWindow(HINSTANCE hInstance)
     WNDCLASSW wndclass = { 0, WndProc, 0, 0, 0, hIcon, 0, 0, 0, WindowClass };
     RegisterClassW(&wndclass);
 
-    int windowWidth = 1620, windowHeight = 1024;
+    // Load client area size from INI
+    int clientWidth = 1620, clientHeight = 1024;
     if (EditorINI.count("WindowWidth"))
     {
-        try { windowWidth = stoi(EditorINI["WindowWidth"]); } catch (...) {}
+        try { clientWidth = stoi(EditorINI["WindowWidth"]); } catch (...) {}
     }
     if (EditorINI.count("WindowHeight"))
     {
-        try { windowHeight = stoi(EditorINI["WindowHeight"]); } catch (...) {}
+        try { clientHeight = stoi(EditorINI["WindowHeight"]); } catch (...) {}
     }
 
-    HWnd = CreateWindowExW(0, WindowClass, Title, WS_POPUP | WS_VISIBLE | WS_OVERLAPPEDWINDOW,
+    // Validate minimum window size to prevent unusable windows
+    if (clientWidth < 800) clientWidth = 1620;
+    if (clientHeight < 600) clientHeight = 1024;
+
+    // Convert client area size to window size (including title bar and borders)
+    DWORD windowStyle = WS_POPUP | WS_VISIBLE | WS_OVERLAPPEDWINDOW;
+    RECT windowRect = { 0, 0, clientWidth, clientHeight };
+    AdjustWindowRect(&windowRect, windowStyle, FALSE);
+
+    int windowWidth = windowRect.right - windowRect.left;
+    int windowHeight = windowRect.bottom - windowRect.top;
+
+    HWnd = CreateWindowExW(0, WindowClass, Title, windowStyle,
         CW_USEDEFAULT, CW_USEDEFAULT, windowWidth, windowHeight,
         nullptr, nullptr, hInstance, nullptr);
 
