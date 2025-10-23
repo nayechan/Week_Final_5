@@ -37,6 +37,21 @@ void UMaterial::Load(const FString& InFilePath, ID3D11Device* InDevice)
 	}
 }
 
+void UMaterial::Serialize(const bool bInIsLoading, JSON& InOutHandle)
+{
+	Super::Serialize(bInIsLoading, InOutHandle); // 부모 Serialize 호출
+
+	if (bInIsLoading)
+	{
+		// UStaticMeshComponent가 이미 UMaterial 객체를 생성한 후
+		// 이 함수를 호출했다고 가정합니다.
+	}
+	else // 저장
+	{
+		InOutHandle["AssetPath"] = GetFilePath();
+	}
+}
+
 void UMaterial::SetShader(UShader* InShaderResource)
 {
 	Shader = InShaderResource;
@@ -52,7 +67,7 @@ UShader* UMaterial::GetShader()
 	return Shader;
 }
 
-void UMaterial::SetShaderMacros(TArray<FShaderMacro>& InShaderMacro)
+void UMaterial::SetShaderMacros(const TArray<FShaderMacro>& InShaderMacro)
 {
 	if (Shader)
 	{
@@ -140,6 +155,129 @@ UMaterialInstanceDynamic* UMaterialInstanceDynamic::Create(UMaterialInterface* I
 	}
 
 	return new UMaterialInstanceDynamic(InParentMaterial);
+}
+
+void UMaterialInstanceDynamic::Serialize(const bool bInIsLoading, JSON& InOutHandle)
+{
+	Super::Serialize(bInIsLoading, InOutHandle); // 부모 Serialize 호출
+
+	if (bInIsLoading)
+	{
+		// UStaticMeshComponent가 'new UMaterialInstanceDynamic()'로
+		// 빈 객체를 생성한 후, 이 함수를 호출합니다.
+		// 여기서 부모를 로드하고 오버라이드 데이터를 채웁니다.
+
+		// 1. 부모 로드
+		FString ParentPath;
+		FJsonSerializer::ReadString(InOutHandle, "ParentPath", ParentPath, "", false);
+		this->ParentMaterial = UResourceManager::GetInstance().Load<UMaterial>(ParentPath);
+		if (!this->ParentMaterial)
+		{
+			this->ParentMaterial = UResourceManager::GetInstance().GetDefaultMaterial();
+			UE_LOG("UMID::Serialize: Failed to load parent %s. Using default.", ParentPath.c_str());
+		}
+
+		// 2. 오버라이드 데이터 로드
+		JSON OverridesJson;
+		if (FJsonSerializer::ReadObject(InOutHandle, "Overrides", OverridesJson, JSON::Make(JSON::Class::Object), false))
+		{
+			// 2-1. 텍스처 로드
+			JSON TexturesJson;
+			if (FJsonSerializer::ReadObject(OverridesJson, "Textures", TexturesJson, JSON::Make(JSON::Class::Object), false))
+			{
+				TMap<EMaterialTextureSlot, UTexture*> LoadedTextures;
+				for (auto& [SlotKey, PathJson] : TexturesJson.ObjectRange())
+				{
+					uint8 SlotIndex = static_cast<uint8>(std::stoi(SlotKey));
+					FString TexPath = PathJson.ToString();
+					UTexture* Tex = (TexPath == "None" || TexPath.empty()) ? nullptr : UResourceManager::GetInstance().Load<UTexture>(TexPath);
+					LoadedTextures.Add(static_cast<EMaterialTextureSlot>(SlotIndex), Tex);
+				}
+				SetOverriddenTextureParameters(LoadedTextures);
+			}
+
+			// 2-2. 스칼라 파라미터 로드
+			JSON ScalarsJson;
+			if (FJsonSerializer::ReadObject(OverridesJson, "Scalars", ScalarsJson, JSON::Make(JSON::Class::Object), false))
+			{
+				TMap<FString, float> LoadedScalars;
+				for (auto& [ParamName, ValueJson] : ScalarsJson.ObjectRange())
+				{
+					LoadedScalars.Add(ParamName, static_cast<float>(ValueJson.ToFloat()));
+				}
+				SetOverriddenScalarParameters(LoadedScalars);
+			}
+
+			// 2-3. 벡터 파라미터 로드
+			JSON VectorsJson;
+			if (FJsonSerializer::ReadObject(OverridesJson, "Vectors", VectorsJson, JSON::Make(JSON::Class::Object), false))
+			{
+				TMap<FString, FLinearColor> LoadedVectors;
+				for (auto& [ParamName, ColorArrayJson] : VectorsJson.ObjectRange())
+				{
+					if (ColorArrayJson.JSONType() == JSON::Class::Array && ColorArrayJson.size() == 4)
+					{
+						LoadedVectors.Add(ParamName, FLinearColor(
+							static_cast<float>(ColorArrayJson.at(0).ToFloat()),
+							static_cast<float>(ColorArrayJson.at(1).ToFloat()),
+							static_cast<float>(ColorArrayJson.at(2).ToFloat()),
+							static_cast<float>(ColorArrayJson.at(3).ToFloat())
+						));
+					}
+				}
+				SetOverriddenVectorParameters(LoadedVectors);
+			}
+		}
+
+		// 인스턴스 파일 경로는 부모 기반으로 설정 (디버깅/에디터용)
+		if (this->ParentMaterial)
+		{
+			SetFilePath("(Instance) " + this->ParentMaterial->GetFilePath());
+		}
+	}
+	else // 저장
+	{
+		// 1. 부모 경로 저장
+		UMaterialInterface* Parent = GetParentMaterial();
+		InOutHandle["ParentPath"] = Parent ? Parent->GetFilePath() : "None";
+
+		// 2. 오버라이드 데이터 저장
+		JSON OverridesJson = JSON::Make(JSON::Class::Object);
+
+		// 2-1. 텍스처 저장
+		JSON TexturesJson = JSON::Make(JSON::Class::Object);
+		const TMap<EMaterialTextureSlot, UTexture*>& OverriddenTextures = GetOverriddenTextures();
+		for (const auto& Pair : OverriddenTextures)
+		{
+			TexturesJson[std::to_string(static_cast<uint8>(Pair.first))] = Pair.second ? Pair.second->GetFilePath() : "None";
+		}
+		OverridesJson["Textures"] = TexturesJson;
+
+		// 2-2. 스칼라 파라미터 저장
+		JSON ScalarsJson = JSON::Make(JSON::Class::Object);
+		const TMap<FString, float>& OverriddenScalars = GetOverriddenScalarParameters();
+		for (const auto& Pair : OverriddenScalars)
+		{
+			ScalarsJson[Pair.first] = Pair.second;
+		}
+		OverridesJson["Scalars"] = ScalarsJson;
+
+		// 2-3. 벡터 파라미터 저장
+		JSON VectorsJson = JSON::Make(JSON::Class::Object);
+		const TMap<FString, FLinearColor>& OverriddenVectors = GetOverriddenVectorParameters();
+		for (const auto& Pair : OverriddenVectors)
+		{
+			JSON ColorArray = JSON::Make(JSON::Class::Array);
+			ColorArray.append(Pair.second.R);
+			ColorArray.append(Pair.second.G);
+			ColorArray.append(Pair.second.B);
+			ColorArray.append(Pair.second.A);
+			VectorsJson[Pair.first] = ColorArray;
+		}
+		OverridesJson["Vectors"] = VectorsJson;
+
+		InOutHandle["Overrides"] = OverridesJson;
+	}
 }
 
 void UMaterialInstanceDynamic::CopyParametersFrom(const UMaterialInstanceDynamic* Other)
@@ -309,13 +447,14 @@ const FMaterialInfo& UMaterialInstanceDynamic::GetMaterialInfo() const
 
 const TArray<FShaderMacro>& UMaterialInstanceDynamic::GetShaderMacros() const
 {
-	return ParentMaterial->GetShaderMacros();
-}
+	if (ParentMaterial)
+	{
+		return ParentMaterial->GetShaderMacros();
+	}
 
-void UMaterialInstanceDynamic::SetShaderMacros(const TArray<FShaderMacro>& InMacros)
-{
-	OverriddenShaderMacros.Append(InMacros);
-	bIsCachedMaterialInfoDirty = true;
+	// ParentMaterial가 비어있으므로 (정적 TArray를 반환하는 것보다) 안전하게 반환
+	static const TArray<FShaderMacro> EmptyMacros;
+	return EmptyMacros;
 }
 
 void UMaterialInstanceDynamic::SetTextureParameterValue(EMaterialTextureSlot Slot, UTexture* Value)

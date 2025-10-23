@@ -487,7 +487,8 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 
 	// 루프가 시작되기 전에 기본 UberLit 셰이더 포인터를 한 번만 가져옵니다.
 	UShader* DefaultUberlitShader = nullptr;
-	if (UMaterial* DefaultMaterial = UResourceManager::GetInstance().GetDefaultMaterial())
+	UMaterial* DefaultMaterial = UResourceManager::GetInstance().GetDefaultMaterial();
+	if (DefaultMaterial)
 	{
 		DefaultUberlitShader = DefaultMaterial->GetShader();
 	}
@@ -503,6 +504,7 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 		{
 			UMaterial* Material = NewObject<UMaterial>();
 			Material->SetMaterialInfo(InMaterialInfo);
+			Material->SetShaderMacros(DefaultMaterial->GetShaderMacros());
 
 			// 모든 OBJ 파생 머티리얼의 셰이더가 없으면 기본 셰이더로 강제 설정합니다.
 			if (!Material->GetShader())
