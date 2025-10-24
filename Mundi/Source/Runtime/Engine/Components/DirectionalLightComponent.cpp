@@ -3,20 +3,69 @@
 #include "BillboardComponent.h"
 #include "Gizmo/GizmoArrowComponent.h"
 
+#include "RenderManager.h"
+#include "D3D11RHI.h"
+
 UDirectionalLightComponent::UDirectionalLightComponent()
 {
+	CreateShadowResource();
 }
 
 UDirectionalLightComponent::~UDirectionalLightComponent()
 {
+	ReleaseShadowResource();
 }
 
 IMPLEMENT_CLASS(UDirectionalLightComponent)
 
 BEGIN_PROPERTIES(UDirectionalLightComponent)
 	MARK_AS_COMPONENT("디렉셔널 라이트", "방향성 라이트 (태양광 같은 평행광) 컴포넌트입니다.")
+	ADD_PROPERTY_RANGE(int, ShadowMapWidth, "ShadowMap", 32, 2048, true, "쉐도우 맵 Width")
+	ADD_PROPERTY_RANGE(int, ShadowMapHeight, "ShadowMap", 32, 2048, true, "쉐도우 맵 Height")
+	ADD_PROPERTY_RANGE(float, Near, "ShadowMap", 0.01f, 10.0f, true, "쉐도우 맵 Near Plane")
+	ADD_PROPERTY_RANGE(float, Far, "ShadowMap", 11.0f, 1000.0f, true, "쉐도우 맵 Far Plane")
+	ADD_PROPERTY_SRV(ID3D11ShaderResourceView*, ShadowMapSRV, "ShadowMap", true, "쉐도우 맵 Far Plane")
 END_PROPERTIES()
+void UDirectionalLightComponent::ReleaseShadowResource()
+{
+	ShadowMapSRV->Release();
+	ShadowMapDSV->Release();
+}
+void UDirectionalLightComponent::CreateShadowResource()
+{
+	ID3D11Device* Device = URenderManager::GetInstance().GetRenderer()->GetRHIDevice()->GetDevice();
 
+	ShadowMapViewport.Width = (float)ShadowMapWidth;
+	ShadowMapViewport.Height = (float)ShadowMapHeight;
+	D3D11_TEXTURE2D_DESC TexDesc = {};
+	TexDesc.Width = ShadowMapWidth;
+	TexDesc.Height = ShadowMapHeight;
+	TexDesc.MipLevels = 1;
+	TexDesc.ArraySize = 1;
+	TexDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+	TexDesc.SampleDesc.Count = 1;
+	TexDesc.SampleDesc.Quality = 0;
+	TexDesc.Usage = D3D11_USAGE_DEFAULT;
+	TexDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+
+	ID3D11Texture2D* DepthMap = {};
+	Device->CreateTexture2D(&TexDesc, nullptr, &DepthMap);
+
+	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+	SRVDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+	SRVDesc.Texture2D.MipLevels = TexDesc.MipLevels;
+	SRVDesc.Texture2D.MostDetailedMip = 0;
+	Device->CreateShaderResourceView(DepthMap, &SRVDesc, &ShadowMapSRV);
+
+	D3D11_DEPTH_STENCIL_VIEW_DESC DSVDesc = {};
+	DSVDesc.Flags = 0;
+	DSVDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	DSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+	Device->CreateDepthStencilView(DepthMap, &DSVDesc, &ShadowMapDSV);
+
+	DepthMap->Release();
+}
 FVector UDirectionalLightComponent::GetLightDirection() const
 {
 	// Z-Up Left-handed 좌표계에서 Forward는 X축
