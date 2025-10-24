@@ -98,7 +98,9 @@ public:
     static uint64 GetTotalPickTime() { return TotalPickTime; }
 private:
     /** === 내부 헬퍼 함수들 === */
-    static bool CheckGizmoComponentPicking(const UStaticMeshComponent* Component, const FRay& Ray, float& OutDistance, FVector& OutImpactPoint);
+    static bool CheckGizmoComponentPicking(UStaticMeshComponent* Component, const FRay& Ray, 
+                                           float ViewWidth, float ViewHeight, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix,
+                                           float& OutDistance, FVector& OutImpactPoint);
 
     static uint32 TotalPickCount;
     static uint64 LastPickTime;

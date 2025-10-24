@@ -36,11 +36,13 @@ public:
     UMaterialInterface* GetMaterial(uint32 InSectionIndex) const override;
     void SetMaterial(uint32 InElementIndex, UMaterialInterface* InNewMaterial) override;
 
+    void SetDrawScale(float ViewWidth, float ViewHeight, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix);
+
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
     DECLARE_DUPLICATE(UGizmoArrowComponent)
 protected:
-    float ComputeScreenConstantScale(const FSceneView* View, float TargetPixels) const;
+    float ComputeScreenConstantScale(float ViewWidth, float ViewHeight, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix, float TargetPixels) const;
 
 protected:
     FVector Direction;

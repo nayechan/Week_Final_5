@@ -403,8 +403,11 @@ uint32 CPickingSystem::IsHoveringGizmoForViewport(AGizmoActor* GizmoTransActor, 
 {
 	if (!GizmoTransActor || !Camera)
 		return 0;
+
 	float ViewportAspectRatio = ViewportSize.X / ViewportSize.Y;
-	if (ViewportSize.Y == 0) ViewportAspectRatio = 1.0f; // 0으로 나누기 방지
+	if (ViewportSize.Y == 0)
+		ViewportAspectRatio = 1.0f; // 0으로 나누기 방지
+
 	// 뷰포트별 레이 생성 - 전달받은 뷰포트 정보 사용
 	const FMatrix View = Camera->GetViewMatrix();
 	const FMatrix Proj = Camera->GetProjectionMatrix(ViewportAspectRatio, Viewport);
@@ -412,6 +415,7 @@ uint32 CPickingSystem::IsHoveringGizmoForViewport(AGizmoActor* GizmoTransActor, 
 	const FVector CameraRight = Camera->GetRight();
 	const FVector CameraUp = Camera->GetUp();
 	const FVector CameraForward = Camera->GetForward();
+
 	FRay Ray = MakeRayFromViewport(View, Proj, CameraWorldPos, CameraRight, CameraUp, CameraForward,
 		ViewportMousePos, ViewportSize, ViewportOffset);
 
@@ -427,7 +431,7 @@ uint32 CPickingSystem::IsHoveringGizmoForViewport(AGizmoActor* GizmoTransActor, 
 	case EGizmoMode::Translate:
 		if (UStaticMeshComponent* ArrowX = Cast<UStaticMeshComponent>(GizmoTransActor->GetArrowX()))
 		{
-			if (CheckGizmoComponentPicking(ArrowX, Ray, HitDistance, TempImpactPoint))
+			if (CheckGizmoComponentPicking(ArrowX, Ray, ViewportSize.X, ViewportSize.Y, View, Proj, HitDistance, TempImpactPoint))
 			{
 				if (HitDistance < ClosestDistance)
 				{
@@ -441,7 +445,7 @@ uint32 CPickingSystem::IsHoveringGizmoForViewport(AGizmoActor* GizmoTransActor, 
 		// Y축 화살표 검사
 		if (UStaticMeshComponent* ArrowY = Cast<UStaticMeshComponent>(GizmoTransActor->GetArrowY()))
 		{
-			if (CheckGizmoComponentPicking(ArrowY, Ray, HitDistance, TempImpactPoint))
+			if (CheckGizmoComponentPicking(ArrowY, Ray, ViewportSize.X, ViewportSize.Y, View, Proj, HitDistance, TempImpactPoint))
 			{
 				if (HitDistance < ClosestDistance)
 				{
@@ -455,7 +459,7 @@ uint32 CPickingSystem::IsHoveringGizmoForViewport(AGizmoActor* GizmoTransActor, 
 		// Z축 화살표 검사
 		if (UStaticMeshComponent* ArrowZ = Cast<UStaticMeshComponent>(GizmoTransActor->GetArrowZ()))
 		{
-			if (CheckGizmoComponentPicking(ArrowZ, Ray, HitDistance, TempImpactPoint))
+			if (CheckGizmoComponentPicking(ArrowZ, Ray, ViewportSize.X, ViewportSize.Y, View, Proj, HitDistance, TempImpactPoint))
 			{
 				if (HitDistance < ClosestDistance)
 				{
@@ -469,7 +473,7 @@ uint32 CPickingSystem::IsHoveringGizmoForViewport(AGizmoActor* GizmoTransActor, 
 	case EGizmoMode::Scale:
 		if (UStaticMeshComponent* ScaleX = Cast<UStaticMeshComponent>(GizmoTransActor->GetScaleX()))
 		{
-			if (CheckGizmoComponentPicking(ScaleX, Ray, HitDistance, TempImpactPoint))
+			if (CheckGizmoComponentPicking(ScaleX, Ray, ViewportSize.X, ViewportSize.Y, View, Proj, HitDistance, TempImpactPoint))
 			{
 				if (HitDistance < ClosestDistance)
 				{
@@ -483,7 +487,7 @@ uint32 CPickingSystem::IsHoveringGizmoForViewport(AGizmoActor* GizmoTransActor, 
 		// Y축 화살표 검사
 		if (UStaticMeshComponent* ScaleY = Cast<UStaticMeshComponent>(GizmoTransActor->GetScaleY()))
 		{
-			if (CheckGizmoComponentPicking(ScaleY, Ray, HitDistance, TempImpactPoint))
+			if (CheckGizmoComponentPicking(ScaleY, Ray, ViewportSize.X, ViewportSize.Y, View, Proj, HitDistance, TempImpactPoint))
 			{
 				if (HitDistance < ClosestDistance)
 				{
@@ -497,7 +501,7 @@ uint32 CPickingSystem::IsHoveringGizmoForViewport(AGizmoActor* GizmoTransActor, 
 		// Z축 화살표 검사
 		if (UStaticMeshComponent* ScaleZ = Cast<UStaticMeshComponent>(GizmoTransActor->GetScaleZ()))
 		{
-			if (CheckGizmoComponentPicking(ScaleZ, Ray, HitDistance, TempImpactPoint))
+			if (CheckGizmoComponentPicking(ScaleZ, Ray, ViewportSize.X, ViewportSize.Y, View, Proj, HitDistance, TempImpactPoint))
 			{
 				if (HitDistance < ClosestDistance)
 				{
@@ -511,7 +515,7 @@ uint32 CPickingSystem::IsHoveringGizmoForViewport(AGizmoActor* GizmoTransActor, 
 	case EGizmoMode::Rotate:
 		if (UStaticMeshComponent* RotateX = Cast<UStaticMeshComponent>(GizmoTransActor->GetRotateX()))
 		{
-			if (CheckGizmoComponentPicking(RotateX, Ray, HitDistance, TempImpactPoint))
+			if (CheckGizmoComponentPicking(RotateX, Ray, ViewportSize.X, ViewportSize.Y, View, Proj, HitDistance, TempImpactPoint))
 			{
 				if (HitDistance < ClosestDistance)
 				{
@@ -525,7 +529,7 @@ uint32 CPickingSystem::IsHoveringGizmoForViewport(AGizmoActor* GizmoTransActor, 
 		// Y축 화살표 검사
 		if (UStaticMeshComponent* RotateY = Cast<UStaticMeshComponent>(GizmoTransActor->GetRotateY()))
 		{
-			if (CheckGizmoComponentPicking(RotateY, Ray, HitDistance, TempImpactPoint))
+			if (CheckGizmoComponentPicking(RotateY, Ray, ViewportSize.X, ViewportSize.Y, View, Proj, HitDistance, TempImpactPoint))
 			{
 				if (HitDistance < ClosestDistance)
 				{
@@ -539,7 +543,7 @@ uint32 CPickingSystem::IsHoveringGizmoForViewport(AGizmoActor* GizmoTransActor, 
 		// Z축 화살표 검사
 		if (UStaticMeshComponent* RotateZ = Cast<UStaticMeshComponent>(GizmoTransActor->GetRotateZ()))
 		{
-			if (CheckGizmoComponentPicking(RotateZ, Ray, HitDistance, TempImpactPoint))
+			if (CheckGizmoComponentPicking(RotateZ, Ray, ViewportSize.X, ViewportSize.Y, View, Proj, HitDistance, TempImpactPoint))
 			{
 				if (HitDistance < ClosestDistance)
 				{
@@ -557,9 +561,16 @@ uint32 CPickingSystem::IsHoveringGizmoForViewport(AGizmoActor* GizmoTransActor, 
 	return ClosestAxis;
 }
 
-bool CPickingSystem::CheckGizmoComponentPicking(const UStaticMeshComponent* Component, const FRay& Ray, float& OutDistance, FVector& OutImpactPoint)
+bool CPickingSystem::CheckGizmoComponentPicking(UStaticMeshComponent* Component, const FRay& Ray,
+	float ViewWidth, float ViewHeight, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix,
+	float& OutDistance, FVector& OutImpactPoint)
 {
 	if (!Component) return false;
+
+	if (UGizmoArrowComponent* GizmoComponent = Cast<UGizmoArrowComponent>(Component))
+	{
+		GizmoComponent->SetDrawScale(ViewWidth, ViewHeight, ViewMatrix, ProjectionMatrix);
+	}
 
 	// Gizmo 메시는 FStaticMesh(쿠킹된 데이터)를 사용
 	FStaticMesh* StaticMesh = Component->GetStaticMesh()->GetStaticMeshAsset();

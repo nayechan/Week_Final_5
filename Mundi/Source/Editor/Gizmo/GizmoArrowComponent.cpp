@@ -29,36 +29,45 @@ void UGizmoArrowComponent::SetMaterial(uint32 InElementIndex, UMaterialInterface
 	GizmoMaterial = InNewMaterial;
 }
 
-float UGizmoArrowComponent::ComputeScreenConstantScale(const FSceneView* View, float TargetPixels) const
+float UGizmoArrowComponent::ComputeScreenConstantScale(float ViewWidth, float ViewHeight, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix, float TargetPixels) const
 {
-	float H = (float)std::max<uint32>(1, View->ViewRect.Height());
-	float W = (float)std::max<uint32>(1, View->ViewRect.Width());
-
-	const FMatrix& Proj = View->ProjectionMatrix;
-	const FMatrix& ViewMatrix = View->ViewMatrix;
-
-	const bool bOrtho = std::fabs(Proj.M[3][3] - 1.0f) < KINDA_SMALL_NUMBER;
+	const bool bOrtho = std::fabs(ProjectionMatrix.M[3][3] - 1.0f) < KINDA_SMALL_NUMBER;
 	float WorldPerPixel = 0.0f;
 	if (bOrtho)
 	{
-		const float HalfH = 1.0f / Proj.M[1][1];
-		WorldPerPixel = (2.0f * HalfH) / H;
+		const float HalfH = 1.0f / ProjectionMatrix.M[1][1];
+		WorldPerPixel = (2.0f * HalfH) / ViewHeight;
 	}
 	else
 	{
-		const float YScale = Proj.M[1][1];
+		const float YScale = ProjectionMatrix.M[1][1];
 		const FVector GizPosWorld = GetWorldLocation();
 		const FVector4 GizPos4(GizPosWorld.X, GizPosWorld.Y, GizPosWorld.Z, 1.0f);
 		const FVector4 ViewPos4 = GizPos4 * ViewMatrix;
 		float Z = ViewPos4.Z;
 		if (Z < 1.0f) Z = 1.0f;
-		WorldPerPixel = (2.0f * Z) / (H * YScale);
+		WorldPerPixel = (2.0f * Z) / (ViewHeight * YScale);
 	}
 
 	float ScaleFactor = TargetPixels * WorldPerPixel;
 	if (ScaleFactor < 0.001f) ScaleFactor = 0.001f;
 	if (ScaleFactor > 10000.0f) ScaleFactor = 10000.0f;
 	return ScaleFactor;
+}
+
+// View 화면에 그려지는 크기를 반환
+void UGizmoArrowComponent::SetDrawScale(float ViewWidth, float ViewHeight, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix)
+{
+	FVector DrawScale = DefaultScale;
+
+	// Screen에 따라 크기 자동 조절
+	if (bUseScreenConstantScale)
+	{
+		const float ScaleFactor = ComputeScreenConstantScale(ViewWidth, ViewHeight, ViewMatrix, ProjectionMatrix, 30.0f);
+		DrawScale *= ScaleFactor;
+	}
+
+	SetWorldScale(DrawScale);
 }
 
 void UGizmoArrowComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View)
@@ -68,25 +77,13 @@ void UGizmoArrowComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMesh
 		return; // 그릴 메시 애셋이 없음
 	}
 
-	// --- 스케일 계산 ---
-	if (bUseScreenConstantScale)
+	if (!View)
 	{
-		if (!View)
-		{
-			UE_LOG("GizmoArrowComponent requires a valid FSceneView to compute scale. Gizmo might not scale correctly.");
-			return;
-		}
-		else
-		{
-			const float ScaleFactor = ComputeScreenConstantScale(View, 30.0f);
-			SetWorldScale(DefaultScale * ScaleFactor);
-		}
+		return; // 그릴 화면이 없음
 	}
-	else
-	{
-		// Use world-space scale directly (for DirectionGizmo etc.)
-		SetWorldScale(DefaultScale);
-	}
+
+	// 화면에 그려지는 크기 설정
+	SetDrawScale(View->ViewRect.Width(), View->ViewRect.Height(), View->ViewMatrix, View->ProjectionMatrix);
 
 	// --- 사용할 머티리얼 결정 ---
 	UMaterialInterface* MaterialToUse = GizmoMaterial;
