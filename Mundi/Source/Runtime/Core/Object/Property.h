@@ -16,7 +16,8 @@ enum class EPropertyType : uint8
 	Texture,        // UTexture* 타입 (리소스 선택 UI)
 	StaticMesh,     // UStaticMesh* 타입 (리소스 선택 UI)
 	Material,		// UMaterial* 타입 (리소스 선택 UI)
-	Array			// TArray 용으로 추가
+	Array,			// TArray 용으로 추가
+	SRV,				
 
 	// 추후 추가될 프로퍼티들은 직접 해줘야함.
 };

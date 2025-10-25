@@ -88,7 +88,9 @@ bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectIn
 			break;
 		}
 		break;
-
+	case EPropertyType::SRV:
+		bChanged = RenderSRVProperty(Property, ObjectInstance);
+		break;
 	default:
 		ImGui::Text("%s: [Unknown Type]", Property.Name);
 		break;
@@ -413,6 +415,19 @@ bool UPropertyRenderer::RenderTextureProperty(const FProperty& Prop, void* Insta
 
 		return true;
 	}
+
+	return false;
+}
+bool UPropertyRenderer::RenderSRVProperty(const FProperty& Prop, void* Instance)
+{
+	ID3D11ShaderResourceView** SRVPtr = Prop.GetValuePtr<ID3D11ShaderResourceView*>(Instance);
+
+	ImGui::Image(
+		(ImTextureID)*SRVPtr,          // SRV를 ImTextureID로 캐스팅
+		ImVec2(256, 256),            // 표시 크기
+		ImVec2(0, 0),                // UV 시작 (좌상단)
+		ImVec2(1, 1)                 // UV 끝 (우하단)
+	);
 
 	return false;
 }

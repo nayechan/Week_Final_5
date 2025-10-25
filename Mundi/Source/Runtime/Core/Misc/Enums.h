@@ -25,9 +25,9 @@ struct FMaterialInfo
 
     FVector TransmissionFilter = FVector::One(); // Tf
 
-    float OpticalDensity = -1.0f; // Ni
-    float Transparency = -1.0f; // Tr Or d
-    float SpecularExponent = -1.0f; // Ns
+    float OpticalDensity = 1.0f; // Ni
+    float Transparency = 0.0f; // Tr Or d
+    float SpecularExponent = 32.0f; // Ns
     float BumpMultiplier = 1.0f; // map_Bump -bm
 
     FString MaterialName;
