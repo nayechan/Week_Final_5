@@ -156,7 +156,7 @@ private:
     ID3D11Texture2D* ShadowAtlasTexture2D = nullptr;
     ID3D11DepthStencilView* ShadowAtlasDSV2D = nullptr;
     ID3D11ShaderResourceView* ShadowAtlasSRV2D = nullptr; // t9
-    uint32 ShadowAtlasSize2D = 4096;
+    uint32 ShadowAtlasSize2D = 8192;
 
     // Atlas 2: 큐브맵 아틀라스 (Point Light용)
     ID3D11Texture2D* ShadowAtlasTextureCube = nullptr; // TextureCubeArray 리소스

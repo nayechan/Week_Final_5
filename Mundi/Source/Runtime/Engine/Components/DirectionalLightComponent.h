@@ -35,18 +35,9 @@ public:
 	// Update Gizmo to match light properties
 	void UpdateDirectionGizmo();
 
-	void DrawShadowMap();
-
-private:
-	void ReleaseShadowResource();
-	void CreateShadowResource();
 protected:
 	// Direction Gizmo (shows light direction)
 	class UGizmoArrowComponent* DirectionGizmo = nullptr;
-
-
-	D3D11_VIEWPORT ShadowMapViewport = {};
-	ID3D11DepthStencilView* ShadowMapDSV = nullptr;
 	ID3D11ShaderResourceView* ShadowMapSRV = nullptr;
 private:
 	uint32 ShadowMapWidth = 512;

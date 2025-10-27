@@ -10,57 +10,91 @@
 
 UDirectionalLightComponent::UDirectionalLightComponent()
 {
-	CreateShadowResource();
 }
 
 UDirectionalLightComponent::~UDirectionalLightComponent()
 {
-	ReleaseShadowResource();
 }
+
+
+// 익명 네임스페이스 (Anonymous Namespace) 사용
+namespace
+{
+	/**
+	 * @brief Perspective Shadow Mapping (PSM)을 위한 최종 투영 행렬을 계산합니다.
+	 * 라이트 공간 AABB를 기반으로 X, Y는 직교 투영하고, Z는 원근 왜곡합니다. (D3D NDC [0, 1] 기준)
+	 * @param LightSpaceAABB 카메라 절두체 8개 꼭짓점을 라이트 뷰 공간으로 변환한 후 계산된 AABB.
+	 * @return 계산된 PSM 투영 행렬 (4x4).
+	 */
+	FMatrix CalculatePSMProjectionMatrix(const FAABB& LightSpaceAABB)
+	{
+		// 1. 라이트 공간 AABB에서 X, Y, Z 범위 추출
+		//    OrthoMatrix 함수 파라미터 순서(R, L, T, B, F, N)에 맞게 변수 사용
+		float L = LightSpaceAABB.Min.X;
+		float R = LightSpaceAABB.Max.X;
+		float B = LightSpaceAABB.Min.Y;
+		float T = LightSpaceAABB.Max.Y;
+		float N = LightSpaceAABB.Min.Z; // 라이트 공간에서의 Near
+		float F = LightSpaceAABB.Max.Z; // 라이트 공간에서의 Far
+
+		// Z 범위 유효성 검사 (0으로 나누기 방지)
+		if (F <= N)
+		{
+			// 유효하지 않은 범위면 기본 직교 행렬 반환
+			UE_LOG("CalculatePSMProjectionMatrix: Invalid Z range (NearZ >= FarZ).");
+			return FMatrix::OrthoMatrix(R, L, T, B, F, N); // 원래 함수 호출
+		}
+		// 추가: XY 범위 유효성 검사
+		if (R <= L || T <= B)
+		{
+			UE_LOG("CalculatePSMProjectionMatrix: Invalid XY range.");
+			return FMatrix::OrthoMatrix(R, L, T, B, F, N); // 원래 함수 호출
+		}
+
+		// 2. 직교 투영 행렬의 X, Y 관련 요소 계산 (제공된 OrthoMatrix 함수 로직 사용)
+		const float M_A = 2.0f / (R - L); // X Scale
+		const float M_B = 2.0f / (T - B); // Y Scale
+		const float M_D = -(R + L) / (R - L); // X Offset
+		const float M_E = -(T + B) / (T - B); // Y Offset
+
+		// 3. PSM 왜곡을 위한 Z 요소 계산 (D3D NDC [0, 1] 기준)
+		const float A_psm = F / (F - N); // Z Scale (PSM)
+		const float B_psm = -N * F / (F - N); // Z Offset (PSM)
+
+		// 4. 최종 PSM 행렬 구성 (제공된 OrthoMatrix 함수의 생성자 방식 사용, Row-Major 가정)
+		return FMatrix(
+			M_A, 0.0f, 0.0f, 0.0f,  // Row 0
+			0.0f, M_B, 0.0f, 0.0f,  // Row 1
+			0.0f, 0.0f, A_psm, 1.0f,  // Row 2: PSM Z scale, Copy Z to W
+			M_D, M_E, B_psm, 0.0f   // Row 3: Ortho XY offsets, PSM Z offset, W' = 0
+		);
+	}
+} // end anonymous namespace
 
 void UDirectionalLightComponent::GetShadowRenderRequests(FSceneView* View, TArray<FShadowRenderRequest>& OutRequests)
 {
-	/*Camera->GetOwner()->SetActorRotation(FQuat::Identity());
-	Camera->GetOwner()->SetActorLocation(FVector(0, 0, 0));*/
-	//ndc로 보낸 후 ndc를 찍어보자
-	FMatrix CameraViewMat = View->Camera->GetViewMatrix(); //zup to yup 포함
-	FMatrix CameraProjection = View->Camera->GetProjectionMatrix(View->Viewport->GetAspectRatio(), View->Viewport);
-	FMatrix CameraVP = CameraViewMat * CameraProjection;
-	//FMatrix ShadowMapView = FMatrix::YUpToZUp * Camera->GetWorldRotation().ToMatrix() * GetWorldRotation().Inverse().ToMatrix() * FMatrix::ZUpToYUp;
-	//FMatrix ShadowMapView = Camera->GetViewMatrix().InverseAffine();
-	FMatrix ShadowMapViewUV = CameraViewMat.InverseAffine() * GetWorldRotation().Inverse().ToMatrix() * FMatrix::ZUpToYUp;
 	FMatrix ShadowMapView = GetWorldRotation().Inverse().ToMatrix() * FMatrix::ZUpToYUp;
-	FMatrix ShadowMapOrtho;
+	FMatrix RotInv = GetWorldRotation().Inverse().ToMatrix();
 
 	TArray<FVector> CameraFrustum = View->Camera->GetViewAreaVerticesWS(View->Viewport);
-	FVector4 Frustum[8];
-	for (int i = 0; i < 8; i++)
-	{
-		Frustum[i] = FVector4(CameraFrustum[i].X, CameraFrustum[i].Y, CameraFrustum[i].Z, 1.0f);
-		Frustum[i] = Frustum[i] * CameraVP;
-		Frustum[i].X /= Frustum[i].W;
-		Frustum[i].Y /= Frustum[i].W;
-		Frustum[i].Z /= Frustum[i].W;
-		Frustum[i].W = 1;
-		Frustum[i] = Frustum[i] * ShadowMapViewUV;
-		//CameraFrustum[i].X = Frustum[i].X;
-		//CameraFrustum[i].Y = Frustum[i].Y;
-		//CameraFrustum[i].Z = Frustum[i].Z;
 
-		CameraFrustum[i] = CameraFrustum[i] * ShadowMapView;
+	for (FVector& CameraFrustumPoint : CameraFrustum)
+	{
+		CameraFrustumPoint = CameraFrustumPoint * ShadowMapView;
 	}
 
-	//LightView Space + 축 변경 AABB
 	FAABB CameraFrustumAABB = FAABB(CameraFrustum);
-	FVector AABBCamPos = CameraFrustumAABB.GetCenter();
-	AABBCamPos.Z = CameraFrustumAABB.Min.Z;
-	ShadowMapOrtho = FMatrix::OrthoMatrix(CameraFrustumAABB);
+
+	FMatrix ShadowMapOrtho = FMatrix::OrthoMatrix(CameraFrustumAABB);
+
+	// [권장] 최종 PSM 행렬을 직접 계산하는 함수 사용
+	FMatrix FinalProjectionMatrix = ShadowMapOrtho;
 
 	FShadowRenderRequest ShadowRenderRequest;
 	ShadowRenderRequest.LightOwner = this;
 	ShadowRenderRequest.ViewMatrix = ShadowMapView;
 	ShadowRenderRequest.ProjectionMatrix = ShadowMapOrtho;
-	ShadowRenderRequest.Size = 1024;
+	ShadowRenderRequest.Size = 8192;
 	ShadowRenderRequest.SubViewIndex = 0;
 	ShadowRenderRequest.AtlasScaleOffset = 0;
 	OutRequests.Add(ShadowRenderRequest);
@@ -76,46 +110,7 @@ BEGIN_PROPERTIES(UDirectionalLightComponent)
 	ADD_PROPERTY_RANGE(float, Far, "ShadowMap", 11.0f, 1000.0f, true, "쉐도우 맵 Far Plane")
 	ADD_PROPERTY_SRV(ID3D11ShaderResourceView*, ShadowMapSRV, "ShadowMap", true, "쉐도우 맵 Far Plane")
 END_PROPERTIES()
-void UDirectionalLightComponent::ReleaseShadowResource()
-{
-	ShadowMapSRV->Release();
-	ShadowMapDSV->Release();
-}
-void UDirectionalLightComponent::CreateShadowResource()
-{
-	ID3D11Device* Device = URenderManager::GetInstance().GetRenderer()->GetRHIDevice()->GetDevice();
 
-	ShadowMapViewport.Width = (float)ShadowMapWidth;
-	ShadowMapViewport.Height = (float)ShadowMapHeight;
-	D3D11_TEXTURE2D_DESC TexDesc = {};
-	TexDesc.Width = ShadowMapWidth;
-	TexDesc.Height = ShadowMapHeight;
-	TexDesc.MipLevels = 1;
-	TexDesc.ArraySize = 1;
-	TexDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
-	TexDesc.SampleDesc.Count = 1;
-	TexDesc.SampleDesc.Quality = 0;
-	TexDesc.Usage = D3D11_USAGE_DEFAULT;
-	TexDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-
-	ID3D11Texture2D* DepthMap = {};
-	Device->CreateTexture2D(&TexDesc, nullptr, &DepthMap);
-
-	D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
-	SRVDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-	SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	SRVDesc.Texture2D.MipLevels = TexDesc.MipLevels;
-	SRVDesc.Texture2D.MostDetailedMip = 0;
-	Device->CreateShaderResourceView(DepthMap, &SRVDesc, &ShadowMapSRV);
-
-	D3D11_DEPTH_STENCIL_VIEW_DESC DSVDesc = {};
-	DSVDesc.Flags = 0;
-	DSVDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	DSVDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	Device->CreateDepthStencilView(DepthMap, &DSVDesc, &ShadowMapDSV);
-
-	DepthMap->Release();
-}
 FVector UDirectionalLightComponent::GetLightDirection() const
 {
 	// Z-Up Left-handed 좌표계에서 Forward는 X축
