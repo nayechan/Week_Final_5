@@ -662,7 +662,7 @@ void D3D11RHI::CreateRasterizerState()
 
     // 섀도우 아티팩트(Acne) 방지를 위한 Bias 설정
     ShadowRasterizerDesc.DepthBias = 1000;              // (값은 튜닝 필요)
-    ShadowRasterizerDesc.SlopeScaledDepthBias = 2.5f;   // (값은 튜닝 필요)
+    ShadowRasterizerDesc.SlopeScaledDepthBias = 4.0f;   // (값은 튜닝 필요)
     ShadowRasterizerDesc.DepthBiasClamp = 0.0f;
 
     Device->CreateRasterizerState(&ShadowRasterizerDesc, &ShadowRasterizerState);
