@@ -8,6 +8,17 @@
 #include "RenderManager.h"
 #include "D3D11RHI.h"
 
+IMPLEMENT_CLASS(UDirectionalLightComponent)
+
+BEGIN_PROPERTIES(UDirectionalLightComponent)
+	MARK_AS_COMPONENT("디렉셔널 라이트", "방향성 라이트 (태양광 같은 평행광) 컴포넌트입니다.")
+	ADD_PROPERTY_RANGE(int, ShadowMapWidth, "ShadowMap", 32, 2048, true, "쉐도우 맵 Width")
+	ADD_PROPERTY_RANGE(int, ShadowMapHeight, "ShadowMap", 32, 2048, true, "쉐도우 맵 Height")
+	ADD_PROPERTY_RANGE(float, Near, "ShadowMap", 0.01f, 10.0f, true, "쉐도우 맵 Near Plane")
+	ADD_PROPERTY_RANGE(float, Far, "ShadowMap", 11.0f, 1000.0f, true, "쉐도우 맵 Far Plane")
+	ADD_PROPERTY_SRV(ID3D11ShaderResourceView*, ShadowMapSRV, "ShadowMap", true, "쉐도우 맵 Far Plane")
+END_PROPERTIES()
+
 UDirectionalLightComponent::UDirectionalLightComponent()
 {
 }
@@ -15,61 +26,6 @@ UDirectionalLightComponent::UDirectionalLightComponent()
 UDirectionalLightComponent::~UDirectionalLightComponent()
 {
 }
-
-
-// 익명 네임스페이스 (Anonymous Namespace) 사용
-namespace
-{
-	/**
-	 * @brief Perspective Shadow Mapping (PSM)을 위한 최종 투영 행렬을 계산합니다.
-	 * 라이트 공간 AABB를 기반으로 X, Y는 직교 투영하고, Z는 원근 왜곡합니다. (D3D NDC [0, 1] 기준)
-	 * @param LightSpaceAABB 카메라 절두체 8개 꼭짓점을 라이트 뷰 공간으로 변환한 후 계산된 AABB.
-	 * @return 계산된 PSM 투영 행렬 (4x4).
-	 */
-	FMatrix CalculatePSMProjectionMatrix(const FAABB& LightSpaceAABB)
-	{
-		// 1. 라이트 공간 AABB에서 X, Y, Z 범위 추출
-		//    OrthoMatrix 함수 파라미터 순서(R, L, T, B, F, N)에 맞게 변수 사용
-		float L = LightSpaceAABB.Min.X;
-		float R = LightSpaceAABB.Max.X;
-		float B = LightSpaceAABB.Min.Y;
-		float T = LightSpaceAABB.Max.Y;
-		float N = LightSpaceAABB.Min.Z; // 라이트 공간에서의 Near
-		float F = LightSpaceAABB.Max.Z; // 라이트 공간에서의 Far
-
-		// Z 범위 유효성 검사 (0으로 나누기 방지)
-		if (F <= N)
-		{
-			// 유효하지 않은 범위면 기본 직교 행렬 반환
-			UE_LOG("CalculatePSMProjectionMatrix: Invalid Z range (NearZ >= FarZ).");
-			return FMatrix::OrthoMatrix(R, L, T, B, F, N); // 원래 함수 호출
-		}
-		// 추가: XY 범위 유효성 검사
-		if (R <= L || T <= B)
-		{
-			UE_LOG("CalculatePSMProjectionMatrix: Invalid XY range.");
-			return FMatrix::OrthoMatrix(R, L, T, B, F, N); // 원래 함수 호출
-		}
-
-		// 2. 직교 투영 행렬의 X, Y 관련 요소 계산 (제공된 OrthoMatrix 함수 로직 사용)
-		const float M_A = 2.0f / (R - L); // X Scale
-		const float M_B = 2.0f / (T - B); // Y Scale
-		const float M_D = -(R + L) / (R - L); // X Offset
-		const float M_E = -(T + B) / (T - B); // Y Offset
-
-		// 3. PSM 왜곡을 위한 Z 요소 계산 (D3D NDC [0, 1] 기준)
-		const float A_psm = F / (F - N); // Z Scale (PSM)
-		const float B_psm = -N * F / (F - N); // Z Offset (PSM)
-
-		// 4. 최종 PSM 행렬 구성 (제공된 OrthoMatrix 함수의 생성자 방식 사용, Row-Major 가정)
-		return FMatrix(
-			M_A, 0.0f, 0.0f, 0.0f,  // Row 0
-			0.0f, M_B, 0.0f, 0.0f,  // Row 1
-			0.0f, 0.0f, A_psm, 1.0f,  // Row 2: PSM Z scale, Copy Z to W
-			M_D, M_E, B_psm, 0.0f   // Row 3: Ortho XY offsets, PSM Z offset, W' = 0
-		);
-	}
-} // end anonymous namespace
 
 void UDirectionalLightComponent::GetShadowRenderRequests(FSceneView* View, TArray<FShadowRenderRequest>& OutRequests)
 {
@@ -94,22 +50,11 @@ void UDirectionalLightComponent::GetShadowRenderRequests(FSceneView* View, TArra
 	ShadowRenderRequest.LightOwner = this;
 	ShadowRenderRequest.ViewMatrix = ShadowMapView;
 	ShadowRenderRequest.ProjectionMatrix = ShadowMapOrtho;
-	ShadowRenderRequest.Size = 8192;
+	ShadowRenderRequest.Size = 8196;
 	ShadowRenderRequest.SubViewIndex = 0;
 	ShadowRenderRequest.AtlasScaleOffset = 0;
 	OutRequests.Add(ShadowRenderRequest);
 }
-
-IMPLEMENT_CLASS(UDirectionalLightComponent)
-
-BEGIN_PROPERTIES(UDirectionalLightComponent)
-	MARK_AS_COMPONENT("디렉셔널 라이트", "방향성 라이트 (태양광 같은 평행광) 컴포넌트입니다.")
-	ADD_PROPERTY_RANGE(int, ShadowMapWidth, "ShadowMap", 32, 2048, true, "쉐도우 맵 Width")
-	ADD_PROPERTY_RANGE(int, ShadowMapHeight, "ShadowMap", 32, 2048, true, "쉐도우 맵 Height")
-	ADD_PROPERTY_RANGE(float, Near, "ShadowMap", 0.01f, 10.0f, true, "쉐도우 맵 Near Plane")
-	ADD_PROPERTY_RANGE(float, Far, "ShadowMap", 11.0f, 1000.0f, true, "쉐도우 맵 Far Plane")
-	ADD_PROPERTY_SRV(ID3D11ShaderResourceView*, ShadowMapSRV, "ShadowMap", true, "쉐도우 맵 Far Plane")
-END_PROPERTIES()
 
 FVector UDirectionalLightComponent::GetLightDirection() const
 {
