@@ -36,6 +36,7 @@ struct FShadowRenderRequest
     uint32 Size;
     int32 SubViewIndex; // Point(0~5), CSM(0~N), Spot(0)
     FVector4 AtlasScaleOffset; // 패킹 알고리즘이 채워줄 UV
+    FVector2D AtlasViewportOffset; // 패킹 알고리즘이 채워줄 Viewport
     int32 SampleCount;
 
     bool operator>(const FShadowRenderRequest& Other) const
@@ -123,13 +124,14 @@ public:
 
     // --- 섀도우 리소스 접근자 (FSceneRenderer가 사용) ---
     ID3D11DepthStencilView* GetShadowAtlasDSV2D() const { return ShadowAtlasDSV2D; }
-    ID3D11Texture2D* GetShadowAtlasTexture2D() const { return ShadowAtlasTexture2D; }
     ID3D11ShaderResourceView* GetShadowAtlasSRV2D() const { return ShadowAtlasSRV2D; }
     float GetShadowAtlasSize2D() const { return ShadowAtlasSize2D; }
     uint32 GetShadowCubeArraySize() const { return AtlasSizeCube; }
     uint32 GetShadowCubeArrayCount() const { return CubeArrayCount; }
     ID3D11DepthStencilView* GetShadowCubeFaceDSV(UINT SliceIndex, UINT FaceIndex) const; // (구현 필요)
     bool GetCachedShadowData(ULightComponent* Light, int32 SubViewIndex, FShadowMapData& OutData) const;
+
+    void BuildShadowAtlas2D(TArray<FShadowRenderRequest>& InOutRequests2D);
 
     TArray<UAmbientLightComponent*> GetAmbientLightList() { return AmbientLightList; }
     TArray<UDirectionalLightComponent*> GetDirectionalLightList() { return DIrectionalLightList; }

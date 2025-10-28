@@ -308,7 +308,6 @@ void FLightManager::SetShadowMapData(ULightComponent* Light, int32 SubViewIndex,
 
 	// 데이터 저장
 	Cascades[SubViewIndex] = Data;
-	
 
 	bShadowDataDirty = true;
 	bHaveToUpdate = true;
@@ -362,6 +361,46 @@ bool FLightManager::GetCachedShadowData(ULightComponent* Light, int32 SubViewInd
 	// 4. 데이터 복사 및 성공 반환
 	OutData = (*FoundDataArray)[SubViewIndex];
 	return true;
+}
+
+void FLightManager::BuildShadowAtlas2D(TArray<FShadowRenderRequest>& InOutRequests2D)
+{
+	// 요청 정렬 (가장 큰 것부터)
+	InOutRequests2D.Sort(std::greater<FShadowRenderRequest>());
+
+	// 동적 패킹(Shelf Algorithm)
+	uint32 CurrentAtlasX = 0;
+	uint32 CurrentAtlasY = 0;
+	uint32 CurrentShelfMaxHeight = 0;
+
+	for (FShadowRenderRequest& Request : InOutRequests2D)
+	{
+		if (CurrentAtlasX + Request.Size > ShadowAtlasSize2D)
+		{
+			CurrentAtlasY += CurrentShelfMaxHeight;
+			CurrentAtlasX = 0;
+			CurrentShelfMaxHeight = 0;
+		}
+		if (CurrentAtlasY + Request.Size > ShadowAtlasSize2D)
+		{
+			Request.Size = 0; // 꽉 참 (렌더링 실패)
+			UE_LOG("그림자 맵 아틀라스가 가득차서 더 이상 그림자를 추가할 수 없습니다.");
+			continue;
+		}
+
+		Request.AtlasViewportOffset = FVector2D((float)CurrentAtlasX, (float)CurrentAtlasY);
+
+		// Pass 2 데이터 (UV) 저장
+		Request.AtlasScaleOffset = FVector4(
+			Request.Size / (float)ShadowAtlasSize2D,    // ScaleX
+			Request.Size / (float)ShadowAtlasSize2D,    // ScaleY
+			CurrentAtlasX / (float)ShadowAtlasSize2D,   // OffsetX
+			CurrentAtlasY / (float)ShadowAtlasSize2D    // OffsetY
+		);
+
+		CurrentAtlasX += Request.Size;
+		CurrentShelfMaxHeight = FMath::Max(CurrentShelfMaxHeight, Request.Size);
+	}
 }
 
 void FLightManager::ClearAllLightList()

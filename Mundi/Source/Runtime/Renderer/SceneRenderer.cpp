@@ -247,6 +247,7 @@ void FSceneRenderer::RenderShadowMaps()
 	for (UDirectionalLightComponent* Light : LightManager->GetDirectionalLightList())
 	{
 		Light->GetShadowRenderRequests(View, Requests2D);
+		// IsOverrideCameraLightPerspective 임시 구현
 		if (Light->IsOverrideCameraLightPerspective())
 		{
 			ViewProjBuffer.View = Requests2D[Requests2D.Num() - 1].ViewMatrix;
@@ -258,6 +259,7 @@ void FSceneRenderer::RenderShadowMaps()
 	for (USpotLightComponent* Light : LightManager->GetSpotLightList())
 	{
 		Light->GetShadowRenderRequests(View, Requests2D);
+		// IsOverrideCameraLightPerspective 임시 구현
 		if (Light->IsOverrideCameraLightPerspective())
 		{
 			ViewProjBuffer.View = Requests2D[Requests2D.Num() - 1].ViewMatrix;
@@ -267,11 +269,12 @@ void FSceneRenderer::RenderShadowMaps()
 		}
 	}
 
-
 	// --- 1단계: 2D 아틀라스 렌더링 (Spot + Directional) ---
 	{
+		// Requests2D 의 텍스처를 모두 아틀라스에 배치될 위치 지정
+		LightManager->BuildShadowAtlas2D(Requests2D);
+
 		ID3D11DepthStencilView* AtlasDSV2D = LightManager->GetShadowAtlasDSV2D();
-		ID3D11Texture2D* AtlasTexture2D = LightManager->GetShadowAtlasTexture2D();
 		float AtlasTotalSize2D = (float)LightManager->GetShadowAtlasSize2D();
 		if (AtlasDSV2D && AtlasTotalSize2D > 0)
 		{
@@ -283,50 +286,15 @@ void FSceneRenderer::RenderShadowMaps()
 			RHIDevice->RSSetState(ERasterizerMode::Shadows);
 			RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual);
 
-			// 1.3. 요청 정렬 (가장 큰 것부터)
-			Requests2D.Sort(std::greater<FShadowRenderRequest>());
-
-			// 1.4. 동적 패킹(Shelf Algorithm) 및 렌더링
-			uint32 CurrentAtlasX = 0;
-			uint32 CurrentAtlasY = 0;
-			uint32 CurrentShelfMaxHeight = 0;
-
 			for (FShadowRenderRequest& Request : Requests2D)
 			{
-				 if (CurrentAtlasX + Request.Size > AtlasTotalSize2D)
-				 {
-				 	CurrentAtlasY += CurrentShelfMaxHeight;
-				 	CurrentAtlasX = 0;
-				 	CurrentShelfMaxHeight = 0;
-				 }
-				 if (CurrentAtlasY + Request.Size > AtlasTotalSize2D)
-				 {
-				 	Request.Size = 0; // 꽉 참 (렌더링 실패)
-				 	continue;
-				 }
-
 				// 뷰포트 설정
-				D3D11_VIEWPORT ShadowVP = { (float)CurrentAtlasX, (float)CurrentAtlasY, (float)Request.Size, (float)Request.Size, 0.0f, 1.0f };
+				D3D11_VIEWPORT ShadowVP = { Request.AtlasViewportOffset.X, Request.AtlasViewportOffset.Y, Request.Size, Request.Size, 0.0f, 1.0f };
 				RHIDevice->GetDeviceContext()->RSSetViewports(1, &ShadowVP);
 
 				// 뎁스 패스 렌더링
 				RenderShadowDepthPass(Request.ViewMatrix, Request.ProjectionMatrix, ShadowMeshBatches);
 
-				// Pass 2 데이터 (UV) 저장
-				Request.AtlasScaleOffset = FVector4(
-					Request.Size / AtlasTotalSize2D,    // ScaleX
-					Request.Size / AtlasTotalSize2D,    // ScaleY
-					CurrentAtlasX / AtlasTotalSize2D,   // OffsetX
-					CurrentAtlasY / AtlasTotalSize2D    // OffsetY
-				);
-
-				CurrentAtlasX += Request.Size;
-				CurrentShelfMaxHeight = FMath::Max(CurrentShelfMaxHeight, Request.Size);
-			}
-
-			// 1.5. FLightManager에 2D 아틀라스 데이터 전달
-			for (const FShadowRenderRequest& Request : Requests2D)
-			{
 				FShadowMapData Data;
 				if (Request.Size > 0) // 렌더링 성공
 				{
@@ -407,7 +375,8 @@ void FSceneRenderer::RenderShadowMaps()
 	//RHIDevice->RSSetViewport(); // 메인 뷰포트로 복구
 	// 4. 저장해둔 'OriginVP'로 뷰포트를 복구합니다. (이때는 주소(&)가 필요 없음)
 	RHIDevice->GetDeviceContext()->RSSetViewports(1, &OriginVP);
-
+	
+	// ViewProjBufferType 복구 (라이트 시점 Override 일 경우 마지막 라이트 시점으로 설정됨)
 	RHIDevice->SetAndUpdateConstantBuffer(ViewProjBufferType(ViewProjBuffer));
 }
 
@@ -426,10 +395,7 @@ void FSceneRenderer::RenderShadowDepthPass(FMatrix& InLightView, FMatrix& InLigh
 	RHIDevice->GetDeviceContext()->PSSetShader(nullptr, nullptr, 0); // 픽셀 셰이더 없음
 
 	// 3. 라이트의 View-Projection 행렬을 메인 ViewProj 버퍼에 설정
-	FMatrix InvView = InLightView;
-	FMatrix InvProj = InLightProj;
-
-	ViewProjBufferType ViewProjBuffer = ViewProjBufferType(InLightView, InLightProj, InvView, InvProj);
+	ViewProjBufferType ViewProjBuffer = ViewProjBufferType(InLightView, InLightProj, FMatrix::Identity(), FMatrix::Identity());	// NOTE: 그림자 맵 셰이더에는 역행렬이 필요 없으므로 Identity를 전달함
 	RHIDevice->SetAndUpdateConstantBuffer(ViewProjBufferType(ViewProjBuffer));
 
 	// 4. (DrawMeshBatches와 유사하게) 배치 순회하며 그리기
