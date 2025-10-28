@@ -150,11 +150,62 @@ float GetDirectionalShadowAtt(float3 WorldPos, float3 L, float3 N)
     
     return ShadowValue / 9;
 }
+float GetCascadedShadowAtt(float3 WorldPos)
+{
+    float4 ViewPos = mul(float4(WorldPos, 1), ViewMatrix);
+    int PrevIdx;
+    int NextIdx;
+    for (int i = 0; i < DirectionalLight.CascadeCount;i++)
+    {
+        float CurFar = DirectionalLight.CascadedSliceDepth[(i + 1) / 4][(i + 1) % 4];
+        if (ViewPos.z < CurFar)
+        {
+            float CurNear = DirectionalLight.CascadedSliceDepth[i / 4][i % 4];
+            float CurCenter = (CurFar + CurNear) * 0.5f;
+            if (ViewPos.z > CurCenter)
+            {
+                //다음꺼랑 비교  
+                PrevIdx = i;
+                NextIdx = i == DirectionalLight.CascadeCount - 1 ? -1 : i + 1;
+            }
+            else
+            {
+                //이전꺼랑 비교
+                PrevIdx = i == 0 ? -1 : i - 1;
+                NextIdx = i;
+            }
+            break;
+        }        
+    }
+    
+    
+    float2 PrevUV;
+    bool InPrevShadow;
+    if(PrevIdx != -1)
+    {
+        PrevUV = mul(float4(WorldPos, 1), DirectionalLight.Cascades[PrevIdx].ShadowViewProjMatrix).xy;
+        InPrevShadow = PrevUV.x <= 1 && PrevUV.x >= 0 && PrevUV.y <= 1 && PrevUV.y >= 0;
+    }
+    
+    float2 NextUV;
+    bool InNextShadow;
+    if (NextIdx != -1)
+    {
+        NextUV = mul(float4(WorldPos, 1), DirectionalLight.Cascades[NextIdx].ShadowViewProjMatrix).xy;
+        InNextShadow = NextUV.x <= 1 && NextUV.x >= 0 && NextUV.y <= 1 && NextUV.y >= 0;
+    }
+    
+    if(InPrevShadow && InNextShadow)
+    {
+        
+    }
+}
     
 //================================================================================================
 // 버텍스 셰이더 (Vertex Shader)
 //================================================================================================
-PS_INPUT mainVS(VS_INPUT Input)
+PS_INPUT
+    mainVS(VS_INPUTInput)
 {
     PS_INPUT Out;
     
