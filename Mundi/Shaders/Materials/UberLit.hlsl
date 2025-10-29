@@ -220,13 +220,13 @@ PS_INPUT mainVS(VS_INPUT Input)
     // Point lights (diffuse + specular)
     for (int i = 0; i < PointLightCount; i++)
     {
-        finalColor += CalculatePointLight(g_PointLightList[i], Out.WorldPos, worldNormal, viewDir, baseColor, true, specPower);
+        finalColor += CalculatePointLight(g_PointLightList[i], Out.WorldPos, worldNormal, viewDir, baseColor, true, specPower, g_ShadowAtlasCube, g_ShadowSample);
     }
 
     // Spot lights (diffuse + specular)
     for (int j = 0; j < SpotLightCount; j++)
     {
-        finalColor += CalculateSpotLight(g_SpotLightList[j], Out.WorldPos, worldNormal, viewDir, baseColor, true, specPower);
+        finalColor += CalculateSpotLight(g_SpotLightList[j], Out.WorldPos, worldNormal, viewDir, baseColor, true, specPower, g_ShadowAtlas2D, g_ShadowSample);
     }
 
     Out.Color = float4(finalColor, baseColor.a);
@@ -376,30 +376,26 @@ PS_OUTPUT mainPS(PS_INPUT Input)
 
             if (lightType == 0)  // Point Light
             {
-                litColor += CalculatePointLight(g_PointLightList[lightIdx], Input.WorldPos, normal, float3(0, 0, 0), baseColor, false, 0.0f);
+                litColor += CalculatePointLight(g_PointLightList[lightIdx], Input.WorldPos, normal, float3(0, 0, 0), baseColor, false, 0.0f, g_ShadowAtlasCube, g_ShadowSample);
             }
             else if (lightType == 1)  // Spot Light
             {
-                float3 SpotLightColor = CalculateSpotLight(g_SpotLightList[lightIdx], Input.WorldPos, normal, float3(0, 0, 0), baseColor, false, 0.0f);
-                float ShadowFactor = CalculateSpotLightShadowFactor(Input.WorldPos, g_SpotLightList[lightIdx].ShadowData, g_ShadowAtlas2D, g_ShadowSample);
-                litColor += (SpotLightColor * ShadowFactor);
+                litColor +=  CalculateSpotLight(g_SpotLightList[lightIdx], Input.WorldPos, normal, float3(0, 0, 0), baseColor, false, 0.0f, g_ShadowAtlas2D, g_ShadowSample);
             }
         }
     }
     else
     {
-        // 타일 컬링 비활성화: 모든 라이트 순회 (기존 방식)
+        // 타일 컴링 비활성화: 모든 라이트 순회 (기존 방식)
         for (int i = 0; i < PointLightCount; i++)
         {
-            litColor += CalculatePointLight(g_PointLightList[i], Input.WorldPos, normal, float3(0, 0, 0), baseColor, false, 0.0f);
+            litColor += CalculatePointLight(g_PointLightList[i], Input.WorldPos, normal, float3(0, 0, 0), baseColor, false, 0.0f, g_ShadowAtlasCube, g_ShadowSample);
         }
 
         [loop]
         for (int j = 0; j < SpotLightCount; j++)
         {
-            float3 SpotLightColor = CalculateSpotLight(g_SpotLightList[j], Input.WorldPos, normal, viewDir, baseColor, true, specPower);
-            float ShadowFactor = CalculateSpotLightShadowFactor(Input.WorldPos, g_SpotLightList[j].ShadowData, g_ShadowAtlas2D, g_ShadowSample);
-            litColor += (SpotLightColor * ShadowFactor);
+            litColor +=  CalculateSpotLight(g_SpotLightList[j], Input.WorldPos, normal, float3(0, 0, 0), baseColor, false, 0.0f, g_ShadowAtlas2D, g_ShadowSample);
         }
     }
 
@@ -490,30 +486,26 @@ PS_OUTPUT mainPS(PS_INPUT Input)
 
             if (lightType == 0)  // Point Light
             {
-                litColor += CalculatePointLight(g_PointLightList[lightIdx], Input.WorldPos, normal, viewDir, baseColor, true, specPower);
+                litColor += CalculatePointLight(g_PointLightList[lightIdx], Input.WorldPos, normal, viewDir, baseColor, true, specPower, g_ShadowAtlasCube, g_ShadowSample);
             }
             else if (lightType == 1)  // Spot Light
             {
-                float3 SpotLightColor = CalculateSpotLight(g_SpotLightList[lightIdx], Input.WorldPos, normal, viewDir, baseColor, true, specPower);
-                float ShadowFactor = CalculateSpotLightShadowFactor(Input.WorldPos, g_SpotLightList[lightIdx].ShadowData, g_ShadowAtlas2D, g_ShadowSample);
-                litColor += (SpotLightColor * ShadowFactor);
+                litColor +=  CalculateSpotLight(g_SpotLightList[lightIdx], Input.WorldPos, normal, viewDir, baseColor, true, specPower, g_ShadowAtlas2D, g_ShadowSample);
             }
         }
     }
     else
     {
-        // 타일 컬링 비활성화: 모든 라이트 순회 (기존 방식)
+        // 타일 컴링 비활성화: 모든 라이트 순회 (기존 방식)
         for (int i = 0; i < PointLightCount; i++)
         {
-            litColor += CalculatePointLight(g_PointLightList[i], Input.WorldPos, normal, viewDir, baseColor, true, specPower);
+            litColor += CalculatePointLight(g_PointLightList[i], Input.WorldPos, normal, viewDir, baseColor, true, specPower, g_ShadowAtlasCube, g_ShadowSample);
         }
         
         [loop]
         for (int j = 0; j < SpotLightCount; j++)
         {
-            float3 SpotLightColor = CalculateSpotLight(g_SpotLightList[j], Input.WorldPos, normal, viewDir, baseColor, true, specPower);
-            float ShadowFactor = CalculateSpotLightShadowFactor(Input.WorldPos, g_SpotLightList[j].ShadowData, g_ShadowAtlas2D, g_ShadowSample);
-            litColor += (SpotLightColor * ShadowFactor);
+            litColor +=  CalculateSpotLight(g_SpotLightList[j], Input.WorldPos, normal, viewDir, baseColor, true, specPower, g_ShadowAtlas2D, g_ShadowSample);
         }
     }
 
