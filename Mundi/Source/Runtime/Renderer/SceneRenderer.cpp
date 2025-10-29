@@ -40,6 +40,8 @@
 #include "ResourceManager.h"
 #include "TileLightCuller.h"
 #include "LineComponent.h"
+#include "LightStats.h"
+#include "ShadowStats.h"
 
 FSceneRenderer::FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* InOwnerRenderer)
 	: World(InWorld)
@@ -625,6 +627,53 @@ void FSceneRenderer::GatherVisibleProxies()
 	{
 		CollectComponentsFromActor(Actor, false);
 	}
+
+	// 라이트 통계 업데이트
+	FLightStats LightStats;
+	LightStats.TotalPointLights = SceneLocals.PointLights.Num();
+	LightStats.TotalSpotLights = SceneLocals.SpotLights.Num();
+	LightStats.TotalDirectionalLights = SceneGlobals.DirectionalLights.Num();
+	LightStats.TotalAmbientLights = SceneGlobals.AmbientLights.Num();
+	LightStats.CalculateTotal();
+	FLightStatManager::GetInstance().UpdateStats(LightStats);
+
+	// 쉐도우 통계 업데이트
+	FShadowStats ShadowStats;
+	for (UPointLightComponent* Light : SceneLocals.PointLights)
+	{
+		if (Light && Light->IsCastShadows())
+		{
+			ShadowStats.ShadowCastingPointLights++;
+		}
+	}
+	for (USpotLightComponent* Light : SceneLocals.SpotLights)
+	{
+		if (Light && Light->IsCastShadows())
+		{
+			ShadowStats.ShadowCastingSpotLights++;
+		}
+	}
+	for (UDirectionalLightComponent* Light : SceneGlobals.DirectionalLights)
+	{
+		if (Light && Light->IsCastShadows())
+		{
+			ShadowStats.ShadowCastingDirectionalLights++;
+		}
+	}
+
+	// 쉐도우 맵 아틀라스 정보
+	FLightManager* LightManager = World->GetLightManager();
+	if (LightManager)
+	{
+		ShadowStats.ShadowAtlas2DSize = static_cast<uint32>(LightManager->GetShadowAtlasSize2D());
+		ShadowStats.ShadowAtlasCubeSize = LightManager->GetShadowCubeArraySize();
+		ShadowStats.ShadowCubeArrayCount = LightManager->GetShadowCubeArrayCount();
+		ShadowStats.Calculate2DAtlasMemory();
+		ShadowStats.CalculateCubeAtlasMemory();
+	}
+
+	ShadowStats.CalculateTotal();
+	FShadowStatManager::GetInstance().UpdateStats(ShadowStats);
 }
 
 void FSceneRenderer::PerformTileLightCulling()

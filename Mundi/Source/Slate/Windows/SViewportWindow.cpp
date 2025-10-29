@@ -1399,6 +1399,8 @@ void SViewportWindow::RenderShowFlagDropdownMenu()
 				UStatsOverlayD2D::Get().SetShowPicking(false);
 				UStatsOverlayD2D::Get().SetShowDecal(false);
 				UStatsOverlayD2D::Get().SetShowTileCulling(false);
+				UStatsOverlayD2D::Get().SetShowLights(false);
+				UStatsOverlayD2D::Get().SetShowShadow(false);
 			}
 
 			if (ImGui::IsItemHovered())
@@ -1459,13 +1461,33 @@ void SViewportWindow::RenderShowFlagDropdownMenu()
 			}
 
 			bool bTileCullingStats = UStatsOverlayD2D::Get().IsTileCullingVisible();
-			if (ImGui::Checkbox(" LIGHT", &bTileCullingStats))
+			if (ImGui::Checkbox(" TILE CULLING", &bTileCullingStats))
 			{
 				UStatsOverlayD2D::Get().ToggleTileCulling();
 			}
 			if (ImGui::IsItemHovered())
 			{
-				ImGui::SetTooltip("타일 기반 라이트 컬링 통계를 표시합니다.");
+				ImGui::SetTooltip("타일 기반 라이트 컵링 통계를 표시합니다.");
+			}
+
+			bool bLightStats = UStatsOverlayD2D::Get().IsLightsVisible();
+			if (ImGui::Checkbox(" LIGHTS", &bLightStats))
+			{
+				UStatsOverlayD2D::Get().ToggleLights();
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("라이트 타입별 개수를 표시합니다.");
+			}
+
+			bool bShadowStats = UStatsOverlayD2D::Get().IsShadowVisible();
+			if (ImGui::Checkbox(" SHADOWS", &bShadowStats))
+			{
+				UStatsOverlayD2D::Get().ToggleShadow();
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("셉도우 맵 통계를 표시합니다. (셉도우 라이트 개수, 아틀라스 크기, 메모리 사용량)");
 			}
 
 			ImGui::EndMenu();

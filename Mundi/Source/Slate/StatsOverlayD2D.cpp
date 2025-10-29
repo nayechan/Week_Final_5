@@ -11,6 +11,8 @@
 #include "PlatformTime.h"
 #include "DecalStatManager.h"
 #include "TileCullingStats.h"
+#include "LightStats.h"
+#include "ShadowStats.h"
 
 #pragma comment(lib, "d2d1")
 #pragma comment(lib, "dwrite")
@@ -96,7 +98,7 @@ static void DrawTextBlock(
 
 void UStatsOverlayD2D::Draw()
 {
-	if (!bInitialized || (!bShowFPS && !bShowMemory && !bShowPicking && !bShowDecal && !bShowTileCulling) || !SwapChain)
+	if (!bInitialized || (!bShowFPS && !bShowMemory && !bShowPicking && !bShowDecal && !bShowTileCulling && !bShowLights && !bShowShadow) || !SwapChain)
 		return;
 
 	ID2D1Factory1* D2dFactory = nullptr;
@@ -300,6 +302,67 @@ void UStatsOverlayD2D::Draw()
 		NextY += tilePanelHeight + Space;
 	}
 
+	if (bShowLights)
+	{
+		// 1. FLightStatManager로부터 통계 데이터를 가져옵니다.
+		const FLightStats& LightStats = FLightStatManager::GetInstance().GetStats();
+
+		// 2. 출력할 문자열 버퍼를 만듭니다.
+		wchar_t Buf[512];
+		swprintf_s(Buf, L"[Light Stats]\nTotal Lights: %u\n  Point: %u\n  Spot: %u\n  Directional: %u\n  Ambient: %u",
+			LightStats.TotalLights,
+			LightStats.TotalPointLights,
+			LightStats.TotalSpotLights,
+			LightStats.TotalDirectionalLights,
+			LightStats.TotalAmbientLights);
+
+		// 3. 텍스트를 여러 줄 표시해야 하므로 패널 높이를 늘립니다.
+		const float lightPanelHeight = 140.0f;
+		D2D1_RECT_F rc = D2D1::RectF(Margin, NextY, Margin + PanelWidth, NextY + lightPanelHeight);
+
+		// 4. DrawTextBlock 함수를 호출하여 화면에 그립니다. 색상은 구분을 위해 보라색(Purple)으로 설정합니다.
+		DrawTextBlock(
+			D2dCtx, Dwrite, Buf, rc, 16.0f,
+			D2D1::ColorF(0, 0, 0, 0.6f),
+			D2D1::ColorF(D2D1::ColorF::Violet));
+
+		NextY += lightPanelHeight + Space;
+	}
+
+	if (bShowShadow)
+	{
+		// 1. FShadowStatManager로부터 통계 데이터를 가져옵니다.
+		const FShadowStats& ShadowStats = FShadowStatManager::GetInstance().GetStats();
+
+		// 2. 출력할 문자열 버퍼를 만듭니다.
+		wchar_t Buf[512];
+		swprintf_s(Buf, L"[Shadow Stats]\nShadow Lights: %u\n  Point: %u\n  Spot: %u\n  Directional: %u\n\nAtlas 2D: %u x %u (%.1f MB)\nAtlas Cube: %u x %u x %u (%.1f MB)\n\nTotal Memory: %.1f MB",
+			ShadowStats.TotalShadowCastingLights,
+			ShadowStats.ShadowCastingPointLights,
+			ShadowStats.ShadowCastingSpotLights,
+			ShadowStats.ShadowCastingDirectionalLights,
+			ShadowStats.ShadowAtlas2DSize,
+			ShadowStats.ShadowAtlas2DSize,
+			ShadowStats.ShadowAtlas2DMemoryMB,
+			ShadowStats.ShadowAtlasCubeSize,
+			ShadowStats.ShadowAtlasCubeSize,
+			ShadowStats.ShadowCubeArrayCount,
+			ShadowStats.ShadowAtlasCubeMemoryMB,
+			ShadowStats.TotalShadowMemoryMB);
+
+		// 3. 텍스트를 여러 줄 표시해야 하므로 패널 높이를 늘립니다.
+		const float shadowPanelHeight = 260.0f;
+		D2D1_RECT_F rc = D2D1::RectF(Margin, NextY, Margin + PanelWidth, NextY + shadowPanelHeight);
+
+		// 4. DrawTextBlock 함수를 호출하여 화면에 그립니다. 색상은 구분을 위해 한색(Magenta)으로 설정합니다.
+		DrawTextBlock(
+			D2dCtx, Dwrite, Buf, rc, 16.0f,
+			D2D1::ColorF(0, 0, 0, 0.6f),
+			D2D1::ColorF(D2D1::ColorF::DeepPink));
+
+		NextY += shadowPanelHeight + Space;
+	}
+	
 	D2dCtx->EndDraw();
 	D2dCtx->SetTarget(nullptr);
 
@@ -360,4 +423,24 @@ void UStatsOverlayD2D::SetShowTileCulling(bool b)
 void UStatsOverlayD2D::ToggleTileCulling()
 {
 	bShowTileCulling = !bShowTileCulling;
+}
+
+void UStatsOverlayD2D::SetShowLights(bool b)
+{
+	bShowLights = b;
+}
+
+void UStatsOverlayD2D::ToggleLights()
+{
+	bShowLights = !bShowLights;
+}
+
+void UStatsOverlayD2D::SetShowShadow(bool b)
+{
+	bShowShadow = b;
+}
+
+void UStatsOverlayD2D::ToggleShadow()
+{
+	bShowShadow = !bShowShadow;
 }
