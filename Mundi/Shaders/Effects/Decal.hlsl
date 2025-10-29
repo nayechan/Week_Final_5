@@ -86,7 +86,7 @@ PS_INPUT mainVS(VS_INPUT input)
 
     // World position
     float4 worldPos = mul(float4(input.position, 1.0f), WorldMatrix);
-
+    float4 viewPos = mul(worldPos, ViewMatrix);
     // Decal projection
     output.decalPos = mul(worldPos, DecalMatrix);
 
@@ -109,6 +109,7 @@ PS_INPUT mainVS(VS_INPUT input)
 
         float3 litColor = CalculateAllLights(
             output.worldPos,
+            viewPos.xyz,
             output.normal,
             viewDir,
             baseColor,
@@ -164,6 +165,7 @@ float4 mainPS(PS_INPUT input) : SV_TARGET
     float3 normal = normalize(input.normal);
     float4 baseColor = decalTexture;
     float specPower = 32.0f;
+    float4 viewPos = mul(input.worldPos, ViewMatrix);
 
     #ifdef LIGHTING_MODEL_PHONG
         float3 viewDir = normalize(CameraPosition - input.worldPos);
@@ -173,6 +175,7 @@ float4 mainPS(PS_INPUT input) : SV_TARGET
 
     float3 litColor = CalculateAllLights(
         input.worldPos,
+        viewPos.xyz,
         normal,
         viewDir,
         baseColor,

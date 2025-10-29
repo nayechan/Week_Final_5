@@ -345,13 +345,79 @@ float CalculatePointLightShadowFactor(
         SampleCount, filterRadiusTexel, ShadowMapCube, ShadowSampler);
 }
 
+float GetCascadedShadowAtt(float3 WorldPos, float3 ViewPos, Texture2D ShadowMap, SamplerComparisonState ShadowSampler)
+{
+    int CurIdx;
+    bool bNeedLerp;
+    float LerpValue;
+    float Width, Height;
+    ShadowMap.GetDimensions(Width, Height);
+    float2 TexSizeRCP = float2(1.0f / Width, 1.0f / Height);
+    float2 FilterRadiusUV = 1.5f * TexSizeRCP;
+    
+    //Cascade 특정 idx구역만 렌더링 하는경우
+    if (DirectionalLight.CascadedAreaShadowDebugValue != -1)
+    {
+        CurIdx = DirectionalLight.CascadedAreaShadowDebugValue;
+    
+        float3 CurUV = mul(float4(WorldPos, 1), DirectionalLight.Cascades[CurIdx].ShadowViewProjMatrix).xyz;
+        if (saturate(CurUV.x) == CurUV.x && saturate(CurUV.y) == CurUV.y)
+        {
+            float2 CurAtlasUV = CurUV.xy * DirectionalLight.Cascades[CurIdx].AtlasScaleOffset.xy + DirectionalLight.Cascades[CurIdx].AtlasScaleOffset.zw;
+            float CurShadowFactor = SampleShadowPCF(CurUV.z - 0.0025f, CurAtlasUV, DirectionalLight.Cascades[CurIdx].SampleCount, FilterRadiusUV, ShadowMap, ShadowSampler);
+            return CurShadowFactor;
+        }
+        return 0;
+    }
+    else
+    {
+        //Cascade 구역 계산
+        for (uint i = 0; i < DirectionalLight.CascadeCount; i++)
+        {
+            float CurFar = DirectionalLight.CascadedSliceDepth[(i + 1) / 4][(i + 1) % 4];
+            if (ViewPos.z < CurFar)
+            {
+                CurIdx = i;
+                break;
+            }
+        }
+    
+        float PrevFar = CurIdx == 0 ? 0 : DirectionalLight.CascadedSliceDepth[CurIdx / 4][CurIdx % 4];
+        float ExtensionPrevFar = PrevFar + PrevFar * DirectionalLight.CascadedOverlapValue;
+        if (CurIdx > 0 && ViewPos.z < ExtensionPrevFar)
+        {
+            //Blending 필요
+            bNeedLerp = true;
+            LerpValue = (ViewPos.z - PrevFar) / (ExtensionPrevFar - PrevFar);
+        }
+    
+        float3 CurUV = mul(float4(WorldPos, 1), DirectionalLight.Cascades[CurIdx].ShadowViewProjMatrix).xyz;
+        float2 CurAtlasUV = CurUV.xy * DirectionalLight.Cascades[CurIdx].AtlasScaleOffset.xy + DirectionalLight.Cascades[CurIdx].AtlasScaleOffset.zw;
+        float CurShadowFactor = SampleShadowPCF(CurUV.z - 0.0025f, CurAtlasUV, DirectionalLight.Cascades[CurIdx].SampleCount, FilterRadiusUV, ShadowMap, ShadowSampler);
+        if (bNeedLerp)
+        {
+            int PrevIdx = CurIdx - 1;
+            float3 PrevUV = mul(float4(WorldPos, 1), DirectionalLight.Cascades[PrevIdx].ShadowViewProjMatrix).xyz;
+            float2 PrevAtlasUV = PrevUV.xy * DirectionalLight.Cascades[PrevIdx].AtlasScaleOffset.xy + DirectionalLight.Cascades[PrevIdx].AtlasScaleOffset.zw;
+            float PrevShadowFactor = SampleShadowPCF(PrevUV.z - 0.0025f, PrevAtlasUV, DirectionalLight.Cascades[PrevIdx].SampleCount, FilterRadiusUV, ShadowMap, ShadowSampler);
+            return LerpValue * CurShadowFactor + (1 - LerpValue) * PrevShadowFactor;
+        }
+        else
+        {
+            return CurShadowFactor;
+        }
+    }
+    
+ 
+}
 //================================================================================================
 // 통합 조명 계산 함수
 //================================================================================================
 
 // Directional Light 계산 (Diffuse + Specular)
 float3 CalculateDirectionalLight
-    (FDirectionalLightInfo light, float3 normal, float3 viewDir, float4 materialColor, bool includeSpecular, float specularPower)
+    (FDirectionalLightInfo light, float3 WorldPos, float3 ViewPos, float3 normal, float3 viewDir, float4 materialColor, bool includeSpecular, float specularPower,
+ Texture2D ShadowMap, SamplerComparisonState ShadowSampler)
 {
     // Light.Direction이 영벡터인 경우, 정규화 문제 방지
     if (all(light.Direction == float3(0.0f, 0.0f, 0.0f)))
@@ -372,15 +438,21 @@ float3 CalculateDirectionalLight
     }
 
     // // Shadow 적용 (bCastShadows 플래그 확인) - PCF 샘플링 사용
-    // if (light.bCastShadows)
-    // {
-    //     float shadowFactor = CalculateSpotLightShadowFactor(
-    //         worldPos, light.ShadowData, ShadowMap, ShadowSampler);
-    //     diffuse *= shadowFactor;
-    //     specular *= shadowFactor;
-    // }
+    float shadowFactor = 1;
+    if (light.bCastShadows)
+    {
+        if (light.bCascaded)
+        {
+            shadowFactor = GetCascadedShadowAtt(WorldPos, ViewPos, ShadowMap, ShadowSampler);
+        }
+        else
+        {
+            shadowFactor = CalculateSpotLightShadowFactor(
+             WorldPos, light.Cascades[0], ShadowMap, ShadowSampler);
+        }
+    }
 
-    return diffuse + specular;
+    return (diffuse + specular) * shadowFactor;
 }
 
 // Spot Light 계산 (Diffuse + Specular with Attenuation and Cone)
@@ -522,6 +594,7 @@ float3 CalculatePointLight(
 //       OBJ/MTL 재질의 경우, Material.AmbientColor로 CalculateAmbientLight를 별도로 호출할 것
 float3 CalculateAllLights(
     float3 worldPos,
+    float3 viewPos,
     float3 normal,
     float3 viewDir,        // LAMBERT에서는 사용 안 함
     float4 baseColor,
@@ -537,14 +610,16 @@ float3 CalculateAllLights(
     // Ambient (비재질 오브젝트는 Ka = Kd 가정)
     litColor += CalculateAmbientLight(AmbientLight, baseColor.rgb);
 
-    // Directional
     litColor += CalculateDirectionalLight(
         DirectionalLight,
+        worldPos,
+        viewPos,
         normal,
         viewDir,  // LAMBERT에서는 무시됨
         baseColor,
         LIGHTING_INCLUDE_SPECULAR,  // 매크로에 따라 자동 설정
-        specularPower
+        specularPower,
+        ShadowMap2D, ShadowSampler
     );
 
     // Point + Spot with 타일 컬링
