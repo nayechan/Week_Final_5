@@ -67,7 +67,6 @@ void USpotLightComponent::GetShadowRenderRequests(FSceneView* View, TArray<FShad
 	ShadowRenderRequest.Size = ShadowResolutionScale;
 	// ShadowRenderRequest.ViewMatrix = GetViewMatrix() * GetProjectionMatrix();
 	// ShadowRenderRequest.ProjectionMatrix = WarpMatrix;
-	ShadowRenderRequest.Size = 256;
 	ShadowRenderRequest.SubViewIndex = 0;
 	ShadowRenderRequest.AtlasScaleOffset = 0;
 	ShadowRenderRequest.SampleCount = SampleCount;

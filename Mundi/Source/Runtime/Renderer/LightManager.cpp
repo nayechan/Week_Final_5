@@ -111,18 +111,33 @@ void FLightManager::Initialize(D3D11RHI* RHIDevice)
 
 		// 3.3. 각 면(Face)에 대한 DSV 생성 (Pass 1 렌더링용)
 		ShadowCubeFaceDSVs.SetNum(CubeArrayCount * 6);
+		ShadowCubeFaceSRVs.SetNum(CubeArrayCount * 6);
 		for (uint32 SliceIndex = 0; SliceIndex < CubeArrayCount; ++SliceIndex)
 		{
 			for (uint32 FaceIndex = 0; FaceIndex < 6; ++FaceIndex)
 			{
+				uint32 Index = (SliceIndex * 6) + FaceIndex;
+				
+				// DSV 생성
 				D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 				dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 				dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
 				dsvDesc.Texture2DArray.MipSlice = 0;
-				dsvDesc.Texture2DArray.FirstArraySlice = (SliceIndex * 6) + FaceIndex;
+				dsvDesc.Texture2DArray.FirstArraySlice = Index;
 				dsvDesc.Texture2DArray.ArraySize = 1; // 각 DSV는 1개의 면만 참조
 
-				RHIDevice->GetDevice()->CreateDepthStencilView(ShadowAtlasTextureCube, &dsvDesc, &ShadowCubeFaceDSVs[(SliceIndex * 6) + FaceIndex]);
+				RHIDevice->GetDevice()->CreateDepthStencilView(ShadowAtlasTextureCube, &dsvDesc, &ShadowCubeFaceDSVs[Index]);
+				
+				// SRV 생성 (각 면을 2D 텍스처로 읽을 수 있도록)
+				D3D11_SHADER_RESOURCE_VIEW_DESC srvFaceDesc = {};
+				srvFaceDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+				srvFaceDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+				srvFaceDesc.Texture2DArray.MostDetailedMip = 0;
+				srvFaceDesc.Texture2DArray.MipLevels = 1;
+				srvFaceDesc.Texture2DArray.FirstArraySlice = Index;
+				srvFaceDesc.Texture2DArray.ArraySize = 1; // 각 SRV는 1개의 면만 참조
+				
+				RHIDevice->GetDevice()->CreateShaderResourceView(ShadowAtlasTextureCube, &srvFaceDesc, &ShadowCubeFaceSRVs[Index]);
 			}
 		}
 	}
@@ -164,6 +179,11 @@ void FLightManager::Release()
 		if (dsv) dsv->Release();
 	}
 	ShadowCubeFaceDSVs.clear();
+	for (auto* srv : ShadowCubeFaceSRVs)
+	{
+		if (srv) srv->Release();
+	}
+	ShadowCubeFaceSRVs.clear();
 	if (ShadowAtlasTextureCube) { ShadowAtlasTextureCube->Release(); ShadowAtlasTextureCube = nullptr; }
 }
 
@@ -329,6 +349,16 @@ ID3D11DepthStencilView* FLightManager::GetShadowCubeFaceDSV(UINT SliceIndex, UIN
 	if (Index < ShadowCubeFaceDSVs.Num())
 	{
 		return ShadowCubeFaceDSVs[Index];
+	}
+	return nullptr;
+}
+
+ID3D11ShaderResourceView* FLightManager::GetShadowCubeFaceSRV(UINT SliceIndex, UINT FaceIndex) const
+{
+	UINT Index = (SliceIndex * 6) + FaceIndex;
+	if (Index < ShadowCubeFaceSRVs.Num())
+	{
+		return ShadowCubeFaceSRVs[Index];
 	}
 	return nullptr;
 }

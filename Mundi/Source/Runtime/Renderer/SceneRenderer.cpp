@@ -220,7 +220,11 @@ void FSceneRenderer::RenderShadowMaps()
 
 	// NOTE: 카메라 오버라이드 기능을 항상 활성화 하기 위해서 그림자를 그릴 곳이 없어도 함수 실행
 	//if (ShadowMeshBatches.IsEmpty()) return;
-	
+
+	// 섀도우 맵을 DSV로 사용하기 전에 SRV 슬롯에서 해제
+	ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
+	RHIDevice->GetDeviceContext()->PSSetShaderResources(8, 2, nullSRVs); // 슬롯 8과 9 해제
+
 	// 뷰 설정 복구용 데이터
 	FMatrix InvView = View->ViewMatrix.InverseAffine();
 	FMatrix InvProjection;

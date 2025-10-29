@@ -708,7 +708,12 @@ void D3D11RHI::ReleaseSamplerState()
     {
         PointClampSamplerState->Release();
         PointClampSamplerState = nullptr;
-	}
+    }
+    if (ShadowSamplerState)
+    {
+        ShadowSamplerState->Release();
+        ShadowSamplerState = nullptr;
+    }
 }
 
 void D3D11RHI::ReleaseBlendState()
@@ -853,6 +858,16 @@ void D3D11RHI::ReleaseDeviceAndSwapChain()
         DeviceContext = nullptr;
     }
 
+    // VRAM Leak 디버깅용 함수
+    // DXGI 누출 로그 출력 시 주석 해제로 타입 확인 가능
+    // ID3D11Debug* DebugPointer = nullptr;
+    // HRESULT Result = GetDevice()->QueryInterface(__uuidof(ID3D11Debug), reinterpret_cast<void**>(&DebugPointer));
+    // if (SUCCEEDED(Result))
+    // {
+    // 	DebugPointer->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+    // 	DebugPointer->Release();
+    // }
+    
     if (Device)
     {
         Device->Release();

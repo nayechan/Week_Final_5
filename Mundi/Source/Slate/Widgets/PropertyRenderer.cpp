@@ -12,6 +12,9 @@
 #include "DecalComponent.h"
 #include "StaticMeshComponent.h"
 #include "LightComponentBase.h"
+#include "LightComponent.h"
+#include "PointLightComponent.h"
+#include "SpotLightComponent.h"
 
 // 정적 멤버 변수 초기화
 TArray<FString> UPropertyRenderer::CachedStaticMeshPaths;
@@ -286,7 +289,13 @@ bool UPropertyRenderer::RenderBoolProperty(const FProperty& Prop, void* Instance
 bool UPropertyRenderer::RenderInt32Property(const FProperty& Prop, void* Instance)
 {
 	int32* Value = Prop.GetValuePtr<int32>(Instance);
-	return ImGui::DragInt(Prop.Name, Value, 1.0f, (int)Prop.MinValue, (int)Prop.MaxValue);
+	
+	// 드래그 속도를 계산합니다.
+	const float TotalRange = (float)Prop.MaxValue - (float)Prop.MinValue;
+	const float ProportionalSpeed = TotalRange * 0.0005f;
+	const float DragSpeed = FMath::Max(ProportionalSpeed, 0.01f);	// 최소 속도
+
+	return ImGui::DragInt(Prop.Name, Value, DragSpeed, (int)Prop.MinValue, (int)Prop.MaxValue);
 }
 
 bool UPropertyRenderer::RenderFloatProperty(const FProperty& Prop, void* Instance)
@@ -296,11 +305,16 @@ bool UPropertyRenderer::RenderFloatProperty(const FProperty& Prop, void* Instanc
 	// Min과 Max가 둘 다 0이면 범위 제한 없음
 	if (Prop.MinValue == 0.0f && Prop.MaxValue == 0.0f)
 	{
-		return ImGui::DragFloat(Prop.Name, Value, 0.01f);
+		return ImGui::DragFloat(Prop.Name, Value, 1.0f);
 	}
 	else
 	{
-		return ImGui::DragFloat(Prop.Name, Value, 0.01f, Prop.MinValue, Prop.MaxValue);
+		// 드래그 속도를 계산합니다.
+		const float TotalRange = (float)Prop.MaxValue - (float)Prop.MinValue;
+		const float ProportionalSpeed = TotalRange * 0.0005f;
+		const float DragSpeed = FMath::Max(ProportionalSpeed, 0.01f);	// 최소 속도
+
+		return ImGui::DragFloat(Prop.Name, Value, DragSpeed, Prop.MinValue, Prop.MaxValue);
 	}
 }
 
@@ -420,56 +434,97 @@ bool UPropertyRenderer::RenderTextureProperty(const FProperty& Prop, void* Insta
 }
 bool UPropertyRenderer::RenderSRVProperty(const FProperty& Prop, void* Instance)
 {
-	// NOTE: 일단 임시로 프로퍼티와 관련없이 LightManager의 ShadowAtlasSRV2D를 가져와서 그림
-
-	// 1. 현재 렌더링 중인 컴포넌트 가져오기 (예시, 실제 구현은 다를 수 있음)
 	ULightComponent* LightComp = static_cast<ULightComponent*>(Instance);
 	if (!LightComp) return false;
 
 	FLightManager* LightManager = GWorld->GetLightManager();
 	if (!LightManager) return false;
 
-	// 2. 매번 최신 아틀라스 SRV 가져오기
+	//@TODO PropertyRenderer 와 Component 간 결합 줄이기
+	// Point Light와 Spot Light 구분
+	USpotLightComponent* SpotLight = Cast<USpotLightComponent>(LightComp);
+	UPointLightComponent* PointLight = Cast<UPointLightComponent>(LightComp);
+
+	// Point Light (Spot Light 제외)
+	if (PointLight && !SpotLight)
+	{
+		int32 CubeSliceIndex = -1;
+		if (!LightManager->GetCachedShadowCubeSliceIndex(LightComp, CubeSliceIndex) || CubeSliceIndex < 0)
+		{
+			ImGui::Text("Cube Shadow Map not available");
+			return false;
+		}
+		return RenderPointLightCubeShadowMap(LightManager, LightComp, CubeSliceIndex);
+	}
+
+	// Spot Light 및 기타 2D Shadow Map
 	ID3D11ShaderResourceView* AtlasSRV = LightManager->GetShadowAtlasSRV2D();
 	if (!AtlasSRV)
 	{
 		ImGui::Text("Shadow Atlas SRV is null");
-		return false; // SRV가 없으면 표시할 수 없음
+		return false;
+	}
+	return RenderSpotLightShadowMap(LightManager, LightComp, AtlasSRV);
+}
+
+bool UPropertyRenderer::RenderPointLightCubeShadowMap(FLightManager* LightManager, ULightComponent* LightComp, int32 CubeSliceIndex)
+{
+	ImGui::Text("Point Light Cube Shadow Map (Slice %d)", CubeSliceIndex);
+	ImGui::Spacing();
+
+	const char* FaceNames[6] = { "+X", "-X", "+Y", "-Y", "+Z", "-Z" };
+	const int32 FaceSize = 128;
+
+	// 2x3 그리드로 Cube Map의 6개 면 표시
+	for (int row = 0; row < 2; ++row)
+	{
+		for (int col = 0; col < 3; ++col)
+		{
+			int32 faceIdx = row * 3 + col;
+			ID3D11ShaderResourceView* FaceSRV = LightManager->GetShadowCubeFaceSRV(CubeSliceIndex, faceIdx);
+
+			ImGui::BeginGroup();
+			ImGui::Text("%s", FaceNames[faceIdx]);
+			if (FaceSRV)
+			{
+				ImGui::Image((ImTextureID)FaceSRV, ImVec2(FaceSize, FaceSize));
+			}
+			else
+			{
+				ImGui::Text("N/A");
+			}
+			ImGui::EndGroup();
+
+			if (col < 2) ImGui::SameLine();
+		}
 	}
 
-	// 3. 이 라이트의 아틀라스 UV 정보 가져오기 (FLightManager에 이 정보를 얻는 함수 필요)
-	//    (GetShadowMapData 함수 등을 활용하여 캐시된 데이터 조회)
+	return false;
+}
+
+bool UPropertyRenderer::RenderSpotLightShadowMap(FLightManager* LightManager, ULightComponent* LightComp, ID3D11ShaderResourceView* AtlasSRV)
+{
 	FShadowMapData ShadowData;
-	if (!LightManager->GetCachedShadowData(LightComp, 0, ShadowData)) // 0번 SubView (Spot)
+	if (!LightManager->GetCachedShadowData(LightComp, 0, ShadowData))
 	{
 		ImGui::Text("Shadow data not available");
 		return false;
 	}
 
-	// 4. AtlasScaleOffset 정보를 ImGui UV로 변환
-	//    Data.AtlasScaleOffset = (ScaleX, ScaleY, OffsetX, OffsetY)
-	ImVec2 uv0(ShadowData.AtlasScaleOffset.Z, ShadowData.AtlasScaleOffset.W); // UV 시작 (좌상단 Offset)
+	// Atlas UV 계산
+	ImVec2 uv0(ShadowData.AtlasScaleOffset.Z, ShadowData.AtlasScaleOffset.W);
 	ImVec2 uv1(ShadowData.AtlasScaleOffset.Z + ShadowData.AtlasScaleOffset.X,
-		ShadowData.AtlasScaleOffset.W + ShadowData.AtlasScaleOffset.Y); // UV 끝 (Offset + Scale)
+		ShadowData.AtlasScaleOffset.W + ShadowData.AtlasScaleOffset.Y);
 
+	// Shadow Map 표시
+	ImGui::Text("Shadow Map:");
+	ImGui::Image((ImTextureID)AtlasSRV, ImVec2(256, 256), uv0, uv1);
 
-	// 5. ImGui::Image 호출 (SRV + 계산된 UV 사용)
-	ImGui::Image(
-		(ImTextureID)AtlasSRV,       // 전체 아틀라스 SRV
-		ImVec2(256, 256),            // 표시 크기
-		uv0,                         // 표시할 영역의 시작 UV
-		uv1                          // 표시할 영역의 끝 UV
-	);
+	// 전체 Atlas 표시 (디버깅용)
+	ImGui::Text("Full Atlas:");
+	ImGui::Image((ImTextureID)AtlasSRV, ImVec2(256, 256), ImVec2(0, 0), ImVec2(1, 1));
 
-	// NOTE: 디버깅 용으로 전체 아틀라스 맵도 같이 출력
-	ImGui::Image(
-		(ImTextureID)AtlasSRV,       // 전체 아틀라스 SRV
-		ImVec2(256, 256),            // 표시 크기
-		ImVec2(0, 0),                         // 표시할 영역의 시작 UV
-		ImVec2(1, 1)                          // 표시할 영역의 끝 UV
-	);
-
-	return false; // 속성 값은 변경되지 않았음
+	return false;
 }
 
 bool UPropertyRenderer::RenderStaticMeshProperty(const FProperty& Prop, void* Instance)

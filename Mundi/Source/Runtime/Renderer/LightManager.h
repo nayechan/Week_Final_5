@@ -138,6 +138,7 @@ public:
     bool GetCachedShadowData(ULightComponent* Light, int32 SubViewIndex, FShadowMapData& OutData) const;
     bool GetCachedShadowCubeSliceIndex(ULightComponent* Light, int32& OutSliceIndex) const;
     ID3D11ShaderResourceView* GetShadowAtlasSRVCube() const { return ShadowAtlasSRVCube; }
+    ID3D11ShaderResourceView* GetShadowCubeFaceSRV(UINT SliceIndex, UINT FaceIndex) const; // Cube의 각 면을 2D SRV로 반환
 
     void AllocateAtlasRegions2D(TArray<FShadowRenderRequest>& InOutRequests2D);
     void AllocateAtlasCubeSlices(TArray<FShadowRenderRequest>& InOutRequestsCube);
@@ -177,6 +178,8 @@ private:
     ID3D11ShaderResourceView* ShadowAtlasSRVCube = nullptr; // t8
     // 큐브맵의 각 면(Slice*6)에 대한 DSV 배열
     TArray<ID3D11DepthStencilView*> ShadowCubeFaceDSVs;
+    // 큐브맵의 각 면을 2D 텍스처로 읽을 수 있는 SRV 배열 (UI 표시용)
+    TArray<ID3D11ShaderResourceView*> ShadowCubeFaceSRVs;
     uint32 AtlasSizeCube = 1024;
     uint32 CubeArrayCount = 8;
 
