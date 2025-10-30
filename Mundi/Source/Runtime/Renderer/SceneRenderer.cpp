@@ -395,9 +395,8 @@ void FSceneRenderer::RenderShadowMaps()
 				if (FaceDSV)
 				{
 					RHIDevice->OMSetCustomRenderTargets(0, nullptr, FaceDSV);
-					RHIDevice->ClearDepthBuffer(1.0f, 0); // 각 면을 클리어
+					RHIDevice->GetDeviceContext()->ClearDepthStencilView(FaceDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 					RenderShadowDepthPass(Request, ShadowMeshBatches);
-					RHIDevice->GetDeviceContext()->ClearDepthStencilView(FaceDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1, 0);
 				}
 			}
 		}

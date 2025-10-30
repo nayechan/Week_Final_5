@@ -243,6 +243,22 @@ void FLightManager::Release()
 	}
 	ShadowCubeFaceSRVs.clear();
 	if (ShadowAtlasTextureCube) { ShadowAtlasTextureCube->Release(); ShadowAtlasTextureCube = nullptr; }
+
+	if (VSMShadowAtlasRTV2D)
+	{
+		VSMShadowAtlasRTV2D->Release();
+		VSMShadowAtlasRTV2D = nullptr;
+	}
+	if (VSMShadowAtlasSRV2D)
+	{
+		VSMShadowAtlasSRV2D->Release();
+		VSMShadowAtlasSRV2D = nullptr;
+	}
+	if (VSMShadowAtlasTexture2D)
+	{
+		VSMShadowAtlasTexture2D->Release();
+		VSMShadowAtlasTexture2D = nullptr;
+	}
 }
 
 void FLightManager::UpdateLightBuffer(D3D11RHI* RHIDevice)

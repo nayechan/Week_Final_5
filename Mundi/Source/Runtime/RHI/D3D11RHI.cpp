@@ -730,6 +730,11 @@ void D3D11RHI::ReleaseSamplerState()
         ShadowSamplerState->Release();
         ShadowSamplerState = nullptr;
     }
+    if (VSMSamplerState)
+    {
+        VSMSamplerState->Release();
+        VSMSamplerState = nullptr;
+    }
 }
 
 void D3D11RHI::ReleaseBlendState()
