@@ -437,6 +437,7 @@
     <ClCompile Include="Source\Runtime\Engine\Components\CapsuleComponent.cpp">
       <Filter>Source\Runtime\Engine\Components</Filter>
     </ClCompile>
+    <ClCompile Include="LuaScriptComponent.cpp" />
   </ItemGroup>
   <!-- ThirdParty/ImGui Files -->
   <!-- Source Files -->
@@ -908,6 +909,7 @@
     <ClInclude Include="Source\Runtime\Engine\Collision\BoundsHelper.h">
       <Filter>Source\Runtime\Engine\Collision</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Components\LuaScriptComponent.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">

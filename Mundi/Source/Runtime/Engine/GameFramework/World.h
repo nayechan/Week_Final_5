@@ -30,6 +30,7 @@ class FOcclusionCullingManagerCPU;
 struct Frustum;
 struct FCandidateDrawable;
 
+
 class UWorld final : public UObject
 {
 public:
@@ -38,7 +39,6 @@ public:
     ~UWorld() override;
 
     bool bPie = false;
-
 public:
     /** 초기화 */
     void Initialize();

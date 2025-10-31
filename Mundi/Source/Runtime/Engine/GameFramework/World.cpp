@@ -27,8 +27,7 @@
 
 IMPLEMENT_CLASS(UWorld)
 
-UWorld::UWorld()
-	: Partition(new UWorldPartitionManager())
+UWorld::UWorld() : Partition(new UWorldPartitionManager())
 {
 	SelectionMgr = std::make_unique<USelectionManager>();
 	//PIE의 경우 Initalize 없이 빈 Level 생성만 해야함
@@ -63,6 +62,7 @@ void UWorld::Initialize()
 
 	InitializeGrid();
 	InitializeGizmo();
+
 }
 
 void UWorld::InitializeGrid()

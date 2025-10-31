@@ -5,12 +5,25 @@
 #include "AABB.h"
 #include "LightManager.h"
 
-
 class UWorld;
 class USceneComponent;
 class UShapeComponent;
 class UTextRenderComponent;
 class UBillboardComponent;
+
+class FGameObject
+{
+public:
+    uint32  UUID;
+    FVector Location;
+    FVector Velocity;
+
+    void PrintLocation()
+    {
+        UE_LOG("Location %f %f %f\n", Location.X, Location.Y, Location.Z);
+    }
+};
+
 
 class AActor : public UObject
 {
@@ -136,7 +149,9 @@ public:
     {
         return bTickInEditor;
     }
-
+    // ───── 충돌 관련 ───────────────────────── 
+    bool IsOverlappingActor(const AActor* Other);
+     
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
     void PostDuplicate() override;
@@ -144,6 +159,8 @@ public:
 
     // Serialize
     void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
+
+    FGameObject* GetGameObject() const { return LuaGameObject; }
 
 public:
     FName Name;
@@ -168,5 +185,5 @@ protected:
     bool bIsCulled = false;
 
 private:
-   
+    FGameObject* LuaGameObject;
 };

@@ -81,8 +81,13 @@ namespace Collision
 
         return Dist.SizeSquared() <= SumRadius * SumRadius;
     }
+     
+    bool OverlapSphereAndBox(const FShape& ShapeA, const FTransform& TransformA, const FShape& ShapeB, const FTransform& TransformB)
+    {
+        return false;
+    }
 
-    bool OverlapSphereAndBox(const FShape& Shape1, const FShape& Shape2)
+    bool OverlapBoxAndBox(const FShape& Shape1, const FShape& Shape2)
     {
 
         return true;

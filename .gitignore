@@ -457,6 +457,8 @@ Mundi/Scene/*
 !Mundi/ThirdParty/DirectXTex/Lib/x64/Debug/
 !Mundi/ThirdParty/DirectXTex/Lib/x64/Release/
 !Mundi/ThirdParty/DirectXTex/**/*.lib
+!Mundi/ThirdParty/Lua/**/*.lib
+!Mundi/ThirdParty/Lua/**/*.pdb
 
 WARP.md
 

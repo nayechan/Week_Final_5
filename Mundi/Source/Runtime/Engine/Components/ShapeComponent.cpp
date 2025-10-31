@@ -7,6 +7,10 @@ UShapeComponent::UShapeComponent()
     ShapeColor = FVector4(0.2f, 0.8f, 1.0f, 1.0f);
 }
 
+void UShapeComponent::IsOverrlappingActor(const AActor* Other)
+{
+}
+
 void UShapeComponent::OnRegister(UWorld* InWorld)
 {
     Super::OnRegister(InWorld);
