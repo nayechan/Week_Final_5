@@ -15,6 +15,7 @@
 #include "LightComponent.h"
 #include "PointLightComponent.h"
 #include "SpotLightComponent.h"
+#include "PlatformProcess.h"
 
 // 정적 멤버 변수 초기화
 TArray<FString> UPropertyRenderer::CachedStaticMeshPaths;
@@ -606,6 +607,14 @@ bool UPropertyRenderer::RenderScriptFileProperty(const FProperty& Property, void
 			}
 		}
 		ImGui::Separator();
+	}
+	// 스크립트 파일이 있을 때
+	else
+	{
+		if (ImGui::Button("편집하기"))
+		{
+			FPlatformProcess::OpenFileInDefaultEditor(*FilePath);
+		}
 	}
 
 	return bChanged;

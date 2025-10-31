@@ -426,6 +426,9 @@
     </ClCompile>
     <ClCompile Include="Source\Runtime\Core\Math\Vector.cpp" />
     <ClCompile Include="LuaScriptComponent.cpp" />
+    <ClCompile Include="Source\Editor\PlatformProcess.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <!-- ThirdParty/ImGui Files -->
   <!-- Source Files -->
@@ -883,6 +886,9 @@
       <Filter>Source\Editor\Clipboard</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Engine\Components\LuaScriptComponent.h" />
+    <ClInclude Include="Source\Editor\PlatformProcess.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">
