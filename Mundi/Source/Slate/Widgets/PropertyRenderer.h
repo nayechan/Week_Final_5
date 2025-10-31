@@ -33,6 +33,7 @@ private:
 	static bool RenderStructProperty(const FProperty& Prop, void* Instance);
 	static bool RenderTextureProperty(const FProperty& Prop, void* Instance);
 	static bool RenderSRVProperty(const FProperty& Prop, void* Instance);
+	static bool RenderScriptFileProperty(const FProperty& Prop, void* Instance);
 	static bool RenderPointLightCubeShadowMap(class FLightManager* LightManager, class ULightComponent* LightComp, int32 CubeSliceIndex);
 	static bool RenderSpotLightShadowMap(class FLightManager* LightManager, class ULightComponent* LightComp, ID3D11ShaderResourceView* AtlasSRV);
 	static bool RenderStaticMeshProperty(const FProperty& Prop, void* Instance);
@@ -58,4 +59,6 @@ private:
 	static TArray<const char*> CachedShaderItems;
 	static TArray<FString> CachedTexturePaths;
 	static TArray<const char*> CachedTextureItems;
+	static TArray<FString> CachedScriptPaths;
+	static TArray<const char*> CachedScriptItems;
 };

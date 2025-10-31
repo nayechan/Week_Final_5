@@ -10,9 +10,9 @@
 IMPLEMENT_CLASS(UTextRenderComponent)
 
 BEGIN_PROPERTIES(UTextRenderComponent)
-	MARK_AS_COMPONENT("텍스트 렌더 컴포넌트", "3D 공간에 텍스트를 렌더링합니다.")
-	ADD_PROPERTY(FString, Text, "Text", true, "렌더링할 텍스트입니다.")
-	ADD_PROPERTY(FString, TextureFilePath, "Text", true, "텍스트 텍스처 파일 경로입니다.")
+	//MARK_AS_COMPONENT("텍스트 렌더 컴포넌트", "3D 공간에 텍스트를 렌더링합니다.")
+	//ADD_PROPERTY(FString, Text, "Text", true, "렌더링할 텍스트입니다.")
+	//ADD_PROPERTY(FString, TextureFilePath, "Text", true, "텍스트 텍스처 파일 경로입니다.")
 END_PROPERTIES()
 
 UTextRenderComponent::UTextRenderComponent()

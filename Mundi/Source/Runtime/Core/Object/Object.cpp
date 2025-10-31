@@ -91,6 +91,7 @@ void UObject::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			break;
 		}
 		case EPropertyType::FString:
+		case EPropertyType::ScriptFile:
 		{
 			FString* Value = Prop.GetValuePtr<FString>(this);
 			if (bInIsLoading)

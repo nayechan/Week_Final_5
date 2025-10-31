@@ -183,6 +183,25 @@ public:
 		Class->AddProperty(Prop); \
 	}
 
+// 스크립트 파일 프로퍼티 추가
+// InExtension 예: ".lua" 또는 "lua"
+#define ADD_PROPERTY_SCRIPT(VarType, VarName, CategoryName, InExtension, bEditAnywhere, ...) \
+	{ \
+		static_assert(std::is_array_v<std::remove_reference_t<decltype(CategoryName)>>, \
+					  "CategoryName must be a string literal!"); \
+		static_assert(std::is_array_v<std::remove_reference_t<decltype(InExtension)>>, \
+					  "InExtension must be a string literal!");\
+		FProperty Prop; \
+		Prop.Name = #VarName; \
+		Prop.Type = EPropertyType::ScriptFile; \
+		Prop.Offset = offsetof(ThisClass_t, VarName); \
+		Prop.Category = CategoryName; \
+		Prop.bIsEditAnywhere = bEditAnywhere; \
+		Prop.Tooltip = "" __VA_ARGS__; \
+		Prop.Metadata.Add(FName("FileExtension"), InExtension); \
+		Class->AddProperty(Prop); \
+	}
+
 // 클래스 메타데이터 설정 매크로
 // StaticRegisterProperties() 함수 내에서 사용
 

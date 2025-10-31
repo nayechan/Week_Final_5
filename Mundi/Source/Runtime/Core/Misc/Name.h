@@ -20,10 +20,6 @@ class FNamePool
 public:
     static uint32 Add(const FString& InStr);
     static const FNameEntry& Get(uint32 Index);
-
-private:
-    static TArray<FNameEntry> Entries; // 정의는 Name.cpp
-    static std::unordered_map<FString, uint32> NameMap; // 빠른 검색용
 };
 
 // ──────────────────────────────
@@ -63,3 +59,17 @@ struct FName
         return FName(A + B.ToString());
     }
 };
+
+// --- FName을 위한 std::hash 특수화 ---
+namespace std
+{
+    template<>
+    struct hash<FName>
+    {
+        size_t operator()(const FName& Name) const noexcept
+        {
+            // FName의 비교 기준인 ComparisonIndex를 해시합니다.
+            return hash<uint32>{}(Name.ComparisonIndex);
+        }
+    };
+}

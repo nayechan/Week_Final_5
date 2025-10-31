@@ -131,7 +131,7 @@ void USceneComponent::AddRelativeScale3D(const FVector& DeltaScale)
 // ──────────────────────────────
 FTransform USceneComponent::GetWorldTransform() const
 {
-    // Dangling pointer 방지를 위한 체크
+    // Dangling pointer 방지를 위한 체크 
     if (AttachParent && !AttachParent->IsPendingDestroy())
     {
         return AttachParent->GetWorldTransform().GetWorldTransform(RelativeTransform);

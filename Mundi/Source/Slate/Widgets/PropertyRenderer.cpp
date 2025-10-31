@@ -25,6 +25,8 @@ TArray<FString> UPropertyRenderer::CachedShaderPaths;
 TArray<const char*> UPropertyRenderer::CachedShaderItems;
 TArray<FString> UPropertyRenderer::CachedTexturePaths;
 TArray<const char*> UPropertyRenderer::CachedTextureItems;
+TArray<FString> UPropertyRenderer::CachedScriptPaths;
+TArray<const char*> UPropertyRenderer::CachedScriptItems;
 
 bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectInstance)
 {
@@ -93,6 +95,9 @@ bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectIn
 		break;
 	case EPropertyType::SRV:
 		bChanged = RenderSRVProperty(Property, ObjectInstance);
+		break;
+	case EPropertyType::ScriptFile:
+		bChanged = RenderScriptFileProperty(Property, ObjectInstance);
 		break;
 	default:
 		ImGui::Text("%s: [Unknown Type]", Property.Name);
@@ -264,6 +269,36 @@ void UPropertyRenderer::CacheResources()
 			CachedTextureItems.push_back(path.c_str());
 		}
 	}
+
+	// --- 5. 스크립트 파일 ---
+	if (CachedScriptPaths.IsEmpty() && CachedScriptItems.IsEmpty())
+	{
+		// 1. "None" 항목 추가 (경로는 "", UI 표시는 "<스크립트 생성>")
+		CachedScriptPaths.Add("");
+		CachedScriptItems.Add("<스크립트 생성>");
+
+		// 2. 파일 시스템 스캔 (Content/Scripts/ 디렉토리)
+		const FString ScriptDir = GDataDir + "/Scripts/";
+		if (fs::exists(ScriptDir) && fs::is_directory(ScriptDir))
+		{
+			for (const auto& entry : fs::recursive_directory_iterator(ScriptDir))
+			{
+				if (entry.is_regular_file() && entry.path().extension() == ".lua")
+				{
+					CachedScriptPaths.Add(NormalizePath(entry.path().string()));
+				}
+			}
+		}
+
+		// 3. 콤보박스 아이템 채우기 (경로가 모두 추가된 후에!)
+		// "None" 항목(인덱스 0)은 이미 추가했으므로 1부터 시작
+		for (size_t i = 1; i < CachedScriptPaths.size(); ++i)
+		{
+			// c_str() 포인터는 CachedScriptPaths가 재할당되지 않는 한 유효합니다.
+			// (주의: ClearResourcesCache() 호출 전까지 유효)
+			CachedScriptItems.Add(CachedScriptPaths[i].c_str());
+		}
+	}
 }
 
 void UPropertyRenderer::ClearResourcesCache()
@@ -276,6 +311,8 @@ void UPropertyRenderer::ClearResourcesCache()
 	CachedShaderItems.Empty();
 	CachedTexturePaths.Empty();
 	CachedTextureItems.Empty();
+	CachedScriptPaths.Empty();
+	CachedScriptItems.Empty();
 }
 
 // ===== 타입별 렌더링 구현 =====
@@ -465,6 +502,113 @@ bool UPropertyRenderer::RenderSRVProperty(const FProperty& Prop, void* Instance)
 		return false;
 	}
 	return RenderSpotLightShadowMap(LightManager, LightComp, AtlasSRV);
+}
+
+bool UPropertyRenderer::RenderScriptFileProperty(const FProperty& Property, void* ObjectInstance)
+{
+	bool bChanged = false;
+	FString* FilePath = Property.GetValuePtr<FString>(ObjectInstance);
+	if (!FilePath) return false;
+
+	// 1. 현재 선택된 아이템 찾기
+	int CurrentItem = 0; // 0번 인덱스("<스크립트 생성>")가 기본값
+	for (int i = 0; i < CachedScriptPaths.Num(); ++i)
+	{
+		// 경로가 비어있지 않고, 캐시된 경로와 일치하는 경우
+		if (!FilePath->empty() && CachedScriptPaths[i] == *FilePath)
+		{
+			CurrentItem = i;
+			break;
+		}
+	}
+
+	// 2. 콤보 박스 렌더링
+	ImGui::Text("%s", Property.Name);
+	ImGui::SameLine();
+	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+	ImGui::PushID(Property.Name); // 고유 ID
+
+	// 콤보박스에 표시될 텍스트
+	const char* PreviewText = CachedScriptItems[CurrentItem];
+
+	if (ImGui::BeginCombo("##ScriptCombo", PreviewText))
+	{
+		for (int i = 0; i < CachedScriptItems.Num(); ++i)
+		{
+			const bool bIsSelected = (CurrentItem == i);
+			if (ImGui::Selectable(CachedScriptItems[i], bIsSelected))
+			{
+				CurrentItem = i;
+				*FilePath = CachedScriptPaths[i];
+				bChanged = true;
+			}
+			if (bIsSelected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::PopID();
+
+	// 3. 스크립트 생성 UI (선택된 파일이 없을 때만 표시)
+	if (FilePath->empty())
+	{
+		ImGui::Separator();
+
+		// "스크립트 생성 메뉴"
+		static char NewScriptNameBuffer[128] = "NewScript";
+		ImGui::InputText("스크립트 명", NewScriptNameBuffer, IM_ARRAYSIZE(NewScriptNameBuffer));
+		ImGui::SameLine();
+
+		if (ImGui::Button("스크립트 생성"))
+		{
+			// 1. 경로 및 확장자 설정
+			const FString* ExtPtr = Property.Metadata.Find(FName("FileExtension"));
+			FString Extension = (ExtPtr) ? *ExtPtr : ".lua";
+			if (Extension[0] != '.') Extension = "." + Extension;
+
+			// (참고: 스크립트 기본 경로는 "Content/Scripts/"로 가정)
+			FString BaseDir = GDataDir + "/Scripts/";
+			FString NewFileName(NewScriptNameBuffer);
+			FString RelativePath = BaseDir + NewFileName + Extension;
+
+			// 템플릿 파일 경로 정의
+			const FString TemplatePath = GDataDir + "/Scripts/Template/template.lua";
+
+			// 2. 디렉토리 생성 (없을 경우)
+			fs::create_directories(BaseDir);
+
+			if (fs::exists(TemplatePath))
+			{
+				try
+				{
+					// 템플릿 파일을 새 경로로 복사
+					fs::copy(TemplatePath, RelativePath, fs::copy_options::overwrite_existing);
+
+					// 4. 새 파일을 캐시에 즉시 추가
+					CachedScriptPaths.Add(RelativePath);
+
+					CachedScriptItems.Add(CachedScriptPaths.back().c_str());
+
+					// 5. 현재 프로퍼티에 새 경로 설정
+					*FilePath = RelativePath;
+					bChanged = true;
+				}
+				catch (const fs::filesystem_error& e)
+				{
+					// TODO: 파일 복사 실패 알림 (예: GConsole->LogError(...))
+				}
+			}
+			else
+			{
+				// TODO: 템플릿 파일 없음 알림 (예: GConsole->LogWarning(...))
+			}
+		}
+		ImGui::Separator();
+	}
+
+	return bChanged;
 }
 
 bool UPropertyRenderer::RenderPointLightCubeShadowMap(FLightManager* LightManager, ULightComponent* LightComp, int32 CubeSliceIndex)

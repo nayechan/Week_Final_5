@@ -146,6 +146,9 @@ void USlateManager::Initialize(ID3D11Device* InDevice, UWorld* InWorld, const FR
         UE_LOG("USlateManager: ConsoleWindow created successfully");
         UGlobalConsole::SetConsoleWidget(ConsoleWindow->GetConsoleWidget());
         UE_LOG("USlateManager: GlobalConsole connected to ConsoleWidget");
+        bIsConsoleVisible = true;
+        bIsConsoleAnimating = false;
+        ConsoleAnimationProgress = 1.0f;
     }
     else
     {
@@ -191,7 +194,7 @@ void USlateManager::Render()
     }
 
     // 콘솔 오버레이 렌더링 (모든 것 위에 표시)
-    if (ConsoleWindow && ConsoleAnimationProgress > 0.0f)
+    if (ConsoleWindow)
     {
         extern float CLIENTWIDTH;
         extern float CLIENTHEIGHT;
@@ -239,12 +242,7 @@ void USlateManager::Render()
         if (ImGui::Begin("ConsoleOverlay", &isWindowOpen, flags))
         {
             // 콘솔이 포커스를 잃으면 닫기
-            if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) &&
-                bIsConsoleVisible &&
-                !bIsConsoleAnimating)
-            {
-                ToggleConsole(); // 콘솔 닫기
-            }
+                        // Always visible: do not auto-close on focus loss
 
             // 둥근 모서리가 있는 반투명 배경 추가
             ImDrawList* DrawList = ImGui::GetWindowDrawList();
@@ -308,7 +306,7 @@ void USlateManager::Update(float DeltaSeconds)
     }
 
     // ConsoleWindow 업데이트
-    if (ConsoleWindow && ConsoleAnimationProgress > 0.0f)
+    if (ConsoleWindow)
     {
         ConsoleWindow->Update();
     }
@@ -349,10 +347,7 @@ void USlateManager::ProcessInput()
     OnMouseMove(MousePosition);
 
     // Alt + ` (억음 부호 키)로 콘솔 토글
-    if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent) && ImGui::GetIO().KeyAlt)
-    {
-        ToggleConsole();
-    }
+    if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent) && ImGui::GetIO().KeyAlt){ bIsConsoleVisible=true; bIsConsoleAnimating=false; ConsoleAnimationProgress=1.0f; }
 
     // 단축키로 기즈모 모드 변경
     if (World->GetGizmoActor())
@@ -472,3 +467,8 @@ void USlateManager::ToggleConsole()
         bConsoleShouldFocus = true;
     }
 }
+
+
+
+
+

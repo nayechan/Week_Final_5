@@ -17,7 +17,8 @@ enum class EPropertyType : uint8
 	StaticMesh,     // UStaticMesh* 타입 (리소스 선택 UI)
 	Material,		// UMaterial* 타입 (리소스 선택 UI)
 	Array,			// TArray 용으로 추가
-	SRV,				
+	SRV,
+	ScriptFile,
 
 	// 추후 추가될 프로퍼티들은 직접 해줘야함.
 };
@@ -34,6 +35,8 @@ struct FProperty
 	float MaxValue = 0.0f;                   // 범위 최대값
 	bool bIsEditAnywhere = false;            // UI에 노출 여부
 	const char* Tooltip = nullptr;           // 툴팁 설명
+	
+	TMap<FName, FString> Metadata;			 // 모든 부가 정보를 key-value 문자열로 저장합니다.
 
 	// 객체 인스턴스에서 프로퍼티 값의 포인터를 가져옴
 	template<typename T>
