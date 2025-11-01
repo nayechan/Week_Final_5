@@ -156,7 +156,7 @@
     <ClCompile Include="Source\Runtime\Engine\Components\BoxComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\ShapeComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\AmbientLightActor.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\GameFramework\ATileMapActor.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\TileMapActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\DirectionalLightActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\EmptyActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\HeightFogActor.cpp" />
@@ -387,7 +387,7 @@
     <ClInclude Include="Source\Runtime\Engine\Components\ShapeComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\SphereComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\AmbientLightActor.h" />
-    <ClInclude Include="Source\Runtime\Engine\GameFramework\ATileMapActor.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\TileMapActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\DirectionalLightActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\EmptyActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\HeightFogActor.h" />

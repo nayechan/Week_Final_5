@@ -1,0 +1,40 @@
+{
+  "Name" : "스태틱 메시_0",
+  "OwnedComponents" : [{
+      "BoxExtent" : [0.500000, 0.500000, 0.500000],
+      "Id" : 752,
+      "ParentId" : 751,
+      "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+      "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [0.900000, 0.900000, 0.900000],
+      "Type" : "UBoxComponent",
+      "bBlockComponent" : false,
+      "bGenerateOverlapEvents" : true,
+      "bHiddenInGame" : false,
+      "bIsActive" : true,
+      "bIsVisible" : true,
+      "bShapeHiddenInGame" : true,
+      "bShapeIsVisible" : true,
+      "bTickEnabled" : true
+    }, {
+      "Id" : 751,
+      "MaterialSlots" : [{
+          "AssetPath" : "texture",
+          "Type" : "UMaterial"
+        }],
+      "ParentId" : 0,
+      "RelativeLocation" : [-0.866329, 4.512957, 3.374529],
+      "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/cube-tex.obj",
+      "Type" : "UStaticMeshComponent",
+      "bBlockComponent" : false,
+      "bGenerateOverlapEvents" : true,
+      "bHiddenInGame" : false,
+      "bIsActive" : true,
+      "bIsVisible" : true,
+      "bTickEnabled" : true
+    }],
+  "RootComponentId" : 751,
+  "Type" : "AStaticMeshActor"
+}

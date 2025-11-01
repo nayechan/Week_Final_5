@@ -10,6 +10,8 @@ public:
 	UBoxComponent(); 
 	void OnRegister(UWorld* InWorld) override;
 
+	void SetBoxExtent(const FVector& InExtent) { BoxExtent = InExtent; }
+
 	// Duplication
 	virtual void DuplicateSubObjects() override;
 	DECLARE_DUPLICATE(UBoxComponent)

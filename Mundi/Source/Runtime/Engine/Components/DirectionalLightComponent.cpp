@@ -147,7 +147,7 @@ void UDirectionalLightComponent::OnRegister(UWorld* InWorld)
 		DirectionGizmo->SetUseScreenConstantScale(false);
 
 		// Set default scale
-		DirectionGizmo->SetDefaultScale(FVector(0.5f, 0.3f, 0.3f));
+		DirectionGizmo->SetDefaultScale(FVector(2.5f, 2.5f, 2.5f));
 
 		// Update gizmo properties to match light
 		UpdateDirectionGizmo();

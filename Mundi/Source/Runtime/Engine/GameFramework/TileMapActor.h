@@ -12,6 +12,8 @@ public:
 	void GenerateGrid();
 	bool WorldToTile(const FVector& WorldPos, int32& OutX, int32& OutY) const;
 	void DestroyTileAt(int32 X, int32 Y);
+	void ResizeMap(int32 NewWidth, int32 NewHeight);
+	void ClearAllTiles();
 
 private:
 	TArray<UStaticMeshComponent*> Tiles;

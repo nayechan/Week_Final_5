@@ -1,0 +1,45 @@
+{
+  "Name" : "스태틱 메시_0",
+  "OwnedComponents" : [{
+      "Id" : 747,
+      "MaterialSlots" : [{
+          "AssetPath" : "Shaders/Materials/UberLit.hlsl_LIGHTING_MODEL_PHONG=1",
+          "Type" : "UMaterial"
+        }],
+      "ParentId" : 0,
+      "RelativeLocation" : [1.532815, -1.532816, 1.173165],
+      "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "StaticMesh" : "Data/Model/Cube.obj",
+      "Type" : "UStaticMeshComponent",
+      "bBlockComponent" : false,
+      "bGenerateOverlapEvents" : true,
+      "bHiddenInGame" : false,
+      "bIsActive" : true,
+      "bIsVisible" : true,
+      "bTickEnabled" : true
+    }, {
+      "ScriptFilePath" : "Data/Scripts/Tile.lua",
+      "Type" : "ULuaScriptComponent",
+      "bIsActive" : true,
+      "bTickEnabled" : true
+    }, {
+      "BoxExtent" : [0.000000, 0.000000, 0.000000],
+      "Id" : 761,
+      "ParentId" : 747,
+      "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+      "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "Type" : "UBoxComponent",
+      "bBlockComponent" : false,
+      "bGenerateOverlapEvents" : true,
+      "bHiddenInGame" : false,
+      "bIsActive" : true,
+      "bIsVisible" : true,
+      "bShapeHiddenInGame" : true,
+      "bShapeIsVisible" : true,
+      "bTickEnabled" : true
+    }],
+  "RootComponentId" : 747,
+  "Type" : "AStaticMeshActor"
+}

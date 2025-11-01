@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
-#include "ATileMapActor.h"
+#include "TileMapActor.h"
 #include "StaticMeshComponent.h"
+#include "BoxComponent.h"
 #include "Source/Runtime/Core/Object/ObjectFactory.h"
 
 IMPLEMENT_CLASS(ATileMapActor)
@@ -14,24 +15,23 @@ ATileMapActor::ATileMapActor()
 	, MapHeight(10)
 	, TileSize(20.0f)
 {
+	/*if (StaticMeshComponent)
+	{
+		StaticMeshComponent->DestroyComponent();
+		StaticMeshComponent = nullptr;
+	}*/
 	GenerateGrid();
 }
 
 void ATileMapActor::GenerateGrid()
 {
-	for (UStaticMeshComponent* Tile : Tiles)
-	{
-		if (Tile)
-		{
-			Tile->DestroyComponent();
-		}
-	}
-	Tiles.clear();
+	ClearAllTiles();
 	Tiles.reserve(MapWidth * MapHeight);
 
 	FString MeshPath = GDataDir + "/Model/Cube.obj";
 	UStaticMesh* TileMesh = UResourceManager::GetInstance().Load<UStaticMesh>(MeshPath);
-	
+	if (!TileMesh)	return;
+
 	const FAABB& MeshBounds = TileMesh->GetLocalBound();
 	TileSize = MeshBounds.Max - MeshBounds.Min;
 
@@ -43,6 +43,12 @@ void ATileMapActor::GenerateGrid()
 			TileComp->SetRelativeLocation(FVector(X * TileSize.X, Y * TileSize.Y, 0.0f));
 			TileComp->SetStaticMesh(GDataDir + "/Model/Cube.obj");
 			TileComp->SetupAttachment(RootComponent);
+
+			UBoxComponent* BoxComp = CreateDefaultSubobject<UBoxComponent>("CollisionBox");
+			BoxComp->SetBoxExtent(TileSize * 0.5f);
+			BoxComp->SetupAttachment(TileComp);
+			BoxComp->SetRelativeLocation(FVector::Zero());
+
 			Tiles.push_back(TileComp);
 		}
 	}
@@ -53,6 +59,8 @@ bool ATileMapActor::WorldToTile(const FVector& WorldPos, int32& OutX, int32& Out
 	const FTransform& ActorTransform = GetActorTransform();
 	FTransform InverseTransform = ActorTransform.Inverse();
 	FVector LocalPos = InverseTransform.TransformPosition(WorldPos);
+
+	if (TileSize.X <= 0 || TileSize.Y <= 0)	return false;
 
 	OutX = static_cast<int32>(floor(LocalPos.X / TileSize.X));
 	OutY = static_cast<int32>(floor(LocalPos.X / TileSize.Y));
@@ -71,4 +79,23 @@ void ATileMapActor::DestroyTileAt(int32 X, int32 Y)
 			Tiles[Index] = nullptr;
 		}
 	}
+}
+
+void ATileMapActor::ClearAllTiles()
+{
+	for (UStaticMeshComponent* Tile : Tiles)
+	{
+		if (Tile)
+		{
+			Tile->DestroyComponent();
+		}
+	}
+	Tiles.clear();
+}
+
+void ATileMapActor::ResizeMap(int32 NewWidth, int32 NewHeight)
+{
+	MapWidth = NewWidth;
+	MapHeight = NewHeight;
+	GenerateGrid();
 }
