@@ -34,6 +34,7 @@ void AActor::BeginPlay()
 	LuaGameObject->Location = GetActorLocation();
 	// 그냥 테스트입니다. 수정해주세요
 	LuaGameObject->Velocity = FVector(10, 0, 0);
+	LuaGameObject->Scale = GetActorScale();
 	
 	// 컴포넌트들 Initialize/BeginPlay 순회
 	for (UActorComponent* Comp : OwnedComponents)
