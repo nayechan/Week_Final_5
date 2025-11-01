@@ -285,9 +285,6 @@ void USceneComponent::SetupAttachment(USceneComponent* InParent, EAttachmentRule
     RelativeLocation = RelativeTransform.Translation;
     RelativeRotation = RelativeTransform.Rotation;
     RelativeScale = RelativeTransform.Scale3D;
-
-    // Notify transform update so shapes can refresh overlaps
-    OnTransformUpdated();
 }
 
 void USceneComponent::DetachFromParent(bool bKeepWorld)
@@ -370,6 +367,9 @@ void USceneComponent::OnRegister(UWorld* InWorld)
         CREATE_EDITOR_COMPONENT(SpriteComponent, UBillboardComponent);
         SpriteComponent->SetTextureName(GDataDir + "/UI/Icons/EmptyActor.dds");
     }
+
+    // Notify transform update so shapes can refresh overlaps
+    OnTransformUpdated();
 }
 
 void USceneComponent::OnSerialized()

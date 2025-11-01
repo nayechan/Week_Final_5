@@ -73,9 +73,8 @@ AActor* UClipboardManager::PasteActorToWorld(UWorld* World, const FVector& Offse
     NewActor->SetName(UniqueName);
 
     // World에 등록
-    NewActor->SetWorld(World);
-    World->OnActorSpawned(NewActor);
-
+    World->AddActorToLevel(NewActor);
+    
     return NewActor;
 }
 

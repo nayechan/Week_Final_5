@@ -56,8 +56,11 @@ void AActor::Tick(float DeltaSeconds)
 		}
 	}
 
-	SetActorLocation(LuaGameObject->Location);
-	SetActorScale(LuaGameObject->Scale);
+	if (LuaGameObject)
+	{
+		SetActorLocation(LuaGameObject->Location);
+		SetActorScale(LuaGameObject->Scale);
+	}
 }
 void AActor::EndPlay()
 {

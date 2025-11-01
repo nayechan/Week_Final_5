@@ -55,11 +55,11 @@ public:
     AActor* SpawnActor(UClass* Class, const FTransform& Transform);
     AActor* SpawnActor(UClass* Class);
     AActor* SpawnPrefabActor(const FWideString& PrefabPath);
+    void AddActorToLevel(AActor* Actor);
 
     bool DestroyActor(AActor* Actor);
 
     // Partial hooks
-    void OnActorSpawned(AActor* Actor);
     void OnActorDestroyed(AActor* Actor);
 
     void CreateLevel();
@@ -124,8 +124,6 @@ private:
     // Object naming system
     TMap<FString, int32> ObjectTypeCounts;
 
-    // Internal helper to register spawned actors into current level
-    void AddActorToLevel(AActor* Actor);
 
     // Per-world render settings
     URenderSettings RenderSettings;

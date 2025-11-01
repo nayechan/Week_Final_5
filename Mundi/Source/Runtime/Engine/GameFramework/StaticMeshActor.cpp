@@ -48,7 +48,6 @@ void AStaticMeshActor::SetStaticMeshComponent(UStaticMeshComponent* InStaticMesh
 void AStaticMeshActor::DuplicateSubObjects()
 {
     Super::DuplicateSubObjects();
-
     for (UActorComponent* Component : OwnedComponents)
     {
         if (UStaticMeshComponent* StaticMeshComp = Cast<UStaticMeshComponent>(Component))

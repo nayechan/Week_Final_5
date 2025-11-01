@@ -478,8 +478,7 @@ void AGizmoActor::ProcessGizmoDragging(ACameraActor* Camera, FViewport* Viewport
 					DuplicatedActor->SetName(UniqueName);
 
 					// World에 등록
-					DuplicatedActor->SetWorld(World);
-					World->OnActorSpawned(DuplicatedActor);
+					World->AddActorToLevel(DuplicatedActor);
 
 					// 복제본을 선택 (이제 복제본을 드래그함)
 					SelectionManager->ClearSelection();

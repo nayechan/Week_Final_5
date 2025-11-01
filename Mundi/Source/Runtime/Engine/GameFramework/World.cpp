@@ -164,7 +164,6 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* InEditorWorld)
 			continue;
 		}
 		PIEWorld->AddActorToLevel(NewActor);
-		NewActor->SetWorld(PIEWorld);
 	}
 
 	return PIEWorld;
@@ -234,14 +233,6 @@ bool UWorld::DestroyActor(AActor* Actor)
 	return false; // 레벨에 없는 액터
 }
 
-void UWorld::OnActorSpawned(AActor* Actor)
-{
-	if (!Actor) return;
-
-	// Level에 Actor 추가 (SceneManagerWidget에 표시되도록)
-	AddActorToLevel(Actor);
-}
-
 void UWorld::OnActorDestroyed(AActor* Actor)
 {
 	if (Actor)
@@ -288,6 +279,7 @@ void UWorld::SpawnDefaultActors()
 {
 	SpawnActor<ADirectionalLightActor>();
 }
+
 void UWorld::SetLevel(std::unique_ptr<ULevel> InLevel)
 {
     // Make UI/selection safe before destroying previous actors
@@ -324,12 +316,14 @@ void UWorld::SetLevel(std::unique_ptr<ULevel> InLevel)
 
 void UWorld::AddActorToLevel(AActor* Actor)
 {
-	if (Level) 
+	Actor->SetWorld(this);
+
+	if (Level)
 	{
 		Level->AddActor(Actor);
 		Partition->Register(Actor);
 
-		if (GWorld->bPie)
+		if (this->bPie)
 		{
 			Actor->BeginPlay();
 		}
@@ -355,9 +349,6 @@ AActor* UWorld::SpawnActor(UClass* Class, const FTransform& Transform)
 
 	// 초기 트랜스폼 적용
 	NewActor->SetActorTransform(Transform);
-
-	// 월드 참조 설정
-	NewActor->SetWorld(this);
 
 	// 현재 레벨에 액터 등록
 	AddActorToLevel(NewActor);
@@ -402,9 +393,7 @@ AActor* UWorld::SpawnPrefabActor(const FWideString& PrefabPath)
 				return nullptr;
 			}
 			// 월드 참조 설정
-			NewActor->SetWorld(this);
 			NewActor->Serialize(true, ActorDataJson);
-
 			AddActorToLevel(NewActor);
 			return NewActor;
 		}
