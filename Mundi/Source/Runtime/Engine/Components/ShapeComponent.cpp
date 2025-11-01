@@ -16,16 +16,6 @@ UShapeComponent::UShapeComponent() : bShapeIsVisible(true), bShapeHiddenInGame(t
     ShapeColor = FVector4(0.2f, 0.8f, 1.0f, 1.0f); 
 }
 
-void UShapeComponent::BeginPlay()
-{
-    Super::BeginPlay();
-
-    // 델리게이트 등록
-    if (AActor* Owner = GetOwner()) {
-        FDelegateHandle Handle = OnComponentBeginOverlap.AddDynamic(Owner, &AActor::OnBeginOverlap);
-    }
-}
-
 void UShapeComponent::OnRegister(UWorld* InWorld)
 {
     Super::OnRegister(InWorld);

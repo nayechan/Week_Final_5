@@ -10,6 +10,7 @@ public:
 	GENERATED_REFLECTION_BODY()
 
 	AStaticMeshActor();
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 protected:
 	~AStaticMeshActor() override;

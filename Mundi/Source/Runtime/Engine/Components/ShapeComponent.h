@@ -37,7 +37,6 @@ public:
 	UShapeComponent();
 
 	virtual void GetShape(FShape& OutShape) const {};
-	virtual void BeginPlay() override;
     virtual void OnRegister(UWorld* InWorld) override;
     virtual void OnTransformUpdated() override;
 

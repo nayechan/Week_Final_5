@@ -22,6 +22,7 @@ public:
 		return Handle;
 	}
 
+	// original: template<typename T>
 	template<typename TObj, typename TClass>
 	FDelegateHandle AddDynamic(TObj* Instance, void(TClass::* Func)(Args...))
 	{
