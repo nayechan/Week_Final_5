@@ -1,9 +1,12 @@
+-- StartCoroutine : Cpp API, Coroutine 생성
+
 function BeginPlay()
     print("[BeginPlay] " .. Obj.UUID)
     Obj:PrintLocation()
     
     Obj.Velocity.X = 4
-    Co = coroutine.create(AI)
+    StartCoroutine(AI)
+    StartCoroutine(AI2)
 end
 
 function AI()

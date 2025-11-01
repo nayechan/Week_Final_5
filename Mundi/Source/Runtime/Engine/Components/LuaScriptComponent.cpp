@@ -23,10 +23,9 @@ void ULuaScriptComponent::BeginPlay()
 	Env = LuaVM->CreateEnvironment();
 	Env["Obj"] = Owner->GetGameObject();
 
-	Env["StartCoroutine"] = [LuaVM, this, L=Lua](sol::function f)
+	Env["StartCoroutine"] = [LuaVM, this, L=Lua](sol::function Func)
 	{
-		
-		sol::coroutine co(*L, f);
+		sol::coroutine co(*L, Func);
 		LuaVM->GetScheduler().Register(std::move(co), this);
 	};
 	
@@ -46,6 +45,7 @@ void ULuaScriptComponent::BeginPlay()
 	FuncTick      = FLuaManager::GetFunc(Env, "Tick");
 	FuncOnOverlap = FLuaManager::GetFunc(Env, "OnOverlap");
 	FuncEndPlay		  =	FLuaManager::GetFunc(Env, "EndPlay");
+	
 	if (FuncBeginPlay.valid()) {
 		auto Result = FuncBeginPlay();
 		if (!Result.valid())

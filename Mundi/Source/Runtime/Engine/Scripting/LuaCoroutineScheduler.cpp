@@ -31,8 +31,6 @@ void FLuaCoroutineScheduler::Tick(double DeltaTime)
 
 	Process(NowSeconds);
 }
-
-
 void FLuaCoroutineScheduler::Process(double Now)
 {
 	for (auto& task : Tasks)

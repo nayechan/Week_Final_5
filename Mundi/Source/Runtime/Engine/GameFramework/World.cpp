@@ -106,6 +106,11 @@ void UWorld::Tick(float DeltaSeconds)
         if (EditorActor && !bPie) EditorActor->Tick(DeltaSeconds);
     }
 
+	if (LuaManager)
+	{
+		LuaManager->Tick(DeltaSeconds);
+	}
+
     // Update overlaps each tick to ensure symmetry and handle non-moving participants
     //if (Level)
     //{
