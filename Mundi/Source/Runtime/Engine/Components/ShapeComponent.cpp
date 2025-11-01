@@ -15,7 +15,6 @@ UShapeComponent::UShapeComponent() : bShapeIsVisible(true), bShapeHiddenInGame(t
 {
     ShapeColor = FVector4(0.2f, 0.8f, 1.0f, 1.0f); 
 }
-
 void UShapeComponent::BeginPlay()
 {
     Super::BeginPlay();
@@ -24,6 +23,7 @@ void UShapeComponent::BeginPlay()
     if (AActor* Owner = GetOwner()) {
         FDelegateHandle BeginHandle = OnComponentBeginOverlap.AddDynamic(Owner, &AActor::OnBeginOverlap);
         FDelegateHandle EndHandle = OnComponentEndOverlap.AddDynamic(Owner, &AActor::OnEndOverlap);
+        FDelegateHandle HitHandle = OnComponentHit.AddDynamic(Owner, &AActor::OnHit);
     }
 }
 
@@ -94,7 +94,13 @@ void UShapeComponent::UpdateOverlaps()
         if (!OverlapPrev.Contains(Comp))
         {
             OnComponentBeginOverlap.Broadcast(this, Comp);
+            
+            if (bBlockComponent)
+            {
+                OnComponentHit.Broadcast(this, Comp);
+            }
         }
+
     }
 
     //End
