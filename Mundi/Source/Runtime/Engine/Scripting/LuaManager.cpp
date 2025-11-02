@@ -2,6 +2,8 @@
 #include "LuaManager.h"
 #include "GameObject.h"
 #include "ObjectIterator.h"
+#include "CameraActor.h"
+#include "CameraComponent.h"
 
 FLuaManager::FLuaManager()
 {
@@ -24,9 +26,31 @@ FLuaManager::FLuaManager()
         "Scale", sol::property(&FGameObject::GetScale, &FGameObject::SetScale),
         "bIsActive", sol::property(&FGameObject::GetIsActive, &FGameObject::SetIsActive),
         "Velocity", &FGameObject::Velocity,
-        "PrintLocation", &FGameObject::PrintLocation
+        "PrintLocation", &FGameObject::PrintLocation,
+        "GetForward", &FGameObject::GetForward
     );
     
+    Lua->new_usertype<ACameraActor>("CameraActor",
+        sol::no_constructor,
+        "SetLocation", sol::overload(
+            [](ACameraActor* Camera, FVector Location)
+            {
+                if (!Camera)
+                {
+                    return;
+                }
+                Camera->SetActorLocation(Location);
+            },
+            [](ACameraActor* Camera, float X, float Y, float Z)
+            {
+                if (!Camera)
+                {
+                    return;
+                }
+                Camera->SetActorLocation(FVector(X, Y, Z));
+            }
+        )
+    );
     Lua->new_usertype<UInputManager>("InputManager",
         "IsKeyDown", sol::overload(
             &UInputManager::IsKeyDown,
@@ -80,7 +104,7 @@ FLuaManager::FLuaManager()
     SharedLib = Lua->create_table();
     
     // GlobalConfig는 전역 table
-    SharedLib["GlobalConfig"] = Lua->create_table();
+    SharedLib["GlobalConfig"] = Lua->create_table(); 
     // SharedLib["GlobalConfig"]["Gravity"] = 9.8;
 
     SharedLib.set_function("SpawnPrefab", sol::overload(
@@ -98,6 +122,17 @@ FLuaManager::FLuaManager()
             return NewObject;
         }
     ));
+    SharedLib.set_function("GetCamera",
+        []() -> ACameraActor*
+        {
+            if (!GWorld)
+            {
+                return nullptr;
+            }
+            return GWorld->GetCameraActor();
+        }
+    );
+
 
     SharedLib.set_function("DeleteObject", sol::overload(
         [](const FGameObject& GameObject)

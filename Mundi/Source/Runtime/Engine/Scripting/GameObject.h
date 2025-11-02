@@ -7,6 +7,7 @@ public:
     uint32  UUID;
     FVector Velocity;
     FVector Scale;
+    FVector Forward;
     bool bIsActive;
     
     void SetTag(FString NewTag) { Owner->SetTag(NewTag); }
@@ -43,6 +44,9 @@ public:
 
     void SetOwner(AActor* NewOwner) { Owner = NewOwner; }
     AActor* GetOwner() { return Owner; }
+
+    // Returns the owner's current forward direction (unit vector)
+    FVector GetForward() { return Owner ? Owner->GetActorRight() : FVector(0, 0, 0); }
 
 private:
     // TODO : 순환 참조 해결

@@ -454,6 +454,8 @@ void USlateManager::Shutdown()
 void USlateManager::SetPIEWorld(UWorld* InWorld)
 {
     MainViewport->SetVClientWorld(InWorld);
+    // PIE에도 Main Camera Set
+    InWorld->SetCameraActor(MainViewport->GetViewportClient()->GetCamera());
 }
 
 void USlateManager::ToggleConsole()

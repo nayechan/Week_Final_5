@@ -14,7 +14,7 @@ function AI()
 end
     
 function EndPlay()
-    print("[EndPlay] " .. Obj.UUID)
+    
 end
 
 function OnOverlap(OtherActor)

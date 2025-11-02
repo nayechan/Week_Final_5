@@ -3,8 +3,8 @@ local MaxFireNumber = 10
 local CurrentFireNumber = 0
 local FireballsPool = {} 
 
-local MinVelocity = 3
-local MaxVelocity = 10
+local MinVelocity = 30
+local MaxVelocity = 60
 
 
 local function PushFireball(Fireball) 
@@ -26,11 +26,16 @@ local function PopFireball()
 
     local Fireball = FireballsPool[Count]
     Fireball.bIsActive = true
-    Fireball.Velocity = Vector(0,0,-1) * (MinVelocity + (MaxVelocity - MinVelocity)* math.random())
+    -- Velocity will be set by spawner using its front direction
     FireballsPool[Count] = nil
     
     CurrentFireNumber = CurrentFireNumber + 1
     return Fireball
+end
+
+function DestroyFireball(Fireball)
+    coroutine.yield("wait_time", 3.0)
+    PushFireball(Fireball)
 end
 
 
@@ -47,7 +52,7 @@ function BeginPlay()
     end
 
     -- Fireball 생성 함수를 전역에 등록
-    GlobalConfig.SpawnFireballAt = function(Pos)
+    GlobalConfig.SpawnFireballAt = function(Pos, Dir)
 
         -- 최대 개수 조절
         if CurrentFireNumber >= MaxFireNumber then
@@ -61,6 +66,15 @@ function BeginPlay()
         
         if NewFireball ~= nil then
             NewFireball.Location = Pos
+            local speed = (MinVelocity + (MaxVelocity - MinVelocity) * math.random())
+            if Dir == nil then
+                Dir = Vector(0, 0, -1)
+            end
+            NewFireball.Velocity = Dir * speed
+            StartCoroutine(function()
+            DestroyFireball(NewFireball)
+            end)
+            -- TODO 삭제 코루틴
         end
  
         return true
@@ -74,6 +88,7 @@ function BeginPlay()
     GlobalConfig.ResetFireballs = function(InactiveFireball)
         PushFireball(InactiveFireball)       
     end
+
 
 end 
 

@@ -18,9 +18,11 @@ USphereComponent::USphereComponent()
 void USphereComponent::OnRegister(UWorld* InWorld)
 {
     Super::OnRegister(InWorld);
-     
-    SphereRadius = FMath::Max(WorldAABB.GetHalfExtent().X * 2, WorldAABB.GetHalfExtent().Y * 2, WorldAABB.GetHalfExtent().Z * 2);
 
+    if (SphereRadius == 0)
+    {
+        SphereRadius = FMath::Max(WorldAABB.GetHalfExtent().X, WorldAABB.GetHalfExtent().Y, WorldAABB.GetHalfExtent().Z);
+    }
 }
 
 void USphereComponent::DuplicateSubObjects()

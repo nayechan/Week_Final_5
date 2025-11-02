@@ -6,7 +6,7 @@
       "bIsActive" : true,
       "bTickEnabled" : true
     }, {
-      "Id" : 771,
+      "Id" : 157,
       "MaterialSlots" : [{
           "AssetPath" : "texture",
           "Type" : "UMaterial"
@@ -14,7 +14,7 @@
       "ParentId" : 0,
       "RelativeLocation" : [0.000000, 0.000000, 20.000000],
       "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 0.200000],
+      "RelativeScale" : [0.200000, 2.000000, 2.000000],
       "StaticMesh" : "Data/cube-tex.obj",
       "Type" : "UStaticMeshComponent",
       "bBlockComponent" : false,
@@ -24,7 +24,7 @@
       "bIsVisible" : true,
       "bTickEnabled" : true
     }],
-  "RootComponentId" : 771,
+  "RootComponentId" : 157,
   "Tag" : "",
   "Type" : "AStaticMeshActor",
   "bActorHiddenInGame" : false

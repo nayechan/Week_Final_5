@@ -5,7 +5,7 @@ local TimeAcc = 0.0
 
 function BeginPlay()
     print("[BeginPlay] " .. Obj.UUID) 
-    Obj.Scale = Vector(10, 10, 1)
+    --Obj.Scale = Vector(10, 10, 1)
     GlobalConfig.SpawnAreaPos = Obj.Location
 end
 
@@ -41,7 +41,8 @@ function Tick(dt)
 
         local Pos = Vector(RangeX, RangeY, LocalPos.Z)
         
-        local SpawnCheck =  GlobalConfig.SpawnFireballAt(Pos)
+        local Front = Obj:GetForward()
+        local SpawnCheck =  GlobalConfig.SpawnFireballAt(Pos, Front)
         if  SpawnCheck then
             --print("Spawn Fireball !!!!!!!")
         end
