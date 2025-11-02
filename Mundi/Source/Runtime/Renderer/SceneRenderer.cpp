@@ -877,7 +877,7 @@ void FSceneRenderer::RenderDecalPass()
 	// ViewMode에 따른 Decal 셰이더 로드
 	UShader* DecalShader = UResourceManager::GetInstance().Load<UShader>(ShaderPath, View->ViewShaderMacros);
 	FShaderVariant* ShaderVariant = DecalShader->GetOrCompileShaderVariant(View->ViewShaderMacros);
-	if (!DecalShader)
+	if (!DecalShader || !ShaderVariant)
 	{
 		UE_LOG("RenderDecalPass: Failed to load Decal shader with ViewMode macros!");
 		return;

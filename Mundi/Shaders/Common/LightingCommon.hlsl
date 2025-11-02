@@ -768,9 +768,9 @@ float3 CalculateAllLights(
     SamplerComparisonState ShadowSampler,
     Texture2D ShadowMap2D,
     TextureCubeArray ShadowMapCube,
-    TextureCubeArray<float2> VShadowMapCube,
+    SamplerState VSMSampler,
     Texture2D<float2> VSMShadowMap,
-    SamplerState VSMSampler
+    TextureCubeArray<float2> VShadowMapCube
     )
 {
     float3 litColor = float3(0, 0, 0);

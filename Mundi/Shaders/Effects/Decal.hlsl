@@ -49,8 +49,12 @@ cbuffer DecalBuffer : register(b6)
 Texture2D g_DecalTexColor : register(t0);
 TextureCubeArray g_ShadowAtlasCube : register(t8);
 Texture2D g_ShadowAtlas2D : register(t9);
+Texture2D<float2> g_VSMShadowAtlas : register(t10);
+TextureCubeArray<float2> g_VSMShadowCube : register(t11);
+
 SamplerState g_Sample : register(s0);
 SamplerComparisonState g_ShadowSample : register(s2);
+SamplerState g_VSMSampler : register(s3);
 
 // --- 입출력 구조체 ---
 struct VS_INPUT
@@ -117,7 +121,10 @@ PS_INPUT mainVS(VS_INPUT input)
             output.position,
             g_ShadowSample,
             g_ShadowAtlas2D,
-            g_ShadowAtlasCube
+            g_ShadowAtlasCube,
+            g_VSMSampler,
+            g_VSMShadowAtlas,
+            g_VSMShadowCube
         );
 
         output.litColor = float4(litColor, 1.0f);
@@ -166,7 +173,7 @@ float4 mainPS(PS_INPUT input) : SV_TARGET
     float3 normal = normalize(input.normal);
     float4 baseColor = decalTexture;
     float specPower = 32.0f;
-    float4 viewPos = mul(input.worldPos, ViewMatrix);
+    float4 viewPos = mul(float4(input.worldPos, 1.0f), ViewMatrix);
 
     #ifdef LIGHTING_MODEL_PHONG
         float3 viewDir = normalize(CameraPosition - input.worldPos);
@@ -184,7 +191,10 @@ float4 mainPS(PS_INPUT input) : SV_TARGET
         input.position,
         g_ShadowSample,
         g_ShadowAtlas2D,
-        g_ShadowAtlasCube
+        g_ShadowAtlasCube,
+        g_VSMSampler,
+        g_VSMShadowAtlas,
+        g_VSMShadowCube
     );
 
     float4 finalColor = float4(litColor, decalTexture.a * DecalOpacity);

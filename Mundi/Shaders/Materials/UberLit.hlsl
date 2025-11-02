@@ -84,6 +84,8 @@ Texture2D g_DirectionalShadowMap : register(t5);
 TextureCubeArray g_ShadowAtlasCube : register(t8);
 Texture2D g_ShadowAtlas2D : register(t9);
 Texture2D<float2> g_VSMShadowAtlas : register(t10);
+TextureCubeArray<float2> g_VSMShadowCube : register(t11);   // TODO: 지금은 전달 안 되고, 안 쓰는 중
+
 SamplerState g_Sample : register(s0);
 SamplerState g_Sample2 : register(s1);
 SamplerComparisonState g_ShadowSample : register(s2);
