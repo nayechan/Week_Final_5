@@ -1,9 +1,27 @@
 {
   "Name" : "스태틱 메시_1",
   "OwnedComponents" : [{
+      "Id" : 5772,
+      "MaterialSlots" : [{
+          "AssetPath" : "texture",
+          "Type" : "UMaterial"
+        }],
+      "ParentId" : 0,
+      "RelativeLocation" : [0.000000, 0.000000, -4.000000],
+      "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+      "RelativeScale" : [10.000000, 10.000000, 1.000000],
+      "StaticMesh" : "Data/cube-tex.obj",
+      "Type" : "UStaticMeshComponent",
+      "bBlockComponent" : false,
+      "bGenerateOverlapEvents" : true,
+      "bHiddenInGame" : false,
+      "bIsActive" : true,
+      "bIsVisible" : true,
+      "bTickEnabled" : true
+    }, {
       "BoxExtent" : [0.500000, 0.500000, 0.500000],
-      "Id" : 3263,
-      "ParentId" : 3262,
+      "Id" : 5773,
+      "ParentId" : 5772,
       "RelativeLocation" : [0.000000, 0.000000, 0.000000],
       "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -17,30 +35,12 @@
       "bShapeIsVisible" : true,
       "bTickEnabled" : true
     }, {
-      "Id" : 3262,
-      "MaterialSlots" : [{
-          "AssetPath" : "texture",
-          "Type" : "UMaterial"
-        }],
-      "ParentId" : 0,
-      "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-      "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
-      "RelativeScale" : [10.000000, 10.000000, 1.000000],
-      "StaticMesh" : "Data/cube-tex.obj",
-      "Type" : "UStaticMeshComponent",
-      "bBlockComponent" : false,
-      "bGenerateOverlapEvents" : true,
-      "bHiddenInGame" : false,
-      "bIsActive" : true,
-      "bIsVisible" : true,
-      "bTickEnabled" : true
-    }, {
       "ScriptFilePath" : "Data/Scripts/FireballDestroyArea.lua",
       "Type" : "ULuaScriptComponent",
       "bIsActive" : true,
       "bTickEnabled" : true
     }],
-  "RootComponentId" : 3262,
+  "RootComponentId" : 5772,
   "Tag" : "",
   "Type" : "AStaticMeshActor",
   "bActorHiddenInGame" : false

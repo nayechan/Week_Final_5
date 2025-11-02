@@ -46,7 +46,7 @@ public:
     AActor* GetOwner() { return Owner; }
 
     // Returns the owner's current forward direction (unit vector)
-    FVector GetForward() { return Owner ? Owner->GetActorForward() : FVector(0, 0, 0); }
+    FVector GetForward() { return Owner ? Owner->GetActorRight() : FVector(0, 0, 0); }
 
 private:
     // TODO : 순환 참조 해결

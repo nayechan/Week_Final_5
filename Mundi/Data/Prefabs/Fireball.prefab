@@ -1,7 +1,7 @@
 {
   "Name" : "AFireBallActor_0",
   "OwnedComponents" : [{
-      "Id" : 2789,
+      "Id" : 4076,
       "MaterialSlots" : [{
           "Overrides" : {
             "Scalars" : {
@@ -30,6 +30,11 @@
       "bIsVisible" : true,
       "bTickEnabled" : true
     }, {
+      "ScriptFilePath" : "Data/Scripts/Fireball.lua",
+      "Type" : "ULuaScriptComponent",
+      "bIsActive" : true,
+      "bTickEnabled" : true
+    }, {
       "PivotTranslation" : [0.000000, 0.000000, 0.000000],
       "RotationRate" : [0.000000, 0.000000, 400.000000],
       "Type" : "URotatingMovementComponent",
@@ -37,29 +42,13 @@
       "bRotationInLocalSpace" : true,
       "bTickEnabled" : true
     }, {
-      "Id" : 2795,
-      "ParentId" : 2789,
-      "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-      "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "SphereRadius" : 2.000000,
-      "Type" : "USphereComponent",
-      "bBlockComponent" : false,
-      "bGenerateOverlapEvents" : true,
-      "bHiddenInGame" : false,
-      "bIsActive" : true,
-      "bIsVisible" : true,
-      "bShapeHiddenInGame" : true,
-      "bShapeIsVisible" : true,
-      "bTickEnabled" : true
-    }, {
       "AttenuationRadius" : 5.000000,
       "FalloffExponent" : 2.000000,
-      "Id" : 2792,
+      "Id" : 4080,
       "Intensity" : 1.000000,
       "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
       "OverrideCameraLightNum" : 0,
-      "ParentId" : 2789,
+      "ParentId" : 4076,
       "RelativeLocation" : [0.000000, 0.000000, 0.000000],
       "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -78,12 +67,23 @@
       "bTickEnabled" : true,
       "bUseInverseSquareFalloff" : true
     }, {
-      "ScriptFilePath" : "Data/Scripts/Fireball.lua",
-      "Type" : "ULuaScriptComponent",
+      "Id" : 4079,
+      "ParentId" : 4076,
+      "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+      "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "SphereRadius" : 1.100000,
+      "Type" : "USphereComponent",
+      "bBlockComponent" : false,
+      "bGenerateOverlapEvents" : true,
+      "bHiddenInGame" : false,
       "bIsActive" : true,
+      "bIsVisible" : true,
+      "bShapeHiddenInGame" : true,
+      "bShapeIsVisible" : true,
       "bTickEnabled" : true
     }],
-  "RootComponentId" : 2789,
+  "RootComponentId" : 4076,
   "Tag" : "fireball",
   "Type" : "AStaticMeshActor",
   "bActorHiddenInGame" : false

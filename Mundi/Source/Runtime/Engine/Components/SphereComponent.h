@@ -15,7 +15,7 @@ public:
     DECLARE_DUPLICATE(USphereComponent)
 
 private:
-    float SphereRadius;
+    float SphereRadius = 0;
 
     void GetShape(FShape& Out) const override;
 

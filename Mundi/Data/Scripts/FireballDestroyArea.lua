@@ -7,12 +7,10 @@ function EndPlay()
 end
 
 function OnOverlap(OtherActor)
-    
     print(OtherActor.Tag)
     --[[Obj:PrintLocation()]]--
     print("Destoy Logic")
     GlobalConfig.ResetFireballs(OtherActor)
-
 end
 
 function Tick(dt)
