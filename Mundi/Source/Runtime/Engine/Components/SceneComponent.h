@@ -67,7 +67,7 @@ public:
     void SetLocalLocationAndRotation(const FVector& L, const FQuat& R);
 
     FMatrix GetWorldMatrix() const; // ToMatrixWithScale
-
+      
     // ──────────────────────────────
     // Attach/Detach
     // ──────────────────────────────

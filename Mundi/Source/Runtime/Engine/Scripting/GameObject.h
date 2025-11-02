@@ -7,6 +7,7 @@ public:
     uint32  UUID;
     FVector Velocity;
     FVector Scale;
+    bool bIsActive;
     
     void SetLocation(FVector NewLocation) { Owner->SetActorLocation(NewLocation); }
     FVector GetLocation() { return Owner->GetActorLocation(); }
@@ -21,6 +22,16 @@ public:
     }
     FVector GetRotation() { return Owner->GetActorRotation().ToEulerZYXDeg(); }
     
+    void SetIsActive(bool NewIsActive)
+    {
+        Owner->SetActorIsVisible(NewIsActive);
+    }
+    
+    bool GetIsActive()
+    {
+        return Owner->GetActorIsVisible();
+    }
+
     void PrintLocation()
     {
         FVector Location =  Owner->GetActorLocation();

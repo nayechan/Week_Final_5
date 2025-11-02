@@ -395,6 +395,16 @@ FVector AActor::GetActorScale() const
 	return RootComponent ? RootComponent->GetWorldScale() : FVector(1, 1, 1);
 }
 
+void AActor::SetActorIsVisible(bool bIsActive)
+{
+	return RootComponent->SetVisibility(bIsActive);
+}
+
+bool AActor::GetActorIsVisible()
+{
+	return RootComponent->IsVisible();
+}
+
 FMatrix AActor::GetWorldMatrix() const
 {
 	if (RootComponent == nullptr)

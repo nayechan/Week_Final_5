@@ -96,6 +96,11 @@ public:
 
     void SetActorScale(const FVector& NewScale);
     FVector GetActorScale() const;
+    
+    void SetActorIsVisible(bool bIsActive);
+    bool GetActorIsVisible();
+
+
 
     FMatrix GetWorldMatrix() const;
 

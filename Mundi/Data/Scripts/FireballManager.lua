@@ -5,8 +5,11 @@ local FireballsPool = {}
 
 local function PushFireball(Fireball) 
     Fireball.bIsActive = false
+    Fireball.Location = GlobalConfig.SpawnAreaPos
+
     FireballsPool[#FireballsPool + 1] = Fireball
 
+    CurrentFireNumber =  CurrentFireNumber - 1 
 end 
 
 local function PopFireball()
@@ -19,6 +22,7 @@ local function PopFireball()
     Fireball.bIsActive = true
     FireballsPool[Count] = nil
     
+    CurrentFireNumber = CurrentFireNumber + 1
     return Fireball
 end
 
@@ -28,17 +32,15 @@ function BeginPlay()
 
     for i = 1, MaxFireNumber do 
         local Fireball = SpawnPrefab("Data/Prefabs/Fireball.prefab")
+        
         if Fireball then
-            Fireball.bIsActive = false
-            Fireball.LocalX = GlobalConfig.SpawnAreaPosX
-            Fireball.LocalY = GlobalConfig.SpawnAreaPosY
-            Fireball.LocalZ = GlobalConfig.SpawnAreaPosZ    
+            PushFireball(Fireball) 
         end
-        PushFireball(Fireball)
+
     end
 
     -- Fireball 생성 함수를 전역에 등록
-    GlobalConfig.SpawnFireballAt = function(posX, posY, posZ)
+    GlobalConfig.SpawnFireballAt = function(Pos)
 
         -- 최대 개수 조절
         if CurrentFireNumber >= MaxFireNumber then
@@ -46,21 +48,11 @@ function BeginPlay()
         end
         
         NewFireball = PopFireball()
+
         if NewFireball ~= nil then
-            NewFireball.Location.X = posX
-            NewFireball.Location.Y = posY
-            NewFireball.Location.Z = posZ
+            NewFireball.Location = Pos
         end
-        
-        -- TODO: Tick에서 Spaw이 될 때, 그냥 SpawnPrefab으로 수정, 코루틴은 임시로 사용
-        -- StartCoroutine(function()
-        --     local go = SpawnPrefab("Data/Prefabs/Fireball.prefab")
-        --     if go ~= nil then
-        --         go.Location.X = posX
-        --         go.Location.Y = posY
-        --         go.Location.Z = posZ
-        --     end
-        -- end)
+ 
         return true
     end 
 
@@ -70,28 +62,10 @@ function BeginPlay()
     end  
 
     GlobalConfig.ResetFireballs = function(InactiveFireball)
-        InactiveFireball.bIsActive = false 
-        InactiveFireball.Location.X = GlobalConfig.SpawnAreaPosX
-        InactiveFireball.Location.Y = GlobalConfig.SpawnAreaPosY
-        InactiveFireball.Location.Z = GlobalConfig.SpawnAreaPosZ
-        
-        CurrentFireNumber = CurrentFireNumber - 1 
+        PushFireball(InactiveFireball)       
     end
 
-end
-
-function SpawnFireball()
-    for i = 1, 1 do 
-        f= SpawnPrefab("Data/Prefabs/Fireball.prefab")
-        f.bIsActive = true
-        CurrentFireNumber = CurrentFireNumber + 1  
-        --f.Location.X = posX
-        --f.Location.Y = posY
-        --f.Location.Z = posZ
-        coroutine.yield("wait_time", 1.0)
-    end 
-end
-
+end 
 
 function EndPlay()
     print("[FireballManager EndPlay] " .. Obj.UUID)
@@ -103,5 +77,7 @@ end
 
 function Tick(dt)
     -- Manager could handle lifetime/cleanup here if needed
+    
+        
 end
 

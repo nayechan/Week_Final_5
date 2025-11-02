@@ -1,11 +1,14 @@
 function BeginPlay()
     print("[BeginPlay] " .. Obj.UUID)
-	Obj.Velocity.X = 3.0
-    Obj.Scale.X = 10.0
-    Obj.Scale.Y = 10.0
-    Obj.Scale.Z = 10.0
 
-    local bIsActive = true
+    Obj.Velocity = Vector(1 ,0,0 )
+    Obj.Scale = Vector(10, 10, 10)
+	-- Obj.Velocity.X = 3.0
+    -- Obj.Scale.X = 10.0
+    -- Obj.Scale.Y = 10.0
+    -- Obj.Scale.Z = 10.0
+
+    Obj.bIsActive = true
 end
 
 function EndPlay()
@@ -17,10 +20,10 @@ function OnOverlap(OtherActor)
 end
 
 function Tick(dt)
-    if not bIsActive then
+    if not Obj.bIsActive then
         return 
     end
-    
+
 
     Obj.Location = Obj.Location + Obj.Velocity * dt
     --[[Obj:PrintLocation()]]--

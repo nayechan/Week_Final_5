@@ -246,6 +246,7 @@ FMatrix USceneComponent::GetWorldMatrix() const
 {
     return GetWorldTransform().ToMatrix();
 }
+ 
 
 // ──────────────────────────────
 // Attach / Detach

@@ -21,14 +21,16 @@ FLuaManager::FLuaManager()
         "Y", &FVector::Y,
         "Z", &FVector::Z,
         sol::meta_function::addition, [](const FVector& a, const FVector& b) { return FVector(a.X + b.X, a.Y + b.Y, a.Z + b.Z); },
-        sol::meta_function::multiplication, [](const FVector& v, float f) { return v * f; }
-    );
+        sol::meta_function::multiplication, [](const FVector& v, float f) { return v * f; },
+        sol::meta_function::subtraction, [](const FVector& a, const FVector& b) { return FVector(a.X - b.X, a.Y - b.Y, a.Z - b.Z); }
+        );
 
     Lua->new_usertype<FGameObject>("GameObject",
         "UUID", &FGameObject::UUID,
         "Location", sol::property(&FGameObject::GetLocation, &FGameObject::SetLocation),
         "Rotation", sol::property(&FGameObject::GetRotation, &FGameObject::SetRotation), 
         "Scale", sol::property(&FGameObject::GetScale, &FGameObject::SetScale),
+        "bIsActive", sol::property(&FGameObject::GetIsActive, &FGameObject::SetIsActive),
         "Velocity", &FGameObject::Velocity,
         "PrintLocation", &FGameObject::PrintLocation
     );
