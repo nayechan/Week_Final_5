@@ -1,13 +1,18 @@
 {
   "Name" : "스태틱 메시_0",
   "OwnedComponents" : [{
-      "Id" : 750,
+      "ScriptFilePath" : "Data/Scripts/FireballArea.lua",
+      "Type" : "ULuaScriptComponent",
+      "bIsActive" : true,
+      "bTickEnabled" : true
+    }, {
+      "Id" : 755,
       "MaterialSlots" : [{
           "AssetPath" : "texture",
           "Type" : "UMaterial"
         }],
       "ParentId" : 0,
-      "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+      "RelativeLocation" : [-2.000711, 0.000000, 0.000000],
       "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 0.200000],
       "StaticMesh" : "Data/cube-tex.obj",
@@ -19,6 +24,6 @@
       "bIsVisible" : true,
       "bTickEnabled" : true
     }],
-  "RootComponentId" : 750,
+  "RootComponentId" : 755,
   "Type" : "AStaticMeshActor"
 }
