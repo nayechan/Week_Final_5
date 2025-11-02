@@ -341,7 +341,7 @@ void UTargetActorTransformWidget::RenderHeader(AActor* SelectedActor, UActorComp
 		JSON ActorJson;
 		ActorJson["Type"] = SelectedActor->GetClass()->Name;
 		SelectedActor->Serialize(false, ActorJson);
-		bool bSuccess = FJsonSerializer::SaveJsonToFile(ActorJson, (char*)PrefabPath.generic_u8string().c_str());
+		bool bSuccess = FJsonSerializer::SaveJsonToFile(ActorJson, PrefabPath);
 	}
 
 	ImGui::SameLine();

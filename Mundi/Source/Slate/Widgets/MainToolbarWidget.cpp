@@ -454,9 +454,8 @@ void UMainToolbarWidget::RenderLoadPrefabButton()
 
     if (bButtonClicked)
     {
-        // 프로젝트에 맞는 값으로 수정하세요.
         const FWideString BaseDir = UTF8ToWide(GDataDir) + L"/Prefabs";
-        const FWideString Extension = L".prefab"; // 예시 확장자
+        const FWideString Extension = L".prefab";
         const FWideString Description = L"Prefab Files";
 
         // 이전에 생성한 파일 로드 대화상자 함수 호출
@@ -564,9 +563,14 @@ void UMainToolbarWidget::OnNewScene()
 
 void UMainToolbarWidget::OnSaveScene()
 {
+    const FWideString BaseDir = UTF8ToWide(GDataDir) + L"/Scenes";
+    const FWideString Extension = L".scene";
+    const FWideString Description = L"Scene Files";
+    const FWideString DefaultFileName = L"NewScene";
+
     // Windows 파일 다이얼로그 열기
-    std::filesystem::path selectedPath = OpenSaveFileDialog();
-    if (selectedPath.empty())
+    std::filesystem::path SelectedPath = FPlatformProcess::OpenSaveFileDialog(BaseDir, Extension, Description, DefaultFileName);
+    if (SelectedPath.empty())
         return;
 
     try
@@ -578,56 +582,39 @@ void UMainToolbarWidget::OnSaveScene()
             return;
         }
 
-        // 파일 경로에서 씬 이름 추출
-        FString SceneName = selectedPath.stem().string(); // 확장자 제외한 파일명
-
-        // Scene 디렉토리가 없으면 생성
-        namespace fs = std::filesystem;
-        fs::path SceneDir = "Scene";
-        if (!fs::exists(SceneDir))
-        {
-            fs::create_directories(SceneDir);
-            UE_LOG("MainToolbar: Created Scene directory");
-        }
-
-        FString FilePath = "Scene/" + SceneName + ".Scene";
-
         JSON LevelJson;
         CurrentWorld->GetLevel()->Serialize(false, LevelJson);
-        bool bSuccess = FJsonSerializer::SaveJsonToFile(LevelJson, FilePath);
+        bool bSuccess = FJsonSerializer::SaveJsonToFile(LevelJson, SelectedPath);
 
-        UE_LOG("MainToolbar: Scene saved: %s", SceneName.c_str());
+        if (bSuccess)
+        {
+            UE_LOG("MainToolbar: Scene saved: %s", SelectedPath.generic_u8string().c_str());
+            EditorINI["LastUsedLevel"] = WideToUTF8(SelectedPath);
+        }
+        else
+        {
+            UE_LOG("[error] MainToolbar: Scene saved failed: %s", SelectedPath.generic_u8string().c_str());
+        }
     }
     catch (const std::exception& Exception)
     {
-        UE_LOG("MainToolbar: Save Error: %s", Exception.what());
+        UE_LOG("[error] MainToolbar: Save Error: %s", Exception.what());
     }
 }
 
 void UMainToolbarWidget::OnLoadScene()
 {
+    const FWideString BaseDir = UTF8ToWide(GDataDir) + L"/Scenes";
+    const FWideString Extension = L".scene";
+    const FWideString Description = L"Scene Files";
+
     // Windows 파일 다이얼로그 열기
-    std::filesystem::path selectedPath = OpenLoadFileDialog();
-    if (selectedPath.empty())
+    std::filesystem::path SelectedPath = FPlatformProcess::OpenLoadFileDialog(BaseDir, Extension, Description);
+    if (SelectedPath.empty())
         return;
 
     try
     {
-        FString InFilePath = selectedPath.string();
-
-        // 파일명에서 씬 이름 추출
-        FString SceneName = InFilePath;
-        size_t LastSlash = SceneName.find_last_of("\\/");
-        if (LastSlash != std::string::npos)
-        {
-            SceneName = SceneName.substr(LastSlash + 1);
-        }
-        size_t LastDot = SceneName.find_last_of(".");
-        if (LastDot != std::string::npos)
-        {
-            SceneName = SceneName.substr(0, LastDot);
-        }
-
         // World 가져오기
         UWorld* CurrentWorld = GWorld;
         if (!CurrentWorld)
@@ -642,100 +629,24 @@ void UMainToolbarWidget::OnLoadScene()
 
         std::unique_ptr<ULevel> NewLevel = ULevelService::CreateDefaultLevel();
         JSON LevelJsonData;
-        if (FJsonSerializer::LoadJsonFromFile(LevelJsonData, InFilePath))
+        if (FJsonSerializer::LoadJsonFromFile(LevelJsonData, SelectedPath))
         {
             NewLevel->Serialize(true, LevelJsonData);
+            EditorINI["LastUsedLevel"] = WideToUTF8(SelectedPath);
         }
         else
         {
-            UE_LOG("MainToolbar: Failed To Load Level From: %s", InFilePath.c_str());
+            UE_LOG("[error] MainToolbar: Failed To Load Level From: %s", SelectedPath.generic_u8string().c_str());
             return;
         }
         CurrentWorld->SetLevel(std::move(NewLevel));
 
-        UE_LOG("MainToolbar: Scene loaded successfully: %s", InFilePath.c_str());
+        UE_LOG("MainToolbar: Scene loaded successfully: %s", SelectedPath.generic_u8string().c_str());
     }
     catch (const std::exception& Exception)
     {
-        UE_LOG("MainToolbar: Load Error: %s", Exception.what());
+        UE_LOG("[error] MainToolbar: Load Error: %s", Exception.what());
     }
-}
-
-std::filesystem::path UMainToolbarWidget::OpenSaveFileDialog()
-{
-    using std::filesystem::path;
-
-    OPENFILENAMEW ofn;
-    wchar_t szFile[260] = {};
-    wchar_t szInitialDir[260] = {};
-
-    // Scene 폴더를 기본 경로로 설정
-    std::filesystem::path sceneDir = std::filesystem::current_path() / "Scene";
-    wcscpy_s(szInitialDir, sceneDir.wstring().c_str());
-
-    // Initialize OPENFILENAME
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = GetActiveWindow();
-    ofn.lpstrFile = szFile;
-    ofn.nMaxFile = sizeof(szFile) / sizeof(wchar_t);
-    ofn.lpstrFilter = L"Scene Files\0*.scene\0All Files\0*.*\0";
-    ofn.nFilterIndex = 1;
-    ofn.lpstrFileTitle = nullptr;
-    ofn.nMaxFileTitle = 0;
-    ofn.lpstrInitialDir = szInitialDir;
-    ofn.lpstrTitle = L"Save Scene File";
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_EXPLORER | OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_ENABLESIZING;
-    ofn.lpstrDefExt = L"scene";
-
-    UE_LOG("MainToolbar: Opening Save Dialog (Modal)...");
-
-    if (GetSaveFileNameW(&ofn) == TRUE)
-    {
-        UE_LOG("MainToolbar: Save Dialog Closed");
-        return path(szFile);
-    }
-
-    UE_LOG("MainToolbar: Save Dialog Cancelled");
-    return L"";
-}
-
-std::filesystem::path UMainToolbarWidget::OpenLoadFileDialog()
-{
-    using std::filesystem::path;
-
-    OPENFILENAMEW ofn;
-    wchar_t szFile[260] = {};
-    wchar_t szInitialDir[260] = {};
-
-    // Scene 폴더를 기본 경로로 설정
-    std::filesystem::path sceneDir = std::filesystem::current_path() / "Scene";
-    wcscpy_s(szInitialDir, sceneDir.wstring().c_str());
-
-    // Initialize OPENFILENAME
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = GetActiveWindow();
-    ofn.lpstrFile = szFile;
-    ofn.nMaxFile = sizeof(szFile) / sizeof(wchar_t);
-    ofn.lpstrFilter = L"Scene Files\0*.scene\0All Files\0*.*\0";
-    ofn.nFilterIndex = 1;
-    ofn.lpstrFileTitle = nullptr;
-    ofn.nMaxFileTitle = 0;
-    ofn.lpstrInitialDir = szInitialDir;
-    ofn.lpstrTitle = L"Load Scene File";
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER | OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_ENABLESIZING;
-
-    UE_LOG("MainToolbar: Opening Load Dialog (Modal)...");
-
-    if (GetOpenFileNameW(&ofn) == TRUE)
-    {
-        UE_LOG("MainToolbar: Load Dialog Closed");
-        return path(szFile);
-    }
-
-    UE_LOG("MainToolbar: Load Dialog Cancelled");
-    return L"";
 }
 
 FVector UMainToolbarWidget::GetRandomPositionInRange() const

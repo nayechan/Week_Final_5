@@ -343,7 +343,7 @@ public:
 	// File I/O
 	//====================================================================================
 
-	static bool SaveJsonToFile(const JSON& InJsonData, const FString& InFilePath)
+	static bool SaveJsonToFile(const JSON& InJsonData, const FWideString& InFilePath)
 	{
 		try
 		{
@@ -360,11 +360,6 @@ public:
 		{
 			return false;
 		}
-	}
-
-	static bool LoadJsonFromFile(JSON& OutJson, const FString& InFilePath)
-	{
-		return LoadJsonFromFile(OutJson, UTF8ToWide(InFilePath));
 	}
 
 	static bool LoadJsonFromFile(JSON& OutJson, const FWideString& InFilePath)

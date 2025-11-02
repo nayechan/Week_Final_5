@@ -445,5 +445,6 @@ GEMINI.md
 
 # Untracked Data Files
 Mundi/Scene/*
+Mundi/Data/Scenes/*
 /Mundi/Data/untracked/**
 /Mundi/DerivedDataCache/**

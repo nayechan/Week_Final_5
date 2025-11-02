@@ -7,7 +7,7 @@ struct FPlatformProcess
     static void OpenFileInDefaultEditor(const FWideString& RelativePath);
 
     // 파일 저장 위치 반환
-    static std::filesystem::path OpenSaveFileDialog(const FWideString BaseDir, const FWideString Extension, const FWideString Description, const FWideString DefaultFileName);
+    static std::filesystem::path OpenSaveFileDialog(const FWideString BaseDir, const FWideString Extension, const FWideString Description, const FWideString DefaultFileName = L"");
     
     static std::filesystem::path OpenLoadFileDialog(const FWideString BaseDir, const FWideString Extension, const FWideString Description);
 

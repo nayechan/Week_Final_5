@@ -42,10 +42,6 @@ private:
     // 스폰 액터 선택
     void HandleActorSelection(AActor* Actor);
 
-    // 파일 다이얼로그 헬퍼
-    std::filesystem::path OpenSaveFileDialog();
-    std::filesystem::path OpenLoadFileDialog();
-
 private:
     // 명령 타입 정의
     enum class EToolbarCommand

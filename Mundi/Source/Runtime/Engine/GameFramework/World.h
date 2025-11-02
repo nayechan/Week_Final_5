@@ -103,6 +103,9 @@ public:
     static UWorld* DuplicateWorldForPIE(UWorld* InEditorWorld);
 
 private:
+    bool TryLoadLastUsedLevel();
+
+private:
     /** === 에디터 특수 액터 관리 === */
     TArray<AActor*> EditorActors;
     ACameraActor* MainCameraActor = nullptr;
