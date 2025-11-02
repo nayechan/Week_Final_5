@@ -15,16 +15,6 @@ FLuaManager::FLuaManager()
         sol::lib::string
     );
 
-    Lua->new_usertype<FVector>("Vector",
-        sol::constructors<FVector(), FVector(float, float, float)>(),
-        "X", &FVector::X,
-        "Y", &FVector::Y,
-        "Z", &FVector::Z,
-        sol::meta_function::addition, [](const FVector& a, const FVector& b) { return FVector(a.X + b.X, a.Y + b.Y, a.Z + b.Z); },
-        sol::meta_function::multiplication, [](const FVector& v, float f) { return v * f; },
-        sol::meta_function::subtraction, [](const FVector& a, const FVector& b) { return FVector(a.X - b.X, a.Y - b.Y, a.Z - b.Z); }
-        );
-
     Lua->new_usertype<FGameObject>("GameObject",
         "UUID", &FGameObject::UUID,
         "Location", sol::property(&FGameObject::GetLocation, &FGameObject::SetLocation),
