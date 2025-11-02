@@ -5,7 +5,6 @@ class FGameObject
 {
 public:
     uint32  UUID;
-    FString Tag;
     FVector Velocity;
     FVector Scale;
     bool bIsActive;

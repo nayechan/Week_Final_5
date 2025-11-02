@@ -82,11 +82,23 @@ void ULuaScriptComponent::OnOverlap(UPrimitiveComponent* MyComp, UPrimitiveCompo
 {
 	if (FuncOnOverlap.valid())
 	{
-		auto Result = FuncOnOverlap();
-		if (!Result.valid())
+		FGameObject* OtherGameObject = nullptr;
+		if (OtherComp)
 		{
-			sol::error Err = Result; UE_LOG("[Lua][error] %s\n", Err.what());
-			GEngine.EndPIE();
+			if (AActor* OtherActor = OtherComp->GetOwner())
+			{
+				OtherGameObject = OtherActor->GetGameObject();
+			}
+		}
+
+		if (OtherGameObject)
+		{
+			auto Result = FuncOnOverlap(OtherGameObject);
+			if (!Result.valid())
+			{
+				sol::error Err = Result; UE_LOG("[Lua][error] %s\n", Err.what());
+				GEngine.EndPIE();
+			}
 		}
 	}
 }

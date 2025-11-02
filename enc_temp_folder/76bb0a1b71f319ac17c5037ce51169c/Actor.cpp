@@ -39,6 +39,10 @@ void AActor::BeginPlay()
 	// Lua Game Object 초기화
 	LuaGameObject = new FGameObject();
 	LuaGameObject ->SetOwner(this); /*순서 보장 필수!*/
+	//LuaGameObject->GetLocation();
+	//LuaGameObject->GetRotation();
+	//LuaGameObject->GetScale();
+	//LuaGameObject->GetTag();
 	LuaGameObject->Velocity = FVector(10, 0, 0);
 	
 	// 컴포넌트들 Initialize/BeginPlay 순회

@@ -12,19 +12,20 @@ function EndPlay()
 end
 
 function OnOverlap(OtherActor)
-    if not OtherActor then
-        print("no other actor")
-        return
-    end
+    print(OtherActor.Tag)
+    -- if OtherActor then
+    --     print("other actor here")
+    --     return
+    -- end
     
-    if not OtherActor.Tag then
-        print("no tag actor")
-        return
-    end
+    -- if OtherActor.Tag then
+    --     print("tag actor here: " .. OtherActor.Tag)
+    --     return
+    -- end
 
-    if OtherActor.Tag == "fireball" then
-        print("onoverlap")
-    end
+    -- if OtherActor.Tag == "fireball" then
+    --     print("onoverlap with fireball")
+    -- end
     -- Obj.Location.Z = Obj.Location.Z-5
     -- if OtherActor.Name == "FireBallActor" then
     --     local hitPos = OtherActor.Location

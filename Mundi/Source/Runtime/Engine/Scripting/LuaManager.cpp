@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "LuaManager.h"
 #include "GameObject.h"
 
@@ -17,7 +17,7 @@ FLuaManager::FLuaManager()
 
     Lua->new_usertype<FGameObject>("GameObject",
         "UUID", &FGameObject::UUID,
-        "Tag", &FGameObject::Tag,
+        "Tag", sol::property(&FGameObject::GetTag, &FGameObject::SetTag),
         "Location", sol::property(&FGameObject::GetLocation, &FGameObject::SetLocation),
         "Rotation", sol::property(&FGameObject::GetRotation, &FGameObject::SetRotation), 
         "Scale", sol::property(&FGameObject::GetScale, &FGameObject::SetScale),
