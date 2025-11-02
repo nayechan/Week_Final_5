@@ -23,8 +23,6 @@ FLuaManager::FLuaManager()
         "Scale", &FGameObject::Scale,
         "PrintLocation", &FGameObject::PrintLocation
     );
-
-    SharedLib = Lua->create_table();
     
     Lua->set_function("print", sol::overload(
         [](const FString& msg) {
@@ -39,7 +37,8 @@ FLuaManager::FLuaManager()
             UE_LOG("[Lua] %d\n", num);
         }
     ));
-    
+
+    SharedLib = Lua->create_table();
     SharedLib["GlobalConfig"] = Lua->create_table();
     // SharedLib["GlobalConfig"]["Gravity"] = 9.8;
 
@@ -59,6 +58,13 @@ FLuaManager::FLuaManager()
         }
     ));
 
+    SharedLib.set_function("AddComponent",
+        [this](sol::userdata Obj, const FString& ClassName)
+        {
+            FGameObject& GameObject = Obj.as<FGameObject&>();
+            AActor* Actor = GameObject->
+        }
+    );
     // Shared lib의 fall back은 G
     sol::table MetaTableShared = Lua->create_table();
     MetaTableShared[sol::meta_function::index] = Lua->globals();

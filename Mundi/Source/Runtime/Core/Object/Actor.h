@@ -25,6 +25,12 @@ public:
     {
         UE_LOG("Location %f %f %f\n", Location.X, Location.Y, Location.Z);
     }
+
+    void SetOwner(AActor* NewOwner) { Owner = NewOwner; }
+    AActor* GetOwner() { return Owner; }
+
+private:
+    AActor* Owner;
 };
 
 
