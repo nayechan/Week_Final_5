@@ -12,7 +12,7 @@ function EndPlay()
 end
 
 function OnBeginOverlap(OtherActor)
-    --[[Obj:PrintLocation()]]--
+    --[[Obj:PrintLocation()]]-- 
 end
 
 function OnEndOverlap(OtherActor)

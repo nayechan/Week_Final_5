@@ -1,0 +1,121 @@
+{
+  "Actors" : {
+    "133" : {
+      "Name" : "Directional Light Actor",
+      "OwnedComponents" : [{
+          "CascadedAreaColorDebugValue" : 0.000000,
+          "CascadedAreaShadowDebugValue" : -1,
+          "CascadedCount" : 4,
+          "CascadedLinearBlendingValue" : 0.500000,
+          "CascadedOverlapValue" : 0.200000,
+          "Id" : 134,
+          "Intensity" : 1.000000,
+          "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [-62.900280, 16.769619, -62.900280],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "ShadowBias" : 0.000000,
+          "ShadowResolutionScale" : 2048,
+          "ShadowSharpen" : 0.000000,
+          "ShadowSlopeBias" : 0.000000,
+          "Temperature" : 6500.000000,
+          "Type" : "UDirectionalLightComponent",
+          "bCascaded" : true,
+          "bCastShadows" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bOverrideCameraLightPerspective" : false,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 134,
+      "Type" : "ADirectionalLightActor"
+    },
+    "135" : {
+      "Name" : "Ambient Light Actor",
+      "OwnedComponents" : [{
+          "Id" : 136,
+          "Intensity" : 0.100000,
+          "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "ShadowBias" : 0.000000,
+          "ShadowResolutionScale" : 1024,
+          "ShadowSharpen" : 0.000000,
+          "ShadowSlopeBias" : 0.000000,
+          "Temperature" : 6500.000000,
+          "Type" : "UAmbientLightComponent",
+          "bCastShadows" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 136,
+      "Type" : "AAmbientLightActor"
+    },
+    "746" : {
+      "Name" : "스태틱 메시_0",
+      "OwnedComponents" : [{
+          "ScriptFilePath" : "Data/Scripts/FireballSpawnArea.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 749,
+          "MaterialSlots" : [{
+              "AssetPath" : "texture",
+              "Type" : "UMaterial"
+            }],
+          "ParentId" : 0,
+          "RelativeLocation" : [-2.000711, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 0.200000],
+          "StaticMesh" : "Data/cube-tex.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 749,
+      "Type" : "AStaticMeshActor"
+    },
+    "750" : {
+      "Name" : "액터_0",
+      "OwnedComponents" : [{
+          "Id" : 752,
+          "ParentId" : 0,
+          "RelativeLocation" : [-2.263638, 1.998549, 0.053925],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }, {
+          "ScriptFilePath" : "Data/Scripts/FireballManager.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 752,
+      "Type" : "AEmptyActor"
+    }
+  },
+  "NextUUID" : 1269,
+  "PerspectiveCamera" : {
+    "FOV" : [60.000000],
+    "FarClip" : [1000.000000],
+    "Location" : [-19.986071, 27.802265, 19.385143],
+    "NearClip" : [0.100000],
+    "Rotation" : [0.000000, 55.999992, -58.899982]
+  },
+  "Version" : 1
+}

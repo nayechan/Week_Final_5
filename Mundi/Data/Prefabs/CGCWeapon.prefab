@@ -1,31 +1,19 @@
 {
   "Name" : "스태틱 메시_0",
   "OwnedComponents" : [{
-      "ScriptFilePath" : "Data/Scripts/RotatingSpawner.lua",
-      "Type" : "ULuaScriptComponent",
-      "bIsActive" : true,
-      "bTickEnabled" : true
-    }, {
       "ScriptFilePath" : "Data/Scripts/FireballSpawnArea.lua",
       "Type" : "ULuaScriptComponent",
       "bIsActive" : true,
       "bTickEnabled" : true
     }, {
-      "PivotTranslation" : [0.000000, 0.000000, 0.000000],
-      "RotationRate" : [0.000000, 0.000000, 0.000000],
-      "Type" : "URotatingMovementComponent",
-      "bIsActive" : true,
-      "bRotationInLocalSpace" : true,
-      "bTickEnabled" : true
-    }, {
-      "Id" : 203287,
+      "Id" : 169787,
       "MaterialSlots" : [{
           "AssetPath" : "texture",
           "Type" : "UMaterial"
         }],
       "ParentId" : 0,
-      "RelativeLocation" : [17.359339, 37.136406, 10.293902],
-      "RelativeRotationEuler" : [0.000001, 14.024288, -90.000008],
+      "RelativeLocation" : [-4.477293, 37.136410, 10.293902],
+      "RelativeRotationEuler" : [0.000001, 14.024286, -90.000008],
       "RelativeScale" : [4.000000, 4.000000, 4.000000],
       "StaticMesh" : "Data/cube-tex.obj",
       "Type" : "UStaticMeshComponent",
@@ -36,7 +24,7 @@
       "bIsVisible" : true,
       "bTickEnabled" : true
     }],
-  "RootComponentId" : 203287,
+  "RootComponentId" : 169787,
   "Tag" : "",
   "Type" : "AStaticMeshActor",
   "bActorHiddenInGame" : false,

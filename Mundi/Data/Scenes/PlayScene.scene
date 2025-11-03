@@ -1,6 +1,38 @@
 {
   "Actors" : {
-    "1010" : {
+    "1845" : {
+      "Name" : "스태틱 메시_0",
+      "OwnedComponents" : [{
+          "ScriptFilePath" : "Data/Scripts/CGCAttack.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 1848,
+          "MaterialSlots" : [{
+              "AssetPath" : "texture",
+              "Type" : "UMaterial"
+            }],
+          "ParentId" : 0,
+          "RelativeLocation" : [-4.477293, 37.136410, 10.293902],
+          "RelativeRotationEuler" : [0.000001, 14.024286, -90.000008],
+          "RelativeScale" : [4.000000, 4.000000, 4.000000],
+          "StaticMesh" : "Data/cube-tex.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1848,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "785" : {
       "Name" : "하이트 포그 액터_0",
       "OwnedComponents" : [{
           "FogCutoffDistance" : 2800.000000,
@@ -9,7 +41,7 @@
           "FogInscatteringColor" : [0.806950, 0.227441, 0.227441, 1.000000],
           "FogMaxOpacity" : 0.440000,
           "HeightFogShader" : "Shaders/PostProcess/HeightFog_PS.hlsl",
-          "Id" : 1013,
+          "Id" : 788,
           "ParentId" : 0,
           "RelativeLocation" : [-3.786875, 7.579581, -335.216003],
           "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
@@ -21,344 +53,23 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1013,
+      "RootComponentId" : 788,
       "Tag" : "",
       "Type" : "AHeightFogActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1014" : {
+    "789" : {
       "Name" : "스태틱 메시_0",
       "OwnedComponents" : [{
-          "Id" : 1016,
-          "MaterialSlots" : [{
-              "AssetPath" : "texture",
-              "Type" : "UMaterial"
-            }],
-          "ParentId" : 0,
-          "RelativeLocation" : [0.000000, -14.079702, 20.000000],
-          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
-          "RelativeScale" : [0.200000, 2.000000, 2.000000],
-          "StaticMesh" : "Data/cube-tex.obj",
-          "Type" : "UStaticMeshComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "ScriptFilePath" : "Data/Scripts/FireballSpawnArea.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }],
-      "RootComponentId" : 1016,
-      "Tag" : "",
-      "Type" : "AStaticMeshActor",
-      "bActorHiddenInGame" : false,
-      "bActorIsActive" : true
-    },
-    "1464" : {
-      "Name" : "AStaticMeshActor_7",
-      "OwnedComponents" : [{
-          "ScriptFilePath" : "Data/Scripts/Player.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 1467,
-          "MaterialSlots" : [{
-              "AssetPath" : "Pantaln",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Piel",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Piel",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Zapatos",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "material",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Faja",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Dientes",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Corbata",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Camisa",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Material.001",
-              "Type" : "UMaterial"
-            }],
-          "ParentId" : 0,
-          "RelativeLocation" : [0.000000, 0.000000, 3.000000],
-          "RelativeRotationEuler" : [-0.586458, 0.005865, 1.190784],
-          "RelativeScale" : [0.300000, 0.300000, 0.300000],
-          "StaticMesh" : "Data/Model/Player.obj",
-          "Type" : "UStaticMeshComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "BoxExtent" : [1.107729, 2.315000, 1.661383],
-          "Id" : 1469,
-          "ParentId" : 1467,
-          "RelativeLocation" : [-0.003928, 0.026435, 1.300055],
-          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 0.538478, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 1468,
-          "MaterialSlots" : [{
-              "AssetPath" : "GatlingGun_Turret_Mat",
-              "Type" : "UMaterial"
-            }],
-          "ParentId" : 1467,
-          "RelativeLocation" : [0.046674, -0.031837, 3.014768],
-          "RelativeRotationEuler" : [8.360693, -0.166903, -90.098228],
-          "RelativeScale" : [0.500000, 0.700000, 0.500000],
-          "StaticMesh" : "Data/Model/Gun.obj",
-          "Type" : "UStaticMeshComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bTickEnabled" : true
-        }],
-      "RootComponentId" : 1467,
-      "Tag" : "player",
-      "Type" : "AStaticMeshActor",
-      "bActorHiddenInGame" : false,
-      "bActorIsActive" : true
-    },
-    "19919" : {
-      "Name" : "AStaticMeshActor_6",
-      "OwnedComponents" : [{
-          "ScriptFilePath" : "Data/Scripts/Player.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 19921,
-          "MaterialSlots" : [{
-              "AssetPath" : "Pantaln",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Piel",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Piel",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Zapatos",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "material",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Faja",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Dientes",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Corbata",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Camisa",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Material.001",
-              "Type" : "UMaterial"
-            }],
-          "ParentId" : 0,
-          "RelativeLocation" : [0.000000, 0.000000, 3.000000],
-          "RelativeRotationEuler" : [-0.586458, 0.005865, 1.190784],
-          "RelativeScale" : [0.300000, 0.300000, 0.300000],
-          "StaticMesh" : "Data/Model/Player.obj",
-          "Type" : "UStaticMeshComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 19922,
-          "MaterialSlots" : [{
-              "AssetPath" : "GatlingGun_Turret_Mat",
-              "Type" : "UMaterial"
-            }],
-          "ParentId" : 19921,
-          "RelativeLocation" : [0.046674, -0.031837, 3.014768],
-          "RelativeRotationEuler" : [8.360693, -0.166903, -90.098228],
-          "RelativeScale" : [0.500000, 0.700000, 0.500000],
-          "StaticMesh" : "Data/Model/Gun.obj",
-          "Type" : "UStaticMeshComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "BoxExtent" : [1.107729, 3.415435, 1.661383],
-          "Id" : 19923,
-          "ParentId" : 19921,
-          "RelativeLocation" : [-0.003928, 0.026435, 1.300055],
-          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 0.538478, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }],
-      "RootComponentId" : 19921,
-      "Tag" : "player",
-      "Type" : "AStaticMeshActor",
-      "bActorHiddenInGame" : false,
-      "bActorIsActive" : true
-    },
-    "19930" : {
-      "Name" : "AStaticMeshActor_7",
-      "OwnedComponents" : [{
-          "ScriptFilePath" : "Data/Scripts/Player.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 19932,
-          "MaterialSlots" : [{
-              "AssetPath" : "Pantaln",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Piel",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Piel",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Zapatos",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "material",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Faja",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Dientes",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Corbata",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Camisa",
-              "Type" : "UMaterial"
-            }, {
-              "AssetPath" : "Material.001",
-              "Type" : "UMaterial"
-            }],
-          "ParentId" : 0,
-          "RelativeLocation" : [-0.002386, 0.000000, 3.000000],
-          "RelativeRotationEuler" : [-0.586458, 0.005865, 1.190784],
-          "RelativeScale" : [0.300000, 0.300000, 0.300000],
-          "StaticMesh" : "Data/Model/Player.obj",
-          "Type" : "UStaticMeshComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "BoxExtent" : [1.107729, 3.415435, 1.661383],
-          "Id" : 19933,
-          "ParentId" : 19932,
-          "RelativeLocation" : [-0.003928, 0.026435, 1.300055],
-          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 0.538478, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 19934,
-          "MaterialSlots" : [{
-              "AssetPath" : "GatlingGun_Turret_Mat",
-              "Type" : "UMaterial"
-            }],
-          "ParentId" : 19932,
-          "RelativeLocation" : [0.046674, -0.031837, 3.014768],
-          "RelativeRotationEuler" : [8.360693, -0.166903, -90.098228],
-          "RelativeScale" : [0.500000, 0.700000, 0.500000],
-          "StaticMesh" : "Data/Model/Gun.obj",
-          "Type" : "UStaticMeshComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bTickEnabled" : true
-        }],
-      "RootComponentId" : 19932,
-      "Tag" : "player",
-      "Type" : "AStaticMeshActor",
-      "bActorHiddenInGame" : false,
-      "bActorIsActive" : true
-    },
-    "814" : {
-      "Name" : "스태틱 메시_0",
-      "OwnedComponents" : [{
-          "ScriptFilePath" : "Data/Scripts/coach.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
-          "ScriptFilePath" : "Data/Scripts/SHC.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 818,
+          "Id" : 791,
           "MaterialSlots" : [{
               "AssetPath" : "Material_0.001",
               "Type" : "UMaterial"
             }],
           "ParentId" : 0,
-          "RelativeLocation" : [39.626556, -38.346268, 1.554702],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 135.892227],
+          "RelativeLocation" : [0.481880, -63.902054, 1.554702],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 103.842468],
           "RelativeScale" : [30.000000, 30.000000, 30.000000],
           "StaticMesh" : "Data/Model/SHC.obj",
           "Type" : "UStaticMeshComponent",
@@ -368,24 +79,34 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
+        }, {
+          "ScriptFilePath" : "Data/Scripts/coach.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "ScriptFilePath" : "Data/Scripts/SHC.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
         }],
-      "RootComponentId" : 818,
+      "RootComponentId" : 791,
       "Tag" : "",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "819" : {
+    "794" : {
       "Name" : "스태틱 메시_0",
       "OwnedComponents" : [{
-          "Id" : 821,
+          "Id" : 796,
           "MaterialSlots" : [{
               "AssetPath" : "Material_0",
               "Type" : "UMaterial"
             }],
           "ParentId" : 0,
-          "RelativeLocation" : [-43.865955, 56.164707, 2.190370],
-          "RelativeRotationEuler" : [-0.226494, 0.174790, -52.342075],
+          "RelativeLocation" : [-18.671343, 56.164707, 2.190370],
+          "RelativeRotationEuler" : [0.000000, 0.000000, -49.951996],
           "RelativeScale" : [20.000000, 20.000000, 20.000000],
           "StaticMesh" : "Data/Model/CGC.obj",
           "Type" : "UStaticMeshComponent",
@@ -396,31 +117,18 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 822,
-          "MaterialSlots" : [{
-              "AssetPath" : "texture",
-              "Type" : "UMaterial"
-            }],
-          "ParentId" : 821,
-          "RelativeLocation" : [0.500000, 1.500000, -0.700000],
-          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "StaticMesh" : "Data/cube-tex.obj",
-          "Type" : "UStaticMeshComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
+          "ScriptFilePath" : "Data/Scripts/coach.lua",
+          "Type" : "ULuaScriptComponent",
           "bIsActive" : true,
-          "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 821,
+      "RootComponentId" : 796,
       "Tag" : "",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "823" : {
+    "797" : {
       "Name" : "Directional Light Actor",
       "OwnedComponents" : [{
           "CascadedAreaColorDebugValue" : 0.000000,
@@ -428,7 +136,7 @@
           "CascadedCount" : 4,
           "CascadedLinearBlendingValue" : 0.500000,
           "CascadedOverlapValue" : 0.200000,
-          "Id" : 825,
+          "Id" : 799,
           "Intensity" : 1.000000,
           "LightColor" : [0.772201, 0.354795, 0.722241, 1.000000],
           "ParentId" : 0,
@@ -449,16 +157,16 @@
           "bOverrideCameraLightPerspective" : false,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 825,
+      "RootComponentId" : 799,
       "Tag" : "",
       "Type" : "ADirectionalLightActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "826" : {
+    "800" : {
       "Name" : "Ambient Light Actor",
       "OwnedComponents" : [{
-          "Id" : 828,
+          "Id" : 802,
           "Intensity" : 0.100000,
           "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
           "ParentId" : 0,
@@ -477,16 +185,21 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 828,
+      "RootComponentId" : 802,
       "Tag" : "",
       "Type" : "AAmbientLightActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "829" : {
+    "803" : {
       "Name" : "액터_1",
       "OwnedComponents" : [{
-          "Id" : 830,
+          "ScriptFilePath" : "Data/Scripts/TileMap.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 804,
           "ParentId" : 0,
           "RelativeLocation" : [-8.607930, 11.745107, 5.080332],
           "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
@@ -496,27 +209,17 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "ScriptFilePath" : "Data/Scripts/TileMap.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 830,
+      "RootComponentId" : 804,
       "Tag" : "",
       "Type" : "AEmptyActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "832" : {
+    "806" : {
       "Name" : "액터_0",
       "OwnedComponents" : [{
-          "ScriptFilePath" : "Data/Scripts/FireballManager.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 834,
+          "Id" : 807,
           "ParentId" : 0,
           "RelativeLocation" : [-2.263638, 1.998549, 0.053925],
           "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
@@ -526,21 +229,51 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
+        }, {
+          "ScriptFilePath" : "Data/Scripts/FireballManager.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
         }],
-      "RootComponentId" : 834,
+      "RootComponentId" : 807,
+      "Tag" : "",
+      "Type" : "AEmptyActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "809" : {
+      "Name" : "액터_0",
+      "OwnedComponents" : [{
+          "ScriptFilePath" : "Data/Scripts/PlayerSpawner.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 810,
+          "ParentId" : 0,
+          "RelativeLocation" : [-10.858653, -39.284267, 17.186506],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 810,
       "Tag" : "",
       "Type" : "AEmptyActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     }
   },
-  "NextUUID" : 20801,
+  "NextUUID" : 4077,
   "PerspectiveCamera" : {
     "FOV" : [60.000000],
     "FarClip" : [1000.000000],
-    "Location" : [19.294722, -0.891671, 13.615544],
+    "Location" : [-17.193436, -20.496435, 42.592918],
     "NearClip" : [0.100000],
-    "Rotation" : [0.000000, 38.219460, 176.533585]
+    "Rotation" : [0.000000, 32.577942, 82.755486]
   },
   "Version" : 1
 }
