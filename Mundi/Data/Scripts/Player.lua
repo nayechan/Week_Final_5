@@ -5,10 +5,12 @@ local PitchSensitivity      = 0.0025
 local PitchGuardDegrees     = 1.0
 local VerticalDotLimit      = math.cos(math.rad(90 - PitchGuardDegrees)) -- ≈ cos(89°)
 
-local MovementDelta = 0.1
+local MovementDelta = 0.01
 
 local ForwardVector         = Vector(1, 0, 0)
 local CameraLocation        = Vector(0, 0, 0)
+
+local bGravity              = false;
 
 ------------------------------------------------------------
 local function NormalizeCopy(V)
@@ -29,6 +31,7 @@ end
 ------------------------------------------------------------
 function BeginPlay()
     print("[BeginPlay] " .. Obj.UUID)
+    Obj.Location = Vector(0, 0, 0)
     Obj.Velocity = Vector(0, 0, 0)
 
     local Camera = GetCamera()
@@ -47,17 +50,23 @@ function OnOverlap(OtherActor)
 end
 
 function Tick(Delta)
+    
     Obj.Location = Obj.Location + Obj.Velocity * Delta
 
-    Rotate()
+    if bGravity then 
+        Obj.Velocity = Vector(0, 0, -9.8)
+    else 
+        Rotate()
 
-    if InputManager:IsKeyDown('W') then MoveForward(MovementDelta) end
-    if InputManager:IsKeyDown('S') then MoveForward(-MovementDelta) end
-    if InputManager:IsKeyDown('A') then MoveRight(-MovementDelta) end
-    if InputManager:IsKeyDown('D') then MoveRight(MovementDelta) end
-    
-    SetCamera()
-    Billboard()
+        if InputManager:IsKeyDown('W') then MoveForward(MovementDelta) end
+        if InputManager:IsKeyDown('S') then MoveForward(-MovementDelta) end
+        if InputManager:IsKeyDown('A') then MoveRight(-MovementDelta) end
+        if InputManager:IsKeyDown('D') then MoveRight(MovementDelta) end
+        if InputManager:IsKeyDown('E') then bGravity = true end
+        
+        SetCamera()
+        Billboard()
+    end
 end
 
 ------------------------------------------------------------
@@ -77,11 +86,8 @@ function Rotate()
     local Candidate = RotateAroundAxis(ForwardVector, RightVector, Pitch)
 
     -- 수직 잠김 방지
-    print("Candidate")
-    print(Candidate)
-    print(UpVector)
-    if (Candidate.Z > 0.6) then
-        Candidate.Z = 0.6
+    if (Candidate.Z > 0.2) then
+        Candidate.Z = 0.2
     end
     if (Candidate.Z < -0.6) then
         Candidate.Z = -0.6
@@ -98,13 +104,13 @@ function Rotate()
 end
 
 function MoveForward(Delta)
-    Obj.Location = Obj.Location + ForwardVector * Delta
+    Obj.Location = Obj.Location + Vector(ForwardVector.X,ForwardVector.Y, 0)  * Delta
 end
 
 function MoveRight(Delta)
     local RightVector = FVector.Cross(UpVector, ForwardVector)
     RightVector = NormalizeCopy(RightVector)
-    Obj.Location = Obj.Location + RightVector * Delta
+    Obj.Location = Obj.Location + Vector(RightVector.X,RightVector.Y, 0) * Delta
 end
 
 ---------------------------------------------------------
