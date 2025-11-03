@@ -121,6 +121,7 @@ void ULuaScriptComponent::OnEndOverlap(UPrimitiveComponent* MyComp, UPrimitiveCo
 		{
 			if (AActor* OtherActor = OtherComp->GetOwner())
 			{
+				OtherActor->GetGameObject();
 				OtherGameObject = OtherActor->GetGameObject();
 			}
 		}

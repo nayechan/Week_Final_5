@@ -408,7 +408,14 @@ FVector2D UInputManager::GetScreenSize() const
 
 void UInputManager::SetCursorVisible(bool bVisible)
 {
-    ShowCursor(bVisible ? TRUE : FALSE);
+    if (bVisible)
+    {
+        while (ShowCursor(TRUE) < 0);
+    }
+    else
+    {
+        while (ShowCursor(FALSE) >= 0);
+    }
 }
 
 void UInputManager::LockCursor()

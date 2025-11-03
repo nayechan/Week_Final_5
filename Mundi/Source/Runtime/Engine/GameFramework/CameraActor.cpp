@@ -182,11 +182,6 @@ FVector ACameraActor::GetUp() const
 
 void ACameraActor::ProcessEditorCameraInput(float DeltaSeconds)
 {
-    if (World->bPie)
-    {
-        //return;
-    }
-
     UInputManager& InputManager = UInputManager::GetInstance();
 
     bool bRightButtonDown = InputManager.IsMouseButtonDown(RightButton);

@@ -161,7 +161,7 @@ function Die()
 end
 
 function EndAfter()
-    coroutine.yield("wait_time", 2)
+    coroutine.yield("wait_time", 1)
     GlobalConfig.PlayerState = "Dead"
 end
 

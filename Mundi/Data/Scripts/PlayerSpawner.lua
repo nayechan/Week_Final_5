@@ -18,21 +18,25 @@ function OnEndOverlap(OtherActor)
 end
 
 function Tick(dt)
-    --print(GlobalConfig.GameState)
-
     if GlobalConfig.GameState == "Init" then
+        InputManager:SetCursorVisible(false)
         SpawnPrefab("Data/Prefabs/Player.prefab")
         GlobalConfig.PlayerState = "Alive"
         GlobalConfig.GameState = "Playing"
 
     elseif GlobalConfig.GameState == "Playing" then
+        -- if InputManager:IsKeyDown("R") then
+        --     GlobalConfig.GameState = "End"
+        -- end
+
         if GlobalConfig.PlayerState == "Dead" then
+            InputManager:SetCursorVisible(true)
             GlobalConfig.GameState = "End"
         end
 
     elseif GlobalConfig.GameState == "End" then
         if InputManager:IsKeyDown("R") then
-            GlobalConfig.GameState = "Init" 
+            GlobalConfig.GameState = "Init"
         end
     end
 end
