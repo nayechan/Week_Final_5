@@ -310,7 +310,7 @@ PS_INPUT mainVS(VS_INPUT Input)
     {
         FSpotLightInfo spotLightNoShadow = g_SpotLightList[j];
         spotLightNoShadow.bCastShadows = 0;
-        finalColor += CalculateSpotLight(spotLightNoShadow, Out.WorldPos, worldNormal, viewDir, baseColor, true, specPower, g_ShadowAtlas2D, g_ShadowSample);
+        finalColor += CalculateSpotLight(spotLightNoShadow, Out.WorldPos, worldNormal, viewDir, baseColor, true, specPower, g_ShadowAtlas2D, g_ShadowSample, g_VSMShadowAtlas, g_VSMSampler);
     }
 
     Out.Color = float4(finalColor, baseColor.a);
@@ -494,7 +494,7 @@ PS_OUTPUT mainPS(PS_INPUT Input)
     litColor += CalculateAmbientLight(AmbientLight, Ka);
 
     // Directional light (diffuse만)
-    litColor += CalculateDirectionalLight(DirectionalLight, normal, float3(0, 0, 0), baseColor, false, 0.0f);
+    litColor += CalculateDirectionalLight(DirectionalLight, Input.WorldPos, ViewPos.xyz, normal, float3(0, 0, 0), baseColor, false, 0.0f, g_ShadowAtlas2D, g_ShadowSample);
 
     // 타일 기반 라이트 컬링 적용 (활성화된 경우)
     if (bUseTileCulling)
@@ -649,9 +649,7 @@ PS_OUTPUT mainPS(PS_INPUT Input)
         [loop]
         for (int j = 0; j < SpotLightCount; j++)
         {
-            litColor +=  CalculateSpotLight(g_SpotLightList[j], Input.WorldPos, normal,
-                    float3(0, 0, 0), baseColor, false,
-                    0.0f, g_ShadowAtlas2D, g_ShadowSample, g_VSMShadowAtlas, g_VSMSampler);
+            litColor +=  CalculateSpotLight(g_SpotLightList[j],Input.WorldPos, normal, viewDir, baseColor, true, specPower, g_ShadowAtlas2D, g_ShadowSample, g_VSMShadowAtlas, g_VSMSampler);
         }
     }
 

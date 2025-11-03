@@ -573,9 +573,17 @@ float GetCascadedShadowAtt(float3 WorldPos, float3 ViewPos, Texture2D ShadowMap,
 //================================================================================================
 
 // Directional Light 계산 (Diffuse + Specular)
-float3 CalculateDirectionalLight
-    (FDirectionalLightInfo light, float3 WorldPos, float3 ViewPos, float3 normal, float3 viewDir, float4 materialColor, bool includeSpecular, float specularPower,
- Texture2D ShadowMap, SamplerComparisonState ShadowSampler)
+float3 CalculateDirectionalLight(
+    FDirectionalLightInfo light,
+    float3 WorldPos,
+    float3 ViewPos,
+    float3 normal,
+    float3 viewDir,
+    float4 materialColor,
+    bool includeSpecular,
+    float specularPower,
+    Texture2D ShadowMap,
+    SamplerComparisonState ShadowSampler)
 {
     // Light.Direction이 영벡터인 경우, 정규화 문제 방지
     if (all(light.Direction == float3(0.0f, 0.0f, 0.0f)))
@@ -615,8 +623,15 @@ float3 CalculateDirectionalLight
 
 // Spot Light 계산 (Diffuse + Specular with Attenuation and Cone)
 float3 CalculateSpotLight(
-    FSpotLightInfo light, float3 worldPos, float3 normal, float3 viewDir, float4 materialColor, bool includeSpecular, float specularPower,
-    Texture2D ShadowMap, SamplerComparisonState ShadowSampler, Texture2D<float2> VShadowMap, SamplerState VShadowSampler)
+    FSpotLightInfo light,
+    float3 worldPos,
+    float3 normal,
+    float3 viewDir,
+    float4 materialColor,
+    bool includeSpecular,
+    float specularPower,
+    Texture2D ShadowMap, SamplerComparisonState ShadowSampler,
+    Texture2D<float2> VShadowMap, SamplerState VShadowSampler)
 {
     float3 lightVec = light.Position - worldPos;
     float distance = length(lightVec);
@@ -682,14 +697,22 @@ float3 CalculateSpotLight(
 
 // Point Light 계산 (Diffuse + Specular with Attenuation and Falloff)
 float3 CalculatePointLight(
-    FPointLightInfo light, float3 worldPos, float3 normal, float3 viewDir, float4 materialColor, bool includeSpecular, float specularPower,
-    TextureCubeArray ShadowMapCube, SamplerComparisonState ShadowSampler)
+    FPointLightInfo light,
+    float3 worldPos,
+    float3 normal,
+    float3 viewDir,
+    float4 materialColor,
+    bool includeSpecular,
+    float specularPower,
+    TextureCubeArray ShadowMapCube,
+    SamplerComparisonState ShadowSampler)
 {
     float3 lightVec = light.Position - worldPos;
     float distance = length(lightVec);
 
     // epsilon으로 0으로 나누기 방지
-    distance = max(distance, 0.0001f);
+    distance = max(distance,
+        0.0001f);
     float3 lightDir = lightVec / distance;
 
     // Falloff 모드에 따라 감쇠 계산
