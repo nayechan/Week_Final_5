@@ -16,7 +16,8 @@ public:
 
     void RegisterComponentProxy(sol::state& Lua);
     void ExposeAllComponentsToLua();
-    
+    void ExposeComponentFunctions();
+
     bool LoadScriptInto(sol::environment& Env, const FString& Path);
     
     // Env 테이블에서 Name(함수 이름) 키를 조회해서 함수로 캐스팅

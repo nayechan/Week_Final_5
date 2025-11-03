@@ -36,7 +36,6 @@ public:
 
 	UMaterialInstanceDynamic* CreateAndSetMaterialInstanceDynamic(uint32 ElementIndex);
 
-	void SetMaterialByUser(const uint32 InMaterialSlotIndex, const FString& InMaterialName);
 	const TArray<UMaterialInterface*> GetMaterialSlots() const { return MaterialSlots; }
 
 	void SetMaterialTextureByUser(const uint32 InMaterialSlotIndex, EMaterialTextureSlot Slot, UTexture* Texture);

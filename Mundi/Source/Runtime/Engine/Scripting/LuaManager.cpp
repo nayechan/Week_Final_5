@@ -4,6 +4,7 @@
 #include "ObjectIterator.h"
 #include "CameraActor.h"
 #include "CameraComponent.h"
+#include "StaticMeshComponent.h"
 #include <tuple>
 
 FLuaManager::FLuaManager()
@@ -193,8 +194,24 @@ FLuaManager::FLuaManager()
         "Dot", [](const FVector& a, const FVector& b) { return FVector::Dot(a, b); },
         "Cross", [](const FVector& a, const FVector& b) { return FVector::Cross(a, b); }
     );
+
+    Lua->set_function("Color", sol::overload(
+        []() { return FLinearColor(0.0f, 0.0f, 0.0f, 1.0f); },
+        [](float R, float G, float B) { return FLinearColor(R, G, B, 1.0f); },
+        [](float R, float G, float B, float A) { return FLinearColor(R, G, B, A); }
+    ));
+
+    SharedLib.new_usertype<FLinearColor>("FLinearColor",
+        sol::no_constructor,
+        "R", &FLinearColor::R,
+        "G", &FLinearColor::G,
+        "B", &FLinearColor::B,
+        "A", &FLinearColor::A
+    );
+
     RegisterComponentProxy(*Lua);
     ExposeAllComponentsToLua();
+    ExposeComponentFunctions();
 
     // 위 등록 마친 뒤 fall back 설정 : Shared lib의 fall back은 G
     sol::table MetaTableShared = Lua->create_table();
@@ -236,6 +253,7 @@ struct FBoundClassDesc { // 해당 Class에 있는 Property 목록
 };
 
 static TMap<UClass*, FBoundClassDesc> GBoundClasses;
+static TMap<UClass*, sol::table> GComponentFunctionTables;
 
 struct LuaTypeIO {
     // C++ to Lua
@@ -271,6 +289,20 @@ struct LuaComponentProxy {
     static sol::object Index(sol::this_state Lua, LuaComponentProxy& Self, const char* Key) {
         if (!Self.Instance) return sol::nil;
         
+        // 1. 수동으로 바인딩된 함수가 있는지 GComponentFunctionTables에서 먼저 확인합니다.
+        auto ItFuncTable = GComponentFunctionTables.find(Self.Class);
+        if (ItFuncTable != GComponentFunctionTables.end())
+        {
+            sol::table FuncTable = ItFuncTable->second;
+            sol::object Func = FuncTable.get<sol::object>(Key); // 키로 함수를 조회
+
+            if (Func.valid() && Func.get_type() == sol::type::function)
+            {
+                // 함수가 존재하면 즉시 반환합니다.
+                return Func;
+            }
+        }
+
         auto It = GBoundClasses.find(Self.Class);
         if (It == GBoundClasses.end()) return sol::nil;
 
@@ -392,6 +424,46 @@ void FLuaManager::ExposeAllComponentsToLua()
             return MakeCompProxy(*Lua, Comp, Class);
         }
     );
+}
+
+// 특정 컴포넌트의 함수 추가 바인딩
+void FLuaManager::ExposeComponentFunctions()
+{
+    UClass* StaticMeshCompClass = UClass::FindClass("UStaticMeshComponent");
+    if (StaticMeshCompClass)
+    {
+        // UStaticMeshComponent용 함수 테이블을 가져오거나 생성합니다.
+        sol::table FuncTable = GComponentFunctionTables.count(StaticMeshCompClass)
+            ? GComponentFunctionTables[StaticMeshCompClass] // 이미 있다면 가져오기
+            : Lua->create_table();                          // 없다면 새로 생성
+
+        // SetMaterialColorByUser 바인딩
+        FuncTable.set_function("SetColor",
+            [](LuaComponentProxy& Proxy, uint32 SlotIndex, const FString& ParamName, const FLinearColor& Value)
+            {
+                if (Proxy.Instance && Proxy.Class == UClass::FindClass("UStaticMeshComponent"))
+                {
+                    auto* Comp = static_cast<UStaticMeshComponent*>(Proxy.Instance);
+                    Comp->SetMaterialColorByUser(SlotIndex, ParamName, Value);
+                }
+            }
+        );
+
+        // SetMaterialScalarByUser 바인딩
+        FuncTable.set_function("SetScalar",
+            [](LuaComponentProxy& Proxy, uint32 SlotIndex, const FString& ParamName, float Value)
+            {
+                if (Proxy.Instance && Proxy.Class == UClass::FindClass("UStaticMeshComponent"))
+                {
+                    auto* Comp = static_cast<UStaticMeshComponent*>(Proxy.Instance);
+                    Comp->SetMaterialScalarByUser(SlotIndex, ParamName, Value);
+                }
+            }
+        );
+
+        // 전역 맵에 테이블 등록 (필수)
+        GComponentFunctionTables[StaticMeshCompClass] = FuncTable;
+    }
 }
 
 bool FLuaManager::LoadScriptInto(sol::environment& Env, const FString& Path) {

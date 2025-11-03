@@ -432,7 +432,7 @@ gmae.ini
 ClassDiagram.cd
 editor.ini
 WARP.md
-enc_temp_forlder/**
+enc_temp_forlder/*
 
 # JetBrains IDEs' User-specific stuff
 .idea/
