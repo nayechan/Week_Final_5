@@ -1,6 +1,6 @@
 {
   "Actors" : {
-    "1002" : {
+    "1504" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -8,7 +8,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1005,
+          "Id" : 1507,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -38,15 +38,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1005,
+      "RootComponentId" : 1507,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1007" : {
+    "1509" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1009,
+          "Id" : 1511,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -82,8 +82,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1012,
-          "ParentId" : 1009,
+          "Id" : 1514,
+          "ParentId" : 1511,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -97,15 +97,15 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1009,
+      "RootComponentId" : 1511,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1013" : {
+    "1515" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1015,
+          "Id" : 1517,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -135,9 +135,14 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }, {
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1017,
-          "ParentId" : 1015,
+          "Id" : 1519,
+          "ParentId" : 1517,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -150,18 +155,13 @@
           "bShapeHiddenInGame" : true,
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 1015,
+      "RootComponentId" : 1517,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1019" : {
+    "1521" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -169,7 +169,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1021,
+          "Id" : 1524,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -199,31 +199,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1021,
+      "RootComponentId" : 1524,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1024" : {
+    "1526" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1028,
-          "ParentId" : 1026,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 1026,
+          "Id" : 1529,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -258,31 +242,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1026,
+      "RootComponentId" : 1529,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1030" : {
+    "1532" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1034,
-          "ParentId" : 1032,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 1032,
+          "Id" : 1535,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -317,20 +285,36 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1032,
+      "RootComponentId" : 1535,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1036" : {
+    "1538" : {
       "Name" : "스태틱 메시_0",
       "OwnedComponents" : [{
+          "BoxExtent" : [0.904499, 0.908982, 0.680975],
+          "Id" : 1542,
+          "ParentId" : 1541,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "UBoxComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bShapeHiddenInGame" : true,
+          "bShapeIsVisible" : true,
+          "bTickEnabled" : true
+        }, {
           "ScriptFilePath" : "Data/Scripts/SHC.lua",
           "Type" : "ULuaScriptComponent",
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1039,
+          "Id" : 1541,
           "MaterialSlots" : [{
               "AssetPath" : "Material_0.001",
               "Type" : "UMaterial"
@@ -347,32 +331,16 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "BoxExtent" : [0.904499, 0.908982, 0.680975],
-          "Id" : 1040,
-          "ParentId" : 1039,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 1039,
+      "RootComponentId" : 1541,
       "Tag" : "",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1041" : {
+    "1543" : {
       "Name" : "스태틱 메시_0",
       "OwnedComponents" : [{
-          "Id" : 1043,
+          "Id" : 1545,
           "MaterialSlots" : [{
               "AssetPath" : "Material_0",
               "Type" : "UMaterial"
@@ -390,12 +358,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1044,
+          "Id" : 1546,
           "MaterialSlots" : [{
               "AssetPath" : "texture",
               "Type" : "UMaterial"
             }],
-          "ParentId" : 1043,
+          "ParentId" : 1545,
           "RelativeLocation" : [0.500000, 1.500000, -0.700000],
           "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -408,12 +376,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1043,
+      "RootComponentId" : 1545,
       "Tag" : "",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1045" : {
+    "1547" : {
       "Name" : "Directional Light Actor",
       "OwnedComponents" : [{
           "CascadedAreaColorDebugValue" : 0.000000,
@@ -421,7 +389,7 @@
           "CascadedCount" : 4,
           "CascadedLinearBlendingValue" : 0.500000,
           "CascadedOverlapValue" : 0.200000,
-          "Id" : 1047,
+          "Id" : 1549,
           "Intensity" : 1.000000,
           "LightColor" : [0.772201, 0.354795, 0.722241, 1.000000],
           "ParentId" : 0,
@@ -442,15 +410,15 @@
           "bOverrideCameraLightPerspective" : false,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1047,
+      "RootComponentId" : 1549,
       "Tag" : "",
       "Type" : "ADirectionalLightActor",
       "bActorHiddenInGame" : false
     },
-    "1048" : {
+    "1550" : {
       "Name" : "Ambient Light Actor",
       "OwnedComponents" : [{
-          "Id" : 1050,
+          "Id" : 1552,
           "Intensity" : 0.100000,
           "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
           "ParentId" : 0,
@@ -469,20 +437,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1050,
+      "RootComponentId" : 1552,
       "Tag" : "",
       "Type" : "AAmbientLightActor",
       "bActorHiddenInGame" : false
     },
-    "1051" : {
+    "1553" : {
       "Name" : "액터_1",
       "OwnedComponents" : [{
-          "ScriptFilePath" : "Data/Scripts/TileMap.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 1053,
+          "Id" : 1555,
           "ParentId" : 0,
           "RelativeLocation" : [-8.607930, 11.745107, 5.080332],
           "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
@@ -492,13 +455,18 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
+        }, {
+          "ScriptFilePath" : "Data/Scripts/TileMap.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
         }],
-      "RootComponentId" : 1053,
+      "RootComponentId" : 1555,
       "Tag" : "",
       "Type" : "AEmptyActor",
       "bActorHiddenInGame" : false
     },
-    "1054" : {
+    "1556" : {
       "Name" : "액터_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/FireballManager.lua",
@@ -506,7 +474,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1056,
+          "Id" : 1558,
           "ParentId" : 0,
           "RelativeLocation" : [-2.263638, 1.998549, 0.053925],
           "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
@@ -517,15 +485,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1056,
+      "RootComponentId" : 1558,
       "Tag" : "",
       "Type" : "AEmptyActor",
       "bActorHiddenInGame" : false
     },
-    "1057" : {
+    "1559" : {
       "Name" : "스태틱 메시_0",
       "OwnedComponents" : [{
-          "Id" : 1059,
+          "Id" : 1561,
           "MaterialSlots" : [{
               "AssetPath" : "terrain_mtl",
               "Type" : "UMaterial"
@@ -543,31 +511,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1059,
+      "RootComponentId" : 1561,
       "Tag" : "",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1060" : {
+    "1562" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1065,
-          "ParentId" : 1062,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 1062,
+          "Id" : 1565,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -602,15 +554,20 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1062,
+      "RootComponentId" : 1565,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1066" : {
+    "1568" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1068,
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 1570,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -640,14 +597,9 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }, {
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1071,
-          "ParentId" : 1068,
+          "Id" : 1573,
+          "ParentId" : 1570,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -661,15 +613,15 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1068,
+      "RootComponentId" : 1570,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1072" : {
+    "1574" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1074,
+          "Id" : 1576,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -699,14 +651,9 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }, {
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1077,
-          "ParentId" : 1074,
+          "Id" : 1579,
+          "ParentId" : 1576,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -719,16 +666,21 @@
           "bShapeHiddenInGame" : true,
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
+        }, {
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
         }],
-      "RootComponentId" : 1074,
+      "RootComponentId" : 1576,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1078" : {
+    "1580" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1080,
+          "Id" : 1582,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -763,36 +715,20 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1080,
+      "RootComponentId" : 1582,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1083" : {
+    "1585" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1088,
-          "ParentId" : 1086,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
           "Type" : "ULuaScriptComponent",
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1086,
+          "Id" : 1589,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -822,12 +758,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1086,
+      "RootComponentId" : 1589,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1089" : {
+    "1591" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -835,7 +771,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1092,
+          "Id" : 1594,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -866,8 +802,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1094,
-          "ParentId" : 1092,
+          "Id" : 1596,
+          "ParentId" : 1594,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -881,15 +817,15 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1092,
+      "RootComponentId" : 1594,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1095" : {
+    "1597" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1097,
+          "Id" : 1599,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -924,12 +860,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1097,
+      "RootComponentId" : 1599,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1100" : {
+    "1602" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -937,7 +873,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1103,
+          "Id" : 1605,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -967,15 +903,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1103,
+      "RootComponentId" : 1605,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1105" : {
+    "1607" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1107,
+          "Id" : 1609,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1010,15 +946,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1107,
+      "RootComponentId" : 1609,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1110" : {
+    "1612" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1112,
+          "Id" : 1614,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1053,15 +989,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1112,
+      "RootComponentId" : 1614,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1115" : {
+    "1617" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1117,
+          "Id" : 1619,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1096,12 +1032,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1117,
+      "RootComponentId" : 1619,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1120" : {
+    "1622" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -1109,7 +1045,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1123,
+          "Id" : 1625,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1139,15 +1075,31 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1123,
+      "RootComponentId" : 1625,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1125" : {
+    "1627" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1127,
+          "BoxExtent" : [1.000000, 1.000000, 1.000000],
+          "Id" : 1631,
+          "ParentId" : 1629,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "UBoxComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bShapeHiddenInGame" : true,
+          "bShapeIsVisible" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 1629,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1177,9 +1129,27 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }, {
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 1629,
+      "Tag" : "Tile",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false
+    },
+    "1633" : {
+      "Name" : "AStaticMeshActor_0",
+      "OwnedComponents" : [{
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1129,
-          "ParentId" : 1127,
+          "Id" : 1638,
+          "ParentId" : 1636,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -1193,25 +1163,7 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }, {
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }],
-      "RootComponentId" : 1127,
-      "Tag" : "Tile",
-      "Type" : "AStaticMeshActor",
-      "bActorHiddenInGame" : false
-    },
-    "1131" : {
-      "Name" : "AStaticMeshActor_0",
-      "OwnedComponents" : [{
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 1134,
+          "Id" : 1636,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1240,32 +1192,16 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1136,
-          "ParentId" : 1134,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 1134,
+      "RootComponentId" : 1636,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1137" : {
+    "1639" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1139,
+          "Id" : 1641,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1296,8 +1232,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1141,
-          "ParentId" : 1139,
+          "Id" : 1643,
+          "ParentId" : 1641,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -1316,15 +1252,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1139,
+      "RootComponentId" : 1641,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1143" : {
+    "1645" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1145,
+          "Id" : 1647,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1355,8 +1291,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1147,
-          "ParentId" : 1145,
+          "Id" : 1649,
+          "ParentId" : 1647,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -1375,15 +1311,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1145,
+      "RootComponentId" : 1647,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1149" : {
+    "1651" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1151,
+          "Id" : 1653,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1418,15 +1354,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1151,
+      "RootComponentId" : 1653,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1154" : {
+    "1656" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1156,
+          "Id" : 1658,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1461,20 +1397,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1156,
+      "RootComponentId" : 1658,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1159" : {
+    "1661" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 1162,
+          "Id" : 1664,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1503,13 +1434,18 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
+        }, {
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
         }],
-      "RootComponentId" : 1162,
+      "RootComponentId" : 1664,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1164" : {
+    "1666" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -1517,7 +1453,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1167,
+          "Id" : 1669,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1547,15 +1483,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1167,
+      "RootComponentId" : 1669,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1169" : {
+    "1671" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1171,
+          "Id" : 1673,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1590,15 +1526,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1171,
+      "RootComponentId" : 1673,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1174" : {
+    "1676" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1176,
+          "Id" : 1678,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1633,15 +1569,31 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1176,
+      "RootComponentId" : 1678,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1179" : {
+    "1681" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1181,
+          "BoxExtent" : [1.000000, 1.000000, 1.000000],
+          "Id" : 1686,
+          "ParentId" : 1683,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "UBoxComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bShapeHiddenInGame" : true,
+          "bShapeIsVisible" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 1683,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1675,53 +1627,21 @@
           "Type" : "ULuaScriptComponent",
           "bIsActive" : true,
           "bTickEnabled" : true
-        }, {
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1183,
-          "ParentId" : 1181,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 1181,
+      "RootComponentId" : 1683,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1185" : {
+    "1687" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1190,
-          "ParentId" : 1188,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
           "Type" : "ULuaScriptComponent",
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1188,
+          "Id" : 1691,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1751,15 +1671,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1188,
+      "RootComponentId" : 1691,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1191" : {
+    "1693" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1193,
+          "Id" : 1695,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1794,15 +1714,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1193,
+      "RootComponentId" : 1695,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1196" : {
+    "1698" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1198,
+          "Id" : 1700,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1837,12 +1757,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1198,
+      "RootComponentId" : 1700,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1201" : {
+    "1703" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -1850,7 +1770,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1204,
+          "Id" : 1706,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1880,20 +1800,36 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1204,
+      "RootComponentId" : 1706,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1206" : {
+    "1708" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
+          "BoxExtent" : [1.000000, 1.000000, 1.000000],
+          "Id" : 1713,
+          "ParentId" : 1711,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "UBoxComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bShapeHiddenInGame" : true,
+          "bShapeIsVisible" : true,
+          "bTickEnabled" : true
+        }, {
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
           "Type" : "ULuaScriptComponent",
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1209,
+          "Id" : 1711,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1922,32 +1858,16 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1211,
-          "ParentId" : 1209,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 1209,
+      "RootComponentId" : 1711,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1212" : {
+    "1714" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1214,
+          "Id" : 1716,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -1982,15 +1902,31 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1214,
+      "RootComponentId" : 1716,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1217" : {
+    "1719" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1219,
+          "BoxExtent" : [1.000000, 1.000000, 1.000000],
+          "Id" : 1724,
+          "ParentId" : 1721,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "UBoxComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bShapeHiddenInGame" : true,
+          "bShapeIsVisible" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 1721,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2024,32 +1960,16 @@
           "Type" : "ULuaScriptComponent",
           "bIsActive" : true,
           "bTickEnabled" : true
-        }, {
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1222,
-          "ParentId" : 1219,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 1219,
+      "RootComponentId" : 1721,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1223" : {
+    "1725" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1225,
+          "Id" : 1727,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2080,8 +2000,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1227,
-          "ParentId" : 1225,
+          "Id" : 1729,
+          "ParentId" : 1727,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -2100,15 +2020,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1225,
+      "RootComponentId" : 1727,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1229" : {
+    "1731" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1231,
+          "Id" : 1733,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2139,8 +2059,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1234,
-          "ParentId" : 1231,
+          "Id" : 1735,
+          "ParentId" : 1733,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -2159,12 +2079,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1231,
+      "RootComponentId" : 1733,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1235" : {
+    "1737" : {
       "Name" : "하이트 포그 액터_0",
       "OwnedComponents" : [{
           "FogCutoffDistance" : 2800.000000,
@@ -2173,7 +2093,7 @@
           "FogInscatteringColor" : [0.806950, 0.227441, 0.227441, 1.000000],
           "FogMaxOpacity" : 0.440000,
           "HeightFogShader" : "Shaders/PostProcess/HeightFog_PS.hlsl",
-          "Id" : 1238,
+          "Id" : 1739,
           "ParentId" : 0,
           "RelativeLocation" : [-3.786875, 7.579581, -335.216003],
           "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
@@ -2185,15 +2105,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1238,
+      "RootComponentId" : 1739,
       "Tag" : "",
       "Type" : "AHeightFogActor",
       "bActorHiddenInGame" : false
     },
-    "1239" : {
+    "1740" : {
       "Name" : "스태틱 메시_0",
       "OwnedComponents" : [{
-          "Id" : 1242,
+          "Id" : 1742,
           "MaterialSlots" : [{
               "AssetPath" : "texture",
               "Type" : "UMaterial"
@@ -2216,31 +2136,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1242,
+      "RootComponentId" : 1742,
       "Tag" : "",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1243" : {
+    "1744" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1247,
-          "ParentId" : 1245,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 1245,
+          "Id" : 1747,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2275,15 +2179,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1245,
+      "RootComponentId" : 1747,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1249" : {
+    "1750" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1251,
+          "Id" : 1752,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2318,15 +2222,20 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1251,
+      "RootComponentId" : 1752,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1254" : {
+    "1755" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1256,
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 1757,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2357,8 +2266,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1258,
-          "ParentId" : 1256,
+          "Id" : 1759,
+          "ParentId" : 1757,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -2371,21 +2280,21 @@
           "bShapeHiddenInGame" : true,
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 1256,
+      "RootComponentId" : 1757,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1260" : {
+    "1761" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1262,
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 1763,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2415,14 +2324,9 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }, {
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1265,
-          "ParentId" : 1262,
+          "Id" : 1766,
+          "ParentId" : 1763,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -2436,15 +2340,15 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1262,
+      "RootComponentId" : 1763,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1266" : {
+    "1767" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1268,
+          "Id" : 1769,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2479,12 +2383,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1268,
+      "RootComponentId" : 1769,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1271" : {
+    "1772" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -2492,7 +2396,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1274,
+          "Id" : 1775,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2522,15 +2426,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1274,
+      "RootComponentId" : 1775,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1276" : {
+    "1777" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1278,
+          "Id" : 1779,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2561,8 +2465,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1280,
-          "ParentId" : 1278,
+          "Id" : 1781,
+          "ParentId" : 1779,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -2581,15 +2485,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1278,
+      "RootComponentId" : 1779,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1282" : {
+    "1783" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1285,
+          "Id" : 1785,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2624,12 +2528,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1285,
+      "RootComponentId" : 1785,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1288" : {
+    "1788" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -2637,7 +2541,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1291,
+          "Id" : 1791,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2667,15 +2571,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1291,
+      "RootComponentId" : 1791,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1294" : {
+    "1793" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1296,
+          "Id" : 1795,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2710,12 +2614,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1296,
+      "RootComponentId" : 1795,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1299" : {
+    "1798" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -2723,7 +2627,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1302,
+          "Id" : 1801,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2753,20 +2657,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1302,
+      "RootComponentId" : 1801,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1304" : {
+    "1803" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 1307,
+          "Id" : 1806,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2796,9 +2695,14 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }, {
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1309,
-          "ParentId" : 1307,
+          "Id" : 1808,
+          "ParentId" : 1806,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -2812,15 +2716,15 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1307,
+      "RootComponentId" : 1806,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1310" : {
+    "1809" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1312,
+          "Id" : 1811,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2856,8 +2760,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1314,
-          "ParentId" : 1312,
+          "Id" : 1814,
+          "ParentId" : 1811,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -2871,12 +2775,12 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1312,
+      "RootComponentId" : 1811,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1316" : {
+    "1815" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -2884,7 +2788,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1319,
+          "Id" : 1818,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2914,12 +2818,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1319,
+      "RootComponentId" : 1818,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1321" : {
+    "1820" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -2927,7 +2831,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1324,
+          "Id" : 1823,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -2957,12 +2861,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1324,
+      "RootComponentId" : 1823,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1326" : {
+    "1825" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -2970,7 +2874,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1330,
+          "Id" : 1828,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3000,15 +2904,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1330,
+      "RootComponentId" : 1828,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1332" : {
+    "1830" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1334,
+          "Id" : 1832,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3043,12 +2947,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1334,
+      "RootComponentId" : 1832,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1337" : {
+    "1835" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -3056,7 +2960,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1340,
+          "Id" : 1838,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3086,12 +2990,12 @@
           "bIsVisible" : false,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1340,
+      "RootComponentId" : 1838,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1342" : {
+    "1840" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -3099,7 +3003,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1345,
+          "Id" : 1843,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3130,8 +3034,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1347,
-          "ParentId" : 1345,
+          "Id" : 1845,
+          "ParentId" : 1843,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -3145,15 +3049,15 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1345,
+      "RootComponentId" : 1843,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1348" : {
+    "1846" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1351,
+          "Id" : 1848,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3188,15 +3092,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1351,
+      "RootComponentId" : 1848,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1354" : {
+    "1851" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1356,
+          "Id" : 1853,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3231,15 +3135,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1356,
+      "RootComponentId" : 1853,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1359" : {
+    "1856" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1361,
+          "Id" : 1858,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3274,15 +3178,20 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1361,
+      "RootComponentId" : 1858,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1364" : {
+    "1861" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1366,
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 1863,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3313,8 +3222,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1368,
-          "ParentId" : 1366,
+          "Id" : 1865,
+          "ParentId" : 1863,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -3327,21 +3236,16 @@
           "bShapeHiddenInGame" : true,
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 1366,
+      "RootComponentId" : 1863,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1370" : {
+    "1867" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1372,
+          "Id" : 1869,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3377,8 +3281,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1375,
-          "ParentId" : 1372,
+          "Id" : 1872,
+          "ParentId" : 1869,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -3392,12 +3296,12 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1372,
+      "RootComponentId" : 1869,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1376" : {
+    "1873" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -3405,7 +3309,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1379,
+          "Id" : 1876,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3435,12 +3339,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1379,
+      "RootComponentId" : 1876,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1381" : {
+    "1878" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -3448,7 +3352,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1384,
+          "Id" : 1881,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3478,15 +3382,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1384,
+      "RootComponentId" : 1881,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1386" : {
+    "1883" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1388,
+          "Id" : 1885,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3517,8 +3421,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1390,
-          "ParentId" : 1388,
+          "Id" : 1887,
+          "ParentId" : 1885,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -3537,15 +3441,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1388,
+      "RootComponentId" : 1885,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1392" : {
+    "1889" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1394,
+          "Id" : 1891,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3580,12 +3484,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1394,
+      "RootComponentId" : 1891,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1397" : {
+    "1894" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -3593,7 +3497,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1400,
+          "Id" : 1897,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3624,8 +3528,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1402,
-          "ParentId" : 1400,
+          "Id" : 1899,
+          "ParentId" : 1897,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -3639,20 +3543,15 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1400,
+      "RootComponentId" : 1897,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1403" : {
+    "1900" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 1407,
+          "Id" : 1903,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3681,13 +3580,18 @@
           "bIsActive" : true,
           "bIsVisible" : false,
           "bTickEnabled" : true
+        }, {
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
         }],
-      "RootComponentId" : 1407,
+      "RootComponentId" : 1903,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1409" : {
+    "1905" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -3695,7 +3599,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1412,
+          "Id" : 1908,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3725,15 +3629,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1412,
+      "RootComponentId" : 1908,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1414" : {
+    "1910" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1416,
+          "Id" : 1912,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3764,8 +3668,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1418,
-          "ParentId" : 1416,
+          "Id" : 1914,
+          "ParentId" : 1912,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -3784,31 +3688,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1416,
+      "RootComponentId" : 1912,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1420" : {
+    "1916" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1424,
-          "ParentId" : 1422,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 1422,
+          "Id" : 1919,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3843,12 +3731,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1422,
+      "RootComponentId" : 1919,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1426" : {
+    "1922" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -3856,7 +3744,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1429,
+          "Id" : 1925,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3887,8 +3775,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1431,
-          "ParentId" : 1429,
+          "Id" : 1927,
+          "ParentId" : 1925,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -3902,15 +3790,15 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1429,
+      "RootComponentId" : 1925,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1432" : {
+    "1928" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1434,
+          "Id" : 1930,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3945,12 +3833,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1434,
+      "RootComponentId" : 1930,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1437" : {
+    "1933" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -3958,7 +3846,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1440,
+          "Id" : 1936,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -3988,15 +3876,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1440,
+      "RootComponentId" : 1936,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1442" : {
+    "1938" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 1444,
+          "Id" : 1940,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4027,8 +3915,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1446,
-          "ParentId" : 1444,
+          "Id" : 1942,
+          "ParentId" : 1940,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -4047,12 +3935,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1444,
+      "RootComponentId" : 1940,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1448" : {
+    "1944" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -4060,7 +3948,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1451,
+          "Id" : 1947,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4090,12 +3978,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1451,
+      "RootComponentId" : 1947,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1453" : {
+    "1949" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -4103,7 +3991,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1457,
+          "Id" : 1952,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4133,12 +4021,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1457,
+      "RootComponentId" : 1952,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1459" : {
+    "1954" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -4146,7 +4034,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 1462,
+          "Id" : 1957,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4176,62 +4064,15 @@
           "bIsVisible" : false,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 1462,
+      "RootComponentId" : 1957,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "1477" : {
-      "Name" : "스태틱 메시_0",
-      "OwnedComponents" : [{
-          "BoxExtent" : [0.500000, 0.500000, 0.500000],
-          "Id" : 1480,
-          "ParentId" : 1479,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 1479,
-          "MaterialSlots" : [{
-              "AssetPath" : "texture",
-              "Type" : "UMaterial"
-            }],
-          "ParentId" : 0,
-          "RelativeLocation" : [0.000000, 0.000000, 2.000000],
-          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "StaticMesh" : "Data/cube-tex.obj",
-          "Type" : "UStaticMeshComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "ScriptFilePath" : "Data/Scripts/Player.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }],
-      "RootComponentId" : 1479,
-      "Tag" : "player",
-      "Type" : "AStaticMeshActor",
-      "bActorHiddenInGame" : false
-    },
-    "761" : {
+    "1964" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 763,
+          "Id" : 1966,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4262,8 +4103,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 765,
-          "ParentId" : 763,
+          "Id" : 1968,
+          "ParentId" : 1966,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -4282,12 +4123,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 763,
+      "RootComponentId" : 1966,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "767" : {
+    "1970" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -4295,7 +4136,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 770,
+          "Id" : 1973,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4325,15 +4166,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 770,
+      "RootComponentId" : 1973,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "772" : {
+    "1975" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 775,
+          "Id" : 1977,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4368,15 +4209,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 775,
+      "RootComponentId" : 1977,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "778" : {
+    "1980" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 780,
+          "Id" : 1982,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4411,15 +4252,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 780,
+      "RootComponentId" : 1982,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "783" : {
+    "1985" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 785,
+          "Id" : 1987,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4454,31 +4295,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 785,
+      "RootComponentId" : 1987,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "788" : {
+    "1990" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 792,
-          "ParentId" : 790,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 790,
+          "Id" : 1993,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4513,15 +4338,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 790,
+      "RootComponentId" : 1993,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "794" : {
+    "1996" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 796,
+          "Id" : 1998,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4552,8 +4377,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 799,
-          "ParentId" : 796,
+          "Id" : 2000,
+          "ParentId" : 1998,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -4572,15 +4397,31 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 796,
+      "RootComponentId" : 1998,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "800" : {
+    "2002" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 802,
+          "BoxExtent" : [1.000000, 1.000000, 1.000000],
+          "Id" : 2007,
+          "ParentId" : 2004,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "UBoxComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bShapeHiddenInGame" : true,
+          "bShapeIsVisible" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 2004,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4614,32 +4455,21 @@
           "Type" : "ULuaScriptComponent",
           "bIsActive" : true,
           "bTickEnabled" : true
-        }, {
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 805,
-          "ParentId" : 802,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 802,
+      "RootComponentId" : 2004,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "806" : {
+    "2008" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 809,
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 2010,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4668,21 +4498,16 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 809,
+      "RootComponentId" : 2010,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "812" : {
+    "2013" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 814,
+          "Id" : 2015,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4713,8 +4538,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 816,
-          "ParentId" : 814,
+          "Id" : 2017,
+          "ParentId" : 2015,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -4733,36 +4558,20 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 814,
+      "RootComponentId" : 2015,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "818" : {
+    "2019" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 823,
-          "ParentId" : 821,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
           "Type" : "ULuaScriptComponent",
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 821,
+          "Id" : 2023,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4792,12 +4601,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 821,
+      "RootComponentId" : 2023,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "824" : {
+    "2025" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -4805,7 +4614,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 827,
+          "Id" : 2028,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4836,8 +4645,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 829,
-          "ParentId" : 827,
+          "Id" : 2030,
+          "ParentId" : 2028,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -4851,15 +4660,15 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 827,
+      "RootComponentId" : 2028,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "830" : {
+    "2031" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 832,
+          "Id" : 2033,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4890,8 +4699,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 834,
-          "ParentId" : 832,
+          "Id" : 2035,
+          "ParentId" : 2033,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -4910,12 +4719,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 832,
+      "RootComponentId" : 2033,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "836" : {
+    "2037" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -4923,7 +4732,23 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 838,
+          "BoxExtent" : [1.000000, 1.000000, 1.000000],
+          "Id" : 2042,
+          "ParentId" : 2040,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "UBoxComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bShapeHiddenInGame" : true,
+          "bShapeIsVisible" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 2040,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -4952,32 +4777,21 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 840,
-          "ParentId" : 838,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 838,
+      "RootComponentId" : 2040,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "842" : {
+    "2043" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 844,
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 2045,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5008,8 +4822,37 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 846,
-          "ParentId" : 844,
+          "Id" : 2047,
+          "ParentId" : 2045,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "UBoxComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bShapeHiddenInGame" : true,
+          "bShapeIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 2045,
+      "Tag" : "Tile",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false
+    },
+    "2049" : {
+      "Name" : "AStaticMeshActor_0",
+      "OwnedComponents" : [{
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "BoxExtent" : [1.000000, 1.000000, 1.000000],
+          "Id" : 2054,
+          "ParentId" : 2052,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -5023,25 +4866,7 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }, {
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }],
-      "RootComponentId" : 844,
-      "Tag" : "Tile",
-      "Type" : "AStaticMeshActor",
-      "bActorHiddenInGame" : false
-    },
-    "848" : {
-      "Name" : "AStaticMeshActor_0",
-      "OwnedComponents" : [{
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 851,
+          "Id" : 2052,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5070,32 +4895,16 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 853,
-          "ParentId" : 851,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 851,
+      "RootComponentId" : 2052,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "854" : {
+    "2055" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 856,
+          "Id" : 2057,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5130,12 +4939,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 856,
+      "RootComponentId" : 2057,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "859" : {
+    "2060" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -5143,7 +4952,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 862,
+          "Id" : 2063,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5173,31 +4982,20 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 862,
+      "RootComponentId" : 2063,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "864" : {
+    "2065" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 869,
-          "ParentId" : 866,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
           "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 866,
+          "Id" : 2068,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5226,21 +5024,16 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 866,
+      "RootComponentId" : 2068,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "870" : {
+    "2071" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 872,
+          "Id" : 2073,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5275,12 +5068,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 872,
+      "RootComponentId" : 2073,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "875" : {
+    "2076" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -5288,7 +5081,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 878,
+          "Id" : 2079,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5318,12 +5111,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 878,
+      "RootComponentId" : 2079,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "880" : {
+    "2081" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -5331,7 +5124,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 882,
+          "Id" : 2084,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5362,8 +5155,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 885,
-          "ParentId" : 882,
+          "Id" : 2086,
+          "ParentId" : 2084,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -5377,15 +5170,20 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 882,
+      "RootComponentId" : 2084,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "886" : {
+    "2087" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 888,
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 2089,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5414,21 +5212,16 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 888,
+      "RootComponentId" : 2089,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "891" : {
+    "2092" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 893,
+          "Id" : 2094,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5464,8 +5257,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 896,
-          "ParentId" : 893,
+          "Id" : 2097,
+          "ParentId" : 2094,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -5479,12 +5272,12 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 893,
+      "RootComponentId" : 2094,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "897" : {
+    "2098" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -5492,7 +5285,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 900,
+          "Id" : 2101,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5522,15 +5315,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 900,
+      "RootComponentId" : 2101,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "902" : {
+    "2103" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 904,
+          "Id" : 2105,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5561,8 +5354,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 906,
-          "ParentId" : 904,
+          "Id" : 2107,
+          "ParentId" : 2105,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -5581,15 +5374,15 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 904,
+      "RootComponentId" : 2105,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "908" : {
+    "2109" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 910,
+          "Id" : 2111,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5624,12 +5417,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 910,
+      "RootComponentId" : 2111,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "913" : {
+    "2114" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -5637,23 +5430,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 918,
-          "ParentId" : 916,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 916,
+          "Id" : 2118,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5683,12 +5460,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 916,
+      "RootComponentId" : 2118,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "919" : {
+    "2120" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -5696,7 +5473,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 922,
+          "Id" : 2123,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5726,12 +5503,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 922,
+      "RootComponentId" : 2123,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "924" : {
+    "2125" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -5739,7 +5516,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 928,
+          "Id" : 2128,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5769,15 +5546,31 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 928,
+      "RootComponentId" : 2128,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "930" : {
+    "2130" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 932,
+          "BoxExtent" : [1.000000, 1.000000, 1.000000],
+          "Id" : 2135,
+          "ParentId" : 2132,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "UBoxComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bShapeHiddenInGame" : true,
+          "bShapeIsVisible" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 2132,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5811,29 +5604,13 @@
           "Type" : "ULuaScriptComponent",
           "bIsActive" : true,
           "bTickEnabled" : true
-        }, {
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 935,
-          "ParentId" : 932,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 932,
+      "RootComponentId" : 2132,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "936" : {
+    "2136" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -5841,7 +5618,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 938,
+          "Id" : 2139,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5871,15 +5648,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 938,
+      "RootComponentId" : 2139,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "941" : {
+    "2141" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 943,
+          "Id" : 2143,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5914,15 +5691,20 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 943,
+      "RootComponentId" : 2143,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "946" : {
+    "2146" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 948,
+          "ScriptFilePath" : "Data/Scripts/Tile.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 2148,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5951,21 +5733,16 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "ScriptFilePath" : "Data/Scripts/Tile.lua",
-          "Type" : "ULuaScriptComponent",
-          "bIsActive" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 948,
+      "RootComponentId" : 2148,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "951" : {
+    "2151" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 953,
+          "Id" : 2153,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -5996,8 +5773,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 955,
-          "ParentId" : 953,
+          "Id" : 2155,
+          "ParentId" : 2153,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -6016,12 +5793,12 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 953,
+      "RootComponentId" : 2153,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "957" : {
+    "2157" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -6029,7 +5806,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 960,
+          "Id" : 2160,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -6059,12 +5836,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 960,
+      "RootComponentId" : 2160,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "962" : {
+    "2162" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -6072,7 +5849,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 965,
+          "Id" : 2165,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -6102,12 +5879,12 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 965,
+      "RootComponentId" : 2165,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "967" : {
+    "2167" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -6115,7 +5892,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 969,
+          "Id" : 2170,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -6145,15 +5922,15 @@
           "bIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 969,
+      "RootComponentId" : 2170,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "972" : {
+    "2172" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "Id" : 974,
+          "Id" : 2174,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -6189,8 +5966,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 977,
-          "ParentId" : 974,
+          "Id" : 2177,
+          "ParentId" : 2174,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -6204,12 +5981,12 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 974,
+      "RootComponentId" : 2174,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "978" : {
+    "2178" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -6217,7 +5994,23 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 981,
+          "BoxExtent" : [1.000000, 1.000000, 1.000000],
+          "Id" : 2183,
+          "ParentId" : 2181,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "UBoxComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bShapeHiddenInGame" : true,
+          "bShapeIsVisible" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 2181,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -6246,29 +6039,13 @@
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true
-        }, {
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 983,
-          "ParentId" : 981,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
         }],
-      "RootComponentId" : 981,
+      "RootComponentId" : 2181,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "984" : {
+    "2184" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -6276,7 +6053,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 987,
+          "Id" : 2187,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -6307,8 +6084,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 989,
-          "ParentId" : 987,
+          "Id" : 2189,
+          "ParentId" : 2187,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -6322,12 +6099,12 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 987,
+      "RootComponentId" : 2187,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "990" : {
+    "2190" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "ScriptFilePath" : "Data/Scripts/Tile.lua",
@@ -6335,7 +6112,7 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }, {
-          "Id" : 993,
+          "Id" : 2193,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -6366,8 +6143,8 @@
           "bTickEnabled" : true
         }, {
           "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 995,
-          "ParentId" : 993,
+          "Id" : 2195,
+          "ParentId" : 2193,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -6381,31 +6158,15 @@
           "bShapeIsVisible" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 993,
+      "RootComponentId" : 2193,
       "Tag" : "Tile",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     },
-    "996" : {
+    "2196" : {
       "Name" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
-          "BoxExtent" : [1.000000, 1.000000, 1.000000],
-          "Id" : 1001,
-          "ParentId" : 998,
-          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
-          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
-          "RelativeScale" : [1.000000, 1.000000, 1.000000],
-          "Type" : "UBoxComponent",
-          "bBlockComponent" : false,
-          "bGenerateOverlapEvents" : true,
-          "bHiddenInGame" : false,
-          "bIsActive" : true,
-          "bIsVisible" : true,
-          "bShapeHiddenInGame" : true,
-          "bShapeIsVisible" : true,
-          "bTickEnabled" : true
-        }, {
-          "Id" : 998,
+          "Id" : 2199,
           "MaterialSlots" : [{
               "Overrides" : {
                 "Scalars" : {
@@ -6440,19 +6201,111 @@
           "bIsActive" : true,
           "bTickEnabled" : true
         }],
-      "RootComponentId" : 998,
+      "RootComponentId" : 2199,
       "Tag" : "Tile",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false
+    },
+    "2208" : {
+      "Name" : "AStaticMeshActor_7",
+      "OwnedComponents" : [{
+          "ScriptFilePath" : "Data/Scripts/Player.lua",
+          "Type" : "ULuaScriptComponent",
+          "bIsActive" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 2210,
+          "MaterialSlots" : [{
+              "AssetPath" : "Pantaln",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Piel",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Piel",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Zapatos",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "material",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Faja",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Dientes",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Corbata",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Camisa",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Material.001",
+              "Type" : "UMaterial"
+            }],
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 3.000000],
+          "RelativeRotationEuler" : [-0.586458, 0.005865, 1.190784],
+          "RelativeScale" : [0.300000, 0.300000, 0.300000],
+          "StaticMesh" : "Data/Model/Player.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }, {
+          "Id" : 2211,
+          "MaterialSlots" : [{
+              "AssetPath" : "GatlingGun_Turret_Mat",
+              "Type" : "UMaterial"
+            }],
+          "ParentId" : 2210,
+          "RelativeLocation" : [0.046674, -0.031837, 3.014768],
+          "RelativeRotationEuler" : [8.360693, -0.166903, -90.098228],
+          "RelativeScale" : [0.500000, 0.700000, 0.500000],
+          "StaticMesh" : "Data/Model/Gun.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true
+        }, {
+          "BoxExtent" : [1.107727, 3.415435, 1.661383],
+          "Id" : 2212,
+          "ParentId" : 2210,
+          "RelativeLocation" : [-0.003928, 0.026435, 1.300055],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 0.538478, 1.000000],
+          "Type" : "UBoxComponent",
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bShapeHiddenInGame" : true,
+          "bShapeIsVisible" : true,
+          "bTickEnabled" : true
+        }],
+      "RootComponentId" : 2210,
+      "Tag" : "player",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false
     }
   },
-  "NextUUID" : 2856,
+  "NextUUID" : 3577,
   "PerspectiveCamera" : {
     "FOV" : [60.000000],
     "FarClip" : [1000.000000],
-    "Location" : [14.618919, 10.365681, 11.515418],
+    "Location" : [-9.160849, 4.712612, 5.995653],
     "NearClip" : [0.100000],
-    "Rotation" : [0.000000, 37.446007, -145.807785]
+    "Rotation" : [0.000000, 18.447289, -38.388149]
   },
   "Version" : 1
 }

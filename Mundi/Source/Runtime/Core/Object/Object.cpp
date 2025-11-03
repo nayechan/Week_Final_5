@@ -23,27 +23,51 @@ void UObject::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 		{
 			bool* Value = Prop.GetValuePtr<bool>(this);
 			if (bInIsLoading)
-				FJsonSerializer::ReadBool(InOutHandle, Prop.Name, *Value);
+			{
+				bool ReadValue;
+				if (FJsonSerializer::ReadBool(InOutHandle, Prop.Name, ReadValue))
+				{
+					*Value = ReadValue;
+				}
+			}
 			else
+			{
 				InOutHandle[Prop.Name] = *Value;
+			}
 			break;
 		}
 		case EPropertyType::Int32:
 		{
 			int32* Value = Prop.GetValuePtr<int32>(this);
 			if (bInIsLoading)
-				FJsonSerializer::ReadInt32(InOutHandle, Prop.Name, *Value);
+			{
+				int32 ReadValue;
+				if (FJsonSerializer::ReadInt32(InOutHandle, Prop.Name, ReadValue))
+				{
+					*Value = ReadValue;
+				}
+			}
 			else
+			{
 				InOutHandle[Prop.Name] = *Value;
+			}
 			break;
 		}
 		case EPropertyType::Float:
 		{
 			float* Value = Prop.GetValuePtr<float>(this);
 			if (bInIsLoading)
-				FJsonSerializer::ReadFloat(InOutHandle, Prop.Name, *Value);
+			{
+				float ReadValue;
+				if (FJsonSerializer::ReadFloat(InOutHandle, Prop.Name, ReadValue))
+				{
+					*Value = ReadValue;
+				}
+			}
 			else
+			{
 				InOutHandle[Prop.Name] = *Value;
+			}
 			break;
 		}
 		case EPropertyType::FVector:
@@ -51,24 +75,16 @@ void UObject::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			FVector* Value = Prop.GetValuePtr<FVector>(this);
 			if (bInIsLoading)
 			{
-				// RelativeRotationEuler는 USceneComponent::Serialize()에서 "Rotation" 키로 처리하므로 AutoSerialize에서는 건너뜀
-				// (AutoSerialize가 "RelativeRotationEuler" 키를 찾지 못해 (0,0,0)으로 덮어쓰는 버그 방지)
-				if (strcmp(Prop.Name, "RelativeRotationEuler") == 0)
+				FVector ReadValue;
+				if (FJsonSerializer::ReadVector(InOutHandle, Prop.Name, ReadValue))
 				{
-					// 키가 존재할 때만 읽어들임 (키가 없으면 현재 값 유지)
-					if (InOutHandle.hasKey(Prop.Name))
-					{
-						FJsonSerializer::ReadVector(InOutHandle, Prop.Name, *Value);
-					}
-					// 키가 없으면 아무것도 하지 않음 (USceneComponent::Serialize가 이미 처리함)
-				}
-				else
-				{
-					FJsonSerializer::ReadVector(InOutHandle, Prop.Name, *Value);
+					*Value = ReadValue;
 				}
 			}
 			else
+			{
 				InOutHandle[Prop.Name] = FJsonSerializer::VectorToJson(*Value);
+			}
 			break;
 		}
 		case EPropertyType::FLinearColor:
@@ -76,9 +92,11 @@ void UObject::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			FLinearColor* Value = Prop.GetValuePtr<FLinearColor>(this);
 			if (bInIsLoading)
 			{
-				FVector4 ColorVec;
-				FJsonSerializer::ReadVector4(InOutHandle, Prop.Name, ColorVec);
-				*Value = FLinearColor(ColorVec);
+				FVector4 ReadValue;
+				if (FJsonSerializer::ReadVector4(InOutHandle, Prop.Name, ReadValue))
+				{
+					*Value = FLinearColor(ReadValue);
+				}
 			}
 			else
 			{
@@ -91,9 +109,17 @@ void UObject::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 		{
 			FString* Value = Prop.GetValuePtr<FString>(this);
 			if (bInIsLoading)
-				FJsonSerializer::ReadString(InOutHandle, Prop.Name, *Value);
+			{
+				FString ReadValue;
+				if (FJsonSerializer::ReadString(InOutHandle, Prop.Name, ReadValue))
+				{
+					*Value = ReadValue;
+				}
+			}
 			else
+			{
 				InOutHandle[Prop.Name] = Value->c_str();
+			}
 			break;
 		}
 		case EPropertyType::FName:
@@ -101,9 +127,11 @@ void UObject::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			FName* Value = Prop.GetValuePtr<FName>(this);
 			if (bInIsLoading)
 			{
-				FString NameString;
-				FJsonSerializer::ReadString(InOutHandle, Prop.Name, NameString);
-				*Value = FName(NameString);
+				FString ReadValue;
+				if (FJsonSerializer::ReadString(InOutHandle, Prop.Name, ReadValue))
+				{
+					*Value = FName(ReadValue);
+				}
 			}
 			else
 			{

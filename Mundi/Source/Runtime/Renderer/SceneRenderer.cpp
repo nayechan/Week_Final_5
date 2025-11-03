@@ -588,7 +588,7 @@ void FSceneRenderer::GatherVisibleProxies()
 	// Helper lambda to collect components from an actor
 	auto CollectComponentsFromActor = [&](AActor* Actor, bool bIsEditorActor)
 		{
-			if (!Actor || !Actor->IsActorVisible())
+			if (!Actor || !Actor->IsActorVisible() || !Actor->IsActorActive())
 			{
 				return;
 			}

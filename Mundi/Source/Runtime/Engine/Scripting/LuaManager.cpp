@@ -87,7 +87,8 @@ FLuaManager::FLuaManager()
         "GetMouseDelta", [](UInputManager* Self) {
             const FVector2D Delta = Self->GetMouseDelta();
             return FVector(Delta.X, Delta.Y, 1.0);
-        }
+        },
+        "SetCursorVisible", &UInputManager::SetCursorVisible
     );                
     
     sol::table MouseButton = Lua->create_table("MouseButton");

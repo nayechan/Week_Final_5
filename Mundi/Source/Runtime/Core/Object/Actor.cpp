@@ -14,6 +14,7 @@
 
 IMPLEMENT_CLASS(AActor)
 	BEGIN_PROPERTIES(AActor)
+	ADD_PROPERTY(bool, bActorIsActive, "Actor", true, "액터를 활성 여부를 설정합니다")
 	ADD_PROPERTY(bool, bActorHiddenInGame, "Actor", true, "액터를 게임에서 숨깁니다")
 	ADD_PROPERTY(FString, Tag, "Actor", true, "액터의 태그를 지정합니다.")
 END_PROPERTIES()

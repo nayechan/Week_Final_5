@@ -103,7 +103,9 @@ public:
     
     void SetActorIsVisible(bool bIsActive);
     bool GetActorIsVisible();
-
+    
+    void SetActorActive(bool bIsActive) { bActorIsActive = bIsActive; };
+    bool IsActorActive() { return bActorIsActive; };
 
 
     FMatrix GetWorldMatrix() const;
@@ -184,8 +186,12 @@ protected:
     
     bool bTickInEditor = false; // 에디터에서도 틱 허용
     bool bActorHiddenInGame = false;
+
+    bool bActorIsActive = true;       // 활성 상태(사용자 on/off), tick 적용
+
     // Actor의 Visibility는 루트 컴포넌트로 설정
     bool bHiddenInEditor = false;
+
     bool bPendingDestroy = false;
 
     bool bIsPicked = false;

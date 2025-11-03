@@ -134,7 +134,7 @@ void UWorld::Tick(float DeltaSeconds)
 		TArray<AActor*> LevelActors = Level->GetActors();
 		for (AActor* Actor : LevelActors)
 		{
-			if (Actor && !Actor->IsPendingDestroy())
+			if (Actor && Actor->IsActorActive())
 			{
 				if (Actor->CanEverTick())
 				{
@@ -166,7 +166,8 @@ void UWorld::Tick(float DeltaSeconds)
     {
         for (AActor* Actor : Level->GetActors())
         {
-            if (!Actor) continue;
+            if (!Actor || !Actor->IsActorActive())
+				continue;
             for (USceneComponent* Comp : Actor->GetSceneComponents())
             {
                 if (UShapeComponent* Shape = Cast<UShapeComponent>(Comp))

@@ -1,7 +1,12 @@
 {
   "Name" : "AStaticMeshActor_7",
   "OwnedComponents" : [{
-      "Id" : 1502,
+      "ScriptFilePath" : "Data/Scripts/Player.lua",
+      "Type" : "ULuaScriptComponent",
+      "bIsActive" : true,
+      "bTickEnabled" : true
+    }, {
+      "Id" : 2210,
       "MaterialSlots" : [{
           "AssetPath" : "Pantaln",
           "Type" : "UMaterial"
@@ -34,9 +39,9 @@
           "Type" : "UMaterial"
         }],
       "ParentId" : 0,
-      "RelativeLocation" : [35.818897, 13.748405, 49.021416],
+      "RelativeLocation" : [-3.212486, 0.000000, 3.464196],
       "RelativeRotationEuler" : [-0.586458, 0.005865, 1.190784],
-      "RelativeScale" : [1.000000, 1.000000, 1.000000],
+      "RelativeScale" : [0.300000, 0.300000, 0.300000],
       "StaticMesh" : "Data/Model/Player.obj",
       "Type" : "UStaticMeshComponent",
       "bBlockComponent" : false,
@@ -46,12 +51,12 @@
       "bIsVisible" : true,
       "bTickEnabled" : true
     }, {
-      "Id" : 1504,
+      "Id" : 2211,
       "MaterialSlots" : [{
           "AssetPath" : "GatlingGun_Turret_Mat",
           "Type" : "UMaterial"
         }],
-      "ParentId" : 1502,
+      "ParentId" : 2210,
       "RelativeLocation" : [0.046674, -0.031837, 3.014768],
       "RelativeRotationEuler" : [8.360693, -0.166903, -90.098228],
       "RelativeScale" : [0.500000, 0.700000, 0.500000],
@@ -64,9 +69,9 @@
       "bIsVisible" : true,
       "bTickEnabled" : true
     }, {
-      "BoxExtent" : [1.107727, 1.839137, 1.661383],
-      "Id" : 1503,
-      "ParentId" : 1502,
+      "BoxExtent" : [1.107727, 3.415435, 1.661383],
+      "Id" : 2212,
+      "ParentId" : 2210,
       "RelativeLocation" : [-0.003928, 0.026435, 1.300055],
       "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
       "RelativeScale" : [1.000000, 0.538478, 1.000000],
@@ -80,8 +85,8 @@
       "bShapeIsVisible" : true,
       "bTickEnabled" : true
     }],
-  "RootComponentId" : 1502,
-  "Tag" : "",
+  "RootComponentId" : 2210,
+  "Tag" : "player",
   "Type" : "AStaticMeshActor",
   "bActorHiddenInGame" : false
 }
