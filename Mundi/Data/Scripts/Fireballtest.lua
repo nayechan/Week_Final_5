@@ -17,8 +17,10 @@ function EndPlay()
     
 end
 
-function OnOverlap(OtherActor)
-    --[[Obj:PrintLocation()]]--
+function OnBeginOverlap(OtherActor)
+end
+
+function OnEndOverlap(OtherActor)
 end
 
 function Tick(dt)

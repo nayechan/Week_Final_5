@@ -32,7 +32,11 @@ function EndPlay()
     print("[EndPlay] " .. Obj.UUID)
 end
 
-function OnOverlap(OtherActor)
+
+function OnEndOverlap(OtherActor)
+end
+
+function OnBeginOverlap(OtherActor)
     Obj.Velocity.X = 0
     print("OnOverlap")
 end

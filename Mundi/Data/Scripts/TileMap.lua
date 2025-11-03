@@ -80,7 +80,10 @@ function EndPlay()
     GlobalConfig.RemoveTileByUUID = nil
 end
 
-function OnOverlap(OtherActor)
+function OnBeginOverlap(OtherActor)
+end
+
+function OnEndOverlap(OtherActor)
 end
 
 function Tick(dt)

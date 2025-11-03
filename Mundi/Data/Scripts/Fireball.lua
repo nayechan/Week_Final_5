@@ -9,9 +9,12 @@ function EndPlay()
     print("[EndPlay] " .. Obj.UUID)
 end
 
-function OnOverlap(OtherActor)
-    --[[Obj:PrintLocation()]]--
+function OnBeginOverlap(OtherActor)
 end
+
+function OnEndOverlap(OtherActor)
+end
+
 
 function Tick(dt)
     Obj.Location = Obj.Location + Obj.Velocity * dt

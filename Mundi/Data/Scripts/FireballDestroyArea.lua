@@ -6,7 +6,10 @@ function EndPlay()
     print("[EndPlay] " .. Obj.UUID)
 end
 
-function OnOverlap(OtherActor)
+function OnEndOverlap(OtherActor)
+end
+
+function OnBeginOverlap(OtherActor)
     print(OtherActor.Tag)
     --[[Obj:PrintLocation()]]--
     print("Destoy Logic")

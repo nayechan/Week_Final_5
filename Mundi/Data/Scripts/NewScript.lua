@@ -18,8 +18,10 @@ function EndPlay()
     print("[EndPlay]")
 end
 
-function OnOverlap(OtherActor)
-    OtherActor:PrintLocation();
+function OnBeginOverlap(OtherActor)
+end
+
+function OnEndOverlap(OtherActor)
 end
 
 function Tick(dt)

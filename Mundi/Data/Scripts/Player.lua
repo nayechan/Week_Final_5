@@ -10,7 +10,32 @@ local MovementDelta = 0.01
 local ForwardVector         = Vector(1, 0, 0)
 local CameraLocation        = Vector(0, 0, 0)
 
-local bGravity              = false;
+local Gravity               = -1.0
+local bGravity              = false
+local bActive               = false
+
+local ActiveIDs = {}
+local IDCount = 0
+
+function AddID(id)
+    if not ActiveIDs[id] then
+        ActiveIDs[id] = true
+        IDCount = IDCount + 1
+        print("Added ID:".. id .. "Count:".. IDCount)
+    end
+end
+
+function RemoveID(id)
+    if ActiveIDs[id] then
+        ActiveIDs[id] = nil
+        IDCount = IDCount - 1
+        print("Removed ID:".. id.."Count:".. IDCount)
+        
+        if IDCount == 0 then
+            bGravity = true
+        end
+    end
+end
 
 ------------------------------------------------------------
 local function NormalizeCopy(V)
@@ -31,7 +56,7 @@ end
 ------------------------------------------------------------
 function BeginPlay()
     print("[BeginPlay] " .. Obj.UUID)
-    Obj.Location = Vector(0, 0, 0)
+    Obj.Location = Vector(0, 0, 1)
     Obj.Velocity = Vector(0, 0, 0)
 
     local Camera = GetCamera()
@@ -46,16 +71,43 @@ function EndPlay()
     print("[EndPlay] " .. Obj.UUID)
 end
 
-function OnOverlap(OtherActor)
+function OnBeginOverlap(OtherActor)
+    if OtherActor.Tag == "tile" then
+        AddID(OtherActor.UUID)
+        if not bActive then
+            bActive = true
+        end
+    end
+end
+
+function OnEndOverlap(OtherActor)
+    if OtherActor.Tag == "tile" then
+        RemoveID(OtherActor.UUID)
+    end
 end
 
 function Tick(Delta)
-    
+    SetCamera()
+    Billboard()
+
+    local gravityAccel = Vector(0, 0, Gravity)
+    Obj.Velocity = Obj.Velocity + gravityAccel * Delta
     Obj.Location = Obj.Location + Obj.Velocity * Delta
 
-    if bGravity then 
-        Obj.Velocity = Vector(0, 0, -9.8)
-    else 
+    if not bActive then
+        return
+    end
+
+    if bGravity then
+        Gravity = -5.0
+    else
+        Gravity = 0.0
+        Obj.Velocity = Vector(0, 0, 0)
+
+        if IDCount == 0 then
+            bGravity = true
+        end
+
         Rotate()
 
         if InputManager:IsKeyDown('W') then MoveForward(MovementDelta) end
@@ -63,11 +115,10 @@ function Tick(Delta)
         if InputManager:IsKeyDown('A') then MoveRight(-MovementDelta) end
         if InputManager:IsKeyDown('D') then MoveRight(MovementDelta) end
         if InputManager:IsKeyDown('E') then bGravity = true end
-        
-        SetCamera()
-        Billboard()
     end
 end
+
+
 
 ------------------------------------------------------------
 function Rotate()

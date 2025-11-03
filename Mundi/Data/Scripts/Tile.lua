@@ -6,12 +6,16 @@ function EndPlay()
     print("[EndPlay] " .. Obj.UUID)
 end
 
-function OnOverlap(OtherActor)
+function OnBeginOverlap(OtherActor)
     if OtherActor.Tag == "fireball" then
         if GlobalConfig and GlobalConfig.RemoveTileByUUID then
             GlobalConfig.RemoveTileByUUID(Obj.UUID)
         end
     end
+
+end
+
+function OnEndOverlap(OtherActor)
 end
 
 function Tick(dt)

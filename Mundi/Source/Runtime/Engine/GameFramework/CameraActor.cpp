@@ -183,8 +183,8 @@ FVector ACameraActor::GetUp() const
 void ACameraActor::ProcessEditorCameraInput(float DeltaSeconds)
 {
     // TODO : PIE일 때 return, 왜 PIE일 때 World가 없나? 
-    // if (!GetWorld()) return;
-    // if (GetWorld()->bPie) return;
+    if (!GetWorld()) return;
+    if (GetWorld()->bPie) return;
     
     UInputManager& InputManager = UInputManager::GetInstance();
 

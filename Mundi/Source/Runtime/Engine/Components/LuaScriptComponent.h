@@ -23,7 +23,8 @@ public:
 	void TickComponent(float DeltaTime) override;       // 매 프레임
 	void EndPlay() override;							// 파괴/월드 제거 시
 
-	void OnOverlap(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp);
+	void OnBeginOverlap(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp);
+	void OnEndOverlap(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp);
 
 	bool Call(const char* FuncName, sol::variadic_args VarArgs); // 다른 클래스가 날 호출할 때 씀
 protected:
@@ -36,6 +37,7 @@ protected:
 	/* 함수 캐시 */
 	sol::protected_function FuncBeginPlay{};
 	sol::protected_function FuncTick{};
-	sol::protected_function FuncOnOverlap{};
+	sol::protected_function FuncOnBeginOverlap{};
+	sol::protected_function FuncOnEndOverlap{};
 	sol::protected_function FuncEndPlay{};
 };

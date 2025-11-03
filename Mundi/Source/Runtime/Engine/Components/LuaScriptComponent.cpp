@@ -27,9 +27,9 @@ void ULuaScriptComponent::BeginPlay()
 	// 델리게이트 등록
 	if (AActor* Owner = GetOwner())
 	{
-		FDelegateHandle BeginHandle = Owner->OnComponentBeginOverlap.AddDynamic(this, &ULuaScriptComponent::OnOverlap);
-		//FDelegateHandle EndHandle = Owner->OnComponentEndOverlap.AddDynamic(Owner, &AActor::OnEndOverlap);
-		//FDelegateHandle HitHandle = Owner->OnComponentHit.AddDynamic(Owner, &AActor::OnHit);
+		FDelegateHandle BeginHandleLua = Owner->OnComponentBeginOverlap.AddDynamic(this, &ULuaScriptComponent::OnBeginOverlap);
+		FDelegateHandle EndHandleLua = Owner->OnComponentEndOverlap.AddDynamic(this, &ULuaScriptComponent::OnEndOverlap);
+		FDelegateHandle EndHandle = Owner->OnComponentEndOverlap.AddDynamic(Owner, &AActor::OnEndOverlap);
 	}
 
 	auto LuaVM = GetWorld()->GetLuaManager();
@@ -67,7 +67,8 @@ void ULuaScriptComponent::BeginPlay()
 	// 함수 캐시
 	FuncBeginPlay = FLuaManager::GetFunc(Env, "BeginPlay");
 	FuncTick      = FLuaManager::GetFunc(Env, "Tick");
-	FuncOnOverlap = FLuaManager::GetFunc(Env, "OnOverlap");
+	FuncOnBeginOverlap = FLuaManager::GetFunc(Env, "OnBeginOverlap");
+	FuncOnEndOverlap = FLuaManager::GetFunc(Env, "OnEndOverlap");
 	FuncEndPlay		  =	FLuaManager::GetFunc(Env, "EndPlay");
 	
 	if (FuncBeginPlay.valid()) {
@@ -80,9 +81,9 @@ void ULuaScriptComponent::BeginPlay()
 	}
 }
 
-void ULuaScriptComponent::OnOverlap(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp)
+void ULuaScriptComponent::OnBeginOverlap(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp)
 {
-	if (FuncOnOverlap.valid())
+	if (FuncOnBeginOverlap.valid())
 	{
 		FGameObject* OtherGameObject = nullptr;
 		if (OtherComp)
@@ -95,7 +96,32 @@ void ULuaScriptComponent::OnOverlap(UPrimitiveComponent* MyComp, UPrimitiveCompo
 
 		if (OtherGameObject)
 		{
-			auto Result = FuncOnOverlap(OtherGameObject);
+			auto Result = FuncOnBeginOverlap(OtherGameObject);
+			if (!Result.valid())
+			{
+				sol::error Err = Result; UE_LOG("[Lua][error] %s\n", Err.what());
+				GEngine.EndPIE();
+			}
+		}
+	}
+}
+
+void ULuaScriptComponent::OnEndOverlap(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp)
+{
+	if (FuncOnEndOverlap.valid())
+	{
+		FGameObject* OtherGameObject = nullptr;
+		if (OtherComp)
+		{
+			if (AActor* OtherActor = OtherComp->GetOwner())
+			{
+				OtherGameObject = OtherActor->GetGameObject();
+			}
+		}
+
+		if (OtherGameObject)
+		{
+			auto Result = FuncOnEndOverlap(OtherGameObject);
 			if (!Result.valid())
 			{
 				sol::error Err = Result; UE_LOG("[Lua][error] %s\n", Err.what());
@@ -129,7 +155,7 @@ void ULuaScriptComponent::EndPlay()
 
 	FuncBeginPlay = sol::nil;
 	FuncTick      = sol::nil;
-	FuncOnOverlap = sol::nil;
+	FuncOnBeginOverlap = sol::nil;
 	Env           = sol::nil;
 	Lua				 = nullptr;	
 }

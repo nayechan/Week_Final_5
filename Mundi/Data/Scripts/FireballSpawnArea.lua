@@ -13,8 +13,10 @@ function EndPlay()
     print("[EndPlay] " .. Obj.UUID)
 end
 
-function OnOverlap(OtherActor)
-    -- Overlap hook if needed
+function OnBeginOverlap(OtherActor)
+end
+
+function OnEndOverlap(OtherActor)
 end
 
 function RandomInRange(MinRange, MaxRange)

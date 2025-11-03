@@ -6,7 +6,11 @@ function EndPlay()
     print("[EndPlay] " .. Obj.UUID)
 end
 
-function OnOverlap(OtherActor)
+function OnBeginOverlap(OtherActor)
+    --[[Obj:PrintLocation()]]--
+end
+
+function OnEndOverlap(OtherActor)
     --[[Obj:PrintLocation()]]--
 end
 
