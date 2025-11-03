@@ -295,7 +295,7 @@ void UMaterialInstanceDynamic::CopyParametersFrom(const UMaterialInstanceDynamic
 	// 부모는 생성 시(Create) 설정되므로, 여기서는 덮어쓴 값만 복사합니다.
 	this->OverriddenTextures = Other->OverriddenTextures;
 	this->OverriddenScalarParameters = Other->OverriddenScalarParameters;
-	this->OverriddenVectorParameters = Other->OverriddenVectorParameters;
+	this->OverriddenColorParameters = Other->OverriddenColorParameters;
 
 	this->bIsCachedMaterialInfoDirty = true;
 }
@@ -392,7 +392,7 @@ const FMaterialInfo& UMaterialInstanceDynamic::GetMaterialInfo() const
 		}
 
 		// 3. 이 인스턴스에 덮어쓴 벡터 파라미터로 캐시를 수정합니다.
-		for (const auto& Pair : OverriddenVectorParameters)
+		for (const auto& Pair : OverriddenColorParameters)
 		{
 			// OverriddenVectorParameters는 FLinearColor (RGBA)로 저장되므로
 			// FMaterialInfo의 FVector (RGB)로 변환
@@ -468,9 +468,9 @@ void UMaterialInstanceDynamic::SetTextureParameterValue(EMaterialTextureSlot Slo
 	bIsCachedMaterialInfoDirty = true;
 }
 
-void UMaterialInstanceDynamic::SetVectorParameterValue(const FString& ParameterName, const FLinearColor& Value)
+void UMaterialInstanceDynamic::SetColorParameterValue(const FString& ParameterName, const FLinearColor& Value)
 {
-	OverriddenVectorParameters.Add(ParameterName, Value);
+	OverriddenColorParameters.Add(ParameterName, Value);
 	bIsCachedMaterialInfoDirty = true;
 }
 
@@ -494,6 +494,6 @@ void UMaterialInstanceDynamic::SetOverriddenScalarParameters(const TMap<FString,
 
 void UMaterialInstanceDynamic::SetOverriddenVectorParameters(const TMap<FString, FLinearColor>& InVectors)
 {
-	OverriddenVectorParameters = InVectors;
+	OverriddenColorParameters = InVectors;
 	bIsCachedMaterialInfoDirty = true; // 벡터 값이 변경되었으므로 캐시를 갱신해야 함
 }

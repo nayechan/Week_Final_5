@@ -39,6 +39,10 @@ public:
 	void SetMaterialByUser(const uint32 InMaterialSlotIndex, const FString& InMaterialName);
 	const TArray<UMaterialInterface*> GetMaterialSlots() const { return MaterialSlots; }
 
+	void SetMaterialTextureByUser(const uint32 InMaterialSlotIndex, EMaterialTextureSlot Slot, UTexture* Texture);
+	void SetMaterialColorByUser(const uint32 InMaterialSlotIndex, const FString& ParameterName, const FLinearColor& Value);
+	void SetMaterialScalarByUser(const uint32 InMaterialSlotIndex, const FString& ParameterName, float Value);
+
 	FAABB GetWorldAABB() const override;
 
 	void DuplicateSubObjects() override;

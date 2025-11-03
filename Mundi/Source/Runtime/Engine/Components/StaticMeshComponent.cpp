@@ -283,6 +283,40 @@ UMaterialInstanceDynamic* UStaticMeshComponent::CreateAndSetMaterialInstanceDyna
 	return nullptr;
 }
 
+// 자동 인스턴싱 머티리얼 생성
+void UStaticMeshComponent::SetMaterialTextureByUser(const uint32 InMaterialSlotIndex, EMaterialTextureSlot Slot, UTexture* Texture)
+{
+	UMaterialInterface* CurrentMaterial = GetMaterial(InMaterialSlotIndex);
+	UMaterialInstanceDynamic* MID = Cast<UMaterialInstanceDynamic>(CurrentMaterial);
+	if (MID == nullptr)
+	{
+		MID = CreateAndSetMaterialInstanceDynamic(InMaterialSlotIndex);
+	}
+	MID->SetTextureParameterValue(Slot, Texture);
+}
+
+void UStaticMeshComponent::SetMaterialColorByUser(const uint32 InMaterialSlotIndex, const FString& ParameterName, const FLinearColor& Value)
+{
+	UMaterialInterface* CurrentMaterial = GetMaterial(InMaterialSlotIndex);
+	UMaterialInstanceDynamic* MID = Cast<UMaterialInstanceDynamic>(CurrentMaterial);
+	if (MID == nullptr)
+	{
+		MID = CreateAndSetMaterialInstanceDynamic(InMaterialSlotIndex);
+	}
+	MID->SetColorParameterValue(ParameterName, Value);
+}
+
+void UStaticMeshComponent::SetMaterialScalarByUser(const uint32 InMaterialSlotIndex, const FString& ParameterName, float Value)
+{
+	UMaterialInterface* CurrentMaterial = GetMaterial(InMaterialSlotIndex);
+	UMaterialInstanceDynamic* MID = Cast<UMaterialInstanceDynamic>(CurrentMaterial);
+	if (MID == nullptr)
+	{
+		MID = CreateAndSetMaterialInstanceDynamic(InMaterialSlotIndex);
+	}
+	MID->SetScalarParameterValue(ParameterName, Value);
+}
+
 FAABB UStaticMeshComponent::GetWorldAABB() const
 {
 	const FTransform WorldTransform = GetWorldTransform();

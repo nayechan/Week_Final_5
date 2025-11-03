@@ -443,6 +443,7 @@ AGENTS.md
 nul
 CLAUDE.md
 GEMINI.md
+.env
 
 # Untracked Data Files
 Mundi/Scene/*

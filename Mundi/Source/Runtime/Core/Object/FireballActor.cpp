@@ -26,15 +26,8 @@ AFireBallActor::AFireBallActor()
 	RotatingComponent = CreateDefaultSubobject<URotatingMovementComponent>("RotatingComponent");
 	RotatingComponent->SetRotationRate(FVector(0, 0, 400.0f));
 
-	UTexture* NoiseTex = UResourceManager::GetInstance().Load<UTexture>(GDataDir + "/Textures/FireballNoise.jpg");
-
-	UMaterialInterface* CurrentMaterial = StaticMeshComponent->GetMaterial(0);
-	UMaterialInstanceDynamic* MID = Cast<UMaterialInstanceDynamic>(CurrentMaterial);
-	if (MID == nullptr)
-	{
-		MID = StaticMeshComponent->CreateAndSetMaterialInstanceDynamic(0);
-	}
-	MID->SetTextureParameterValue(EMaterialTextureSlot::Diffuse, NoiseTex);
+	UTexture* Texture = UResourceManager::GetInstance().Load<UTexture>(GDataDir + "/Textures/FireballNoise.jpg");
+	StaticMeshComponent->SetMaterialTextureByUser(0, EMaterialTextureSlot::Diffuse, Texture);
 }
 
 AFireBallActor::~AFireBallActor()

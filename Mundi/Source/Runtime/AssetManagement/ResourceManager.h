@@ -168,6 +168,11 @@ T* UResourceManager::Get(const FString& InFilePath)
 template<typename T, typename ...Args>
 inline T* UResourceManager::Load(const FString& InFilePath, Args && ...InArgs)
 {
+	if (InFilePath.empty())
+	{
+		return nullptr;
+	}
+
 	// 경로 정규화: 모든 백슬래시를 슬래시로 변환하여 일관성 유지
 	FString NormalizedPath = NormalizePath(InFilePath);
 
