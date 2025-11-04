@@ -75,15 +75,7 @@
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <PreBuildEvent>
-      <Command>if "$(Configuration)"=="Release" (
-    robocopy "$(ProjectDir)Data" "$(OutDir)Data" /E /XO /MT:8 /NFL /NDL /NJH /NJS /nc /ns /np
-    robocopy "$(ProjectDir)Shaders" "$(OutDir)Shaders" /E /XO /MT:8 /NFL /NDL /NJH /NJS /nc /ns /np
-    robocopy "$(ProjectDir)ThirdParty\DirectXTK" "$(OutDir)ThirdParty\DirectXTK" /E /XO /MT:8 /NFL /NDL /NJH /NJS
-  /nc /ns /np
-    if exist "$(ProjectDir)editor.ini" xcopy /Y /D "$(ProjectDir)editor.ini" "$(OutDir)"
-    if exist "$(ProjectDir)imgui.ini" xcopy /Y /D "$(ProjectDir)imgui.ini" "$(OutDir)"
-    if %ERRORLEVEL% LEQ 7 exit 0
-  )</Command>
+      <Command></Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -110,15 +102,7 @@
       <AdditionalOptions>/IGNORE:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PreBuildEvent>
-      <Command>if "$(Configuration)"=="Release" (
-    robocopy "$(ProjectDir)Data" "$(OutDir)Data" /E /XO /MT:8 /NFL /NDL /NJH /NJS /nc /ns /np
-    robocopy "$(ProjectDir)Shaders" "$(OutDir)Shaders" /E /XO /MT:8 /NFL /NDL /NJH /NJS /nc /ns /np
-    robocopy "$(ProjectDir)ThirdParty\DirectXTK" "$(OutDir)ThirdParty\DirectXTK" /E /XO /MT:8 /NFL /NDL /NJH /NJS
-  /nc /ns /np
-    if exist "$(ProjectDir)editor.ini" xcopy /Y /D "$(ProjectDir)editor.ini" "$(OutDir)"
-    if exist "$(ProjectDir)imgui.ini" xcopy /Y /D "$(ProjectDir)imgui.ini" "$(OutDir)"
-    if %ERRORLEVEL% LEQ 7 exit 0
-  )</Command>
+      <Command></Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -535,4 +519,92 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+
+  <!-- 1. Base64 인코딩을 위한 인라인 C# 태스크 정의 -->
+  <UsingTask TaskName="ConvertToBase64" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <Input ParameterType="System.String" Required="true" />
+      <Output ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+          // PowerShell이 요구하는 UTF-16LE 인코딩으로 변환
+          byte[] bytes = System.Text.Encoding.Unicode.GetBytes(Input);
+          // Base64 문자열로 출력
+          Output = System.Convert.ToBase64String(bytes);
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <!-- 2. PreBuildEvent 직전에 실행될 커스텀 타겟 정의 -->
+  <Target Name="CustomPreBuildCopy" BeforeTargets="PreBuildEvent">
+
+    <!-- 3. 여기에 복사할 PowerShell 스크립트 정의 (빌드 구성에 따라 분기) -->
+
+    <!-- 3A: Debug 빌드용 스크립트 -->
+    <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+      <PowerShellScript>
+        Write-Host '[BuildEvent] Copying Data files (Debug)...';
+        robocopy '$(ProjectDir)Data' '$(OutDir)Data' /E /XO /MT:8 /NFL /NDL /NJH /NJS /nc /ns /np;
+        $exitCode = $LASTEXITCODE;
+        if ($exitCode -ge 8) { Write-Error 'Robocopy Data failed.' ; exit $exitCode };
+
+        Write-Host '[BuildEvent] Copying Shaders files (Debug)...';
+        robocopy '$(ProjectDir)Shaders' '$(OutDir)Shaders' /E /XO /MT:8 /NFL /NDL /NJH /NJS /nc /ns /np;
+        $exitCode = $LASTEXITCODE;
+        if ($exitCode -ge 8) { Write-Error 'Robocopy Shaders failed.' ; exit $exitCode };
+
+        if (Test-Path '$(ProjectDir)editor.ini') {
+        Write-Host '[BuildEvent] Copying editor.ini...';
+        Copy-Item -Path '$(ProjectDir)editor.ini' -Destination '$(OutDir)' -Force
+        };
+        if (Test-Path '$(ProjectDir)imgui.ini') {
+        Write-Host '[BuildEvent] Copying imgui.ini...';
+        Copy-Item -Path '$(ProjectDir)imgui.ini' -Destination '$(OutDir)' -Force
+        };
+
+        Write-Host '[BuildEvent] Asset copy successful.';
+        exit 0
+      </PowerShellScript>
+    </PropertyGroup>
+
+    <!-- 3B: Release 빌드용 스크립트 -->
+    <PropertyGroup Condition="'$(Configuration)'=='Release'">
+      <PowerShellScript>
+        Write-Host '[BuildEvent] Copying Data files (Release)...';
+        robocopy '$(ProjectDir)Data' '$(OutDir)Data' /E /XO /MT:8 /NFL /NDL /NJH /NJS /nc /ns /np;
+        $exitCode = $LASTEXITCODE;
+        if ($exitCode -ge 8) { Write-Error 'Robocopy Data failed.' ; exit $exitCode };
+
+        Write-Host '[BuildEvent] Copying Shaders files (Release)...';
+        robocopy '$(ProjectDir)Shaders' '$(OutDir)Shaders' /E /XO /MT:8 /NFL /NDL /NJH /NJS /nc /ns /np;
+        $exitCode = $LASTEXITCODE;
+        if ($exitCode -ge 8) { Write-Error 'Robocopy Shaders failed.' ; exit $exitCode };
+
+        if (Test-Path '$(ProjectDir)editor.ini') {
+        Write-Host '[BuildEvent] Copying editor.ini...';
+        Copy-Item -Path '$(ProjectDir)editor.ini' -Destination '$(OutDir)' -Force
+        };
+        if (Test-Path '$(ProjectDir)imgui.ini') {
+        Write-Host '[BuildEvent] Copying imgui.ini...';
+        Copy-Item -Path '$(ProjectDir)imgui.ini' -Destination '$(OutDir)' -Force
+        };
+
+        Write-Host '[BuildEvent] Asset copy successful.';
+        exit 0
+      </PowerShellScript>
+    </PropertyGroup>
+
+    <!-- 4. 스크립트가 정의되었을 때만 Base64로 인코딩하고 실행 -->
+    <ConvertToBase64 Input="$(PowerShellScript)" Condition="'$(PowerShellScript)' != ''">
+      <Output TaskParameter="Output" PropertyName="EncodedScript" />
+    </ConvertToBase64>
+
+    <!-- 5. 최종 실행 (EncodedCommand 사용) -->
+    <Exec Command="powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand $(EncodedScript)" Condition="'$(EncodedScript)' != ''" />
+
+  </Target>
+
 </Project>
