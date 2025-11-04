@@ -959,70 +959,31 @@ void FSceneRenderer::RenderDecalPass()
 
 void FSceneRenderer::RenderPostProcessingPasses()
 {
-	UHeightFogComponent* FogComponent = nullptr;
+	TArray<FPostProcessModifier> PostProcessModifiers;
+
+	// TODO : 다른 데에서 하기
+	// Register Height Fog Modifiers, 첫번째만 등록 된다.
 	if (0 < SceneGlobals.Fogs.Num())
 	{
-		FogComponent = SceneGlobals.Fogs[0];
+		UHeightFogComponent* FogComponent = SceneGlobals.Fogs[0];
+		if (FogComponent)
+		{
+			FPostProcessModifier FogPostProc;
+			FogPostProc.Type = EPostProcessEffectType::HeightFog;
+			FogPostProc.bEnabled = FogComponent->IsActive() && FogComponent->IsVisible();
+			FogPostProc.SourceObject = FogComponent;
+			PostProcessModifiers.Add(FogPostProc);
+		}
 	}
 
-	if (!FogComponent)
+	for (auto& Modifier : PostProcessModifiers)
 	{
-		return;
+		switch (Modifier.Type)
+		{
+		case EPostProcessEffectType::HeightFog:
+			HeightFogPass.Execute(Modifier, View, RHIDevice);			
+		}
 	}
-
-	// Swap 가드 객체 생성: 스왑을 수행하고, 소멸 시 0번 슬롯부터 2개의 SRV를 자동 해제하도록 설정
-	FSwapGuard SwapGuard(RHIDevice, 0, 2);
-
-	// 렌더 타겟 설정
-	RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTargetWithoutDepth);
-
-	// Depth State: Depth Test/Write 모두 OFF
-	RHIDevice->OMSetDepthStencilState(EComparisonFunc::Always);
-	RHIDevice->OMSetBlendState(false);
-
-	// 쉐이더 설정
-	UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>("Shaders/Utility/FullScreenTriangle_VS.hlsl");
-	UShader* HeightFogPS = UResourceManager::GetInstance().Load<UShader>("Shaders/PostProcess/HeightFog_PS.hlsl");
-	if (!FullScreenTriangleVS || !FullScreenTriangleVS->GetVertexShader() || !HeightFogPS || !HeightFogPS->GetPixelShader())
-	{
-		UE_LOG("HeightFog용 셰이더 없음!\n");
-		return;
-	}
-
-	RHIDevice->PrepareShader(FullScreenTriangleVS, HeightFogPS);
-
-	// 텍스쳐 관련 설정
-	ID3D11ShaderResourceView* DepthSRV = RHIDevice->GetSRV(RHI_SRV_Index::SceneDepth);
-	ID3D11ShaderResourceView* SceneSRV = RHIDevice->GetSRV(RHI_SRV_Index::SceneColorSource);
-	ID3D11SamplerState* PointClampSamplerState = RHIDevice->GetSamplerState(RHI_Sampler_Index::PointClamp);
-	ID3D11SamplerState* LinearClampSamplerState = RHIDevice->GetSamplerState(RHI_Sampler_Index::LinearClamp);
-
-	if (!DepthSRV || !SceneSRV || !PointClampSamplerState || !LinearClampSamplerState)
-	{
-		UE_LOG("Depth SRV / Scene SRV / PointClamp Sampler / LinearClamp Sampler is null!\n");
-		return;
-	}
-
-	ID3D11ShaderResourceView* srvs[2] = { DepthSRV, SceneSRV };
-	RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 2, srvs);
-
-	ID3D11SamplerState* Samplers[2] = { LinearClampSamplerState, PointClampSamplerState };
-	RHIDevice->GetDeviceContext()->PSSetSamplers(0, 2, Samplers);
-
-	// 상수 버퍼 업데이트
-	ECameraProjectionMode ProjectionMode = View->ProjectionMode;
-	//RHIDevice->UpdatePostProcessCB(ZNear, ZFar, ProjectionMode == ECameraProjectionMode::Orthographic);
-	RHIDevice->SetAndUpdateConstantBuffer(PostProcessBufferType(View->ZNear, View->ZFar, ProjectionMode == ECameraProjectionMode::Orthographic));
-	UHeightFogComponent* F = FogComponent;
-	//RHIDevice->UpdateFogCB(F->GetFogDensity(), F->GetFogHeightFalloff(), F->GetStartDistance(), F->GetFogCutoffDistance(), F->GetFogInscatteringColor()->ToFVector4(), F->GetFogMaxOpacity(), F->GetFogHeight());
-	RHIDevice->SetAndUpdateConstantBuffer(FogBufferType(F->GetFogDensity(), F->GetFogHeightFalloff(), F->GetStartDistance(), F->GetFogCutoffDistance(), F->GetFogInscatteringColor().ToFVector4(), F->GetFogMaxOpacity(), F->GetFogHeight()));
-
-	// Draw
-	RHIDevice->DrawFullScreenQuad();
-
-	// 모든 작업이 성공적으로 끝났으므로 Commit 호출
-	// 이제 소멸자는 버퍼 스왑을 되돌리지 않고, SRV 해제 작업만 수행함
-	SwapGuard.Commit();
 }
 
 void FSceneRenderer::RenderSceneDepthPostProcess()
