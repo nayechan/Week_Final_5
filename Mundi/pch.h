@@ -60,7 +60,7 @@
 #include "World.h"
 #include "ConstantBufferType.h"
 // d3dtk
-#include "DirectXTK/SimpleMath.h"
+#include "SimpleMath.h"
 
 // ImGui
 #include "ImGui/imgui.h"

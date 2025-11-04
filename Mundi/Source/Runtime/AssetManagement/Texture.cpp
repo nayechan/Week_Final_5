@@ -1,8 +1,8 @@
 ﻿#include "pch.h"
 #include "Texture.h"
 #include "TextureConverter.h"
-#include "DirectXTK/DDSTextureLoader.h"
-#include "DirectXTK/WICTextureLoader.h"
+#include "DDSTextureLoader.h"
+#include "WICTextureLoader.h"
 #include <filesystem>
 
 IMPLEMENT_CLASS(UTexture)

@@ -457,6 +457,8 @@
     <ClCompile Include="Source\Runtime\Core\Object\FireballActor.cpp">
       <Filter>Source\Runtime\Core\Object</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\TileMapActor.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Scripting\GameObject.cpp" />
   </ItemGroup>
   <!-- ThirdParty/ImGui Files -->
   <!-- Source Files -->
@@ -493,7 +495,6 @@
     <ClInclude Include="Source\Runtime\Engine\Scripting\LuaManager.h">
       <Filter>Source\Runtime\Engine\Scripting</Filter>
     </ClInclude>
-    <ClInclude Include="Delegates.h" />
     <ClInclude Include="Source\Runtime\Renderer\LightManager.h">
       <Filter>Source\Runtime\Renderer</Filter>
     </ClInclude>
@@ -944,6 +945,9 @@
     <ClInclude Include="Source\Runtime\Core\Misc\Hash.h">
       <Filter>Source\Runtime\Core\Misc</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Misc\Delegates.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\TileMapActor.h" />
+    <ClInclude Include="Source\Runtime\Engine\Scripting\GameObject.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source">

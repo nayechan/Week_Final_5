@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "Enums.h"
-#include "DirectXTK/DDSTextureLoader.h"
+#include "DDSTextureLoader.h"
 #include "TextRenderComponent.h"
 #include "ResourceManager.h"
 #include "VertexData.h"
