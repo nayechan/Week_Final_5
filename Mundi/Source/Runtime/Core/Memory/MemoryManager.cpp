@@ -40,7 +40,7 @@ void FMemoryManager::Deallocate(void* Ptr)
 	TotalAllocationCount--;
 
 #if defined(_MSC_VER) && defined(_DEBUG)
-	_aligned_free_dbg(Raw, _NORMAL_BLOCK);
+	_aligned_free_dbg(Raw);
 #else
 	_aligned_free(Raw);
 #endif
