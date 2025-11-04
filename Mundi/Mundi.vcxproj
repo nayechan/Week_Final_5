@@ -375,6 +375,7 @@
     <ClInclude Include="Source\Runtime\Engine\Components\ShapeComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\SphereComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\AmbientLightActor.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\PlayerCameraManager.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\TileMapActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\DirectionalLightActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\EmptyActor.h" />
@@ -400,6 +401,27 @@
     <ClInclude Include="Source\Runtime\RHI\SwapGuard.h" />
     <ClInclude Include="Source\Runtime\RHI\ConstantBufferType.h" />
     <ClInclude Include="Source\Slate\Widgets\PropertyRenderer.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\Audio.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\BufferHelpers.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\CommonStates.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\DDSTextureLoader.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\DirectXHelpers.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\Effects.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\GamePad.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\GeometricPrimitive.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\GraphicsMemory.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\Keyboard.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\Model.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\Mouse.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\PostProcess.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\PrimitiveBatch.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\ScreenGrab.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\SimpleMath.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\SpriteBatch.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\SpriteFont.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\VertexTypes.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\WICTextureLoader.h" />
+    <ClInclude Include="ThirdParty\DirectXTK\include\XboxDDSTextureLoader.h" />
     <ClInclude Include="ThirdParty\ImGui\imconfig.h" />
     <ClInclude Include="ThirdParty\ImGui\imgui.h" />
     <ClInclude Include="ThirdParty\ImGui\imgui_impl_dx11.h" />
@@ -517,6 +539,11 @@
     <ClInclude Include="Source\Slate\Windows\SViewportWindow.h" />
     <ClInclude Include="Source\Slate\Windows\SWindow.h" />
     <ClInclude Include="Source\Slate\Windows\UIWindow.h" />
+    <ClInclude Include="ThirdParty\Lua\include\lauxlib.h" />
+    <ClInclude Include="ThirdParty\Lua\include\lua.h" />
+    <ClInclude Include="ThirdParty\Lua\include\lua.hpp" />
+    <ClInclude Include="ThirdParty\Lua\include\luaconf.h" />
+    <ClInclude Include="ThirdParty\Lua\include\lualib.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
