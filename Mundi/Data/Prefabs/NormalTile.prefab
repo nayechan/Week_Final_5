@@ -1,28 +1,16 @@
 {
   "Name" : "AStaticMeshActor_0",
   "OwnedComponents" : [{
-      "Id" : 1831,
+      "Id" : 836,
       "MaterialSlots" : [{
-          "Overrides" : {
-            "Scalars" : {
-
-            },
-            "Textures" : {
-              "0" : "Data/Model/2/material_0_baseColor.png",
-              "1" : "Data/Model/2/material_0_normal_copy.png"
-            },
-            "Vectors" : {
-
-            }
-          },
-          "ParentPath" : "UV_Checker",
-          "Type" : "UMaterialInstanceDynamic"
+          "AssetPath" : "UV_Checker",
+          "Type" : "UMaterial"
         }],
       "ParentId" : 0,
       "RelativeLocation" : [0.000000, -0.010918, 0.000000],
       "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
-      "StaticMesh" : "Data/Model/2/19212_autosave2.obj",
+      "StaticMesh" : "Data/Model/2/damaged_rock.obj",
       "Type" : "UStaticMeshComponent",
       "bBlockComponent" : false,
       "bGenerateOverlapEvents" : true,
@@ -31,9 +19,9 @@
       "bIsVisible" : true,
       "bTickEnabled" : true
     }, {
-      "BoxExtent" : [1.000000, 1.000000, 1.000000],
-      "Id" : 1833,
-      "ParentId" : 1831,
+      "BoxExtent" : [0.000000, 0.000000, 0.000000],
+      "Id" : 840,
+      "ParentId" : 836,
       "RelativeLocation" : [0.000000, 0.000000, 0.000000],
       "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
       "RelativeScale" : [1.000000, 1.000000, 1.000000],
@@ -52,7 +40,7 @@
       "bIsActive" : true,
       "bTickEnabled" : true
     }],
-  "RootComponentId" : 1831,
+  "RootComponentId" : 836,
   "Tag" : "tile",
   "Type" : "AStaticMeshActor",
   "bActorHiddenInGame" : false,

@@ -1,6 +1,6 @@
 # Blender 4.5.3 LTS
 # www.blender.org
-mtllib 19212_autosave.mtl
+mtllib damaged_rock.mtl
 o Cube
 v -1.000000 -1.000000 1.000000
 v -1.000000 1.000000 1.000000
