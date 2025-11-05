@@ -16,6 +16,7 @@
 #include "PointLightComponent.h"
 #include "SpotLightComponent.h"
 #include "PlatformProcess.h"
+#include "ImGui/imgui_curve.hpp"
 
 // 정적 멤버 변수 초기화
 TArray<FString> UPropertyRenderer::CachedStaticMeshPaths;
@@ -94,6 +95,10 @@ bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectIn
 
 	case EPropertyType::ScriptFile:
 		bChanged = RenderScriptFileProperty(Property, ObjectInstance);
+		break;
+
+	case EPropertyType::Curve:
+		bChanged = RenderCurveProperty(Property, ObjectInstance);
 		break;
 
 	case EPropertyType::Array:
@@ -806,6 +811,28 @@ bool UPropertyRenderer::RenderScriptFileProperty(const FProperty& Property, void
 	}
 
 	return bChanged;
+}
+
+bool UPropertyRenderer::RenderCurveProperty(const FProperty& Prop, void* Instance)
+{
+	// 베지어 곡선 데이터를 저장할 static 배열
+	// C++11 이상에서는 static constexpr을 사용하거나 초기값을 명확히 지정하는 것이 좋습니다.
+	// 예: "In Expo" 프리셋 (0.950f, 0.050f, 0.795f, 0.035f), 인덱스 6
+	static float myCurve[5] = { 0.950f, 0.050f, 0.795f, 0.035f, 6.0f };
+
+	// Bezier 위젯 호출
+	// "Ease In Out"이라는 레이블로 위젯을 그립니다.
+	// myCurve 배열의 값이 위젯에 의해 읽히고 수정됩니다.
+	bool bCurveChanged = ImGui::Bezier("Ease In Out", myCurve);
+
+	// 값이 변경되었는지 확인할 수 있습니다.
+	if (bCurveChanged)
+	{
+		// 곡선 값이 변경되었을 때 수행할 작업
+		// 예: myCurve[0] ~ myCurve[3] 값을 어딘가에 저장
+	}
+
+	return false;
 }
 
 bool UPropertyRenderer::RenderPointLightCubeShadowMap(FLightManager* LightManager, ULightComponent* LightComp, int32 CubeSliceIndex)

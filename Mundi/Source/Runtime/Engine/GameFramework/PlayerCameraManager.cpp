@@ -15,6 +15,7 @@ IMPLEMENT_CLASS(APlayerCameraManager)
 
 BEGIN_PROPERTIES(APlayerCameraManager)
 MARK_AS_SPAWNABLE("플레이어 카메라 매니저", "최종적으로 카메라 화면을 관리하는 액터입니다. (씬에 1개만 존재 필요)")
+ADD_PROPERTY_CURVE(MyCurve, "Light", true, "원뿔 내부 각도입니다. 이 각도 안에서는 빛이 최대 밝기로 표시됩니다.")
 END_PROPERTIES()
 
 
