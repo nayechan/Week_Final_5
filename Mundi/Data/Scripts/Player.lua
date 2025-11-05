@@ -1,6 +1,9 @@
 UpVector = Vector(0, 0, 1)
 
 local InitZ = 0
+local VelZ = 0
+local JumpSpeed = 0.04
+
 local YawSensitivity        = 0.005
 local PitchSensitivity      = 0.0025
 
@@ -28,7 +31,7 @@ function AddID(id)
         if CurGravity < 0 and not bStart then
             CurGravity = 0 
             bStart = true
-            InitZ = Obj.Location.Z
+            InitZ = Obj.Location.Z  
         end
     end
 end
@@ -39,7 +42,8 @@ function RemoveID(id)
         IDCount = IDCount - 1
         -- print("Removed ID:".. id.."Count:".. IDCount)
         
-        if IDCount == 0 then
+        if IDCount == 0 and (InitZ - 10) > Obj.Location.Z then
+             
             Die()
         end
     end
@@ -66,6 +70,7 @@ function BeginPlay()
     ActiveIDs = {}
     bDie = false
     CurGravity = GravityConst
+    VelZ = 0
 
     Obj.Location = PlayerInitPosition
     Obj.Velocity = PlayerInitVelocity
@@ -117,9 +122,19 @@ end
 
 function PlayerMove(Delta)
     if GlobalConfig.GameState == "Playing" then
+        
+        if IsGrounded() then
+            if VelZ < 0 then VelZ = 0 end
+        else
+            VelZ = VelZ +  -0.1 * Delta
+        end
+            
         local CurGravityAccel = Vector(0, 0, CurGravity)
-        Obj.Velocity = CurGravityAccel * Delta
-        Obj.Location = Obj.Location + Obj.Velocity
+        Obj.Velocity = CurGravityAccel * Delta +Vector(0,0,VelZ)
+        Obj.Location = Obj.Location + Obj.Velocity + Vector(0, 0, VelZ)
+        
+
+
     end
 end
 
@@ -147,7 +162,7 @@ function ManageGameState()
     if GlobalConfig.GameState == "Playing" then
         if bDie then
             return false
-        elseif IDCount == 0 and CurGravity == 0 and InitZ - 5 < Obj.Location.Z then
+        elseif IDCount == 0 and CurGravity == 0 and Obj.Location.Z < (InitZ - 5)  then
                 Die()
             return false
         end
@@ -171,8 +186,8 @@ function Die()
     -- 전역 슬로모: 0.8초 동안 0.25배 속도
     -- (주: TargetHitStop은 Actor 포인터가 필요하며, 현재는 Obj(FGameObject)만 있으므로 전역으로 처리)
     TargetHitStop(Obj, 0.5, 0)
-    print("Die")
     bDie = true
+    VelZ = 0
     CurGravity = GravityConst
     local ActiveIDs = {}
     
@@ -188,6 +203,7 @@ function Rebirth()
     ActiveIDs = {}
     bDie = false
     CurGravity = GravityConst
+    VelZ = 0
 
     Obj.Location = PlayerInitPosition
     Obj.Velocity = PlayerInitVelocity
@@ -226,8 +242,15 @@ function MoveForward(Delta)
     Obj.Location = Obj.Location + Vector(ForwardVector.X,ForwardVector.Y, 0)  * Delta
 end
 
+function IsGrounded()
+    return IDCount > 0
+end
+
 function Jump(Delta)
-    Obj.Location = Obj.Location + UpVector * Delta
+    if IsGrounded() then
+        VelZ = JumpSpeed
+    end
+
 end 
 
 function MoveRight(Delta)
