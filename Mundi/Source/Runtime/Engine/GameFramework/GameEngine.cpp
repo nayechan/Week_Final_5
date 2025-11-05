@@ -91,10 +91,12 @@ LRESULT CALLBACK UGameEngine::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
             UINT NewWidth = static_cast<UINT>(ClientWidth);
             UINT NewHeight = static_cast<UINT>(ClientHeight);
             GEngine.GetRHIDevice()->OnResize(NewWidth, NewHeight);
+#ifdef _GAME
             if (GEngine.GameViewport.get())
             {
                 GEngine.GameViewport.get()->Resize(0, 0, NewWidth, NewHeight);
             }
+#endif
             // Save CLIENT AREA size (will be converted back to window size on load)
             EditorINI["WindowWidth"] = std::to_string(NewWidth);
             EditorINI["WindowHeight"] = std::to_string(NewHeight);
