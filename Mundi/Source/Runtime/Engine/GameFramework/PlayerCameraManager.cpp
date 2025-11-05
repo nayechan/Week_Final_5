@@ -53,7 +53,7 @@ void APlayerCameraManager::UpdateCamera(float DeltaTime)
 
 UCameraComponent* APlayerCameraManager::GetMainCamera()
 {
-	if (!MainCamera)
+	if (MainCamera)
 	{
 		return MainCamera;
 	}
@@ -63,6 +63,9 @@ UCameraComponent* APlayerCameraManager::GetMainCamera()
 
 	if (CameraActor)
 	{
+		// Todo: 추후 world의 CameraActor 변경
+		GetWorld()->SetCameraActor(CameraActor);
+
 		MainCamera = CameraActor->GetCameraComponent();
 	}
 
