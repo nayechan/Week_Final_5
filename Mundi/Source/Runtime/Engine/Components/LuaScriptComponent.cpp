@@ -94,6 +94,7 @@ void ULuaScriptComponent::BeginPlay()
 	}
 
 	GWorld->GetFirstPlayerCameraManager()->FadeIn(1.0, FLinearColor(0.0, 1.0, 1.0, 1.0));
+	GWorld->GetFirstPlayerCameraManager()->StartCameraShake(/*Duration*/2.0f, /*AmpLoc*/1.2f, /*AmpRotDeg*/2.5f, /*Freq*/9.0f);
 }
 
 void ULuaScriptComponent::OnBeginOverlap(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp)

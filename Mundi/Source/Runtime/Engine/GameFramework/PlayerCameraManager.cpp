@@ -1,7 +1,8 @@
 ﻿#include "pch.h"
 #include "PlayerCameraManager.h"
 #include "Camera/CameraModifierBase.h"
-#include "Camera/UCamMod_Fade.h"
+#include "Camera/CamMod_Fade.h"
+#include "Camera/CamMod_Shake.h"
 #include "SceneView.h"
 #include "CameraActor.h"
 #include "World.h"
@@ -34,6 +35,33 @@ APlayerCameraManager::~APlayerCameraManager()
 		delete BlendStartView;
 		BlendStartView = nullptr;
 	}
+}
+
+void APlayerCameraManager::StartCameraShake(float InDuration, float AmpLoc, float AmpRotDeg, float Frequency,
+	int32 InPriority)
+{
+	UCamMod_Shake* ShakeModifier = new UCamMod_Shake();
+	ShakeModifier->Priority = InPriority;
+	ShakeModifier->Initialize(InDuration, AmpLoc, AmpRotDeg, Frequency);
+	ActiveModifiers.Add(ShakeModifier);
+}
+
+void APlayerCameraManager::StartFade(float InDuration, float FromAlpha, float ToAlpha, const FLinearColor& InColor,
+	int32 InPriority)
+{
+	UCamMod_Fade* FadeModifier = new UCamMod_Fade();
+	FadeModifier->Priority   = InPriority;
+	FadeModifier->bEnabled   = true;
+
+	FadeModifier->FadeColor      = InColor;
+	FadeModifier->StartAlpha = FMath::Clamp(FromAlpha, 0.f, 1.f);
+	FadeModifier->EndAlpha   = FMath::Clamp(ToAlpha,   0.f, 1.f);
+	FadeModifier->Duration   = FMath::Max(0.f, InDuration);
+	FadeModifier->Elapsed    = 0.f;
+	FadeModifier->CurrentAlpha = FadeModifier->StartAlpha;
+
+	ActiveModifiers.Add(FadeModifier);
+	// ActiveModifiers.Sort([](UCameraModifierBase* A, UCameraModifierBase* B){ return *A < *B; });
 }
 
 void APlayerCameraManager::Tick(float DeltaTime)

@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "Actor.h"
-#include "Camera/UCamMod_Fade.h"
 
 class UCameraComponent;
 class UCameraModifierBase;
@@ -18,6 +17,9 @@ public:
 	APlayerCameraManager();
 
 	TArray<UCameraModifierBase*> ActiveModifiers;
+
+	void StartCameraShake(float InDuration, float AmpLoc, float AmpRotDeg, float Frequency, int32 InPriority = 0);
+	void StartFade(float InDuration, float FromAlpha, float ToAlpha, const FLinearColor& InColor, int32 InPriority=0);
 	
 	inline void FadeIn(float Duration, const FLinearColor& Color=FLinearColor::Zero(), int32 Priority=0)
 	{   // 검은 화면(1) → 씬(0)
@@ -38,23 +40,6 @@ public:
 protected:
 	~APlayerCameraManager() override;
 
-	void StartFade(float InDuration, float FromAlpha, float ToAlpha, const FLinearColor& InColor, int32 InPriority=0)
-	{
-		UCamMod_Fade* FadeModifier = new UCamMod_Fade();
-		FadeModifier->Priority   = InPriority;
-		FadeModifier->bEnabled   = true;
-
-		FadeModifier->FadeColor      = InColor;
-		FadeModifier->StartAlpha = FMath::Clamp(FromAlpha, 0.f, 1.f);
-		FadeModifier->EndAlpha   = FMath::Clamp(ToAlpha,   0.f, 1.f);
-		FadeModifier->Duration   = FMath::Max(0.f, InDuration);
-		FadeModifier->Elapsed    = 0.f;
-		FadeModifier->CurrentAlpha = FadeModifier->StartAlpha;
-
-		ActiveModifiers.Add(FadeModifier);
-		// ActiveModifiers.Sort([](UCameraModifierBase* A, UCameraModifierBase* B){ return *A < *B; });
-	}
-	
 public:
 	void Destroy() override;
 	// Actor의 메인 틱 함수
