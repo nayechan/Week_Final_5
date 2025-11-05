@@ -121,6 +121,27 @@ bool UWorld::TryLoadLastUsedLevel()
 	return true;
 }
 
+bool UWorld::LoadLevelFromFile(const FWideString& Path)
+{
+	std::unique_ptr<ULevel> NewLevel = ULevelService::CreateDefaultLevel();
+	JSON LevelJsonData;
+
+	if (FJsonSerializer::LoadJsonFromFile(LevelJsonData, Path))
+	{
+		NewLevel->Serialize(true, LevelJsonData);
+	}
+	else
+	{
+		UE_LOG("[error] MainToolbar: Failed To Load Level From: %s", Path.c_str());
+		return false;
+	}
+
+	SetLevel(std::move(NewLevel));
+
+	UE_LOG("UWorld: Scene loaded successfully: %s", Path.c_str());
+	return true;
+}
+
 // 함수 내부 코드 순서 유지 필요
 void UWorld::Tick(float DeltaSeconds)
 {	

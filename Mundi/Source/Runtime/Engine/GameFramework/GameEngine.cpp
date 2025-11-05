@@ -2,8 +2,9 @@
 #include "GameEngine.h"
 #include "USlateManager.h"
 #include "SelectionManager.h"
+#include "FViewport.h"
 #include <ObjManager.h>
-
+#include <sol/sol.hpp>
 
 float UGameEngine::ClientWidth = 1024.0f;
 float UGameEngine::ClientHeight = 1024.0f;
@@ -181,29 +182,54 @@ bool UGameEngine::Startup(HINSTANCE hInstance)
     if (!CreateMainWindow(hInstance))
         return false;
 
-    //디바이스 리소스 및 렌더러 생성
+    // 디바이스 리소스 및 렌더러 생성
     RHIDevice.Initialize(HWnd);
     Renderer = std::make_unique<URenderer>(&RHIDevice);
 
-    //매니저 초기화
+    // 뷰포트 생성
+    GameViewport = std::make_unique<FViewport>();
+    if (!GameViewport->Initialize(0, 0, ClientWidth, ClientHeight, GetRHIDevice()->GetDevice()))
+    {
+        UE_LOG("Failed to initialize GameViewport!");
+        return false;
+    }
+
+    // 매니저 초기화
     UI.Initialize(HWnd, RHIDevice.GetDevice(), RHIDevice.GetDeviceContext());
     INPUT.Initialize(HWnd);
 
     FObjManager::Preload();
 
     ///////////////////////////////////
-    WorldContexts.Add(FWorldContext(NewObject<UWorld>(), EWorldType::Editor));
+    WorldContexts.Add(FWorldContext(NewObject<UWorld>(), EWorldType::Game));
     GWorld = WorldContexts[0].World;
-    WorldContexts[0].World->Initialize();
+    GWorld->Initialize();
     ///////////////////////////////////
 
-    // 슬레이트 매니저 (singleton)
-    FRect ScreenRect(0, 0, ClientWidth, ClientHeight);
-    SLATE.Initialize(RHIDevice.GetDevice(), GWorld, ScreenRect);
+    // 시작 scene(level)을 직접 로드 
+    const FString StartupScenePath = GDataDir + "/Scenes/PlayScene.scene";
+    if (!GWorld->LoadLevelFromFile(UTF8ToWide(StartupScenePath)))
+    {
+        UE_LOG("Failed to load startup scene: %s", StartupScenePath.c_str());
+        return false;
+    }
 
-    // 최근에 사용한 레벨 불러오기를 시도합니다.
-    GWorld->TryLoadLastUsedLevel();
+    // 로드된 월드의 모든 액터에 대해 BeginPlay() 호출
+    //TArray<AActor*> LevelActors = GWorld->GetLevel()->GetActors();
+    //for (AActor* Actor : LevelActors)
+    //{
+    //    Actor->BeginPlay();
+    //}
 
+    // 로드된 월드 안에서 카메라 액터 찾기
+    //ACameraActor* FoundCamera = nullptr;
+    //for (AActor* Actor : GWorld->GetLevel()->GetActors())
+    //{
+    //    // Find Camera !!!
+    //}
+    //GWorld->SetCameraActor(FoundCamera);
+
+    bPlayActive = true;
     bRunning = true;
     return true;
 }
@@ -227,7 +253,6 @@ void UGameEngine::Tick(float DeltaSeconds)
         //}
     }
 
-    SLATE.Update(DeltaSeconds);
     UI.Update(DeltaSeconds);
     INPUT.Update();
 }
@@ -237,7 +262,17 @@ void UGameEngine::Render()
     Renderer->BeginFrame();
 
     UI.Render();
-    SLATE.Render();
+
+    if (GWorld)
+    {
+        ACameraActor* Camera = GWorld->GetCameraActor();
+        if (Camera)
+        {
+            Renderer->SetCurrentViewportSize(GameViewport->GetSizeX(), GameViewport->GetSizeY());
+            Renderer->RenderSceneForView(GWorld, Camera, GameViewport.get());
+        }
+    }
+
     UI.EndFrame();
 
     Renderer->EndFrame();
@@ -293,25 +328,6 @@ void UGameEngine::MainLoop()
 
         if (!bRunning) break;
 
-        if (bChangedPieToEditor)
-        {
-            if (GWorld && bPIEActive)
-            {
-                WorldContexts.pop_back();
-                ObjectFactory::DeleteObject(GWorld);
-            }
-
-            GWorld = WorldContexts[0].World;
-            GWorld->GetSelectionManager()->ClearSelection();
-            GWorld->GetLightManager()->SetDirtyFlag();
-            SLATE.SetPIEWorld(GWorld);
-
-            bPIEActive = false;
-            UE_LOG("[info] END PIE");
-
-            bChangedPieToEditor = false;
-        }
-
         Tick(DeltaSeconds);
         Render();
 
@@ -356,7 +372,7 @@ void UGameEngine::StartPIE()
     GWorld = PIEWorld;
     SLATE.SetPIEWorld(GWorld);  // SLATE의 카메라를 가져와서 설정, TODO: 추후 월드의 카메라 컴포넌트를 가져와서 설정하도록 변경 필요
 
-    bPIEActive = true;
+    bPlayActive = true;
 
     // BeginPlay 중에 새로운 actor가 추가될 수도 있어서 복사 후 호출
     TArray<AActor*> LevelActors = GWorld->GetLevel()->GetActors();
