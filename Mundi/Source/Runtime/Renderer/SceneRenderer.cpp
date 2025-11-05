@@ -992,12 +992,10 @@ void FSceneRenderer::RenderPostProcessingPasses()
 	Vignette.bEnabled = true;
 	Vignette.Weight = 1.0;
 	Vignette.SourceObject = nullptr;
-	FVinetteBufferType VinetteCB{ 0.35f, 0.25f, 1.0f, 2.0f, FadeInOut.Weight, {0,0,0},
-									{(float)View->Viewport->GetSizeX(), (float)View->Viewport->GetSizeY(), (float)View->Viewport->GetStartX(), (float)View->Viewport->GetStartY()},
-									FLinearColor(1.0, 1.0, 1.0, 1.0)};
-
+	FVinetteBufferType VinetteCB{ FLinearColor(0.0, 1.0, 0.0, 1.0),
+		0.35f, 0.25f, 1.0f, 2.0f, FadeInOut.Weight, {0,0,0}};
 	Vignette.JustForTest = &VinetteCB;
-	PostProcessModifiers.Add(Vignette);
+	// PostProcessModifiers.Add(Vignette);
 	
 	for (auto& Modifier : PostProcessModifiers)
 	{

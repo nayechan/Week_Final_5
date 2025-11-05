@@ -76,6 +76,8 @@ static_assert(sizeof(FFadeInOutBufferType) % 16 == 0, "CB must be 16-byte aligne
 
 struct alignas(16) FVinetteBufferType // b2
 {
+    FLinearColor Color;
+    
     float     Radius    = 0.35f;                        // 효과 시작 반경(0~1)
     float     Softness  = 0.25f;                        // 페더 폭(0~1)
     float     Intensity = 1.0f;                       // 컬러 블렌드 강도 (0~1)
@@ -83,9 +85,6 @@ struct alignas(16) FVinetteBufferType // b2
     
     float     Weight    = 1.0f;
     float     _Pad0[3];
-
-    float     ScreenSize[4];
-    FLinearColor Color = FLinearColor(0,0,0,1);
 };
 static_assert(sizeof(FVinetteBufferType) % 16 == 0, "CB must be 16-byte aligned");
 

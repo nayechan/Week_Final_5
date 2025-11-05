@@ -24,6 +24,8 @@ cbuffer ViewProjBuffer : register(b1)
 
 cbuffer VignetteCB : register(b2)
 {
+    float4 VignetteColor;    // target color
+    
     float  Radius;
     float  Softness;
     float  Intensity;
@@ -31,9 +33,6 @@ cbuffer VignetteCB : register(b2)
     
     float  Weight;
     float  _Pad0[3];
-
-    float4 ViewSize; // (W, H, X, Y)
-    float4 Color;    // target color
 }
 
 cbuffer ViewportConstants : register(b10)
@@ -54,11 +53,7 @@ float CalculateDistanceFromVignetteCenter(float2 textureCoordinates)
     float2 ViewportStartUV = ViewportRect.xy * ScreenSize.zw;
     // 뷰포트의 UV 공간 크기 (전체 화면 기준)
     float2 ViewportUVSpan = ViewportRect.zw * ScreenSize.zw;
-
     
-    // ViewSize = (W, H, StartX, StartY) in pixels
-    float2 ViewportSizePixels = ViewSize.xy;
-
     // Center (픽셀 단위, 뷰포트 좌상단 기준) -> UV(0..1)로 정규화
     float2 CenterUV;
     CenterUV.x = (ViewportUVSpan.x * 0.5 + ViewportStartUV.x);
@@ -68,7 +63,7 @@ float CalculateDistanceFromVignetteCenter(float2 textureCoordinates)
     float2 CenterOffset = textureCoordinates - CenterUV;
     
     // 화면비 보정: 원이 찌그러지지 않도록 x를 H/W로 스케일
-    float AspectRatio = (ViewportSizePixels.y <= 0.0f) ? 1.0f : (ViewportSizePixels.x / ViewportSizePixels.y);
+    float AspectRatio = (ViewportUVSpan.y <= 0.0f) ? 1.0f : (ViewportUVSpan.x / ViewportUVSpan.y);
     CenterOffset.x *= (1.0f / max(AspectRatio, 1e-6));
     
     // Roundness: n>=1, n 커질수록 모서리가 각지게
@@ -91,10 +86,9 @@ float4 mainPS(PS_INPUT input) : SV_Target
     float K = saturate(smoothstep(Radius, MaxColor, Distance) * Weight);
     
     // 가장자리 색 계산
-    float3 EdgeColor = lerp(SceneColor.rgb, Color.rgb, saturate(Intensity));
+    float3 EdgeColor = lerp(SceneColor.rgb, VignetteColor.rgb, saturate(Intensity));
     
     float3 OutRgb = lerp(SceneColor.rgb, EdgeColor.rgb, K);
-
-    return Color;
+    
     return float4(OutRgb, SceneColor.a);
 }
