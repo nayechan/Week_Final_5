@@ -9,6 +9,14 @@ enum class EPostProcessEffectType : uint8
     Fade,
 };
 
+struct FPostProcessPayload
+{
+    // 쉐이더 CB로 바로 복사될 범용 슬롯
+    FVector4 Params0 = FVector4(0,0,0,0);
+    FVector4 Params1 = FVector4(0,0,0,0);
+    FLinearColor Color = FLinearColor(0, 0, 0, 1);
+};
+
 struct FPostProcessModifier
 {
     EPostProcessEffectType Type = EPostProcessEffectType::Vignette;
@@ -16,7 +24,7 @@ struct FPostProcessModifier
     bool       bEnabled = true;
     float      Weight = 1.0f;
     UObject*   SourceObject = nullptr; // (디버그용) player camera manager나, fog component...
-    void*      JustForTest = nullptr; //  PCM쪽 API 뚫리면 위쪽으로 옮겨갈 예정
+    FPostProcessPayload Payload;       // 범용 슬롯! 효과마다 각 슬롯의 의미가 다름 
 };
 
 class IPostProcessPass

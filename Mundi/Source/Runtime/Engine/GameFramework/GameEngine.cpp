@@ -236,7 +236,9 @@ void UGameEngine::Render()
         if (Camera)
         {
             Renderer->SetCurrentViewportSize(GameViewport->GetSizeX(), GameViewport->GetSizeY());
-            Renderer->RenderSceneForView(GWorld, Camera, GameViewport.get());
+
+            FSceneView* SceneView = GWorld->GetFirstPlayerCameraManager()->GetSceneView(GameViewport.get(), &GWorld->GetRenderSettings());
+            Renderer->RenderSceneForView(GWorld, SceneView, GameViewport.get());
         }
     }
 

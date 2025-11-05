@@ -963,9 +963,9 @@ void FSceneRenderer::RenderDecalPass()
 
 void FSceneRenderer::RenderPostProcessingPasses()
 {
-	TArray<FPostProcessModifier> PostProcessModifiers;
+	TArray<FPostProcessModifier> PostProcessModifiers = View->PostProcessInput.Modifiers;
 
-	// TODO : 다른 데에서 하기
+	// TODO : 다른 데에서 하기, 맨 앞으로 넘기기
 	// Register Height Fog Modifiers, 첫번째만 등록 된다.
 	if (0 < SceneGlobals.Fogs.Num())
 	{
@@ -981,25 +981,34 @@ void FSceneRenderer::RenderPostProcessingPasses()
 	}
 
 	// TEST Session
-	FPostProcessModifier FadeInOut;
+	/*FPostProcessModifier FadeInOut;
 	FadeInOut.Type = EPostProcessEffectType::Fade;
 	FadeInOut.bEnabled = true;
 	FadeInOut.Weight = 1.0;
 	FadeInOut.SourceObject = nullptr;
 	FFadeInOutBufferType FadeCB{ FLinearColor(1,0,0,1), 0.5f, FadeInOut.Weight, {0,0} };
-	FadeInOut.JustForTest = &FadeCB;
+	FadeInOut.JustForTest = &FadeCB;*/
 	// PostProcessModifiers.Add(FadeInOut);
 
-	FPostProcessModifier Vignette;
+	/*FPostProcessModifier Vignette;
 	Vignette.Type = EPostProcessEffectType::Vignette;
 	Vignette.bEnabled = true;
 	Vignette.Weight = 1.0;
 	Vignette.SourceObject = nullptr;
 	FVinetteBufferType VinetteCB{ FLinearColor(0.0, 1.0, 0.0, 1.0),
 		0.35f, 0.25f, 1.0f, 2.0f, FadeInOut.Weight, {0,0,0}};
-	Vignette.JustForTest = &VinetteCB;
+	Vignette.JustForTest = &VinetteCB;*/
 	// PostProcessModifiers.Add(Vignette);
 	
+	PostProcessModifiers.Sort([](const FPostProcessModifier& LHS, const FPostProcessModifier& RHS)
+	{
+		if (LHS.Priority == RHS.Priority)
+		{
+			return LHS.Weight > RHS.Weight;
+		}
+		return LHS.Priority < RHS.Priority;
+	});
+
 	for (auto& Modifier : PostProcessModifiers)
 	{
 		switch (Modifier.Type)

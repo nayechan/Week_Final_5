@@ -2,6 +2,7 @@
 #include "FadeInOutPass.h"
 #include "../SceneView.h"
 #include "../../RHI/SwapGuard.h"
+#include "../../RHI/ConstantBufferType.h"
 
 void FFadeInOutPass::Execute(const FPostProcessModifier& M, FSceneView* View, D3D11RHI* RHIDevice)
 {
@@ -40,14 +41,11 @@ void FFadeInOutPass::Execute(const FPostProcessModifier& M, FSceneView* View, D3
     RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &SceneSRV);
     RHIDevice->GetDeviceContext()->PSSetSamplers(0, 1, &LinearClampSamplerState);
 
-    // 5) 상수 버퍼 업데이트 (BarSize/Softness/Weight/Color)
-    const FFadeInOutBufferType* Params = reinterpret_cast<const FFadeInOutBufferType*>(M.JustForTest);
-    if (!Params)
-    {
-        UE_LOG("FadeInout: JustForTest payload is null");
-        return;
-    }
-    FFadeInOutBufferType FadeInOutConstant = *Params;
+    // 5) 상수 버퍼 업데이트 (Opacity/Color/Weight)
+    FFadeInOutBufferType FadeInOutConstant;
+    FadeInOutConstant.FadeColor = M.Payload.Color;
+    FadeInOutConstant.Opacity = M.Payload.Params0.X;
+    FadeInOutConstant.Weight = M.Weight;
 
     RHIDevice->SetAndUpdateConstantBuffer(FadeInOutConstant);
 

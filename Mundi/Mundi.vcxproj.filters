@@ -521,6 +521,10 @@
     <ClCompile Include="Source\Runtime\Engine\Audio\Sound.cpp">
       <Filter>Source\Runtime\Engine\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\Camera\CameraModifierBase.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\PostProcessing\FadeInOutPass.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\PostProcessing\VignettePass.cpp" />
+    <ClCompile Include="UCamMod_Fade.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1190,6 +1194,10 @@
     <ClInclude Include="Source\Runtime\Engine\GameFramework\GameEngine.h">
       <Filter>Source\Runtime\Engine\GameFramework</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CameraModifierBase.h" />
+    <ClInclude Include="Source\Runtime\Renderer\PostProcessing\FadeInOutPass.h" />
+    <ClInclude Include="Source\Runtime\Renderer\PostProcessing\VignettePass.h" />
+    <ClInclude Include="UCamMod_Fade.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">

@@ -5,37 +5,22 @@
 #include "Frustum.h"
 
 FSceneView::FSceneView(UCameraComponent* InCamera, FViewport* InViewport, URenderSettings* InRenderSettings)
-: Camera(InCamera), Viewport(InViewport), RenderSettings(InRenderSettings)
+: Camera(InCamera)
 {
-    if (!Camera || !Viewport || !RenderSettings)
+    if (!Camera || !InViewport || !InRenderSettings)
 	{
 		UE_LOG("[FSceneView::FSceneView()]: CameraActor 또는 Viewport 또는 RenderSettings가 없습니다.");
 		return;
 	}
 
-	// --- 이 로직이 FSceneRenderer::PrepareView()에서 이동해 옴 ---
-
-	float AspectRatio = 1.0f;
-	if (Viewport->GetSizeY() > 0)
-	{
-		AspectRatio = (float)Viewport->GetSizeX() / (float)Viewport->GetSizeY();
-	}
-
 	ViewMatrix = Camera->GetViewMatrix();
-	ProjectionMatrix = Camera->GetProjectionMatrix(AspectRatio, Viewport);
-	ViewFrustum = CreateFrustumFromCamera(*Camera, AspectRatio);
 	ViewLocation = Camera->GetWorldLocation();
+	ViewRotation = Camera->GetWorldRotation();
 	ZNear = Camera->GetNearClip();
 	ZFar = Camera->GetFarClip();
-
-	ViewRect.MinX = Viewport->GetStartX();
-	ViewRect.MinY = Viewport->GetStartY();
-	ViewRect.MaxX = ViewRect.MinX + Viewport->GetSizeX();
-	ViewRect.MaxY = ViewRect.MinY + Viewport->GetSizeY();
-
 	ProjectionMode = Camera->GetProjectionMode();
 
-    ViewShaderMacros = CreateViewShaderMacros();
+	InitRenderSetting(InViewport, InRenderSettings);
 }
 
 TArray<FShaderMacro> FSceneView::CreateViewShaderMacros()
@@ -83,4 +68,30 @@ TArray<FShaderMacro> FSceneView::CreateViewShaderMacros()
 	}
 
 	return ShaderMacros;
+}
+
+void FSceneView::InitRenderSetting(FViewport* InViewport, URenderSettings* InRenderSettings)
+{
+	// --- 이 로직이 FSceneRenderer::PrepareView()에서 이동해 옴 ---
+	Viewport = InViewport;
+	RenderSettings = InRenderSettings;
+
+	float AspectRatio = 1.0f;
+	if (InViewport->GetSizeY() > 0)
+	{
+		AspectRatio = (float)InViewport->GetSizeX() / (float)InViewport->GetSizeY();
+	}
+
+	if (Camera)
+	{
+		ProjectionMatrix = Camera->GetProjectionMatrix(AspectRatio, InViewport);
+		ViewFrustum = CreateFrustumFromCamera(*Camera, AspectRatio);
+
+		ViewRect.MinX = InViewport->GetStartX();
+		ViewRect.MinY = InViewport->GetStartY();
+		ViewRect.MaxX = ViewRect.MinX + InViewport->GetSizeX();
+		ViewRect.MaxY = ViewRect.MinY + InViewport->GetSizeY();
+
+		ViewShaderMacros = CreateViewShaderMacros();
+	}
 }

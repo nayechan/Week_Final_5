@@ -14,6 +14,7 @@
 #include "Clipboard/ClipboardManager.h"
 #include "InputManager.h"
 #include "PlayerCameraManager.h"
+#include "SceneView.h"
 
 FVector FViewportClient::CameraAddPosition{};
 
@@ -84,7 +85,7 @@ void FViewportClient::Draw(FViewport* Viewport)
 {
 	if (!Viewport || !World) return;
 
-	UCameraComponent* RenderCamera = nullptr;
+	FSceneView* RenderView = nullptr;
 
 	if (World->bPie)
 	{
@@ -92,29 +93,43 @@ void FViewportClient::Draw(FViewport* Viewport)
 		APlayerCameraManager* PCM = World->GetFirstPlayerCameraManager();
 		if (PCM)
 		{
-			RenderCamera = PCM->GetMainCamera();
+			RenderView = PCM->GetSceneView(Viewport, &World->GetRenderSettings());
+			URenderer* Renderer = URenderManager::GetInstance().GetRenderer();
+			if (Renderer)
+			{
+				World->GetRenderSettings().SetViewMode(ViewMode);
+
+				// 더 명확한 이름의 함수를 호출
+				Renderer->RenderSceneForView(World, RenderView, Viewport);
+			}
+			return;
 		}
 	}
 
-	if (!RenderCamera)
+	if (!RenderView)
 	{
-		RenderCamera = Camera->GetCameraComponent();
-
 		// 1. 뷰 타입에 따라 카메라 설정 등 사전 작업을 먼저 수행
 		switch (ViewportType)
 		{
 		case EViewportType::Perspective:
 		{
-			RenderCamera->SetProjectionMode(ECameraProjectionMode::Perspective);
+			Camera->GetCameraComponent()->SetProjectionMode(ECameraProjectionMode::Perspective);
 			break;
 		}
 		default: // 모든 Orthographic 케이스
 		{
-			RenderCamera->SetProjectionMode(ECameraProjectionMode::Orthographic);
+			Camera->GetCameraComponent()->SetProjectionMode(ECameraProjectionMode::Orthographic);
 			SetupCameraMode();
 			break;
 		}
 		}
+
+		RenderView = new FSceneView(Camera->GetCameraComponent(), Viewport, &World->GetRenderSettings());
+	}
+
+	if (!RenderView || !RenderView->Viewport)
+	{
+		return;
 	}
 
 	// 2. 렌더링 호출은 뷰 타입 설정이 모두 끝난 후 마지막에 한 번만 수행
@@ -124,7 +139,12 @@ void FViewportClient::Draw(FViewport* Viewport)
 		World->GetRenderSettings().SetViewMode(ViewMode);
 
 		// 더 명확한 이름의 함수를 호출
-		Renderer->RenderSceneForView(World, RenderCamera, Viewport);
+		Renderer->RenderSceneForView(World, RenderView, Viewport);
+	}
+
+	if (RenderView)
+	{
+		delete RenderView;
 	}
 }
 

@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 /** UE5 스타일 기본 타입 정의 */
 typedef int int32;
@@ -116,6 +116,37 @@ public:
     void RemoveAt(int32 Index)
     {
         this->erase(this->begin() + Index);
+    }
+
+    /** 빠르게 제거 (순서 보존 X) */
+    void RemoveAtSwap(int32 Index, int32 Count = 1, bool bAllowShrinking = false)
+    {
+        int32 NumElements = Num();
+        if (Index < 0 || Count <= 0 || Index >= NumElements)
+        {
+            return;
+        }
+
+        int32 NumToRemove = Count;
+        if (Index + NumToRemove > NumElements)
+        {
+            NumToRemove = NumElements - Index;
+        }
+
+        for (int32 i = 0; i < NumToRemove; ++i)
+        {
+            int32 LastIndex = Num() - 1;
+            if (Index < LastIndex)
+            {
+                std::swap((*this)[Index], (*this)[LastIndex]);
+            }
+            this->pop_back();
+        }
+
+        if (bAllowShrinking)
+        {
+            this->shrink_to_fit();
+        }
     }
 
     bool Remove(const T& Item)

@@ -2,6 +2,7 @@
 #include "VignettePass.h"
 #include "../SceneView.h"
 #include "../../RHI/SwapGuard.h"
+#include "../../RHI/ConstantBufferType.h"
 
 void FVignettePass::Execute(const FPostProcessModifier& M, FSceneView* View, D3D11RHI* RHIDevice)
 {
@@ -41,14 +42,14 @@ void FVignettePass::Execute(const FPostProcessModifier& M, FSceneView* View, D3D
     RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &SceneSRV);
     RHIDevice->GetDeviceContext()->PSSetSamplers(0, 1, &LinearClampSamplerState);
 
-    // 5) 상수 버퍼 업데이트 (BarSize/Softness/Weight/Color)
-    const FVinetteBufferType* Params = reinterpret_cast<const FVinetteBufferType*>(M.JustForTest);
-    if (!Params)
-    {
-        UE_LOG("FadeInout: JustForTest payload is null");
-        return;
-    }
-    FVinetteBufferType VinetteConstant = *Params;
+    // 5) 상수 버퍼 업데이트 (색상/반경 등)
+    FVinetteBufferType VinetteConstant;
+    VinetteConstant.Color = M.Payload.Color;
+    VinetteConstant.Radius = M.Payload.Params0.X;
+    VinetteConstant.Softness = M.Payload.Params0.Y;
+    VinetteConstant.Intensity = M.Payload.Params0.Z;
+    VinetteConstant.Roundness = M.Payload.Params0.W;
+    VinetteConstant.Weight = M.Weight;
 
     RHIDevice->SetAndUpdateConstantBuffer(VinetteConstant);
 
