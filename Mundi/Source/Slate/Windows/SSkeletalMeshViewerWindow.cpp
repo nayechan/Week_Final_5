@@ -45,7 +45,7 @@ bool SSkeletalMeshViewerWindow::Initialize(float StartX, float StartY, float Wid
 
 void SSkeletalMeshViewerWindow::OnRender()
 {
-    // Parent detachable window (movable, top-level, no background so 3D shows through)
+    // Parent detachable window (movable, top-level) with transparent background so 3D shows through
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground;
 
     if (!bInitialPlacementDone)
@@ -110,9 +110,10 @@ void SSkeletalMeshViewerWindow::OnRender()
 
         // Center panel (viewport area) — draw with no background so viewport remains visible
         ImGui::BeginChild("SkeletalMeshViewport", ImVec2(centerWidth, totalHeight), false, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoBackground);
-        ImVec2 rectMin = ImGui::GetCursorScreenPos();
-        ImGui::Dummy(ImVec2(centerWidth, totalHeight));
-        ImVec2 rectMax(rectMin.x + centerWidth, rectMin.y + totalHeight);
+        ImVec2 childPos = ImGui::GetWindowPos();
+        ImVec2 childSize = ImGui::GetWindowSize();
+        ImVec2 rectMin = childPos;
+        ImVec2 rectMax(childPos.x + childSize.x, childPos.y + childSize.y);
         CenterRect.Left = rectMin.x; CenterRect.Top = rectMin.y; CenterRect.Right = rectMax.x; CenterRect.Bottom = rectMax.y; CenterRect.UpdateMinMax();
         ImGui::EndChild();
 
