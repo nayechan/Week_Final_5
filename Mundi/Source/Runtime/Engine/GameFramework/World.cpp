@@ -542,15 +542,11 @@ AActor* UWorld::FindActorByName(const FName& ActorName)
 
 	for (AActor* Actor : Level->GetActors())
 	{
-		UE_LOG("%d %s", Actor->ObjectName, Actor->ObjectName.ToString().c_str());
-
 		if (Actor && !Actor->IsPendingDestroy() && Actor->ObjectName == ActorName)
 		{
 			return Actor; // 첫 번째 일치하는 액터 반환
 		}
 	}
-
-	UE_LOG("%d %s", ActorName, ActorName.ToString().c_str());
 
 	return nullptr; // 찾지 못함
 }
