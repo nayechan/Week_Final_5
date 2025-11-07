@@ -742,6 +742,15 @@
     <ClInclude Include="ThirdParty\Lua\include\luaconf.h" />
     <ClInclude Include="ThirdParty\Lua\include\lualib.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Tools\CodeGenerator\generate.py" />
+    <None Include="Tools\CodeGenerator\lua_generator.py" />
+    <None Include="Tools\CodeGenerator\parser.py" />
+    <None Include="Tools\CodeGenerator\property_generator.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Tools\CodeGenerator\requirements.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

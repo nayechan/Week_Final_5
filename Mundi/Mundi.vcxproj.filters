@@ -502,6 +502,9 @@
       <Filter>Source\Runtime\Engine\GameFramework\Camera</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Renderer\PostProcessing\GammaPass.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Scripting\LuaBindHelpers.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Scripting\LuaBindingRegistry.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Scripting\LuaComponentProxy.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -1092,6 +1095,9 @@
     </ClInclude>
     <ClInclude Include="Source\Runtime\Renderer\PostProcessing\GammaPass.h" />
     <ClInclude Include="ThirdParty\ImGui\imgui_curve.hpp" />
+    <ClInclude Include="Source\Runtime\Engine\Scripting\LuaBindHelpers.h" />
+    <ClInclude Include="Source\Runtime\Engine\Scripting\LuaBindingRegistry.h" />
+    <ClInclude Include="Source\Runtime\Engine\Scripting\LuaComponentProxy.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">
@@ -1226,5 +1232,27 @@
     <Filter Include="ThirdParty\Lua\include">
       <UniqueIdentifier>{3ad57ef5-b375-4262-abe5-b3a5f8f9a886}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{3cca26d2-60f7-47fe-a080-6deff27b677e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Tools\CodeGenerator\generate.py">
+      <Filter>Tools</Filter>
+    </None>
+    <None Include="Tools\CodeGenerator\lua_generator.py">
+      <Filter>Tools</Filter>
+    </None>
+    <None Include="Tools\CodeGenerator\parser.py">
+      <Filter>Tools</Filter>
+    </None>
+    <None Include="Tools\CodeGenerator\property_generator.py">
+      <Filter>Tools</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Tools\CodeGenerator\requirements.txt">
+      <Filter>Tools</Filter>
+    </Text>
   </ItemGroup>
 </Project>

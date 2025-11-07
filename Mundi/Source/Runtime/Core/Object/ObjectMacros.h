@@ -40,6 +40,19 @@ struct TPropertyTypeTraits
 	}
 };
 
+// ===== 코드 생성 마커 매크로 =====
+
+// 코드 생성기가 파싱할 마커 (컴파일 시에는 빈 매크로)
+// 실제 동작은 generate.py가 생성한 .generated.cpp에서 이루어짐
+
+// 프로퍼티 자동 생성 마커
+// 사용법: UPROPERTY(EditAnywhere, Category="Mesh")
+#define UPROPERTY(...)
+
+// 함수 자동 바인딩 마커
+// 사용법: UFUNCTION(LuaBind, DisplayName="SetColor")
+#define UFUNCTION(...)
+
 // ===== 리플렉션 매크로 (수동 등록 방식) =====
 
 // 헤더 파일에서 사용: 리플렉션 등록 함수 선언 + 자동 호출
