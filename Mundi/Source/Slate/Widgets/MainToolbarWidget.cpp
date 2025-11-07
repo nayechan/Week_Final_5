@@ -7,6 +7,7 @@
 #include "CameraActor.h"
 #include "EditorEngine.h"
 #include "PlatformProcess.h"
+#include "USlateManager.h"
 #include <commdlg.h>
 #include <random>
 
@@ -121,6 +122,32 @@ void UMainToolbarWidget::RenderToolbar()
         // PIE 제어 버튼들
         ImGui::SameLine(0, 12.0f);
         RenderPIEButtons();
+
+        // Separator
+        ImGui::SameLine(0, 12.0f);
+        ImVec2 separatorStart2 = ImGui::GetCursorScreenPos();
+        separatorStart2.y += 4.0f;
+        ImGui::GetWindowDrawList()->AddLine(
+            separatorStart2,
+            ImVec2(separatorStart2.x, separatorStart2.y + IconSize),
+            ImGui::GetColorU32(ImVec4(0.25f, 0.25f, 0.25f, 0.8f)),
+            2.0f
+        );
+        ImGui::Dummy(ImVec2(2.0f, IconSize));
+
+        // Temporary: Skeletal Mesh Viewer launch button
+        ImGui::SameLine(0, 12.0f);
+        if (ImGui::Button("Skeletal Viewer"))
+        {
+            if (!USlateManager::GetInstance().IsSkeletalMeshViewerOpen())
+            {
+                USlateManager::GetInstance().OpenSkeletalMeshViewer();
+            }
+            else
+            {
+                USlateManager::GetInstance().CloseSkeletalMeshViewer();
+            }
+        }
 
         // 로고를 오른쪽에 배치
         if (LogoTexture && LogoTexture->GetShaderResourceView())

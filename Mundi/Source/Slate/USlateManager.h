@@ -4,6 +4,7 @@
 #include "Windows/SSplitterV.h"
 #include "Windows/SSplitterH.h"
 #include "Windows/SViewportWindow.h"
+#include "Windows/SSkeletalMeshViewerWindow.h"
 
 class SSceneIOWindow; // 새로 추가할 UI
 class SDetailsWindow;
@@ -65,6 +66,11 @@ public:
     void ToggleConsole();
     bool IsConsoleVisible() const { return bIsConsoleVisible; }
     void ForceOpenConsole();
+    
+    // Temp: open/close Skeletal Mesh Viewer (detached window)
+    void OpenSkeletalMeshViewer();
+    void CloseSkeletalMeshViewer();
+    bool IsSkeletalMeshViewerOpen() const { return SkeletalViewerWindow != nullptr; }
 
 private:
     FRect Rect; // 이전엔 SWindow로부터 상속받던 영역 정보
@@ -107,4 +113,7 @@ private:
     const float ConsoleAnimationDuration = 0.25f; // 초 단위
     const float ConsoleHeightRatio = 0.3f; // 화면 높이의 30%
     const float ConsoleHorizontalMargin = 10.0f; // 좌/우 여백 (픽셀 단위)
+
+    // Detached skeletal mesh viewer window
+    SSkeletalMeshViewerWindow* SkeletalViewerWindow = nullptr;
 };

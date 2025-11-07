@@ -76,7 +76,7 @@ void FViewport::EndRenderFrame()
 
 void FViewport::Resize(uint32 NewStartX, uint32 NewStartY, uint32 NewSizeX, uint32 NewSizeY)
 {
-	if (SizeX == NewSizeX && SizeY == NewSizeY)
+	if (StartX == NewStartX && StartY == NewStartY && SizeX == NewSizeX && SizeY == NewSizeY)
 		return;
 	StartX = NewStartX;
 	StartY = NewStartY;

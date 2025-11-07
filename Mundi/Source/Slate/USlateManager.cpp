@@ -8,6 +8,7 @@
 #include "Windows/SControlPanel.h"
 #include "Windows/ControlPanelWindow.h"
 #include "Windows/SViewportWindow.h"
+#include "Windows/SSkeletalMeshViewerWindow.h"
 #include "Windows/ConsoleWindow.h"
 #include "Widgets/MainToolbarWidget.h"
 #include "Widgets/ConsoleWidget.h"
@@ -156,6 +157,30 @@ void USlateManager::Initialize(ID3D11Device* InDevice, UWorld* InWorld, const FR
     }
 }
 
+void USlateManager::OpenSkeletalMeshViewer()
+{
+    if (SkeletalViewerWindow)
+        return;
+
+    SkeletalViewerWindow = new SSkeletalMeshViewerWindow();
+
+    // Open as a detached window at a default size and position
+    const float toolbarHeight = 50.0f;
+    const float availableHeight = Rect.GetHeight() - toolbarHeight;
+    const float w = Rect.GetWidth() * 0.6f;
+    const float h = availableHeight * 0.7f;
+    const float x = Rect.Left + (Rect.GetWidth() - w) * 0.5f;
+    const float y = Rect.Top + toolbarHeight + (availableHeight - h) * 0.5f;
+    SkeletalViewerWindow->Initialize(x, y, w, h, World, Device);
+}
+
+void USlateManager::CloseSkeletalMeshViewer()
+{
+    if (!SkeletalViewerWindow) return;
+    delete SkeletalViewerWindow;
+    SkeletalViewerWindow = nullptr;
+}
+
 void USlateManager::SwitchLayout(EViewportLayoutMode NewMode)
 {
     if (NewMode == CurrentMode) return;
@@ -191,6 +216,12 @@ void USlateManager::Render()
     if (TopPanel)
     {
         TopPanel->OnRender();
+    }
+
+    // Render detached viewer on top
+    if (SkeletalViewerWindow)
+    {
+        SkeletalViewerWindow->OnRender();
     }
 
     // 콘솔 오버레이 렌더링 (모든 것 위에 표시)
@@ -293,6 +324,11 @@ void USlateManager::Update(float DeltaSeconds)
         TopPanel->OnUpdate(DeltaSeconds);
     }
 
+    if (SkeletalViewerWindow)
+    {
+        SkeletalViewerWindow->OnUpdate(DeltaSeconds);
+    }
+
     // 콘솔 애니메이션 업데이트
     if (bIsConsoleAnimating)
     {
@@ -328,6 +364,26 @@ void USlateManager::Update(float DeltaSeconds)
 void USlateManager::ProcessInput()
 {
     const FVector2D MousePosition = INPUT.GetMousePosition();
+
+    if (SkeletalViewerWindow && SkeletalViewerWindow->Rect.Contains(MousePosition))
+    {
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+        {
+            OnMouseDown(MousePosition, 0);
+        }
+        if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+        {
+            OnMouseDown(MousePosition, 1);
+        }
+        if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+        {
+            OnMouseUp(MousePosition, 0);
+        }
+        if (ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+        {
+            OnMouseUp(MousePosition, 1);
+        }
+    }
 
     if (INPUT.IsMouseButtonPressed(LeftButton))
     {
@@ -372,6 +428,13 @@ void USlateManager::ProcessInput()
 
 void USlateManager::OnMouseMove(FVector2D MousePos)
 {
+    // Route to detached viewer if hovered
+    if (SkeletalViewerWindow && SkeletalViewerWindow->IsHover(MousePos))
+    {
+        SkeletalViewerWindow->OnMouseMove(MousePos);
+        return;
+    }
+
     if (ActiveViewport)
     {
         ActiveViewport->OnMouseMove(MousePos);
@@ -384,6 +447,12 @@ void USlateManager::OnMouseMove(FVector2D MousePos)
 
 void USlateManager::OnMouseDown(FVector2D MousePos, uint32 Button)
 {
+    if (SkeletalViewerWindow && SkeletalViewerWindow->Rect.Contains(MousePos))
+    {
+        SkeletalViewerWindow->OnMouseDown(MousePos, Button);
+        return;
+    }
+    
     if (ActiveViewport)
     {
     }
@@ -417,6 +486,12 @@ void USlateManager::OnMouseUp(FVector2D MousePos, uint32 Button)
     {
         INPUT.SetCursorVisible(true);
         INPUT.ReleaseCursor();
+    }
+
+    if (SkeletalViewerWindow && SkeletalViewerWindow->Rect.Contains(MousePos))
+    {
+        SkeletalViewerWindow->OnMouseUp(MousePos, Button);
+        // do not return; still allow panels to finish mouse up
     }
 
     if (ActiveViewport)
@@ -465,6 +540,12 @@ void USlateManager::Shutdown()
     }
     MainViewport = nullptr;
     ActiveViewport = nullptr;
+
+    if (SkeletalViewerWindow)
+    {
+        delete SkeletalViewerWindow;
+        SkeletalViewerWindow = nullptr;
+    }
 }
 
 void USlateManager::SetPIEWorld(UWorld* InWorld)

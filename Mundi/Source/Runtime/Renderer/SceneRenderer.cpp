@@ -73,12 +73,13 @@ FSceneRenderer::~FSceneRenderer()
 //====================================================================================
 void FSceneRenderer::Render()
 {
-	if (!IsValid()) return;
+    if (!IsValid()) return;
 
-	// 뷰(View) 준비: 행렬, 절두체 등 프레임에 필요한 기본 데이터 계산
-	PrepareView();
-	// 렌더링할 대상 수집 (Cull + Gather)
-	GatherVisibleProxies();
+    // 뷰(View) 준비: 행렬, 절두체 등 프레임에 필요한 기본 데이터 계산
+    PrepareView();
+    // (Background is cleared per-path when binding scene color)
+    // 렌더링할 대상 수집 (Cull + Gather)
+    GatherVisibleProxies();
 
 	TIME_PROFILE(ShadowMapPass)
 	RenderShadowMaps();
@@ -135,7 +136,20 @@ void FSceneRenderer::Render()
 
 void FSceneRenderer::RenderLitPath()
 {
-	RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTargetWithId);
+    RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTargetWithId);
+    // Clear scene color for this view's rect to provide an opaque background
+    {
+        D3D11_VIEWPORT vp = {};
+        vp.TopLeftX = (float)View->ViewRect.MinX;
+        vp.TopLeftY = (float)View->ViewRect.MinY;
+        vp.Width    = (float)View->ViewRect.Width();
+        vp.Height   = (float)View->ViewRect.Height();
+        vp.MinDepth = 0.0f; vp.MaxDepth = 1.0f;
+        RHIDevice->GetDeviceContext()->RSSetViewports(1, &vp);
+        const float bg[4] = { 0.09f, 0.10f, 0.10f, 1.00f };
+        RHIDevice->GetDeviceContext()->ClearRenderTargetView(RHIDevice->GetCurrentTargetRTV(), bg);
+        RHIDevice->ClearDepthBuffer(1.0f, 0);
+    }
 
 	// Base Pass
 	RenderOpaquePass(View->RenderSettings->GetViewMode());
@@ -149,11 +163,24 @@ void FSceneRenderer::RenderWireframePath()
 	RHIDevice->OMSetRenderTargets(ERTVMode::SceneIdTarget);
 	RenderOpaquePass(EViewMode::VMI_Unlit);
 
-	// Wireframe으로 그리기
-	RHIDevice->ClearDepthBuffer(1.0f, 0);
-	RHIDevice->RSSetState(ERasterizerMode::Wireframe);
-	RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTarget);
-	RenderOpaquePass(EViewMode::VMI_Unlit);
+    // Wireframe으로 그리기
+    RHIDevice->ClearDepthBuffer(1.0f, 0);
+    RHIDevice->RSSetState(ERasterizerMode::Wireframe);
+    RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTarget);
+    // Provide background for wireframe path
+    {
+        D3D11_VIEWPORT vp = {};
+        vp.TopLeftX = (float)View->ViewRect.MinX;
+        vp.TopLeftY = (float)View->ViewRect.MinY;
+        vp.Width    = (float)View->ViewRect.Width();
+        vp.Height   = (float)View->ViewRect.Height();
+        vp.MinDepth = 0.0f; vp.MaxDepth = 1.0f;
+        RHIDevice->GetDeviceContext()->RSSetViewports(1, &vp);
+        const float bg[4] = { 0.12f, 0.13f, 0.15f, 1.0f };
+        RHIDevice->GetDeviceContext()->ClearRenderTargetView(RHIDevice->GetCurrentTargetRTV(), bg);
+        RHIDevice->ClearDepthBuffer(1.0f, 0);
+    }
+    RenderOpaquePass(EViewMode::VMI_Unlit);
 
 	// 상태 복구
 	RHIDevice->RSSetState(ERasterizerMode::Solid);
