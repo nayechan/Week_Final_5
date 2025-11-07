@@ -140,6 +140,32 @@ struct FNormalVertex
     }
 };
 
+
+/**
+* 스키닝용 정점 구조체
+*/
+struct FSkinnedVertex
+{
+    FVector Position; // 정점 위치
+    FVector Normal; // 법선 벡터
+    FVector2D UV; // 텍스처 좌표
+    FVector4 Tangent; // 탄젠트 (w는 binormal 방향)
+    FVector4 Color; // 정점 컬러
+    uint32 BoneIndices[4]; // 영향을 주는 본 인덱스 (최대 4개)
+    float BoneWeights[4]; // 각 본의 가중치 (합이 1.0)
+};
+
+/**
+* 본(뼈) 정보
+*/
+struct FBone
+{
+    FString Name; // 본 이름
+    int32 ParentIndex; // 부모 본 인덱스 (-1이면 루트)
+    FMatrix BindPose; // Bind Pose 변환 행렬
+    FMatrix InverseBindPose; // Inverse Bind Pose (스키닝용)
+};
+
 // Template specialization for TArray<FNormalVertex> to force element-by-element serialization
 namespace Serialization {
     template<>
@@ -157,6 +183,35 @@ namespace Serialization {
         for (auto& Vtx : Arr) Ar << Vtx;
     }
 }
+
+struct FSkeleton
+{
+    FString Name; // 스켈레톤 이름
+    TArray<FBone> Bones; // 본 배열
+    TMap <FString, int32> BoneNameToIndex; // 이름으로 본 검색
+};
+
+/**
+* 스킨 웨이트 정보
+*/
+struct FVertexWeight
+{
+    uint32 VertexIndex; // 정점 인덱스
+    float Weight; // 가중치
+};
+
+/**
+* FBX에서 로드한 원시 스켈레탈 메시 데이터
+*/
+struct FSkeletalMeshData
+{
+    TArray<FSkinnedVertex> Vertices; // 정점 배열
+    TArray <uint32> Indices; // 인덱스 배열
+    FSkeleton Skeleton; // 스켈레톤 정보
+    TArray<FGroupInfo> GroupInfos; // 머티리얼 그룹 (기존 시스템 재사용)
+    bool bHasMaterial;
+    FString CacheFilePath;
+};
 
 //// Cooked Data
 struct FStaticMesh
@@ -287,12 +342,15 @@ enum class ResourceType : uint8
     None,
 
     StaticMesh,
+    SkeletaMesh,
     Quad,
     DynamicMesh,
     Shader,
     Texture,
     Material,
     Sound,
+    Animation,
+
 
     End
 };

@@ -1,5 +1,5 @@
-*.* !text !filter !merge !diff
 *.lib filter=lfs diff=lfs merge=lfs -text
+*.* !text !filter !merge !diff
 *.fbx filter=lfs diff=lfs merge=lfs -text
 Mundi/Data/** !text !filter !merge !diff
 * !text !filter !merge !diff
