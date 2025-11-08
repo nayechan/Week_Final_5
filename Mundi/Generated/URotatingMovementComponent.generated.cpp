@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(URotatingMovementComponent) expansion
+namespace {
+    struct URotatingMovementComponentFactoryRegister
+    {
+        URotatingMovementComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                URotatingMovementComponent::StaticClass(),
+                []() -> UObject* { return new URotatingMovementComponent(); }
+            );
+        }
+    };
+    static URotatingMovementComponentFactoryRegister GRegister_URotatingMovementComponent;
+    static bool bIsRegistered_URotatingMovementComponent = [](){ URotatingMovementComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool URotatingMovementComponent::bPropertiesRegistered = []() {
+    URotatingMovementComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(URotatingMovementComponent)

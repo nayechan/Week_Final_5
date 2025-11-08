@@ -3,11 +3,7 @@
 #include "SceneComponent.h"
 #include "Actor.h"
 #include "WorldPartitionManager.h"
-
-IMPLEMENT_CLASS(UPrimitiveComponent)
-
-
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 UPrimitiveComponent::UPrimitiveComponent() : bGenerateOverlapEvents(true)
 {
 }

@@ -1,6 +1,8 @@
 ﻿#pragma once
+
 #include "SceneComponent.h"
 #include "Material.h"
+#include "UPrimitiveComponent.generated.h"
 
 // 전방 선언
 struct FSceneCompData;
@@ -18,7 +20,7 @@ struct FOverlapInfo
 class UPrimitiveComponent :public USceneComponent
 {
 public:
-    DECLARE_CLASS(UPrimitiveComponent, USceneComponent)
+
     GENERATED_REFLECTION_BODY();
 
     UPrimitiveComponent();
@@ -45,7 +47,6 @@ public:
     // 내부적으로 ResourceManager를 통해 UMaterial*를 찾아 SetMaterial을 호출합니다.
     void SetMaterialByName(uint32 InElementIndex, const FString& MaterialName);
 
-
     void SetCulled(bool InCulled)
     {
         bIsCulled = InCulled;
@@ -64,7 +65,6 @@ public:
     
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
-    DECLARE_DUPLICATE(UPrimitiveComponent)
 
     // Overlap event generation toggle API
     void SetGenerateOverlapEvents(bool bEnable) { bGenerateOverlapEvents = bEnable; }

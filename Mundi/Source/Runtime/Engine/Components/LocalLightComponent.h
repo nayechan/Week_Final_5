@@ -1,11 +1,13 @@
 ﻿#pragma once
+
 #include "LightComponent.h"
+#include "ULocalLightComponent.generated.h"
 
 // 위치 기반 로컬 라이트의 공통 베이스 (Point, Spot)
 class ULocalLightComponent : public ULightComponent
 {
 public:
-	DECLARE_CLASS(ULocalLightComponent, ULightComponent)
+
 	GENERATED_REFLECTION_BODY()
 
 	ULocalLightComponent();
@@ -35,7 +37,6 @@ public:
 	// Serialization & Duplication
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 	virtual void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(ULocalLightComponent)
 
 protected:
 	UPROPERTY(EditAnywhere, Category="Light", Range="0.0, 100.0")

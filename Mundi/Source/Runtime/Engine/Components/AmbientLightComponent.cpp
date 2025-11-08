@@ -1,11 +1,7 @@
 ﻿#include "pch.h"
 #include "AmbientLightComponent.h"
 #include "BillboardComponent.h"
-
-IMPLEMENT_CLASS(UAmbientLightComponent)
-
-
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 UAmbientLightComponent::UAmbientLightComponent()
 {
 }

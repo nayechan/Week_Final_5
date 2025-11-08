@@ -1,9 +1,7 @@
 ﻿#include "pch.h"
 #include "DecalActor.h"
 #include "DecalComponent.h"
-
-IMPLEMENT_CLASS(ADecalActor)
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 //BEGIN_PROPERTIES(ADecalActor)
 //	MARK_AS_SPAWNABLE("데칼", "표면에 투영되는 데칼 액터입니다.")
 //END_PROPERTIES()

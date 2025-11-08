@@ -7,9 +7,7 @@
 
 #include "RenderManager.h"
 #include "D3D11RHI.h"
-
-IMPLEMENT_CLASS(UDirectionalLightComponent)
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 //BEGIN_PROPERTIES(UDirectionalLightComponent)
 //	MARK_AS_COMPONENT("디렉셔널 라이트", "방향성 라이트 (태양광 같은 평행광) 컴포넌트입니다.")
 //	ADD_PROPERTY(bool, bCascaded, "ShadowMap", true, "Cascaded 사용 여부")

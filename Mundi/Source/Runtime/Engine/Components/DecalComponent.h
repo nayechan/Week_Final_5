@@ -1,7 +1,9 @@
 ﻿#pragma once
+
 #include "PrimitiveComponent.h"
 #include "AABB.h"
 #include "Vector.h"
+#include "UDecalComponent.generated.h"
 
 // Forward declarations
 struct FOBB;
@@ -19,7 +21,7 @@ struct FDecalProjectionData;
 class UDecalComponent : public UPrimitiveComponent
 {
 public:
-	DECLARE_CLASS(UDecalComponent, UPrimitiveComponent)
+
 	GENERATED_REFLECTION_BODY()
 
 	UDecalComponent();
@@ -53,7 +55,6 @@ public:
 
 	// ───── 복사 관련 ────────────────────────────
 	void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(UDecalComponent)
 
 	// Tick
 	virtual void TickComponent(float DeltaTime) override;

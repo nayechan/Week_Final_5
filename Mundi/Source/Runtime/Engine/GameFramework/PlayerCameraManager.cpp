@@ -11,8 +11,7 @@
 #include "World.h"
 #include "FViewport.h"
 #include "RenderSettings.h"
-
-IMPLEMENT_CLASS(APlayerCameraManager)
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 //
 //BEGIN_PROPERTIES(APlayerCameraManager)
 //	MARK_AS_SPAWNABLE("플레이어 카메라 매니저", "최종적으로 카메라 화면을 관리하는 액터입니다. (씬에 1개만 존재 필요)")

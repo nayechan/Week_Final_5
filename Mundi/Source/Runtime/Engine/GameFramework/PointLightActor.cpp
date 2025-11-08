@@ -1,9 +1,7 @@
 ﻿#include "pch.h"
 #include "PointLightActor.h"
 #include "PointLightComponent.h"
-
-IMPLEMENT_CLASS(APointLightActor)
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 //BEGIN_PROPERTIES(APointLightActor)
 //	MARK_AS_SPAWNABLE("포인트 라이트", "전방향으로 빛을 발산하는 라이트 액터입니다.")
 //END_PROPERTIES()

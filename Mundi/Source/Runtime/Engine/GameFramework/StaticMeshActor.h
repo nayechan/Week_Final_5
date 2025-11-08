@@ -1,12 +1,14 @@
 ﻿#pragma once
+
 #include "Actor.h"
 #include "Enums.h"
+#include "AStaticMeshActor.generated.h"
 
 class UStaticMeshComponent;
 class AStaticMeshActor : public AActor
 {
 public:
-	DECLARE_CLASS(AStaticMeshActor, AActor)
+
 	GENERATED_REFLECTION_BODY()
 
 	AStaticMeshActor(); 
@@ -21,7 +23,6 @@ public:
 
 	// ───── 복사 관련 ────────────────────────────
 	void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(AStaticMeshActor)
 
 	// Serialize
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;

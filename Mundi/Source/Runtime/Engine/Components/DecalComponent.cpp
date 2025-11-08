@@ -6,9 +6,7 @@
 #include "JsonSerializer.h"
 #include "BillboardComponent.h"
 #include "Gizmo/GizmoArrowComponent.h"
-
-IMPLEMENT_CLASS(UDecalComponent)
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 //BEGIN_PROPERTIES(UDecalComponent)
 //	MARK_AS_COMPONENT("데칼 컴포넌트", "표면에 투영되는 데칼 효과를 생성합니다.")
 //	ADD_PROPERTY_TEXTURE(UTexture*, DecalTexture, "Decal", true)

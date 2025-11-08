@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(UTextRenderComponent) expansion
+namespace {
+    struct UTextRenderComponentFactoryRegister
+    {
+        UTextRenderComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                UTextRenderComponent::StaticClass(),
+                []() -> UObject* { return new UTextRenderComponent(); }
+            );
+        }
+    };
+    static UTextRenderComponentFactoryRegister GRegister_UTextRenderComponent;
+    static bool bIsRegistered_UTextRenderComponent = [](){ UTextRenderComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool UTextRenderComponent::bPropertiesRegistered = []() {
+    UTextRenderComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UTextRenderComponent)

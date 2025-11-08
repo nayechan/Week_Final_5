@@ -11,7 +11,7 @@
 
 //extern "C" void LuaBind_Anchor_UAudioComponent() {}
 
-IMPLEMENT_CLASS(UAudioComponent)
+// IMPLEMENT_CLASS is now auto-generated in UAudioComponent.generated.cpp
 
 UAudioComponent::UAudioComponent()
     : Volume(1.0f)

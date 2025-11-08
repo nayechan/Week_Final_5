@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(AActor) expansion
+namespace {
+    struct AActorFactoryRegister
+    {
+        AActorFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                AActor::StaticClass(),
+                []() -> UObject* { return new AActor(); }
+            );
+        }
+    };
+    static AActorFactoryRegister GRegister_AActor;
+    static bool bIsRegistered_AActor = [](){ AActor::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool AActor::bPropertiesRegistered = []() {
+    AActor::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(AActor)

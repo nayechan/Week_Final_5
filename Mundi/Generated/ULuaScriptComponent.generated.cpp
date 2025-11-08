@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(ULuaScriptComponent) expansion
+namespace {
+    struct ULuaScriptComponentFactoryRegister
+    {
+        ULuaScriptComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                ULuaScriptComponent::StaticClass(),
+                []() -> UObject* { return new ULuaScriptComponent(); }
+            );
+        }
+    };
+    static ULuaScriptComponentFactoryRegister GRegister_ULuaScriptComponent;
+    static bool bIsRegistered_ULuaScriptComponent = [](){ ULuaScriptComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool ULuaScriptComponent::bPropertiesRegistered = []() {
+    ULuaScriptComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(ULuaScriptComponent)

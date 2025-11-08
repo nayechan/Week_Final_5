@@ -1,9 +1,7 @@
 ﻿#include "pch.h"
 #include "SpotLightActor.h"
 #include "SpotLightComponent.h"
-
-IMPLEMENT_CLASS(ASpotLightActor)
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 //BEGIN_PROPERTIES(ASpotLightActor)
 //	MARK_AS_SPAWNABLE("스포트 라이트", "스포트 라이트 액터입니다.")
 //END_PROPERTIES()

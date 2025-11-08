@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "Object.h"
+#include "UActorComponent.generated.h"
 
 class AActor;
 class UWorld;
@@ -7,7 +8,6 @@ class UWorld;
 class UActorComponent : public UObject
 {
 public:
-    DECLARE_CLASS(UActorComponent, UObject)
     GENERATED_REFLECTION_BODY()
     UActorComponent();
 
@@ -67,7 +67,7 @@ public:
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
     void PostDuplicate() override;
-    DECLARE_DUPLICATE(UActorComponent)
+    
 
     // ───── 직렬화 ────────────────────────────
     void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;

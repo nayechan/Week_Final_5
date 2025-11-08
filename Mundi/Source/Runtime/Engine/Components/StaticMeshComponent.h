@@ -1,7 +1,9 @@
 ﻿#pragma once
+
 #include "MeshComponent.h"
 #include "Enums.h"
 #include "AABB.h"
+#include "UStaticMeshComponent.generated.h"
 
 class UStaticMesh;
 class UShader;
@@ -13,7 +15,7 @@ struct FSceneCompData;
 class UStaticMeshComponent : public UMeshComponent
 {
 public:
-	DECLARE_CLASS(UStaticMeshComponent, UMeshComponent)
+
 	GENERATED_REFLECTION_BODY()
 
 	UStaticMeshComponent();
@@ -51,7 +53,6 @@ public:
 	FAABB GetWorldAABB() const override;
 
 	void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(UStaticMeshComponent)
 
 protected:
 	void OnTransformUpdated() override;

@@ -1,10 +1,12 @@
 ﻿#pragma once
+
 #include "ShapeComponent.h"
+#include "UCapsuleComponent.generated.h"
 
 class UCapsuleComponent : public UShapeComponent
 {
 public:
-	DECLARE_CLASS(UCapsuleComponent, UShapeComponent)
+
 	GENERATED_REFLECTION_BODY();
 
 	UCapsuleComponent();
@@ -12,7 +14,6 @@ public:
 
 	// Duplication
 	virtual void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(UCapsuleComponent)
 
 protected:
 	UPROPERTY(EditAnywhere, Category="CapsuleHalfHeight")

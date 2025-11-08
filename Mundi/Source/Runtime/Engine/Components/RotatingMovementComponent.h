@@ -1,6 +1,8 @@
 ﻿#pragma once
+
 #include "MovementComponent.h"
 #include "Vector.h"
+#include "URotatingMovementComponent.generated.h"
 
 /**
  * URotatingMovementComponent
@@ -10,9 +12,9 @@
 class URotatingMovementComponent : public UMovementComponent
 {
 public:
-    DECLARE_CLASS(URotatingMovementComponent, UMovementComponent)
+
     GENERATED_REFLECTION_BODY()
-    DECLARE_DUPLICATE(URotatingMovementComponent)
+
     URotatingMovementComponent();
 
 protected:

@@ -1,10 +1,12 @@
 ﻿#pragma once
+
 #include "ShapeComponent.h"
+#include "UBoxComponent.generated.h"
 
 class UBoxComponent : public UShapeComponent
 {
 public:
-	DECLARE_CLASS(UBoxComponent, UShapeComponent)
+
 	GENERATED_REFLECTION_BODY();
 
 	UBoxComponent(); 
@@ -14,7 +16,6 @@ public:
 
 	// Duplication
 	virtual void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(UBoxComponent)
 
 private:
 	UPROPERTY(EditAnywhere, Category="BoxExtent")

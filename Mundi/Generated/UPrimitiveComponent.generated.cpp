@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(UPrimitiveComponent) expansion
+namespace {
+    struct UPrimitiveComponentFactoryRegister
+    {
+        UPrimitiveComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                UPrimitiveComponent::StaticClass(),
+                []() -> UObject* { return new UPrimitiveComponent(); }
+            );
+        }
+    };
+    static UPrimitiveComponentFactoryRegister GRegister_UPrimitiveComponent;
+    static bool bIsRegistered_UPrimitiveComponent = [](){ UPrimitiveComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool UPrimitiveComponent::bPropertiesRegistered = []() {
+    UPrimitiveComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UPrimitiveComponent)

@@ -1,9 +1,6 @@
 ﻿#include "pch.h"
 #include "LocalLightComponent.h"
-
-IMPLEMENT_CLASS(ULocalLightComponent)
-
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 ULocalLightComponent::ULocalLightComponent()
 {
 }

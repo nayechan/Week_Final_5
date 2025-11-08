@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(UStaticMeshComponent) expansion
+namespace {
+    struct UStaticMeshComponentFactoryRegister
+    {
+        UStaticMeshComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                UStaticMeshComponent::StaticClass(),
+                []() -> UObject* { return new UStaticMeshComponent(); }
+            );
+        }
+    };
+    static UStaticMeshComponentFactoryRegister GRegister_UStaticMeshComponent;
+    static bool bIsRegistered_UStaticMeshComponent = [](){ UStaticMeshComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool UStaticMeshComponent::bPropertiesRegistered = []() {
+    UStaticMeshComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UStaticMeshComponent)

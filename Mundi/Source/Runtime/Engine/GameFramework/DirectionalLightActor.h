@@ -1,12 +1,14 @@
 ﻿#pragma once
+
 #include "Actor.h"
+#include "ADirectionalLightActor.generated.h"
 
 class UDirectionalLightComponent;
 
 class ADirectionalLightActor : public AActor
 {
 public:
-	DECLARE_CLASS(ADirectionalLightActor, AActor)
+
 	GENERATED_REFLECTION_BODY()
 
 	ADirectionalLightActor();
@@ -17,7 +19,6 @@ public:
 	UDirectionalLightComponent* GetLightComponent() const { return LightComponent; }
 
 	void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(ADirectionalLightActor)
 
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 

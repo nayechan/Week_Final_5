@@ -1,7 +1,9 @@
 ﻿#pragma once
+
 #include "ActorComponent.h"
 #include "Vector.h"
 #include "LuaCoroutineScheduler.h"
+#include "ULuaScriptComponent.generated.h"
 
 namespace sol { class state; }
 using state = sol::state;
@@ -11,9 +13,8 @@ class USceneComponent;
 class ULuaScriptComponent : public UActorComponent
 {
 public:
-	DECLARE_CLASS(ULuaScriptComponent, UActorComponent)
+
 	GENERATED_REFLECTION_BODY()
-	DECLARE_DUPLICATE(ULuaScriptComponent)
 
 	ULuaScriptComponent();
 	~ULuaScriptComponent() override;

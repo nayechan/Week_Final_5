@@ -1,5 +1,7 @@
 ﻿#pragma once
+
 #include "Actor.h"
+#include "ACameraActor.generated.h"
 class UCameraComponent;
 class UUIManager;
 class UInputManager;
@@ -7,7 +9,7 @@ class UInputManager;
 class ACameraActor : public AActor
 {
 public:
-    DECLARE_CLASS(ACameraActor, AActor)
+
     GENERATED_REFLECTION_BODY()
 
     ACameraActor();
@@ -63,7 +65,7 @@ public:
 
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
-    DECLARE_DUPLICATE(ACameraActor)
+
 private:
     UCameraComponent* CameraComponent = nullptr;
     

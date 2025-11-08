@@ -6,11 +6,7 @@
 #include "Gizmo/GizmoArrowComponent.h"
 #include "LightManager.h"
 #include "SceneView.h"
-
-IMPLEMENT_CLASS(USpotLightComponent)
-
-
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 USpotLightComponent::USpotLightComponent()
 {
 	InnerConeAngle = 30.0f;

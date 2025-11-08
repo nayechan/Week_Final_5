@@ -1,6 +1,8 @@
 ﻿#pragma once
+
 #include "PrimitiveComponent.h"
 #include "Object.h"
+#include "UBillboardComponent.generated.h"
 
 class UQuad;
 class UTexture;
@@ -10,7 +12,7 @@ class URenderer;
 class UBillboardComponent : public UPrimitiveComponent
 {
 public:
-    DECLARE_CLASS(UBillboardComponent, UPrimitiveComponent)
+
     GENERATED_REFLECTION_BODY()
 
     UBillboardComponent();
@@ -33,7 +35,6 @@ public:
 
     // Duplication
     void DuplicateSubObjects() override;
-    DECLARE_DUPLICATE(UBillboardComponent)
 
 private:
     FString TexturePath;

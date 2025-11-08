@@ -2,10 +2,7 @@
 #include "SphereComponent.h"
 #include "Renderer.h"
 #include "Actor.h"
-
-IMPLEMENT_CLASS(USphereComponent)
-
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 USphereComponent::USphereComponent()
 {
     SphereRadius = 0.5f;

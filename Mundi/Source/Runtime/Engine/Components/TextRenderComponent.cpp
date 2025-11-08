@@ -6,10 +6,7 @@
 #include "VertexData.h"
 #include "CameraActor.h"
 #include "SelectionManager.h"
-
-IMPLEMENT_CLASS(UTextRenderComponent)
-
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 UTextRenderComponent::UTextRenderComponent()
 {
     auto& RM = UResourceManager::GetInstance();

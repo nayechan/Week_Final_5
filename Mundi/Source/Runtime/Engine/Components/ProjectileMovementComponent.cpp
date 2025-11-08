@@ -3,9 +3,7 @@
 #include "SceneComponent.h"
 #include "Actor.h"
 #include "ObjectFactory.h"
-
-IMPLEMENT_CLASS(UProjectileMovementComponent)
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 UProjectileMovementComponent::UProjectileMovementComponent()
     : Gravity(-9.80f)  // Z-Up 좌표계에서 중력은 Z방향으로 -980 cm/s^2
     , InitialSpeed(30.0f)

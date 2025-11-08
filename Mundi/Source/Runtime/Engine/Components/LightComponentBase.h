@@ -1,13 +1,15 @@
 ﻿#pragma once
+
 #include "SceneComponent.h"
 #include "Color.h"
 #include "ObjectMacros.h"
+#include "ULightComponentBase.generated.h"
 
 // 모든 라이트 컴포넌트의 베이스 클래스
 class ULightComponentBase : public USceneComponent
 {
 public:
-	DECLARE_CLASS(ULightComponentBase, USceneComponent)
+
 	GENERATED_REFLECTION_BODY()
 
 	ULightComponentBase();
@@ -30,7 +32,6 @@ public:
 	// Serialization & Duplication
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 	virtual void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(ULightComponentBase)
 
 	bool IsCastShadows() { return bCastShadows; }
 

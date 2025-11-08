@@ -1,10 +1,12 @@
 ﻿#pragma once
+
 #include "SceneComponent.h"
+#include "UCameraComponent.generated.h"
 
 class UCameraComponent : public USceneComponent
 {
 public:
-    DECLARE_CLASS(UCameraComponent, USceneComponent)
+
     GENERATED_REFLECTION_BODY()
 
     UCameraComponent();
@@ -53,7 +55,6 @@ public:
 
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
-    DECLARE_DUPLICATE(UCameraComponent)
 
     // Serialization
     void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;

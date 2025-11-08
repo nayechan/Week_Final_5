@@ -1,8 +1,6 @@
 ﻿#include "pch.h"
 #include "LightComponentBase.h"
-
-IMPLEMENT_CLASS(ULightComponentBase)
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 ULightComponentBase::ULightComponentBase()
 {
 	bWantsOnUpdateTransform = true;

@@ -1,14 +1,16 @@
 ﻿#pragma once
+
 #include "Object.h"
 
 #include "SceneComponent.h"
+#include "UHeightFogComponent.generated.h"
 
 struct FLinearColor;
 
 class UHeightFogComponent : public USceneComponent
 {
 public:
-    DECLARE_CLASS(UHeightFogComponent, USceneComponent)
+
     GENERATED_REFLECTION_BODY()
 
     UHeightFogComponent();
@@ -38,15 +40,13 @@ public:
     // Rendering
     void RenderHeightFog(URenderer* Renderer);
 
-
     void OnRegister(UWorld* InWorld) override;
 	// Serialize
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
 	// ───── 복사 관련 ────────────────────────────
 	void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(UHeightFogComponent)
-    
+
 private:
     UPROPERTY(EditAnywhere, Category="Fog", Range="0.0, 10.0")
     float FogDensity = 0.2f;

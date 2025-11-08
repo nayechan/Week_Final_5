@@ -1,12 +1,14 @@
 ﻿#pragma once
+
 #include "LocalLightComponent.h"
 #include "LightManager.h"
+#include "UPointLightComponent.generated.h"
 
 // 점광원 (모든 방향으로 균등하게 빛 방출)
 class UPointLightComponent : public ULocalLightComponent
 {
 public:
-	DECLARE_CLASS(UPointLightComponent, ULocalLightComponent)
+
 	GENERATED_REFLECTION_BODY()
 
 	UPointLightComponent();
@@ -34,7 +36,6 @@ public:
 	// Serialization & Duplication
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 	virtual void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(UPointLightComponent)
 
 	bool IsOverrideCameraLightPerspective() { return bOverrideCameraLightPerspective; }
 	uint32 GetOverrideCameraLightNum() { return OverrideCameraLightNum; }

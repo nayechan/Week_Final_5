@@ -1,6 +1,7 @@
 ﻿#pragma once
-#include "PrimitiveComponent.h"
 
+#include "PrimitiveComponent.h"
+#include "UShapeComponent.generated.h"
 
 enum class EShapeKind : uint8
 {
@@ -25,11 +26,10 @@ struct FShape
 	};
 }; 
 
-
 class UShapeComponent : public UPrimitiveComponent
 { 
 public:  
-    DECLARE_CLASS(UShapeComponent, UPrimitiveComponent) 
+
 	GENERATED_REFLECTION_BODY();
 
 	UShapeComponent();
@@ -48,7 +48,6 @@ public:
 
 	// Duplication
 	virtual void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(UShapeComponent)
 
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡ디버깅용ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
  

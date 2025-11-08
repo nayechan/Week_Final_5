@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(USphereComponent) expansion
+namespace {
+    struct USphereComponentFactoryRegister
+    {
+        USphereComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                USphereComponent::StaticClass(),
+                []() -> UObject* { return new USphereComponent(); }
+            );
+        }
+    };
+    static USphereComponentFactoryRegister GRegister_USphereComponent;
+    static bool bIsRegistered_USphereComponent = [](){ USphereComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool USphereComponent::bPropertiesRegistered = []() {
+    USphereComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(USphereComponent)

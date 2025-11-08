@@ -1,12 +1,14 @@
 ﻿#pragma once
+
 #include "LightComponent.h"
 #include "LightManager.h"
+#include "UAmbientLightComponent.generated.h"
 
 // 환경광 (전역 조명)
 class UAmbientLightComponent : public ULightComponent
 {
 public:
-	DECLARE_CLASS(UAmbientLightComponent, ULightComponent)
+
 	GENERATED_REFLECTION_BODY()
 
 	UAmbientLightComponent();
@@ -25,5 +27,5 @@ public:
 	// Serialization & Duplication
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 	virtual void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(UAmbientLightComponent)
+
 };

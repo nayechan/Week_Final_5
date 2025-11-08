@@ -2,7 +2,7 @@
 #include "Property.h"
 #include "Color.h"
 #include "StaticMesh.h"
-#include "Texture.h" 
+#include "Texture.h"
 #include <type_traits>
 
 // ===== 타입 자동 감지 템플릿 =====
@@ -55,7 +55,10 @@ struct TPropertyTypeTraits
 
 // ===== 리플렉션 매크로 (수동 등록 방식) =====
 
-// 헤더 파일에서 사용: 리플렉션 등록 함수 선언 + 자동 호출
+// 헤더 파일에서 사용: 클래스 선언 + 리플렉션 등록 함수 선언 + 자동 호출
+//
+// 이제 DECLARE_CLASS와 DECLARE_DUPLICATE의 기능을 포함합니다.
+// 실제 내용은 코드 생성기가 생성하는 .generated.h 파일에 정의됩니다.
 //
 // Static 초기화 순서 안전성:
 // - StaticRegisterProperties()는 lambda를 통해 StaticClass() 최초 호출 시 자동 실행됨
@@ -64,21 +67,20 @@ struct TPropertyTypeTraits
 // - 프로퍼티 등록은 프로그램 시작 시 1회만 발생하며, 런타임 중 변경 불가
 //
 // 사용법:
+// #include "MyComponent.generated.h"  // <-- 코드 생성기가 만든 파일
+//
 // class UMyComponent : public USceneComponent {
-//     DECLARE_CLASS(UMyComponent, USceneComponent)
 //     GENERATED_REFLECTION_BODY()
 // protected:
+//     UPROPERTY(EditAnywhere, Category="Light")
 //     float Intensity = 1.0f;
-//     bool bIsEnabled = true;
 // };
+//
+// 참고:
+// - DECLARE_CLASS와 DECLARE_DUPLICATE는 더 이상 수동으로 작성할 필요가 없습니다.
+// - 반드시 클래스 정의 전에 .generated.h 파일을 include해야 합니다.
 #define GENERATED_REFLECTION_BODY() \
-private: \
-	static void StaticRegisterProperties(); \
-	inline static const bool bPropertiesRegistered = []() { \
-		StaticRegisterProperties(); \
-		return true; \
-	}(); \
-public:
+    CURRENT_CLASS_GENERATED_BODY
 
 // CPP 파일에서 사용: 프로퍼티 등록 헬퍼 매크로들
 // 사용법:
@@ -212,7 +214,6 @@ public:
 	Class->AddProperty(Prop); \
 }
 
-
 // Material 프로퍼티 추가
 #define ADD_PROPERTY_SRV(VarType, VarName, CategoryName, bEditAnywhere, ...) \
 	{ \
@@ -273,7 +274,6 @@ public:
 	Class->bIsComponent = true; \
 	Class->DisplayName = InDisplayName; \
 	Class->Description = InDesc;
-
 
 #define CREATE_EDITOR_COMPONENT(InVariableName, Type)\
 	InVariableName = NewObject<Type>();\

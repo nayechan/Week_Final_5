@@ -1,9 +1,11 @@
 ﻿#pragma once
+
 #include "MeshComponent.h"
+#include "UTextRenderComponent.generated.h"
 class UTextRenderComponent : public UPrimitiveComponent
 {
 public:
-	DECLARE_CLASS(UTextRenderComponent, UPrimitiveComponent)
+
 	GENERATED_REFLECTION_BODY()
 
 	UTextRenderComponent();
@@ -25,7 +27,6 @@ public:
 
 	// ───── 복사 관련 ────────────────────────────
 	void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(UTextRenderComponent)
 
 private:
 	FString Text;

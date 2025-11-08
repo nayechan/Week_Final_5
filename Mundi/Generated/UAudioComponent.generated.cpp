@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(UAudioComponent) expansion
+namespace {
+    struct UAudioComponentFactoryRegister
+    {
+        UAudioComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                UAudioComponent::StaticClass(),
+                []() -> UObject* { return new UAudioComponent(); }
+            );
+        }
+    };
+    static UAudioComponentFactoryRegister GRegister_UAudioComponent;
+    static bool bIsRegistered_UAudioComponent = [](){ UAudioComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool UAudioComponent::bPropertiesRegistered = []() {
+    UAudioComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UAudioComponent)

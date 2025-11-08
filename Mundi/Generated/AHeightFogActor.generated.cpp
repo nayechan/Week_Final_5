@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(AHeightFogActor) expansion
+namespace {
+    struct AHeightFogActorFactoryRegister
+    {
+        AHeightFogActorFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                AHeightFogActor::StaticClass(),
+                []() -> UObject* { return new AHeightFogActor(); }
+            );
+        }
+    };
+    static AHeightFogActorFactoryRegister GRegister_AHeightFogActor;
+    static bool bIsRegistered_AHeightFogActor = [](){ AHeightFogActor::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool AHeightFogActor::bPropertiesRegistered = []() {
+    AHeightFogActor::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(AHeightFogActor)

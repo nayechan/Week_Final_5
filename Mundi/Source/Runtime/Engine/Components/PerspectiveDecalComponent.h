@@ -1,7 +1,9 @@
 ﻿#pragma once
+
 #include "DecalComponent.h"
 #include "AABB.h"
 #include "Vector.h"
+#include "UPerspectiveDecalComponent.generated.h"
 
 // Forward declarations
 struct FOBB;
@@ -11,7 +13,7 @@ struct FDecalProjectionData;
 class UPerspectiveDecalComponent : public UDecalComponent
 {
 public:
-	DECLARE_CLASS(UPerspectiveDecalComponent, UDecalComponent)
+
 	GENERATED_REFLECTION_BODY()
 
 	UPerspectiveDecalComponent();
@@ -28,7 +30,6 @@ public:
 
 	// ───── 복사 관련 ────────────────────────────
 	void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(UPerspectiveDecalComponent)
 
 	// Serialize
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;

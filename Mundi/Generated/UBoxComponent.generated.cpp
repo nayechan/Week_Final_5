@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(UBoxComponent) expansion
+namespace {
+    struct UBoxComponentFactoryRegister
+    {
+        UBoxComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                UBoxComponent::StaticClass(),
+                []() -> UObject* { return new UBoxComponent(); }
+            );
+        }
+    };
+    static UBoxComponentFactoryRegister GRegister_UBoxComponent;
+    static bool bIsRegistered_UBoxComponent = [](){ UBoxComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool UBoxComponent::bPropertiesRegistered = []() {
+    UBoxComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UBoxComponent)

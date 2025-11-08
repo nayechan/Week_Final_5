@@ -2,11 +2,7 @@
 #include "RotatingMovementComponent.h"
 #include "SceneComponent.h"
 #include "ObjectFactory.h"
-
-IMPLEMENT_CLASS(URotatingMovementComponent)
-
-
-    
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 URotatingMovementComponent::URotatingMovementComponent()
     : RotationRate(0.0f, 0.0f, 0.0f)
     , PivotTranslation(0.0f, 0.0f, 0.0f)

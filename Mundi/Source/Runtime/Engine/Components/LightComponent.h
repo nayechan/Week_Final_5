@@ -1,16 +1,17 @@
 ﻿#pragma once
+
 #include "LightComponentBase.h"
+#include "ULightComponent.generated.h"
 
 class FSceneView;
 
 struct FShadowRenderRequest;
 
-
 // 실제 조명 효과를 가진 라이트들의 공통 베이스
 class ULightComponent : public ULightComponentBase
 {
 public:
-	DECLARE_CLASS(ULightComponent, ULightComponentBase)
+
 	GENERATED_REFLECTION_BODY()
 
 	ULightComponent();
@@ -30,7 +31,6 @@ public:
 	// Serialization & Duplication
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 	virtual void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(ULightComponent)
 
 	float GetShadowResolutionScale() const { return ShadowResolutionScale; }
 	float GetShadowBias() const { return ShadowBias; }

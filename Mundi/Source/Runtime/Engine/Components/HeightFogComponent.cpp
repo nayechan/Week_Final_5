@@ -4,9 +4,7 @@
 #include "Color.h"
 #include "ResourceManager.h"
 #include "BillboardComponent.h"
-
-IMPLEMENT_CLASS(UHeightFogComponent)
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 //BEGIN_PROPERTIES(UHeightFogComponent)
 //	MARK_AS_COMPONENT("하이트 포그 컴포넌트", "하이트 기반 포그 효과를 생성합니다.")
 //	ADD_PROPERTY(FLinearColor, FogInscatteringColor, "Fog", "안개 산란 색상입니다.")

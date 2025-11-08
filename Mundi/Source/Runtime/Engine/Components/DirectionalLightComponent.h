@@ -1,12 +1,14 @@
 ﻿#pragma once
+
 #include "LightComponent.h"
 #include "LightManager.h"
+#include "UDirectionalLightComponent.generated.h"
 
 // 방향성 라이트 (태양광 같은 평행광)
 class UDirectionalLightComponent : public ULightComponent
 {
 public:
-	DECLARE_CLASS(UDirectionalLightComponent, ULightComponent)
+
 	GENERATED_REFLECTION_BODY()
 
 		UDirectionalLightComponent();
@@ -30,7 +32,6 @@ public:
 	// Serialization & Duplication
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 	virtual void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(UDirectionalLightComponent)
 
 	// Update Gizmo to match light properties
 	void UpdateDirectionGizmo();

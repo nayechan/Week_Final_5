@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(USpotLightComponent) expansion
+namespace {
+    struct USpotLightComponentFactoryRegister
+    {
+        USpotLightComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                USpotLightComponent::StaticClass(),
+                []() -> UObject* { return new USpotLightComponent(); }
+            );
+        }
+    };
+    static USpotLightComponentFactoryRegister GRegister_USpotLightComponent;
+    static bool bIsRegistered_USpotLightComponent = [](){ USpotLightComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool USpotLightComponent::bPropertiesRegistered = []() {
+    USpotLightComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(USpotLightComponent)

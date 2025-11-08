@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(USceneComponent) expansion
+namespace {
+    struct USceneComponentFactoryRegister
+    {
+        USceneComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                USceneComponent::StaticClass(),
+                []() -> UObject* { return new USceneComponent(); }
+            );
+        }
+    };
+    static USceneComponentFactoryRegister GRegister_USceneComponent;
+    static bool bIsRegistered_USceneComponent = [](){ USceneComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool USceneComponent::bPropertiesRegistered = []() {
+    USceneComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(USceneComponent)

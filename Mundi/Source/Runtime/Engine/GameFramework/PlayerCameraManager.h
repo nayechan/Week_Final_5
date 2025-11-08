@@ -1,6 +1,8 @@
 ﻿#pragma once
+
 #include "Actor.h"
 #include "SceneView.h"
+#include "APlayerCameraManager.generated.h"
 
 class UCameraComponent;
 class UCameraModifierBase;
@@ -10,9 +12,8 @@ class UCamMod_Fade;
 
 class APlayerCameraManager : public AActor
 {
-	DECLARE_CLASS(APlayerCameraManager, AActor)
+
 	GENERATED_REFLECTION_BODY()
-	DECLARE_DUPLICATE(APlayerCameraManager)
 
 public:
 	APlayerCameraManager() { ObjectName = "Player Camera Manager";  };

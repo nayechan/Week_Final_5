@@ -1,10 +1,7 @@
 ﻿#include "pch.h"
 #include "PointLightComponent.h"
 #include "BillboardComponent.h"
-
-IMPLEMENT_CLASS(UPointLightComponent)
-
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 UPointLightComponent::UPointLightComponent()
 {
 	SourceRadius = 0.0f;

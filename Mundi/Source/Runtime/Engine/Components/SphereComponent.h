@@ -1,10 +1,12 @@
 ﻿#pragma once
+
 #include "ShapeComponent.h"
+#include "USphereComponent.generated.h"
 
 class USphereComponent : public UShapeComponent
 {
 public:
-    DECLARE_CLASS(USphereComponent, UShapeComponent)
+
     GENERATED_REFLECTION_BODY();
 
     USphereComponent();
@@ -12,7 +14,6 @@ public:
 
     // Duplication
     virtual void DuplicateSubObjects() override;
-    DECLARE_DUPLICATE(USphereComponent)
 
 private:
     UPROPERTY(EditAnywhere, Category="SphereRaidus")

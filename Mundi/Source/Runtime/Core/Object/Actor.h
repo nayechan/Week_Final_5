@@ -5,6 +5,7 @@
 #include "AABB.h"
 #include "LightManager.h"
 #include "Delegates.h"
+#include "AActor.generated.h"
 
 class UWorld;
 class USceneComponent;
@@ -17,7 +18,6 @@ class FGameObject;
 class AActor : public UObject
 {
 public:
-    DECLARE_CLASS(AActor, UObject)
     GENERATED_REFLECTION_BODY()
 
     DECLARE_DELEGATE(OnComponentBeginOverlap, UPrimitiveComponent*, UPrimitiveComponent*);
@@ -102,7 +102,6 @@ public:
     void SetActorActive(bool bIsActive) { bActorIsActive = bIsActive; };
     bool IsActorActive() { return bActorIsActive; };
 
-
     FMatrix GetWorldMatrix() const;
 
     FVector GetActorForward() const { return GetActorRotation().RotateVector(FVector(0, 1, 0)); }
@@ -157,11 +156,10 @@ public:
      
     bool IsOverlappingActor(const AActor* Other) const;
 
-
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
     void PostDuplicate() override;
-    DECLARE_DUPLICATE(AActor)
+    
 
     // Serialize
     void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;

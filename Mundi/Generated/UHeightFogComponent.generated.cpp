@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(UHeightFogComponent) expansion
+namespace {
+    struct UHeightFogComponentFactoryRegister
+    {
+        UHeightFogComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                UHeightFogComponent::StaticClass(),
+                []() -> UObject* { return new UHeightFogComponent(); }
+            );
+        }
+    };
+    static UHeightFogComponentFactoryRegister GRegister_UHeightFogComponent;
+    static bool bIsRegistered_UHeightFogComponent = [](){ UHeightFogComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool UHeightFogComponent::bPropertiesRegistered = []() {
+    UHeightFogComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UHeightFogComponent)

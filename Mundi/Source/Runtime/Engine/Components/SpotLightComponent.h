@@ -1,6 +1,8 @@
 ﻿#pragma once
+
 #include "PointLightComponent.h"
 #include "LightManager.h"
+#include "USpotLightComponent.generated.h"
 
 class UCameraComponent;
 
@@ -8,7 +10,7 @@ class UCameraComponent;
 class USpotLightComponent : public UPointLightComponent
 {
 public:
-	DECLARE_CLASS(USpotLightComponent, UPointLightComponent)
+
 	GENERATED_REFLECTION_BODY()
 
 	USpotLightComponent();
@@ -68,7 +70,6 @@ public:
 	// Serialization & Duplication
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 	virtual void DuplicateSubObjects() override;
-	DECLARE_DUPLICATE(USpotLightComponent)
 
 	// Update Gizmo to match light properties
 	void UpdateDirectionGizmo();

@@ -12,7 +12,6 @@
 #include "PrimitiveComponent.h"
 #include "GameObject.h"
 
-IMPLEMENT_CLASS(AActor)
 	/*BEGIN_PROPERTIES(AActor)
 	ADD_PROPERTY(FName, ObjectName, "[액터]", true, "액터의 이름입니다")
 	ADD_PROPERTY(bool, bActorIsActive, "[액터]", true, "액터를 활성 여부를 설정합니다")

@@ -10,9 +10,7 @@
 
 // for test
 #include "PlayerCameraManager.h"
-
-IMPLEMENT_CLASS(ULuaScriptComponent)
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 //BEGIN_PROPERTIES(ULuaScriptComponent)
 //	MARK_AS_COMPONENT("Lua 스크립트 컴포넌트", "Lua 스크립트 컴포넌트입니다.")
 //	ADD_PROPERTY_SCRIPT(FString, ScriptFilePath, "Script", ".lua", true, "Lua Script 파일 경로")

@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(UDirectionalLightComponent) expansion
+namespace {
+    struct UDirectionalLightComponentFactoryRegister
+    {
+        UDirectionalLightComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                UDirectionalLightComponent::StaticClass(),
+                []() -> UObject* { return new UDirectionalLightComponent(); }
+            );
+        }
+    };
+    static UDirectionalLightComponentFactoryRegister GRegister_UDirectionalLightComponent;
+    static bool bIsRegistered_UDirectionalLightComponent = [](){ UDirectionalLightComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool UDirectionalLightComponent::bPropertiesRegistered = []() {
+    UDirectionalLightComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UDirectionalLightComponent)

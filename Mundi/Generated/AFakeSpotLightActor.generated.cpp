@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(AFakeSpotLightActor) expansion
+namespace {
+    struct AFakeSpotLightActorFactoryRegister
+    {
+        AFakeSpotLightActorFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                AFakeSpotLightActor::StaticClass(),
+                []() -> UObject* { return new AFakeSpotLightActor(); }
+            );
+        }
+    };
+    static AFakeSpotLightActorFactoryRegister GRegister_AFakeSpotLightActor;
+    static bool bIsRegistered_AFakeSpotLightActor = [](){ AFakeSpotLightActor::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool AFakeSpotLightActor::bPropertiesRegistered = []() {
+    AFakeSpotLightActor::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(AFakeSpotLightActor)

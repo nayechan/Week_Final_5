@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(UDecalComponent) expansion
+namespace {
+    struct UDecalComponentFactoryRegister
+    {
+        UDecalComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                UDecalComponent::StaticClass(),
+                []() -> UObject* { return new UDecalComponent(); }
+            );
+        }
+    };
+    static UDecalComponentFactoryRegister GRegister_UDecalComponent;
+    static bool bIsRegistered_UDecalComponent = [](){ UDecalComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool UDecalComponent::bPropertiesRegistered = []() {
+    UDecalComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UDecalComponent)

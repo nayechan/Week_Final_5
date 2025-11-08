@@ -1,9 +1,7 @@
 ﻿#include "pch.h"
 #include "DirectionalLightActor.h"
 #include "DirectionalLightComponent.h"
-
-IMPLEMENT_CLASS(ADirectionalLightActor)
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 //BEGIN_PROPERTIES(ADirectionalLightActor)
 //	MARK_AS_SPAWNABLE("디렉셔널 라이트", "방향성 빛을 발산하는 라이트 액터입니다.")
 //END_PROPERTIES()

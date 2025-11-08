@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(UCameraComponent) expansion
+namespace {
+    struct UCameraComponentFactoryRegister
+    {
+        UCameraComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                UCameraComponent::StaticClass(),
+                []() -> UObject* { return new UCameraComponent(); }
+            );
+        }
+    };
+    static UCameraComponentFactoryRegister GRegister_UCameraComponent;
+    static bool bIsRegistered_UCameraComponent = [](){ UCameraComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool UCameraComponent::bPropertiesRegistered = []() {
+    UCameraComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UCameraComponent)

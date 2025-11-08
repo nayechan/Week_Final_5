@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(UBillboardComponent) expansion
+namespace {
+    struct UBillboardComponentFactoryRegister
+    {
+        UBillboardComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                UBillboardComponent::StaticClass(),
+                []() -> UObject* { return new UBillboardComponent(); }
+            );
+        }
+    };
+    static UBillboardComponentFactoryRegister GRegister_UBillboardComponent;
+    static bool bIsRegistered_UBillboardComponent = [](){ UBillboardComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool UBillboardComponent::bPropertiesRegistered = []() {
+    UBillboardComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UBillboardComponent)

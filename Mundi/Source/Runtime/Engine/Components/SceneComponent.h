@@ -1,6 +1,8 @@
 ﻿#pragma once
+
 #include "Vector.h"
 #include "ActorComponent.h"
+#include "USceneComponent.generated.h"
 
 // 부착 시 로컬을 유지할지, 월드를 유지할지
 enum class EAttachmentRule
@@ -13,14 +15,13 @@ class URenderer;
 class USceneComponent : public UActorComponent
 {
 public:
-    DECLARE_CLASS(USceneComponent, UActorComponent)
+
     GENERATED_REFLECTION_BODY()
 
     USceneComponent();
 
 protected:
     ~USceneComponent() override;
-
 
 public:
     // ──────────────────────────────
@@ -84,7 +85,6 @@ public:
 
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
-    DECLARE_DUPLICATE(USceneComponent)
 
     // DuplicateSubObjects에서 쓰기 위함
     void SetParent(USceneComponent* InParent)

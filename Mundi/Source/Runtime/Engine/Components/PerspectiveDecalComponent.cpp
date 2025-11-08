@@ -2,8 +2,7 @@
 #include "OBB.h"
 #include "PerspectiveDecalComponent.h"
 #include "JsonSerializer.h"
-
-IMPLEMENT_CLASS(UPerspectiveDecalComponent)
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 //
 //BEGIN_PROPERTIES(UPerspectiveDecalComponent)
 //	MARK_AS_COMPONENT("원근 데칼 컴포넌트", "원근 투영을 사용하는 데칼 효과를 생성합니다.")

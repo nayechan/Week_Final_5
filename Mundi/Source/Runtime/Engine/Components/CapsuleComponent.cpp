@@ -1,8 +1,6 @@
 ﻿#include "pch.h"
 #include "CapsuleComponent.h"
-
-IMPLEMENT_CLASS(UCapsuleComponent)
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 //BEGIN_PROPERTIES(UCapsuleComponent)
 //MARK_AS_COMPONENT("캡슐 충돌 컴포넌트", "캡슐 모양의 충돌체를 생성하는 컴포넌트입니다.")
 //ADD_PROPERTY(float , CapsuleHalfHeight, "CapsuleHalfHeight", true, "박스 충돌체의 크기입니다.")

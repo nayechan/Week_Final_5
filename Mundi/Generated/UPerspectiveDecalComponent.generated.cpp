@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(UPerspectiveDecalComponent) expansion
+namespace {
+    struct UPerspectiveDecalComponentFactoryRegister
+    {
+        UPerspectiveDecalComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                UPerspectiveDecalComponent::StaticClass(),
+                []() -> UObject* { return new UPerspectiveDecalComponent(); }
+            );
+        }
+    };
+    static UPerspectiveDecalComponentFactoryRegister GRegister_UPerspectiveDecalComponent;
+    static bool bIsRegistered_UPerspectiveDecalComponent = [](){ UPerspectiveDecalComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool UPerspectiveDecalComponent::bPropertiesRegistered = []() {
+    UPerspectiveDecalComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UPerspectiveDecalComponent)

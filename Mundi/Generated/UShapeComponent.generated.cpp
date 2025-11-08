@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(UShapeComponent) expansion
+namespace {
+    struct UShapeComponentFactoryRegister
+    {
+        UShapeComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                UShapeComponent::StaticClass(),
+                []() -> UObject* { return new UShapeComponent(); }
+            );
+        }
+    };
+    static UShapeComponentFactoryRegister GRegister_UShapeComponent;
+    static bool bIsRegistered_UShapeComponent = [](){ UShapeComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool UShapeComponent::bPropertiesRegistered = []() {
+    UShapeComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UShapeComponent)

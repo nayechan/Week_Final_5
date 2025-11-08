@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(ACameraActor) expansion
+namespace {
+    struct ACameraActorFactoryRegister
+    {
+        ACameraActorFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                ACameraActor::StaticClass(),
+                []() -> UObject* { return new ACameraActor(); }
+            );
+        }
+    };
+    static ACameraActorFactoryRegister GRegister_ACameraActor;
+    static bool bIsRegistered_ACameraActor = [](){ ACameraActor::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool ACameraActor::bPropertiesRegistered = []() {
+    ACameraActor::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(ACameraActor)

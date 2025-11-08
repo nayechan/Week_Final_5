@@ -4,8 +4,6 @@
 #include "World.h"
 #include "SelectionManager.h"
 
-IMPLEMENT_CLASS(UActorComponent)
-
 //BEGIN_PROPERTIES(UActorComponent)
 //    ADD_PROPERTY(FName, ObjectName, "[컴포넌트]", true, "컴포넌트의 이름입니다")
 //    ADD_PROPERTY(bool, bIsActive, "[컴포넌트]", true, "컴포넌트를 활성화합니다")

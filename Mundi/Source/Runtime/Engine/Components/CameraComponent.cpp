@@ -6,8 +6,7 @@
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
-
-IMPLEMENT_CLASS(UCameraComponent)
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 //
 //BEGIN_PROPERTIES(UCameraComponent)
 //	MARK_AS_COMPONENT("카메라 컴포넌트", "카메라를 렌더링하는 컴포넌트입니다.")

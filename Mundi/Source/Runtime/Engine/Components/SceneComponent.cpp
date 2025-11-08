@@ -6,10 +6,7 @@
 #include "PrimitiveComponent.h"
 #include "WorldPartitionManager.h"
 #include "BillboardComponent.h"
-
-IMPLEMENT_CLASS(USceneComponent)
-
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 // USceneComponent.cpp
 TMap<uint32, USceneComponent*> USceneComponent::SceneIdMap;
 

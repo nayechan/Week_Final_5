@@ -1,14 +1,13 @@
 ﻿#pragma once
 #include "SceneComponent.h"
+#include "UAudioComponent.generated.h"
 
 class USound;
 struct IXAudio2SourceVoice;
 
 class UAudioComponent : public USceneComponent
 {
-public:
-    DECLARE_CLASS(UAudioComponent, USceneComponent)
-    GENERATED_REFLECTION_BODY();
+    GENERATED_REFLECTION_BODY()
 
     UAudioComponent();
     virtual ~UAudioComponent();
@@ -49,7 +48,6 @@ public:
 
     // Duplication
     virtual void DuplicateSubObjects() override;
-    DECLARE_DUPLICATE(UAudioComponent)
 
 protected:
     bool bIsPlaying;

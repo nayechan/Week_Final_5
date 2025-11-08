@@ -1,9 +1,7 @@
 ﻿#include "pch.h"
 #include "LightComponent.h"
 #include "BillboardComponent.h"
-
-IMPLEMENT_CLASS(ULightComponent)
-
+// IMPLEMENT_CLASS is now auto-generated in .generated.cpp
 //BEGIN_PROPERTIES(ULightComponent)
 //	ADD_PROPERTY_RANGE(float, Temperature, "Light", 1000.0f, 15000.0f, true, "조명의 색온도를 켈빈(K) 단위로 설정합니다\n(1000K: 주황색, 6500K: 주광색, 15000K: 푸른색)")
 //	ADD_PROPERTY_RANGE(int, ShadowResolutionScale, "Light", 512, 8192, true, "Shadow Resolution Scale");

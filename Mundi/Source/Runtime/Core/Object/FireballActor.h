@@ -1,5 +1,7 @@
 ﻿#pragma once
+
 #include "StaticMeshActor.h"
+#include "AFireBallActor.generated.h"
 
 class UPointLightComponent; 
 class URotatingMovementComponent;
@@ -7,7 +9,7 @@ class URotatingMovementComponent;
 class AFireBallActor : public AStaticMeshActor
 {
 public:
-	DECLARE_CLASS(AFireBallActor, AActor)
+
 	GENERATED_REFLECTION_BODY()
 
 	AFireBallActor();

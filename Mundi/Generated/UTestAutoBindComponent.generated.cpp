@@ -6,6 +6,31 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+// ===== Class Factory Registration (IMPLEMENT_CLASS) =====
+
+// IMPLEMENT_CLASS(UTestAutoBindComponent) expansion
+namespace {
+    struct UTestAutoBindComponentFactoryRegister
+    {
+        UTestAutoBindComponentFactoryRegister()
+        {
+            ObjectFactory::RegisterClassType(
+                UTestAutoBindComponent::StaticClass(),
+                []() -> UObject* { return new UTestAutoBindComponent(); }
+            );
+        }
+    };
+    static UTestAutoBindComponentFactoryRegister GRegister_UTestAutoBindComponent;
+    static bool bIsRegistered_UTestAutoBindComponent = [](){ UTestAutoBindComponent::StaticClass(); return true; }();
+}
+
+// Static member initialization for reflection registration
+const bool UTestAutoBindComponent::bPropertiesRegistered = []() {
+    UTestAutoBindComponent::StaticRegisterProperties();
+    return true;
+}();
+
+
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UTestAutoBindComponent)

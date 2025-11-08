@@ -2,6 +2,7 @@
 
 #include "Object.h"
 #include "SceneComponent.h"
+#include "UTestAutoBindComponent.generated.h"
 
 /**
  * 자동 바인딩 테스트용 컴포넌트
@@ -9,7 +10,7 @@
  */
 class UTestAutoBindComponent : public USceneComponent
 {
-	DECLARE_CLASS(UTestAutoBindComponent, USceneComponent)
+
 	GENERATED_REFLECTION_BODY()
 
 public:
