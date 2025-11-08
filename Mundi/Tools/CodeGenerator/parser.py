@@ -147,7 +147,7 @@ class HeaderParser:
 
     @staticmethod
     def _parse_uproperty_declarations(content: str):
-        """UPROPERTY 선언 찾기 (괄호 매칭 지원)"""
+        """UPROPERTY 선언 찾기 (괄호 매칭 지원, 주석 제외)"""
         results = []
         pos = 0
 
@@ -155,6 +155,24 @@ class HeaderParser:
             match = HeaderParser.UPROPERTY_START.search(content, pos)
             if not match:
                 break
+
+            # 주석 처리된 UPROPERTY인지 확인
+            line_start = content.rfind('\n', 0, match.start()) + 1
+            line_before_uproperty = content[line_start:match.start()]
+
+            # // 주석이나 /* */ 주석 안에 있는지 확인
+            if '//' in line_before_uproperty:
+                # 같은 줄에 // 주석이 있으면 건너뛰기
+                pos = match.end()
+                continue
+
+            # 여러 줄 주석 /* */ 체크
+            last_comment_start = content.rfind('/*', 0, match.start())
+            last_comment_end = content.rfind('*/', 0, match.start())
+            if last_comment_start > last_comment_end:
+                # /* 안에 있으면 건너뛰기
+                pos = match.end()
+                continue
 
             # 괄호 안 메타데이터 추출
             metadata_start = match.end()

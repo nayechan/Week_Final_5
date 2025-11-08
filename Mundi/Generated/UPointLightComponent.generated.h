@@ -7,21 +7,15 @@
 // This file must be included BEFORE the class definition
 #define CURRENT_CLASS_GENERATED_BODY \
 public: \
-    /* DECLARE_CLASS functionality */ \
     using Super = ULocalLightComponent; \
     using ThisClass_t = UPointLightComponent; \
     static UClass* StaticClass() \
     { \
         static UClass Cls{ "UPointLightComponent", ULocalLightComponent::StaticClass(), sizeof(UPointLightComponent) }; \
-        static bool bRegistered = []() { \
-            UClass::SignUpClass(&Cls); \
-            return true; \
-        }(); \
+        static bool bRegistered = (UClass::SignUpClass(&Cls), true); \
         return &Cls; \
     } \
     virtual UClass* GetClass() const override { return UPointLightComponent::StaticClass(); } \
-    \
-    /* DECLARE_DUPLICATE functionality */ \
     UPointLightComponent(const UPointLightComponent&) = default; \
     UPointLightComponent* Duplicate() const override \
     { \
@@ -30,8 +24,6 @@ public: \
         NewObject->PostDuplicate(); \
         return NewObject; \
     } \
-    \
-    /* Reflection registration */ \
 private: \
     static void StaticRegisterProperties(); \
     static const bool bPropertiesRegistered; \

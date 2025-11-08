@@ -7,21 +7,15 @@
 // This file must be included BEFORE the class definition
 #define CURRENT_CLASS_GENERATED_BODY \
 public: \
-    /* DECLARE_CLASS functionality */ \
     using Super = UShapeComponent; \
     using ThisClass_t = UBoxComponent; \
     static UClass* StaticClass() \
     { \
         static UClass Cls{ "UBoxComponent", UShapeComponent::StaticClass(), sizeof(UBoxComponent) }; \
-        static bool bRegistered = []() { \
-            UClass::SignUpClass(&Cls); \
-            return true; \
-        }(); \
+        static bool bRegistered = (UClass::SignUpClass(&Cls), true); \
         return &Cls; \
     } \
     virtual UClass* GetClass() const override { return UBoxComponent::StaticClass(); } \
-    \
-    /* DECLARE_DUPLICATE functionality */ \
     UBoxComponent(const UBoxComponent&) = default; \
     UBoxComponent* Duplicate() const override \
     { \
@@ -30,8 +24,6 @@ public: \
         NewObject->PostDuplicate(); \
         return NewObject; \
     } \
-    \
-    /* Reflection registration */ \
 private: \
     static void StaticRegisterProperties(); \
     static const bool bPropertiesRegistered; \

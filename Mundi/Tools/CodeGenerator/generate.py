@@ -26,21 +26,15 @@ GENERATED_HEADER_TEMPLATE = """// Auto-generated file - DO NOT EDIT!
 // This file must be included BEFORE the class definition
 #define CURRENT_CLASS_GENERATED_BODY \\
 public: \\
-    /* DECLARE_CLASS functionality */ \\
     using Super = {parent_class}; \\
     using ThisClass_t = {class_name}; \\
     static UClass* StaticClass() \\
     {{ \\
         static UClass Cls{{ "{class_name}", {parent_class}::StaticClass(), sizeof({class_name}) }}; \\
-        static bool bRegistered = []() {{ \\
-            UClass::SignUpClass(&Cls); \\
-            return true; \\
-        }}(); \\
+        static bool bRegistered = (UClass::SignUpClass(&Cls), true); \\
         return &Cls; \\
     }} \\
     virtual UClass* GetClass() const override {{ return {class_name}::StaticClass(); }} \\
-    \\
-    /* DECLARE_DUPLICATE functionality */ \\
     {class_name}(const {class_name}&) = default; \\
     {class_name}* Duplicate() const override \\
     {{ \\
@@ -49,8 +43,6 @@ public: \\
         NewObject->PostDuplicate(); \\
         return NewObject; \\
     }} \\
-    \\
-    /* Reflection registration */ \\
 private: \\
     static void StaticRegisterProperties(); \\
     static const bool bPropertiesRegistered; \\
@@ -74,6 +66,25 @@ GENERATED_CPP_TEMPLATE = """// Auto-generated file - DO NOT EDIT!
 // ===== Lua Binding =====
 {lua_code}
 """
+
+
+def write_file_if_different(file_path: Path, new_content: str) -> bool:
+    """
+    파일 내용이 실제로 다를 때만 파일을 씁니다.
+    타임스탬프를 유지하여 불필요한 재컴파일을 방지합니다.
+
+    Returns:
+        True if file was written, False if content was identical
+    """
+    # 파일이 이미 존재하고 내용이 같으면 건너뛰기
+    if file_path.exists():
+        existing_content = file_path.read_text(encoding='utf-8')
+        if existing_content == new_content:
+            return False
+
+    # 내용이 다르거나 파일이 없으면 쓰기
+    file_path.write_text(new_content, encoding='utf-8')
+    return True
 
 
 def generate_header_file(class_info):
@@ -186,28 +197,47 @@ def main():
 
     # 각 클래스에 대해 .generated.h와 .generated.cpp 생성
     generated_files = []
+    updated_count = 0
+    skipped_count = 0
+
     for class_info in classes:
         # .generated.h 파일 생성
         header_output = args.output_dir / f"{class_info.name}.generated.h"
         header_code = generate_header_file(class_info)
-        header_output.write_text(header_code, encoding='utf-8')
+        header_updated = write_file_if_different(header_output, header_code)
+        if header_updated:
+            updated_count += 1
         generated_files.append(header_output)
 
         # .generated.cpp 파일 생성
         cpp_output = args.output_dir / f"{class_info.name}.generated.cpp"
         cpp_code = generate_cpp_file(class_info, prop_gen, lua_gen)
-        cpp_output.write_text(cpp_code, encoding='utf-8')
+        cpp_updated = write_file_if_different(cpp_output, cpp_code)
+        if cpp_updated:
+            updated_count += 1
         generated_files.append(cpp_output)
 
-        print(f"✓ Generated: {class_info.name}")
-        print(f"  ├─ {header_output.name}")
-        print(f"  ├─ {cpp_output.name}")
+        # 상태 표시
+        if header_updated or cpp_updated:
+            status = "✓ Updated"
+        else:
+            status = "⏭️  Skipped (no changes)"
+            skipped_count += 1
+
+        print(f"{status}: {class_info.name}")
+        if header_updated:
+            print(f"  ├─ {header_output.name} (modified)")
+        if cpp_updated:
+            print(f"  ├─ {cpp_output.name} (modified)")
         print(f"  ├─ Properties: {len(class_info.properties)}")
         print(f"  └─ Functions:  {len([f for f in class_info.functions if f.metadata.get('lua_bind')])}")
 
     print()
     print("=" * 60)
-    print(f"✅ Code generation complete! ({len(generated_files)} files)")
+    print(f"✅ Code generation complete!")
+    print(f"   Total files: {len(generated_files)}")
+    print(f"   Updated: {updated_count}")
+    print(f"   Skipped: {skipped_count * 2} (unchanged)")
     print("=" * 60)
 
 

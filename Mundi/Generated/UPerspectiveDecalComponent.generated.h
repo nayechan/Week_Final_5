@@ -7,21 +7,15 @@
 // This file must be included BEFORE the class definition
 #define CURRENT_CLASS_GENERATED_BODY \
 public: \
-    /* DECLARE_CLASS functionality */ \
     using Super = UDecalComponent; \
     using ThisClass_t = UPerspectiveDecalComponent; \
     static UClass* StaticClass() \
     { \
         static UClass Cls{ "UPerspectiveDecalComponent", UDecalComponent::StaticClass(), sizeof(UPerspectiveDecalComponent) }; \
-        static bool bRegistered = []() { \
-            UClass::SignUpClass(&Cls); \
-            return true; \
-        }(); \
+        static bool bRegistered = (UClass::SignUpClass(&Cls), true); \
         return &Cls; \
     } \
     virtual UClass* GetClass() const override { return UPerspectiveDecalComponent::StaticClass(); } \
-    \
-    /* DECLARE_DUPLICATE functionality */ \
     UPerspectiveDecalComponent(const UPerspectiveDecalComponent&) = default; \
     UPerspectiveDecalComponent* Duplicate() const override \
     { \
@@ -30,8 +24,6 @@ public: \
         NewObject->PostDuplicate(); \
         return NewObject; \
     } \
-    \
-    /* Reflection registration */ \
 private: \
     static void StaticRegisterProperties(); \
     static const bool bPropertiesRegistered; \

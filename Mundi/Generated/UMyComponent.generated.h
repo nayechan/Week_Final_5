@@ -7,21 +7,15 @@
 // This file must be included BEFORE the class definition
 #define CURRENT_CLASS_GENERATED_BODY \
 public: \
-    /* DECLARE_CLASS functionality */ \
     using Super = USceneComponent; \
     using ThisClass_t = UMyComponent; \
     static UClass* StaticClass() \
     { \
         static UClass Cls{ "UMyComponent", USceneComponent::StaticClass(), sizeof(UMyComponent) }; \
-        static bool bRegistered = []() { \
-            UClass::SignUpClass(&Cls); \
-            return true; \
-        }(); \
+        static bool bRegistered = (UClass::SignUpClass(&Cls), true); \
         return &Cls; \
     } \
     virtual UClass* GetClass() const override { return UMyComponent::StaticClass(); } \
-    \
-    /* DECLARE_DUPLICATE functionality */ \
     UMyComponent(const UMyComponent&) = default; \
     UMyComponent* Duplicate() const override \
     { \
@@ -30,8 +24,6 @@ public: \
         NewObject->PostDuplicate(); \
         return NewObject; \
     } \
-    \
-    /* Reflection registration */ \
 private: \
     static void StaticRegisterProperties(); \
     static const bool bPropertiesRegistered; \

@@ -7,21 +7,15 @@
 // This file must be included BEFORE the class definition
 #define CURRENT_CLASS_GENERATED_BODY \
 public: \
-    /* DECLARE_CLASS functionality */ \
     using Super = USceneComponent; \
     using ThisClass_t = UTestAutoBindComponent; \
     static UClass* StaticClass() \
     { \
         static UClass Cls{ "UTestAutoBindComponent", USceneComponent::StaticClass(), sizeof(UTestAutoBindComponent) }; \
-        static bool bRegistered = []() { \
-            UClass::SignUpClass(&Cls); \
-            return true; \
-        }(); \
+        static bool bRegistered = (UClass::SignUpClass(&Cls), true); \
         return &Cls; \
     } \
     virtual UClass* GetClass() const override { return UTestAutoBindComponent::StaticClass(); } \
-    \
-    /* DECLARE_DUPLICATE functionality */ \
     UTestAutoBindComponent(const UTestAutoBindComponent&) = default; \
     UTestAutoBindComponent* Duplicate() const override \
     { \
@@ -30,8 +24,6 @@ public: \
         NewObject->PostDuplicate(); \
         return NewObject; \
     } \
-    \
-    /* Reflection registration */ \
 private: \
     static void StaticRegisterProperties(); \
     static const bool bPropertiesRegistered; \
