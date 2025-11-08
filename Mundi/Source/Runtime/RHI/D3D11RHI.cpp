@@ -537,23 +537,51 @@ void D3D11RHI::CreateFrameBuffer()
     // =====================================
     // 핑퐁(ping-pong) 버퍼 텍스처 생성 (SRV 지원)
     // =====================================
+    D3D11_TEXTURE2D_DESC SceneDesc = {};
+    SceneDesc.Width = swapDesc.BufferDesc.Width;
+    SceneDesc.Height = swapDesc.BufferDesc.Height;
+    SceneDesc.MipLevels = 1;
+    SceneDesc.ArraySize = 1;
+    SceneDesc.Format = DXGI_FORMAT_B8G8R8A8_TYPELESS;
+    SceneDesc.SampleDesc.Count = 1;
+    SceneDesc.SampleDesc.Quality = 0;
+    SceneDesc.Usage = D3D11_USAGE_DEFAULT;
+    SceneDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+    SceneDesc.CPUAccessFlags = 0;
+    SceneDesc.MiscFlags = 0;
 
-    D3D11_TEXTURE2D_DESC SceneColorDesc = {};
-    SceneColorDesc.Width = swapDesc.BufferDesc.Width;
-    SceneColorDesc.Height = swapDesc.BufferDesc.Height;
-    SceneColorDesc.MipLevels = 1;
-    SceneColorDesc.ArraySize = 1;
-    SceneColorDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;  // 색상 포맷
-    SceneColorDesc.SampleDesc.Count = 1;
-    SceneColorDesc.Usage = D3D11_USAGE_DEFAULT;
-    SceneColorDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-
-    for (int i = 0; i < NUM_SCENE_BUFFERS; i++)
+    for (uint32 Idx = 0; Idx < 2; ++Idx)
     {
-        Device->CreateTexture2D(&SceneColorDesc, nullptr, &SceneColorTextures[i]);
+        HRESULT Result = Device->CreateTexture2D(&SceneDesc, nullptr, &SceneColorTextures[Idx]);
+        if (FAILED(Result))
+        {
+            UE_LOG("DeviceResources: FrameBuffer Texture 생성 실패");
+            return;
+        }
 
-        Device->CreateRenderTargetView(SceneColorTextures[i], nullptr, &SceneColorRTVs[i]);
-        Device->CreateShaderResourceView(SceneColorTextures[i], nullptr, &SceneColorSRVs[i]);
+        D3D11_RENDER_TARGET_VIEW_DESC RtvDesc = {};
+        RtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+        RtvDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+        RtvDesc.Texture2D.MipSlice = 0;
+
+        Result = Device->CreateRenderTargetView(SceneColorTextures[Idx], &RtvDesc, &SceneColorRTVs[Idx]);
+        if (FAILED(Result))
+        {
+            UE_LOG("DeviceResources: FrameBuffer RTV 생성 실패");
+            return;
+        }
+
+        D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc = {};
+        SRVDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+        SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+        SRVDesc.Texture2D.MostDetailedMip = 0;
+        SRVDesc.Texture2D.MipLevels = 1;
+
+        Result = Device->CreateShaderResourceView(SceneColorTextures[Idx], &SRVDesc, &SceneColorSRVs[Idx]);
+        if (FAILED(Result))
+        {
+            UE_LOG("DeviceResources: FrameBuffer SRV 생성 실패");
+        }
     }
 
     // =====================================
