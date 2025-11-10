@@ -98,7 +98,7 @@ void FSceneRenderer::Render()
 		View->RenderSettings->GetViewMode() == EViewMode::VMI_Lit_Gouraud ||
 		View->RenderSettings->GetViewMode() == EViewMode::VMI_Lit_Lambert)
 	{
-		GWorld->GetLightManager()->UpdateLightBuffer(RHIDevice);	//라이트 구조체 버퍼 업데이트, 바인딩
+		World->GetLightManager()->UpdateLightBuffer(RHIDevice);
 		PerformTileLightCulling();	// 타일 기반 라이트 컬링 수행
 		RenderLitPath();
 		RenderPostProcessingPasses();	// 후처리 체인 실행
@@ -145,7 +145,9 @@ void FSceneRenderer::Render()
 void FSceneRenderer::RenderLitPath()
 {
     RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTargetWithId);
-    // Clear scene color for this view's rect to provide an opaque background
+
+	// 이 뷰의 rect 영역에 대해 Scene Color를 클리어하여 불투명한 배경을 제공함
+	// 이렇게 해야 에디터 뷰포트 여러 개를 동시에 겹치게 띄워도 서로의 렌더링이 섞이지 않는다
     {
         D3D11_VIEWPORT vp = {};
         vp.TopLeftX = (float)View->ViewRect.MinX;
@@ -175,19 +177,6 @@ void FSceneRenderer::RenderWireframePath()
     RHIDevice->ClearDepthBuffer(1.0f, 0);
     RHIDevice->RSSetState(ERasterizerMode::Wireframe);
     RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTarget);
-    // Provide background for wireframe path
-    {
-        D3D11_VIEWPORT vp = {};
-        vp.TopLeftX = (float)View->ViewRect.MinX;
-        vp.TopLeftY = (float)View->ViewRect.MinY;
-        vp.Width    = (float)View->ViewRect.Width();
-        vp.Height   = (float)View->ViewRect.Height();
-        vp.MinDepth = 0.0f; vp.MaxDepth = 1.0f;
-        RHIDevice->GetDeviceContext()->RSSetViewports(1, &vp);
-        const float bg[4] = { 0.12f, 0.13f, 0.15f, 1.0f };
-        RHIDevice->GetDeviceContext()->ClearRenderTargetView(RHIDevice->GetCurrentTargetRTV(), bg);
-        RHIDevice->ClearDepthBuffer(1.0f, 0);
-    }
     RenderOpaquePass(EViewMode::VMI_Unlit);
 
 	// 상태 복구
@@ -244,7 +233,7 @@ void FSceneRenderer::RenderSceneDepthPath()
 
 void FSceneRenderer::RenderShadowMaps()
 {
-	FLightManager* LightManager = GWorld->GetLightManager();
+    FLightManager* LightManager = World->GetLightManager();
 	if (!LightManager) return;
 
 	// 2. 그림자 캐스터(Caster) 메시 수집
@@ -349,7 +338,7 @@ void FSceneRenderer::RenderShadowMaps()
 			RHIDevice->GetDeviceContext()->PSSetShaderResources(9, 2, NullSRV);
 			
 			float ClearColor[] = {1.0f, 1.0f, 0.0f, 0.0f};
-			EShadowAATechnique ShadowAAType = GWorld->GetRenderSettings().GetShadowAATechnique();
+			EShadowAATechnique ShadowAAType = World->GetRenderSettings().GetShadowAATechnique();
 			switch (ShadowAAType)
 			{
 			case EShadowAATechnique::PCF:
@@ -476,7 +465,7 @@ void FSceneRenderer::RenderShadowDepthPass(FShadowRenderRequest& ShadowRequest, 
 	RHIDevice->GetDeviceContext()->IASetInputLayout(ShaderVariant->InputLayout);
 	RHIDevice->GetDeviceContext()->VSSetShader(ShaderVariant->VertexShader, nullptr, 0);
 	
-	EShadowAATechnique ShadowAAType = GWorld->GetRenderSettings().GetShadowAATechnique();
+    EShadowAATechnique ShadowAAType = World->GetRenderSettings().GetShadowAATechnique();
 	switch (ShadowAAType)
 	{
 	case EShadowAATechnique::PCF:
@@ -694,6 +683,10 @@ void FSceneRenderer::GatherVisibleProxies()
 					{
 						Proxies.Decals.Add(DecalComponent);
 					}
+					else if (ULineComponent* LineComponent = Cast<ULineComponent>(PrimitiveComponent))
+					{
+						Proxies.EditorLines.Add(LineComponent);
+					}
 				}
 				else
 				{
@@ -804,8 +797,8 @@ void FSceneRenderer::PerformTileLightCulling()
 	if (bTileCullingEnabled)
 	{
 		// PointLight와 SpotLight 정보 수집
-		TArray<FPointLightInfo>& PointLights = GWorld->GetLightManager()->GetPointLightInfoList();
-		TArray<FSpotLightInfo>& SpotLights = GWorld->GetLightManager()->GetSpotLightInfoList();
+		TArray<FPointLightInfo>& PointLights = World->GetLightManager()->GetPointLightInfoList();
+		TArray<FSpotLightInfo>& SpotLights = World->GetLightManager()->GetSpotLightInfoList();
 
 		// 타일 컬링 수행
 		TileLightCuller->CullLights(
@@ -1175,7 +1168,7 @@ void FSceneRenderer::RenderDebugPass()
 	// 그리드 라인 수집
 	for (ULineComponent* LineComponent : Proxies.EditorLines)
 	{
-		if (GWorld->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Grid))
+        if (World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Grid))
 		{
 			LineComponent->CollectLineBatches(OwnerRenderer);
 		}

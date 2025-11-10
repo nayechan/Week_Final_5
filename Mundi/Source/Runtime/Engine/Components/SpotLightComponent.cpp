@@ -121,13 +121,19 @@ FSpotLightInfo USpotLightComponent::GetLightInfo() const
 
 void USpotLightComponent::UpdateLightData()
 {
-	Super::UpdateLightData();
-	// 스포트라이트 특화 업데이트 로직
+    Super::UpdateLightData();
+    // 스포트라이트 특화 업데이트 로직
 
 	// Cone 각도 유효성 검사 (UI에서 변경된 경우를 대비)
 	ValidateConeAngles();
 
-	GWorld->GetLightManager()->UpdateLight(this);
+    if (UWorld* World = GetWorld())
+    {
+        if (World->GetLightManager())
+        {
+            World->GetLightManager()->UpdateLight(this);
+        }
+    }
 
 	// Update direction gizmo to reflect any changes
 	UpdateDirectionGizmo();
@@ -135,8 +141,14 @@ void USpotLightComponent::UpdateLightData()
 
 void USpotLightComponent::OnTransformUpdated()
 {
-	Super::OnTransformUpdated();
-	GWorld->GetLightManager()->UpdateLight(this);
+    Super::OnTransformUpdated();
+    if (UWorld* World = GetWorld())
+    {
+        if (World->GetLightManager())
+        {
+            World->GetLightManager()->UpdateLight(this);
+        }
+    }
 }
 
 void USpotLightComponent::OnRegister(UWorld* InWorld)
@@ -168,14 +180,20 @@ void USpotLightComponent::OnRegister(UWorld* InWorld)
 		// Update gizmo properties to match light
 		UpdateDirectionGizmo();
 	}
-	InWorld->GetLightManager()->RegisterLight(this);
+    InWorld->GetLightManager()->RegisterLight(this);
 }
 
 void USpotLightComponent::OnUnregister()
 {
-	GWorld->GetLightManager()->DeRegisterLight(this);
+    if (UWorld* World = GetWorld())
+    {
+        if (World->GetLightManager())
+        {
+            World->GetLightManager()->DeRegisterLight(this);
+        }
+    }
 
-	Super::OnUnregister();
+    Super::OnUnregister();
 }
 
 void USpotLightComponent::UpdateDirectionGizmo()

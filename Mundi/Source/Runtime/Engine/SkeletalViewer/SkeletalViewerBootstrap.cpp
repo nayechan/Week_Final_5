@@ -3,8 +3,7 @@
 #include "Source/Runtime/Engine/SkeletalViewer/ViewerState.h"
 #include "FViewport.h"
 #include "FSkeletalViewerViewportClient.h"
-#include "World.h"
-#include "ObjectFactory.h"
+#include "Source/Runtime/Engine/GameFramework/SkinnedMeshActor.h"
 
 ViewerState* SkeletalViewerBootstrap::CreateViewerState(const char* Name, UWorld* InWorld, ID3D11Device* InDevice)
 {
@@ -25,12 +24,19 @@ ViewerState* SkeletalViewerBootstrap::CreateViewerState(const char* Name, UWorld
     auto* Client = new FSkeletalViewerViewportClient();
     Client->SetWorld(State->World);
     Client->SetViewportType(EViewportType::Perspective);
-    Client->SetViewMode(EViewMode::VMI_Lit_Phong);
+    Client->SetViewMode(EViewMode::VMI_Unlit);
 
     State->Client = Client;
     State->Viewport->SetViewportClient(Client);
 
     State->World->SetEditorCameraActor(Client->GetCamera());
+
+    // Spawn a persistent preview actor (mesh can be set later from UI)
+    if (State->World)
+    {
+        ASkinnedMeshActor* Preview = State->World->SpawnActor<ASkinnedMeshActor>();
+        State->PreviewActor = Preview;
+    }
 
     return State;
 }

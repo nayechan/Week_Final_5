@@ -5,8 +5,9 @@
 FSkeletalViewerViewportClient::FSkeletalViewerViewportClient()
 {
     // Default to perspective camera and a sane default view mode.
+    // SkeletalViewerBootstrap에서 바뀌고 있음
     ViewportType = EViewportType::Perspective;
-    ViewMode = EViewMode::VMI_Lit_Phong; // user can switch via external UI
+    ViewMode = EViewMode::VMI_Lit_Phong;
 }
 
 FSkeletalViewerViewportClient::~FSkeletalViewerViewportClient()

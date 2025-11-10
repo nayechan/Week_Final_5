@@ -33,7 +33,7 @@ private:
 
 private:
     // Per-tab state
-    class ViewerState* ActiveState = nullptr;
+    ViewerState* ActiveState = nullptr;
     TArray<ViewerState*> Tabs;
     int ActiveTabIndex = -1;
 

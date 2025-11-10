@@ -1,12 +1,11 @@
 #include "pch.h"
 #include "SSkeletalMeshViewerWindow.h"
-#include "ImGui/imgui.h"
 #include "FViewport.h"
 #include "FViewportClient.h"
-#include "FSkeletalViewerViewportClient.h"
-#include <algorithm>
 #include "Source/Runtime/Engine/SkeletalViewer/SkeletalViewerBootstrap.h"
-#include "Source/Runtime/Engine/SkeletalViewer/ViewerState.h"
+#include "Source/Editor/PlatformProcess.h"
+#include "Source/Runtime/Engine/GameFramework/SkinnedMeshActor.h"
+#include "Source/Runtime/Engine/Components/LineComponent.h"
 
 SSkeletalMeshViewerWindow::SSkeletalMeshViewerWindow()
 {
@@ -99,11 +98,58 @@ void SSkeletalMeshViewerWindow::OnRender()
         float rightWidth = totalWidth * RightPanelRatio;
         float centerWidth = totalWidth - leftWidth - rightWidth;
 
-        // Left panel (opaque background)
+        // Left panel
         ImGui::BeginChild("LeftPanel", ImVec2(leftWidth, totalHeight), true);
-        ImGui::Text("Skeleton Tree (placeholder)");
-        ImGui::Separator();
-        ImGui::TextDisabled("Phase 1: UI scaffolding");
+        if (ActiveState)
+        {
+            ImGui::Text("Load Skeletal Mesh");
+            ImGui::Separator();
+
+            // Path input + browse
+            ImGui::PushItemWidth(-100.0f);
+            ImGui::InputTextWithHint("##MeshPath", "Data/Model/YourMesh.fbx", ActiveState->MeshPathBuffer, sizeof(ActiveState->MeshPathBuffer));
+            ImGui::PopItemWidth();
+            ImGui::SameLine();
+            if (ImGui::Button("Browse"))
+            {
+                auto widePath = FPlatformProcess::OpenLoadFileDialog(UTF8ToWide(GDataDir), L"fbx", L"FBX Files");
+                if (!widePath.empty())
+                {
+                    std::string s = widePath.string();
+                    strncpy_s(ActiveState->MeshPathBuffer, s.c_str(), sizeof(ActiveState->MeshPathBuffer) - 1);
+                }
+            }
+
+            // [메시 로드 UI]
+            // - 입력된 경로(또는 Browse로 선택된 경로)를 사용해 스켈레탈 메시를 로드하고
+            //   프리뷰 액터에 바로 세팅합니다. 이후 본 오버레이는 다음 프레임에 재구성됩니다.
+            if (ImGui::Button("Load FBX"))
+            {
+                FString Path = ActiveState->MeshPathBuffer;
+                if (!Path.empty())
+                {
+                    USkeletalMesh* Mesh = UResourceManager::GetInstance().Load<USkeletalMesh>(Path);
+                    if (Mesh && ActiveState->PreviewActor)
+                    {
+                        ActiveState->PreviewActor->SetSkeletalMesh(Path);
+                        ActiveState->CurrentMesh = Mesh;
+                        // 메시 표시에 대한 체크박스 상태와 동기화
+                        if (auto* Skinned = ActiveState->PreviewActor->GetSkinnedMeshComponent())
+                        {
+                            Skinned->SetVisibility(ActiveState->bShowMesh);
+                        }
+                        // 새 메시 로드시 본 라인 재구축 요청
+                        ActiveState->bBoneLinesDirty = true;
+                        if (auto* LineComp = ActiveState->PreviewActor->GetBoneLineComponent())
+                        {
+                            // 기존 선 데이터를 지우고(화면 잔상 방지), 현재 토글 상태에 맞춰 가시성을 동기화합니다.
+                            LineComp->ClearLines();
+                            LineComp->SetLineVisible(ActiveState->bShowBones);
+                        }
+                    }
+                }
+            }
+        }
         ImGui::EndChild();
 
         ImGui::SameLine();
@@ -119,11 +165,109 @@ void SSkeletalMeshViewerWindow::OnRender()
 
         ImGui::SameLine();
 
-        // Right panel (opaque background)
+        // Right panel
         ImGui::BeginChild("RightPanel", ImVec2(rightWidth, totalHeight), true);
-        ImGui::Text("Inspector (placeholder)");
+        ImGui::Text("Skeleton Tree");
+        
         ImGui::Separator();
-        ImGui::TextDisabled("Phase 1: UI scaffolding");
+        
+        if (ImGui::Checkbox("Show Mesh", &ActiveState->bShowMesh))
+        {
+            if (ActiveState->PreviewActor && ActiveState->PreviewActor->GetSkinnedMeshComponent())
+            {
+                ActiveState->PreviewActor->GetSkinnedMeshComponent()->SetVisibility(ActiveState->bShowMesh);
+            }
+        }
+        
+        ImGui::SameLine();
+        // [본 표시 토글]
+        // - 라인 컴포넌트의 Visibility를 직접 토글하여 불필요한 드로우를 줄입니다.
+        if (ImGui::Checkbox("Show Bones", &ActiveState->bShowBones))
+        {
+            if (ActiveState->PreviewActor && ActiveState->PreviewActor->GetBoneLineComponent())
+            {
+                ActiveState->PreviewActor->GetBoneLineComponent()->SetLineVisible(ActiveState->bShowBones);
+            }
+            if (ActiveState->bShowBones)
+            {
+                ActiveState->bBoneLinesDirty = true; // 표시 켜질 때 재구축
+            }
+        }
+
+        ImGui::Separator();
+        
+        if (!ActiveState->CurrentMesh)
+        {
+            ImGui::TextDisabled("No skeletal mesh loaded");
+        }
+        else
+        {
+            const FSkeleton* Skeleton = ActiveState->CurrentMesh->GetSkeleton();
+            if (!Skeleton || Skeleton->Bones.IsEmpty())
+            {
+                ImGui::TextDisabled("Mesh has no bones");
+            }
+            else
+            {
+                const TArray<FBone>& Bones = Skeleton->Bones;
+                // Build children adjacency per frame (cheap for typical skeleton sizes)
+                TArray<TArray<int32>> Children;
+                Children.resize(Bones.size());
+                for (int32 i = 0; i < Bones.size(); ++i)
+                {
+                    int32 Parent = Bones[i].ParentIndex;
+                    if (Parent >= 0 && Parent < Bones.size())
+                    {
+                        Children[Parent].Add(i);
+                    }
+                }
+
+                // Recursive lambda to draw a node and its children
+                std::function<void(int32)> DrawNode = [&](int32 Index)
+                {
+                    const bool bLeaf = Children[Index].IsEmpty();
+                    ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanFullWidth;
+                    if (bLeaf)
+                    {
+                        flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                    }
+                    if (ActiveState->SelectedBoneIndex == Index)
+                    {
+                        flags |= ImGuiTreeNodeFlags_Selected;
+                    }
+
+                    ImGui::PushID(Index);
+                    const char* Label = Bones[Index].Name.c_str();
+                    bool open = ImGui::TreeNodeEx((void*)(intptr_t)Index, flags, "%s", Label ? Label : "<noname>");
+                    if (ImGui::IsItemClicked())
+                    {
+                        if (ActiveState->SelectedBoneIndex != Index)
+                        {
+                            ActiveState->SelectedBoneIndex = Index;
+                            ActiveState->bBoneLinesDirty = true; // 색상 갱신 필요
+                        }
+                    }
+                    if (!bLeaf && open)
+                    {
+                        for (int32 Child : Children[Index])
+                        {
+                            DrawNode(Child);
+                        }
+                        ImGui::TreePop();
+                    }
+                    ImGui::PopID();
+                };
+
+                // Draw all roots (ParentIndex == -1)
+                for (int32 i = 0; i < Bones.size(); ++i)
+                {
+                    if (Bones[i].ParentIndex < 0)
+                    {
+                        DrawNode(i);
+                    }
+                }
+            }
+        }
         ImGui::EndChild();
     }
     ImGui::End();
@@ -138,6 +282,19 @@ void SSkeletalMeshViewerWindow::OnRender()
         const uint32 NewWidth  = static_cast<uint32>(CenterRect.Right - CenterRect.Left);
         const uint32 NewHeight = static_cast<uint32>(CenterRect.Bottom - CenterRect.Top);
         ActiveState->Viewport->Resize(NewStartX, NewStartY, NewWidth, NewHeight);
+
+        // [본 오버레이 재구축]
+        // - 엔진 레벨(액터)에서 본 라인을 재구성하도록 위임합니다.
+        if (ActiveState->bShowBones && ActiveState->PreviewActor && ActiveState->CurrentMesh && ActiveState->bBoneLinesDirty)
+        {
+            if (ULineComponent* LineComp = ActiveState->PreviewActor->GetBoneLineComponent())
+            {
+                LineComp->SetLineVisible(true);
+            }
+            ActiveState->PreviewActor->RebuildBoneLines(ActiveState->SelectedBoneIndex);
+            ActiveState->bBoneLinesDirty = false; // 한 번만 재구성
+        }
+
         ActiveState->Viewport->Render();
     }
 }
@@ -147,11 +304,6 @@ void SSkeletalMeshViewerWindow::OnUpdate(float DeltaSeconds)
     if (!ActiveState || !ActiveState->Viewport)
         return;
 
-    // Resize the internal viewport to match the center region
-    const uint32 NewStartX = static_cast<uint32>(CenterRect.Left);
-    const uint32 NewStartY = static_cast<uint32>(CenterRect.Top);
-    const uint32 NewWidth  = static_cast<uint32>(CenterRect.Right - CenterRect.Left);
-    const uint32 NewHeight = static_cast<uint32>(CenterRect.Bottom - CenterRect.Top);
     if (ActiveState && ActiveState->Client)
     {
         ActiveState->Client->Tick(DeltaSeconds);

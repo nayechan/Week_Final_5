@@ -315,17 +315,27 @@ void UFbxLoader::LoadMesh(FbxMesh* InMesh, FSkeletalMeshData& MeshData, TMap<int
 			int* Indices = Cluster->GetControlPointIndices();
 			double* Weights = Cluster->GetControlPointWeights();
 
-			// Bind Pose, Inverse Bind Pose 저장.
-			FbxAMatrix BindPoseMatrix;
-			Cluster->GetTransformLinkMatrix(BindPoseMatrix);
-			FbxAMatrix BindPoseInverseMatrix = BindPoseMatrix.Inverse();
-			// FbxMatrix는 128바이트, FMatrix는 64바이트라서 memcpy쓰면 망함
-			for (int Row = 0; Row < 4; Row++)
-				for (int Col = 0; Col < 4; Col++)
-				{
-					MeshData.Skeleton.Bones[BoneToIndex[Cluster->GetLink()]].InverseBindPose.M[Row][Col] = BindPoseInverseMatrix[Row][Col];
-					MeshData.Skeleton.Bones[BoneToIndex[Cluster->GetLink()]].BindPose.M[Row][Col] = BindPoseMatrix[Row][Col];
-				}
+            // Bind Pose, Inverse Bind Pose 저장.
+            // FBX 스킨 규약:
+            //  - TransformLinkMatrix: 본의 글로벌 바인드 행렬
+            //  - TransformMatrix:     메시의 글로벌 바인드 행렬
+            // 엔진 로컬(메시 기준) 바인드 행렬 = Inv(TransformMatrix) * TransformLinkMatrix
+            FbxAMatrix BoneBindGlobal;
+            Cluster->GetTransformLinkMatrix(BoneBindGlobal);
+            FbxAMatrix MeshBindGlobal;
+            Cluster->GetTransformMatrix(MeshBindGlobal);
+            FbxAMatrix MeshBindInv = MeshBindGlobal.Inverse();
+            FbxAMatrix BoneBindLocal = MeshBindInv * BoneBindGlobal;
+            FbxAMatrix BoneBindLocalInv = BoneBindLocal.Inverse();
+            // FbxMatrix는 128바이트, FMatrix는 64바이트라서 memcpy쓰면 안 됨. 원소 단위로 복사합니다.
+            for (int Row = 0; Row < 4; Row++)
+            {
+                for (int Col = 0; Col < 4; Col++)
+                {
+                    MeshData.Skeleton.Bones[BoneToIndex[Cluster->GetLink()]].BindPose.M[Row][Col] = static_cast<float>(BoneBindLocal[Row][Col]);
+                    MeshData.Skeleton.Bones[BoneToIndex[Cluster->GetLink()]].InverseBindPose.M[Row][Col] = static_cast<float>(BoneBindLocalInv[Row][Col]);
+                }
+            }
 
 
 			for (int ControlPointIndex = 0; ControlPointIndex < IndexCount; ControlPointIndex++)

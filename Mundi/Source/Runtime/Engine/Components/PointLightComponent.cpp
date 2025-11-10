@@ -71,15 +71,27 @@ FPointLightInfo UPointLightComponent::GetLightInfo() const
 
 void UPointLightComponent::UpdateLightData()
 {
-	Super::UpdateLightData();
-	// 점광원 특화 업데이트 로직
-	GWorld->GetLightManager()->UpdateLight(this);
+    Super::UpdateLightData();
+    // 점광원 특화 업데이트 로직
+    if (UWorld* World = GetWorld())
+    {
+        if (World->GetLightManager())
+        {
+            World->GetLightManager()->UpdateLight(this);
+        }
+    }
 }
 
 void UPointLightComponent::OnTransformUpdated()
 {
-	Super::OnTransformUpdated();
-	GWorld->GetLightManager()->UpdateLight(this);
+    Super::OnTransformUpdated();
+    if (UWorld* World = GetWorld())
+    {
+        if (World->GetLightManager())
+        {
+            World->GetLightManager()->UpdateLight(this);
+        }
+    }
 }
 
 
@@ -90,14 +102,20 @@ void UPointLightComponent::OnRegister(UWorld* InWorld)
 	{
 		SpriteComponent->SetTexture(GDataDir + "/UI/Icons/PointLight_64x.png");
 	}
-	InWorld->GetLightManager()->RegisterLight(this);
+    InWorld->GetLightManager()->RegisterLight(this);
 }
 
 void UPointLightComponent::OnUnregister()
 {
-	GWorld->GetLightManager()->DeRegisterLight(this);
+    if (UWorld* World = GetWorld())
+    {
+        if (World->GetLightManager())
+        {
+            World->GetLightManager()->DeRegisterLight(this);
+        }
+    }
 
-	Super::OnUnregister();
+    Super::OnUnregister();
 }
 
 void UPointLightComponent::RenderDebugVolume(URenderer* Renderer) const

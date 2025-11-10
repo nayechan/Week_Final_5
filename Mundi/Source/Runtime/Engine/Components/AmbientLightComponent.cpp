@@ -21,9 +21,15 @@ FAmbientLightInfo UAmbientLightComponent::GetLightInfo() const
 
 void UAmbientLightComponent::UpdateLightData()
 {
-	Super::UpdateLightData();
-	// 환경광 특화 업데이트 로직
-	GWorld->GetLightManager()->UpdateLight(this);
+    Super::UpdateLightData();
+    // 환경광 특화 업데이트 로직
+    if (UWorld* World = GetWorld())
+    {
+        if (World->GetLightManager())
+        {
+            World->GetLightManager()->UpdateLight(this);
+        }
+    }
 }
 
 void UAmbientLightComponent::OnTransformUpdated()
@@ -43,7 +49,13 @@ void UAmbientLightComponent::OnRegister(UWorld* InWorld)
 
 void UAmbientLightComponent::OnUnregister()
 {
-	GWorld->GetLightManager()->DeRegisterLight(this);
+    if (UWorld* World = GetWorld())
+    {
+        if (World->GetLightManager())
+        {
+            World->GetLightManager()->DeRegisterLight(this);
+        }
+    }
 }
 
 void UAmbientLightComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
