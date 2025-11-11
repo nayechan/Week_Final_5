@@ -57,6 +57,16 @@ FSkeletalMeshData UFbxLoader::LoadFbxMesh(const FString& FilePath)
 	// 임포트 후 제거
 	Importer->Destroy();
 
+	FbxAxisSystem UnrealImportAxis(FbxAxisSystem::eZAxis, FbxAxisSystem::eParityEven, FbxAxisSystem::eLeftHanded);
+	FbxAxisSystem SourceSetup = Scene->GetGlobalSettings().GetAxisSystem();
+
+	
+	if (SourceSetup != UnrealImportAxis)
+	{
+		UE_LOG("Fbx 축 변환 완료!\n");
+		UnrealImportAxis.DeepConvertScene(Scene);
+	}
+
 	// 매시의 폴리곤이 삼각형이 아닐 수가 있음, Converter가 모두 삼각화해줌.
 	FbxGeometryConverter IGeometryConverter(SdkManager);
 	if (IGeometryConverter.Triangulate(Scene, true))
