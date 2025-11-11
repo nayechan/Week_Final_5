@@ -88,7 +88,21 @@ public:
 	CONSTANT_BUFFER_LIST(DECLARE_UPDATE_CONSTANT_BUFFER_FUNC)
 	CONSTANT_BUFFER_LIST(DECLARE_SET_CONSTANT_BUFFER_FUNC)
 	CONSTANT_BUFFER_LIST(DECLARE_SET_UPDATE_CONSTANT_BUFFER_FUNC)
+	
+	template <typename TVertex>
+	void VertexBufferUpdate(ID3D11Buffer* VertexBuffer, const std::vector<TVertex>& Data)
+	{
+		// 데이터가 없으면 맵/언맵을 시도하지 않습니다.
+		if (Data.empty()) { return; }
 
+		D3D11_MAPPED_SUBRESOURCE MSR;
+		DeviceContext->Map(VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MSR);
+
+		const size_t DataSizeInBytes = Data.size() * sizeof(TVertex);
+		memcpy(MSR.pData, Data.data(), DataSizeInBytes);
+
+		DeviceContext->Unmap(VertexBuffer, 0);
+	}
 	template <typename T>
 	void ConstantBufferUpdate(ID3D11Buffer* ConstantBuffer, T& Data)
 	{

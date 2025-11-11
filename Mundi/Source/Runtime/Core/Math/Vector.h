@@ -424,6 +424,7 @@ struct FQuat
 		: X(InX), Y(InY), Z(InZ), W(InW)
 	{
 	}
+	FQuat(const FMatrix& M);
 
 	static FQuat Identity() { return FQuat(0, 0, 0, 1); }
 
@@ -986,6 +987,9 @@ struct alignas(16) FMatrix
 		return !(*this == Other);
 	}
 
+	FVector TransformPosition(const FVector& V) const;
+	FVector TransformVector(const FVector& V) const;
+	
 	// View/Proj (L H)
 	static FMatrix LookAtLH(const FVector& Eye, const FVector& At, const FVector& Up);
 	static FMatrix PerspectiveFovLH(float FovY, float Aspect, float Zn, float Zf);
@@ -1180,6 +1184,7 @@ struct FTransform
 
 	FTransform() : Rotation(0, 0, 0, 1), Translation(0, 0, 0), Scale3D(1, 1, 1) {}
 	FTransform(const FVector& T, const FQuat& R, const FVector& S) : Rotation(R), Translation(T), Scale3D(S) {}
+	FTransform(const FMatrix& M);
 
 	FMatrix ToMatrix() const;
 

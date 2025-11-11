@@ -628,7 +628,7 @@
     <ClCompile Include="Generated\UTextRenderComponent.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
-  <ClCompile Include="Generated\UMeshComponent.generated.cpp"><Filter>Generated</Filter></ClCompile><ClCompile Include="Generated\USkinnedMeshComponent.generated.cpp"><Filter>Generated</Filter></ClCompile><ClCompile Include="Generated\UTestLuaBindComponent.generated.cpp"><Filter>Generated</Filter></ClCompile><ClCompile Include="Generated\ASkinnedMeshActor.generated.cpp"><Filter>Generated</Filter></ClCompile></ItemGroup>
+  <ClCompile Include="Generated\UMeshComponent.generated.cpp"><Filter>Generated</Filter></ClCompile><ClCompile Include="Generated\USkinnedMeshComponent.generated.cpp"><Filter>Generated</Filter></ClCompile><ClCompile Include="Generated\UTestLuaBindComponent.generated.cpp"><Filter>Generated</Filter></ClCompile><ClCompile Include="Generated\ASkinnedMeshActor.generated.cpp"><Filter>Generated</Filter></ClCompile><ClCompile Include="Generated\USkeletalMeshComponent.generated.cpp"><Filter>Generated</Filter></ClCompile></ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
     <ClInclude Include="Source\Editor\Clipboard\ClipboardManager.h">
@@ -1344,7 +1344,7 @@
     <ClInclude Include="Generated\UTextRenderComponent.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
-  <ClInclude Include="Generated\UMeshComponent.generated.h"><Filter>Generated</Filter></ClInclude><ClInclude Include="Generated\USkinnedMeshComponent.generated.h"><Filter>Generated</Filter></ClInclude><ClInclude Include="Generated\UTestLuaBindComponent.generated.h"><Filter>Generated</Filter></ClInclude><ClInclude Include="Generated\ASkinnedMeshActor.generated.h"><Filter>Generated</Filter></ClInclude></ItemGroup>
+  <ClInclude Include="Generated\UMeshComponent.generated.h"><Filter>Generated</Filter></ClInclude><ClInclude Include="Generated\USkinnedMeshComponent.generated.h"><Filter>Generated</Filter></ClInclude><ClInclude Include="Generated\UTestLuaBindComponent.generated.h"><Filter>Generated</Filter></ClInclude><ClInclude Include="Generated\ASkinnedMeshActor.generated.h"><Filter>Generated</Filter></ClInclude><ClInclude Include="Generated\USkeletalMeshComponent.generated.h"><Filter>Generated</Filter></ClInclude></ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">
       <UniqueIdentifier>{5795df92-1510-45f1-8bda-7ed2d162568b}</UniqueIdentifier>

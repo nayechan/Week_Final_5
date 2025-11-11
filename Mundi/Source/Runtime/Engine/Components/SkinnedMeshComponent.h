@@ -13,16 +13,16 @@ public:
     ~USkinnedMeshComponent() override = default;
 
     void BeginPlay() override;
+    void TickComponent(float DeltaTime) override;
 
-    virtual void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
+    void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
     
 // Mesh Component Section
 public:
-    virtual void CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View) override;
+    void CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View) override;
     
-    // UStaticMeshComponent에서 복사 (씬 관리에 필수)
-    virtual FAABB GetWorldAABB() const override;
-    virtual void OnTransformUpdated() override;
+    FAABB GetWorldAABB() const override;
+    void OnTransformUpdated() override;
 
 // Skeletal Section
 public:
@@ -30,7 +30,7 @@ public:
      * @brief 렌더링할 스켈레탈 메시 에셋 설정 (UStaticMeshComponent::SetStaticMesh와 동일한 역할)
      * @param PathFileName 새 스켈레탈 메시 에셋 경로
      */
-    void SetSkeletalMesh(const FString& PathFileName);
+    virtual void SetSkeletalMesh(const FString& PathFileName);
 
     /**
      * @brief 이 컴포넌트의 USkeletalMesh 에셋을 반환
@@ -38,10 +38,29 @@ public:
     USkeletalMesh* GetSkeletalMesh() const { return SkeletalMesh; }
 
 protected:
+    void PerformSkinning();
+    /**
+     * @brief 자식에게서 원본 메시를 받아 CPU 스키닝을 수행 (핵심!)
+     * @param InSkinningMatrices 원본 정점 데이터가 포함된 메시 에셋
+     */
+    void UpdateSkinningMatrices(const TArray<FMatrix>& InSkinningMatrices);
+    
+    UPROPERTY(EditAnywhere, Category = "Skeletal Mesh", Tooltip = "Skeletal mesh asset to render")
     USkeletalMesh* SkeletalMesh;
 
     /**
-    * CPU 스키닝 최종 결과물 (TODO: 스키닝 계산 결과 버텍스들)
+     * @brief CPU 스키닝 최종 결과물. 렌더러가 이 데이터를 사용합니다.
+     */
+    TArray<FNormalVertex> SkinnedVertices;
+
+private:
+    FVector SkinVertexPosition(const FSkinnedVertex& InVertex) const;
+    FVector SkinVertexNormal(const FSkinnedVertex& InVertex) const;
+    FVector4 SkinVertexTangent(const FSkinnedVertex& InVertex) const;
+
+    /**
+     * @brief 자식이 계산해 준, 현재 프레임의 최종 스키닝 행렬
     */
-    // TArray<FNormalVertex> SkinnedVertices;
+    TArray<FMatrix> FinalSkinningMatrices;
+    bool bSkinningMatricesDirty = true;
 };

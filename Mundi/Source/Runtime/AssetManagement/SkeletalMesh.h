@@ -13,7 +13,7 @@ public:
     
     const FSkeletalMeshData* GetSkeletalMeshData() const { return Data; }
     const FSkeleton* GetSkeleton() const { return Data ? &Data->Skeleton : nullptr; }
-    //const TArray<FGroupInfo>& GetGroupInfos() const { return Data ? Data->GroupInfos : EmptyGroup; }
+    uint32 GetBoneCount() const { return Data ? Data->Skeleton.Bones.Num() : 0; }
     
     ID3D11Buffer* GetVertexBuffer() const { return VertexBuffer; }
     ID3D11Buffer* GetIndexBuffer() const { return IndexBuffer; }
@@ -24,12 +24,13 @@ public:
     uint32 GetVertexStride() const { return VertexStride; }
 
     void SetSkeletalMeshAsset(FSkeletalMeshData* InSkeletalMesh, ID3D11Device* InDevice);
-    const FSkeletalMeshData* GetSkeletalMeshAsset() const { return Data; }
 
     const TArray<FGroupInfo>& GetMeshGroupInfo() const { static TArray<FGroupInfo> EmptyGroup; return Data ? Data->GroupInfos : EmptyGroup; }
     bool HasMaterial() const { return Data ? Data->bHasMaterial : false; }
 
     uint64 GetMeshGroupCount() const { return Data ? Data->GroupInfos.size() : 0; }
+
+    void UpdateVertexBuffer(const TArray<FNormalVertex>& SkinnedVertices);
     
 private:
     void CreateVertexBuffer(FSkeletalMeshData* InSkeletalMesh, ID3D11Device* InDevice);

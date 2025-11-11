@@ -61,6 +61,13 @@ void USkeletalMesh::SetSkeletalMeshAsset(FSkeletalMeshData* InSkeletalMesh, ID3D
     IndexCount = static_cast<uint32>(Data->Indices.size());
 }
 
+void USkeletalMesh::UpdateVertexBuffer(const TArray<FNormalVertex>& SkinnedVertices)
+{
+    if (!VertexBuffer) { return; }
+
+    GEngine.GetRHIDevice()->VertexBufferUpdate(VertexBuffer, SkinnedVertices);
+}
+
 void USkeletalMesh::CreateVertexBuffer(FSkeletalMeshData* InSkeletalMesh, ID3D11Device* InDevice)
 {
     HRESULT hr = D3D11RHI::CreateVertexBuffer<FVertexDynamic>(InDevice, InSkeletalMesh->Vertices, &VertexBuffer);

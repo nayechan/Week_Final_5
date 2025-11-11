@@ -171,6 +171,21 @@ struct TPropertyTypeTraits
 		Class->AddProperty(Prop); \
 	}
 
+// StaticMesh 프로퍼티 추가
+#define ADD_PROPERTY_SKELETALMESH(VarType, VarName, CategoryName, bEditAnywhere, ...) \
+	{ \
+		static_assert(std::is_array_v<std::remove_reference_t<decltype(CategoryName)>>, \
+		              "CategoryName must be a string literal!"); \
+		FProperty Prop; \
+		Prop.Name = #VarName; \
+		Prop.Type = EPropertyType::SkeletalMesh; \
+		Prop.Offset = offsetof(ThisClass_t, VarName); \
+		Prop.Category = CategoryName; \
+		Prop.bIsEditAnywhere = bEditAnywhere; \
+		Prop.Tooltip = "" __VA_ARGS__; \
+		Class->AddProperty(Prop); \
+	}
+
 // Audio 프로퍼티 추가
 #define ADD_PROPERTY_AUDIO(VarType, VarName, CategoryName, bEditAnywhere, ...) \
 	{ \
