@@ -29,6 +29,9 @@ void UBoneAnchorComponent::OnTransformUpdated()
 {
     Super::OnTransformUpdated();
 
+    if (bSuppressWriteback)
+        return;
+
     if (!Target || BoneIndex < 0)
         return;
 

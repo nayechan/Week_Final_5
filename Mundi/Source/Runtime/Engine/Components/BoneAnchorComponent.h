@@ -22,7 +22,12 @@ public:
     // When user moves gizmo, write back to the bone
     void OnTransformUpdated() override;
 
+    // Suppress writeback while programmatically repositioning the anchor
+    void BeginSuppressWriteback() { bSuppressWriteback = true; }
+    void EndSuppressWriteback() { bSuppressWriteback = false; }
+
 private:
     USkinnedMeshComponent* Target = nullptr;
     int32 BoneIndex = -1;
+    bool bSuppressWriteback = false;
 };

@@ -256,6 +256,8 @@ void SSkeletalMeshViewerWindow::OnRender()
                                 ActiveState->PreviewActor->MoveGizmoToBone(Index);
                                 if (USceneComponent* Anchor = ActiveState->PreviewActor->GetBoneGizmoAnchor())
                                 {
+                                    // Ensure actor is selected so the component selection sticks
+                                    ActiveState->World->GetSelectionManager()->SelectActor(ActiveState->PreviewActor);
                                     ActiveState->World->GetSelectionManager()->SelectComponent(Anchor);
                                 }
                             }
@@ -305,7 +307,11 @@ void SSkeletalMeshViewerWindow::OnRender()
         ActiveState->Viewport->Resize(NewStartX, NewStartY, NewWidth, NewHeight);
 
         // [본 오버레이 재구축]
-        // - 엔진 레벨(액터)에서 본 라인을 재구성하도록 위임합니다.
+        // - 본 라인은 편집 중에도 매 프레임 갱신되어야 시각적으로 즉시 반영됨
+        if (ActiveState->bShowBones)
+        {
+            ActiveState->bBoneLinesDirty = true;
+        }
         if (ActiveState->bShowBones && ActiveState->PreviewActor && ActiveState->CurrentMesh && ActiveState->bBoneLinesDirty)
         {
             if (ULineComponent* LineComp = ActiveState->PreviewActor->GetBoneLineComponent())

@@ -50,4 +50,21 @@ protected:
     ULineComponent* BoneLineComponent = nullptr;
     // Anchor component used for gizmo selection/transform at a bone
     class UBoneAnchorComponent* BoneAnchor = nullptr;
+
+    // Incremental bone line overlay cache (avoid ClearLines every frame)
+    struct FBoneDebugLines
+    {
+        ULine* ParentLine = nullptr;      // parent-child connection
+        TArray<ULine*> Rings;             // 3 * NumSegments lines per bone
+    };
+
+    bool bBoneLinesInitialized = false;
+    int32 CachedSegments = 16;
+    int32 CachedSelected = -1;
+    TArray<FBoneDebugLines> BoneLinesCache; // size == BoneCount
+    TArray<TArray<int32>> BoneChildren;     // adjacency for subtree updates
+
+    void BuildBoneLinesCache();
+    void UpdateBoneSubtreeTransforms(int32 BoneIndex);
+    void UpdateBoneSelectionHighlight(int32 SelectedBoneIndex);
 };
