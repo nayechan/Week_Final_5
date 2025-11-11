@@ -17,6 +17,7 @@
 #include "SpotLightComponent.h"
 #include "PlatformProcess.h"
 #include "SkeletalMeshComponent.h"
+#include "USlateManager.h"
 #include "ImGui/imgui_curve.hpp"
 
 // 정적 멤버 변수 초기화
@@ -1046,6 +1047,18 @@ bool UPropertyRenderer::RenderSkeletalMeshProperty(const FProperty& Prop, void* 
 		{
 			SelectedIdx = i;
 			break;
+		}
+	}
+
+	if (ImGui::Button("Skeletal Viewer"))
+	{
+		if (!USlateManager::GetInstance().IsSkeletalMeshViewerOpen())
+		{
+			USlateManager::GetInstance().OpenSkeletalMeshViewer();
+		}
+		else
+		{
+			USlateManager::GetInstance().CloseSkeletalMeshViewer();
 		}
 	}
 
