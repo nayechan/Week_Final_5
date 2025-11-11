@@ -128,14 +128,9 @@ void ASkeletalMeshActor::MoveGizmoToBone(int32 BoneIndex)
     if (BoneIndex < 0 || BoneIndex >= (int32)Bones.size())
         return;
 
-    // Use current editable pose to compute bone world matrix (row-major, LH)
-    const FTransform BoneWorld = SkeletalMeshComponent->GetBoneWorldTransform(BoneIndex);
-
     // Wire target/index first, then place anchor without writeback
     BoneAnchor->BeginSuppressWriteback();
     BoneAnchor->SetTarget(SkeletalMeshComponent, BoneIndex);
-    const FVector WorldTranslation(BoneWorld.Translation);
-    BoneAnchor->SetWorldLocation(WorldTranslation);
     BoneAnchor->EndSuppressWriteback();
 
     BoneAnchor->SetEditability(true);

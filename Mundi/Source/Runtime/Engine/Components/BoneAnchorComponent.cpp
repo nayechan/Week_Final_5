@@ -18,8 +18,8 @@ void UBoneAnchorComponent::UpdateAnchorFromBone()
     if (!Target || BoneIndex < 0)
         return;
 
-    const FTransform WorldT = Target->GetBoneWorldTransform(BoneIndex);
-    SetWorldLocation(WorldT.Translation);
+    const FTransform BoneWorld = Target->GetBoneWorldTransform(BoneIndex);
+    SetWorldTransform(BoneWorld) ;
 }
 
 void UBoneAnchorComponent::OnTransformUpdated()

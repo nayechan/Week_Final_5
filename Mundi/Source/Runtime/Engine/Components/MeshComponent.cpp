@@ -184,7 +184,7 @@ UMaterialInterface* UMeshComponent::GetMaterial(uint32 InSectionIndex) const
 
 	if (!FoundMaterial)
 	{
-		UE_LOG("GetMaterial: Failed to find material Section %d", InSectionIndex);
+		// UE_LOG("GetMaterial: Failed to find material Section %d", InSectionIndex);
 		return nullptr;
 	}
 
