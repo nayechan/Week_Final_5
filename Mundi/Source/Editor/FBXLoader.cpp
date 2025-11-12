@@ -521,6 +521,8 @@ void UFbxLoader::LoadMesh(FbxMesh* InMesh, FSkeletalMeshData& MeshData, TMap<int
 	TMap<int32, TArray<IndexWeight>> ControlPointToBoneWeight;
 	// 메시 로컬 좌표계를 Fbx Scene World 좌표계로 바꿔주는 행렬
 	FbxAMatrix FbxSceneWorld{};
+	// 역전치(노말용)
+	FbxAMatrix FbxSceneWorldInverseTranspose{};
 
 	// Deformer: 매시의 모양을 변형시키는 모든 기능, ex) skin, blendShape(모프 타겟, 두 표정 미리 만들고 블랜딩해서 서서히 변화시킴)
 	// 99.9퍼센트는 스킨이 하나만 있고 완전 복잡한 얼굴 표정을 표현하기 위해서 2개 이상을 쓰기도 하는데 0번만 쓰도록 해도 문제 없음(AAA급 게임에서 2개 이상을 처리함)
@@ -538,6 +540,7 @@ void UFbxLoader::LoadMesh(FbxMesh* InMesh, FSkeletalMeshData& MeshData, TMap<int
 				// 정점을 Fbx Scene World 좌표계로 저장하기 위해 사용(아티스트 의도를 그대로 반영 가능, 서브메시를 단일메시로 처리 가능)
 				// 모든 SkeletalMesh는 Scene World 원점을 기준으로 제작되어야함
 				Cluster->GetTransformMatrix(FbxSceneWorld);
+				FbxSceneWorldInverseTranspose = FbxSceneWorld.Inverse().Transpose();
 			}
 			int IndexCount = Cluster->GetControlPointIndicesCount();
 			// 클러스터가 영향을 주는 ControlPointIndex를 구함.
@@ -571,6 +574,12 @@ void UFbxLoader::LoadMesh(FbxMesh* InMesh, FSkeletalMeshData& MeshData, TMap<int
 			}
 		}
 	}
+
+	bool bIsUniformScale = false;
+	const FbxVector4& ScaleOfSceneWorld = FbxSceneWorld.GetS();
+	// 비균등 스케일일 경우 그람슈미트 이용해서 탄젠트 재계산
+	bIsUniformScale = ((FMath::Abs(ScaleOfSceneWorld[0] - ScaleOfSceneWorld[1]) < 0.001f) &&
+		(FMath::Abs(ScaleOfSceneWorld[0] - ScaleOfSceneWorld[2]) < 0.001f));
 
 
 	// 로드는 TriangleList를 가정하고 할 것임. 
@@ -692,45 +701,6 @@ void UFbxLoader::LoadMesh(FbxMesh* InMesh, FSkeletalMeshData& MeshData, TMap<int
 				}
 			}
 
-			if (InMesh->GetElementTangentCount() > 0)
-			{
-				FbxGeometryElementTangent* Tangents = InMesh->GetElementTangent(0);
-
-				// 왜 Color에서 계산한 Mapping Index를 안 쓰지? -> 컬러, 탄젠트, 노말, UV 모두 다 다른 매핑 방식을 사용 가능함.
-				int MappingIndex;
-
-				switch (Tangents->GetMappingMode())
-				{
-				case FbxGeometryElement::eByControlPoint:
-					MappingIndex = ControlPointIndex;
-					break;
-				case FbxGeometryElement::eByPolygonVertex:
-					MappingIndex = VertexId;
-					break;
-				default:
-					break;
-				}
-
-				switch (Tangents->GetReferenceMode())
-				{
-				case FbxGeometryElement::eDirect:
-				{
-					const FbxVector4& Tangent = Tangents->GetDirectArray().GetAt(MappingIndex);
-					SkinnedVertex.Tangent = FVector4(Tangent.mData[0], Tangent.mData[1], Tangent.mData[2], Tangent.mData[3]);
-				}
-				break;
-				case FbxGeometryElement::eIndexToDirect:
-				{
-					int Id = Tangents->GetIndexArray().GetAt(MappingIndex);
-					const FbxVector4& Tangent = Tangents->GetDirectArray().GetAt(Id);
-					SkinnedVertex.Tangent = FVector4(Tangent.mData[0], Tangent.mData[1], Tangent.mData[2], Tangent.mData[3]);
-				}
-				break;
-				default:
-					break;
-				}
-			}
-
 			if (InMesh->GetElementNormalCount() > 0)
 			{
 				FbxGeometryElementNormal* Normals = InMesh->GetElementNormal(0);
@@ -756,19 +726,77 @@ void UFbxLoader::LoadMesh(FbxMesh* InMesh, FSkeletalMeshData& MeshData, TMap<int
 				case FbxGeometryElement::eDirect:
 				{
 					const FbxVector4& Normal = Normals->GetDirectArray().GetAt(MappingIndex);
-					SkinnedVertex.Normal = FVector(Normal.mData[0], Normal.mData[1], Normal.mData[2]);
+					FbxVector4 NormalWorld = FbxSceneWorldInverseTranspose.MultT(FbxVector4(Normal.mData[0], Normal.mData[1], Normal.mData[2], 0.0f));
+					SkinnedVertex.Normal = FVector(NormalWorld.mData[0], NormalWorld.mData[1], NormalWorld.mData[2]);
 				}
 				break;
 				case FbxGeometryElement::eIndexToDirect:
 				{
 					int Id = Normals->GetIndexArray().GetAt(MappingIndex);
 					const FbxVector4& Normal = Normals->GetDirectArray().GetAt(Id);
-					SkinnedVertex.Normal = FVector(Normal.mData[0], Normal.mData[1], Normal.mData[2]);
+					FbxVector4 NormalWorld = FbxSceneWorldInverseTranspose.MultT(FbxVector4(Normal.mData[0], Normal.mData[1], Normal.mData[2], 0.0f));
+					SkinnedVertex.Normal = FVector(NormalWorld.mData[0], NormalWorld.mData[1], NormalWorld.mData[2]);
 				}
 				break;
 				default:
 					break;
 				}
+			}
+
+			if (InMesh->GetElementTangentCount() > 0)
+			{
+				FbxGeometryElementTangent* Tangents = InMesh->GetElementTangent(0);
+
+				// 왜 Color에서 계산한 Mapping Index를 안 쓰지? -> 컬러, 탄젠트, 노말, UV 모두 다 다른 매핑 방식을 사용 가능함.
+				int MappingIndex;
+
+				switch (Tangents->GetMappingMode())
+				{
+				case FbxGeometryElement::eByControlPoint:
+					MappingIndex = ControlPointIndex;
+					break;
+				case FbxGeometryElement::eByPolygonVertex:
+					MappingIndex = VertexId;
+					break;
+				default:
+					break;
+				}
+
+				switch (Tangents->GetReferenceMode())
+				{
+				case FbxGeometryElement::eDirect:
+				{
+					const FbxVector4& Tangent = Tangents->GetDirectArray().GetAt(MappingIndex);
+					FbxVector4 TangentWorld = FbxSceneWorld.MultT(FbxVector4(Tangent.mData[0], Tangent.mData[1], Tangent.mData[2], 0.0f));
+					SkinnedVertex.Tangent = FVector4(TangentWorld.mData[0], TangentWorld.mData[1], TangentWorld.mData[2], Tangent.mData[3]);
+				}
+				break;
+				case FbxGeometryElement::eIndexToDirect:
+				{
+					int Id = Tangents->GetIndexArray().GetAt(MappingIndex);
+					const FbxVector4& Tangent = Tangents->GetDirectArray().GetAt(Id);
+					FbxVector4 TangentWorld = FbxSceneWorld.MultT(FbxVector4(Tangent.mData[0], Tangent.mData[1], Tangent.mData[2], 0.0f));
+					SkinnedVertex.Tangent = FVector4(TangentWorld.mData[0], TangentWorld.mData[1], TangentWorld.mData[2], Tangent.mData[3]);
+				}
+				break;
+				default:
+					break;
+				}
+
+				// 유니폼 스케일이 아니므로 그람슈미트, 노말이 필요하므로 노말 이후에 탄젠트 계산해야함
+				if (!bIsUniformScale)
+				{
+					FVector Tangent = FVector(SkinnedVertex.Tangent.X, SkinnedVertex.Tangent.Y, SkinnedVertex.Tangent.Z);
+					float Handedness = SkinnedVertex.Tangent.W;
+					const FVector& Normal = SkinnedVertex.Normal;
+
+					float TangentToNormalDir = FVector::Dot(Tangent, Normal);
+
+					Tangent = Tangent - Normal * TangentToNormalDir;
+					Tangent.Normalize();
+					SkinnedVertex.Tangent = FVector4(Tangent.X, Tangent.Y, Tangent.Z, Handedness);
+				}
+
 			}
 
 			// UV는 매핑 방식이 위와 다름(eByPolygonVertex에서 VertexId를 안 쓰고 TextureUvIndex를 씀, 참조방식도 위와 다름.)
