@@ -54,6 +54,14 @@ bool IntersectRayTriangleMT(const FRay& InRay,
                             const FVector& InC,
                             float& OutT);
 
+// Ray-line segment distance.
+// Returns the shortest distance and outputs the parameters (OutRayT, OutSegmentT) for the closest points.
+float DistanceRayToLineSegment(const FRay& Ray, 
+                               const FVector& LineStart,
+                               const FVector& LineEnd,
+                               float& OutRayT,
+                               float& OutSegmentT);
+
 /**
  * PickingSystem
  * - 액터 피킹 관련 로직을 담당하는 클래스

@@ -225,6 +225,55 @@ bool IntersectRayTriangleMT(const FRay& InRay, const FVector& InA, const FVector
 	return false;
 }
 
+float DistanceRayToLineSegment(const FRay& Ray, const FVector& LineStart, const FVector& LineEnd, float& OutRayT, float& OutSegmentT)
+{
+	// Ray:  P(t) = Origin + t * Direction (t >= 0)
+	// Line: Q(s) = LineStart + s * (LineEnd - LineStart) (0 <= s <= 1)
+
+	FVector u = Ray.Direction;				// Ray direction
+	FVector v = LineEnd - LineStart;		// Segment Direction
+	FVector w = Ray.Origin - LineStart;		// Vector between start points
+
+	float a = FVector::Dot(u, u);	// Always 1 (normalized dir)
+	float b = FVector::Dot(u, v);
+	float c = FVector::Dot(v, v);
+	float d = FVector::Dot(u, w);
+	float e = FVector::Dot(v, w);
+
+	float denominator = a * c - b * b;
+
+	// Handle parallel case
+	if (denominator < KINDA_SMALL_NUMBER)
+	{
+		OutRayT = 0.0f;
+		OutSegmentT = (b > c ? (e / b) : (d / c));
+		OutSegmentT = FMath::Clamp(OutSegmentT, 0.0f, 1.0f);
+	}
+	else
+	{
+		OutRayT = (b * e - c * d) / denominator;
+		OutSegmentT = (a * e - b * d) / denominator;
+
+		// Apply constraints
+		if (OutRayT < 0.0f) OutRayT = 0.0f;						// Ray cannot have negative t
+		OutSegmentT = FMath::Clamp(OutSegmentT, 0.0f, 1.0f);	// Clamp segment parameter to [0, 1]
+
+		// If segment was clamped, recalculate ray t
+		if (OutSegmentT == 0.0f || OutSegmentT == 1.0f)
+		{
+			FVector closestPoint = LineStart + v * OutSegmentT;
+			FVector toClosest = closestPoint - Ray.Origin;
+			OutRayT = FMath::Max(0.0f, FVector::Dot(toClosest, u));
+		}
+	}
+
+	// Calculate shortest distance
+	FVector PointOnRay = Ray.Origin + u * OutRayT;
+	FVector PointOnSegment = LineStart + v * OutSegmentT;
+
+	return (PointOnRay - PointOnSegment).Size();
+}
+
 // PickingSystem 구현
 AActor* CPickingSystem::PerformPicking(const TArray<AActor*>& Actors, ACameraActor* Camera)
 {

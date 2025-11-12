@@ -542,7 +542,8 @@ int32 ASkeletalMeshActor::PickBone(const FRay& Ray, float& OutDistance) const
     }
 
     const auto& Bones = Data->Skeleton.Bones;
-    if (Bones.empty())
+    const int32 BoneCount = (int32)Bones.size();
+    if (BoneCount == 0)
     {
         return -1;
     }
@@ -550,23 +551,47 @@ int32 ASkeletalMeshActor::PickBone(const FRay& Ray, float& OutDistance) const
     int32 ClosestBoneIndex = -1;
     float ClosestDistance = FLT_MAX;
 
+    // Picking parameters
+    const float SphereRadius = BoneJointRadius * 2.0f;  // Slightly larger for easier picking
+    const float LineThreshold = SphereRadius * 0.6f;
+
     // Test each bone with a bounding sphere
-    for (int32 i = 0; i < (int32)Bones.size(); ++i)
+    for (int32 i = 0; i < BoneCount; ++i)
     {
         // Get bone world transform
         FTransform BoneWorldTransform = SkeletalMeshComponent->GetBoneWorldTransform(i);
         FVector BoneWorldPos = BoneWorldTransform.Translation;
 
-        // Use BoneJointRadius as picking radius (can be adjusted)
-        float PickRadius = BoneJointRadius * 2.0f; // Slightly larger for easier picking
-
-        // Test ray-sphere intersection
-        float HitDistance;
-        if (IntersectRaySphere(Ray, BoneWorldPos, PickRadius, HitDistance))
+        // ========== 1. BONE LINE PICKING ==========
+        int32 ParentIndex = Bones[i].ParentIndex;
+        if (ParentIndex >= 0)
         {
-            if (HitDistance < ClosestDistance)
+            FVector ParentPos = SkeletalMeshComponent->GetBoneWorldTransform(ParentIndex).Translation;
+            FVector ChildPos = BoneWorldPos;
+
+            float RayT, SegT;
+            float Dist = DistanceRayToLineSegment(Ray, ParentPos, ChildPos, RayT, SegT);
+            if (Dist < LineThreshold && SegT >= 0.f && SegT <= 1.f)
             {
-                ClosestDistance = HitDistance;
+                UE_LOG("[PickBone] BONE HIT bone=%d parent=%d RayT=%.3f Dist=%.3f SegT=%.3f",
+                    i, ParentIndex, RayT, Dist, SegT);
+
+                if (RayT < ClosestDistance)
+                {
+                    ClosestDistance = RayT;
+                    ClosestBoneIndex = ParentIndex;
+                }
+            }
+        }
+
+        // ========== 2. JOINT SPHERE PICKING ==========
+        float SphereHitT;
+        if (IntersectRaySphere(Ray, BoneWorldPos, SphereRadius, SphereHitT))
+        {
+            UE_LOG("[PickBone] JOINT HIT bone=%d RayT=%.3f", i, SphereHitT);
+            if (SphereHitT < ClosestDistance)
+            {
+                ClosestDistance = SphereHitT;
                 ClosestBoneIndex = i;
             }
         }
