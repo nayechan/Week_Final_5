@@ -1,122 +1,99 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "LuaComponentProxy.h"
+
+TMap<UClass*, FBoundClassDesc> GBoundClasses;
+
+void BuildBoundClass(UClass* Class)
+{
+    if (!Class) return;
+    if (GBoundClasses.count(Class)) return;
+
+    FBoundClassDesc Desc;
+    Desc.Class = Class;
+
+    for (auto& Property : Class->GetAllProperties())
+    {
+        if (!Property.bIsEditAnywhere) continue;
+
+        FBoundProp BoundProp;
+        BoundProp.Property = &Property;
+        Desc.PropsByName.emplace(Property.Name, BoundProp);
+    }
+    GBoundClasses.emplace(Class, std::move(Desc));
+}
 
 sol::object LuaComponentProxy::Index(sol::this_state LuaState, LuaComponentProxy& Self, const char* Key)
 {
-    if (!Self.Instance)
-    {
-        UE_LOG("[LuaProxy] Index: Instance is null for key '%s'\n", Key);
-        return sol::nil;
-    }
-
+    if (!Self.Instance) return sol::nil;
     sol::state_view LuaView(LuaState);
 
-    // Get the registered Lua table for this class (contains both properties and methods)
-    sol::table& BindTable = FLuaBindRegistry::Get().EnsureTable(LuaView, Self.Class);
+    BuildBoundClass(Self.Class);
 
-    if (!BindTable.valid())
+
+    sol::table& FuncTable = FLuaBindRegistry::Get().EnsureTable(LuaView, Self.Class);
+    sol::object Func = (FuncTable.valid() ? FuncTable.raw_get<sol::object>(Key) : sol::object());
+
+    if (Func.valid() && Func.get_type() == sol::type::function)
+        return Func;
+
+    auto It = GBoundClasses.find(Self.Class);
+    if (It == GBoundClasses.end()) return sol::nil;
+
+    auto ItProp = It->second.PropsByName.find(Key);
+    if (ItProp == It->second.PropsByName.end()) return sol::nil;
+
+    const FProperty* Property = ItProp->second.Property;
+    switch (Property->Type)
     {
-        UE_LOG("[LuaProxy] Index: BindTable invalid for class %p, key '%s'\n",
-            Self.Class, Key);
-        return sol::nil;
+    case EPropertyType::Float:   return sol::make_object(LuaView, *Property->GetValuePtr<float>(Self.Instance));
+    case EPropertyType::Int32:   return sol::make_object(LuaView, *Property->GetValuePtr<int>(Self.Instance));
+    case EPropertyType::FString: return sol::make_object(LuaView, *Property->GetValuePtr<FString>(Self.Instance));
+    case EPropertyType::FVector: return sol::make_object(LuaView, *Property->GetValuePtr<FVector>(Self.Instance));
+    default: return sol::nil;
     }
-
-    sol::object Result = BindTable[Key];
-
-    if (!Result.valid())
-    {
-        UE_LOG("[LuaProxy] Index: Key '%s' not found in BindTable for class %p\n",
-            Key, Self.Class);
-        return sol::nil;
-    }
-
-    // Check if it's a property descriptor table
-    if (Result.is<sol::table>())
-    {
-        sol::table propDesc = Result.as<sol::table>();
-        sol::optional<bool> isProperty = propDesc["is_property"];
-
-        if (isProperty && *isProperty)
-        {
-            UE_LOG("[LuaProxy] Index: Property '%s' found for class %p\n",
-                Key, Self.Class);
-
-            // It's a property - get the getter function and call it
-            sol::object getterObj = propDesc["get"];
-            if (getterObj.valid())
-            {
-                sol::protected_function getter = getterObj.as<sol::protected_function>();
-                auto pfr = getter(Self);
-
-                if (!pfr.valid())
-                {
-                    sol::error err = pfr;
-                    UE_LOG("[LuaProxy] Index: Property '%s' getter error: %s\n", Key, err.what());
-                    return sol::nil;
-                }
-
-                UE_LOG("[LuaProxy] Index: Property '%s' getter succeeded\n", Key);
-                // Get the first return value as sol::object
-                return pfr.get<sol::object>();
-            }
-            else
-            {
-                UE_LOG("[LuaProxy] Index: Property '%s' has no getter\n", Key);
-            }
-            return sol::nil;
-        }
-    }
-
-    // If it's a function, return it as-is (for methods)
-    UE_LOG("[LuaProxy] Index: Returning method '%s' for class %p\n",
-        Key, Self.Class);
-    return Result;
 }
 
 void LuaComponentProxy::NewIndex(LuaComponentProxy& Self, const char* Key, sol::object Obj)
 {
-    if (!Self.Instance || !Self.Class) return;
+    auto IterateClass = GBoundClasses.find(Self.Class);
+    if (IterateClass == GBoundClasses.end()) return;
 
-    sol::state_view LuaView = Obj.lua_state();
-    sol::table& BindTable = FLuaBindRegistry::Get().EnsureTable(LuaView, Self.Class);
+    auto It = IterateClass->second.PropsByName.find(Key);
+    if (It == IterateClass->second.PropsByName.end()) return;
 
-    if (!BindTable.valid()) return;
+    const FProperty* Property = It->second.Property;
 
-    sol::object Property = BindTable[Key];
-
-    if (!Property.valid())
-        return; // Property doesn't exist
-
-    // Check if it's a property descriptor table
-    if (Property.is<sol::table>())
+    switch (Property->Type)
     {
-        sol::table propDesc = Property.as<sol::table>();
-        sol::optional<bool> isProperty = propDesc["is_property"];
-
-        if (isProperty && *isProperty)
+    case EPropertyType::Float:
+        if (Obj.get_type() == sol::type::number)
+            *Property->GetValuePtr<float>(Self.Instance) = static_cast<float>(Obj.as<double>());
+        break;
+    case EPropertyType::Int32:
+        if (Obj.get_type() == sol::type::number)
+            *Property->GetValuePtr<int>(Self.Instance) = static_cast<int>(Obj.as<double>());
+        break;
+    case EPropertyType::FString:
+        if (Obj.get_type() == sol::type::string)
+            *Property->GetValuePtr<FString>(Self.Instance) = Obj.as<FString>();
+        break;
+    case EPropertyType::FVector:
+        if (Obj.is<FVector>())
         {
-            // Check if it's read-only
-            sol::optional<bool> readOnly = propDesc["read_only"];
-            if (readOnly && *readOnly)
-            {
-                UE_LOG("[LuaProxy] Attempted to set read-only property: %s\n", Key);
-                return;
-            }
-
-            // It's a writable property - call the setter
-            sol::optional<sol::function> setter = propDesc["set"];
-            if (setter)
-            {
-                auto result = (*setter)(Self, Obj);
-                if (!result.valid())
-                {
-                    sol::error err = result;
-                    UE_LOG("[LuaProxy] Error setting property %s: %s\n", Key, err.what());
-                }
-            }
-            return;
+            *Property->GetValuePtr<FVector>(Self.Instance) = Obj.as<FVector>();
         }
+        else if (Obj.get_type() == sol::type::table)
+        {
+            sol::table t = Obj.as<sol::table>();
+            FVector tmp{
+                static_cast<float>(t.get_or("X", 0.0)),
+                static_cast<float>(t.get_or("Y", 0.0)),
+                static_cast<float>(t.get_or("Z", 0.0))
+            };
+            *Property->GetValuePtr<FVector>(Self.Instance) = tmp;
+        }
+        break;
+    default:
+        break;
     }
-
-    // If it's not a property, do nothing (can't set methods)
 }

@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "LuaManager.h"
 #include "LuaComponentProxy.h"
 #include "GameObject.h"
@@ -9,6 +9,7 @@
 #include <tuple>
 
 sol::object MakeCompProxy(sol::state_view SolState, void* Instance, UClass* Class) {
+    BuildBoundClass(Class);
     LuaComponentProxy Proxy;
     Proxy.Instance = Instance;
     Proxy.Class = Class;
@@ -18,7 +19,8 @@ sol::object MakeCompProxy(sol::state_view SolState, void* Instance, UClass* Clas
 FLuaManager::FLuaManager()
 {
     Lua = new sol::state();
-
+    
+    
     // Open essential standard libraries for gameplay scripts
     Lua->open_libraries(
         sol::lib::base,
@@ -140,43 +142,24 @@ FLuaManager::FLuaManager()
     MouseButton["XButton1"] = EMouseButton::XButton1;
     MouseButton["XButton2"] = EMouseButton::XButton2;
     
-    Lua->set_function("print", [](sol::variadic_args va) {
-        std::string output;
-        for (auto arg : va)
-        {
-            if (!output.empty()) output += "\t";
-
-            if (arg.is<FString>())
-                output += arg.as<FString>().c_str();
-            else if (arg.is<const char*>())
-                output += arg.as<const char*>();
-            else if (arg.is<int>())
-                output += std::to_string(arg.as<int>());
-            else if (arg.is<float>())
-                output += std::to_string(arg.as<float>());
-            else if (arg.is<double>())
-                output += std::to_string(arg.as<double>());
-            else if (arg.is<bool>())
-                output += arg.as<bool>() ? "true" : "false";
-            else if (arg.is<FVector>())
-            {
-                FVector v = arg.as<FVector>();
-                output += "Vector(" + std::to_string(v.X) + ", " + std::to_string(v.Y) + ", " + std::to_string(v.Z) + ")";
-            }
-            else if (arg.is<FLinearColor>())
-            {
-                FLinearColor c = arg.as<FLinearColor>();
-                output += "Color(" + std::to_string(c.R) + ", " + std::to_string(c.G) + ", " + std::to_string(c.B) + ", " + std::to_string(c.A) + ")";
-            }
-            else
-            {
-                // Get type name from sol::type enum
-                sol::type t = arg.get_type();
-                output += "[" + std::string(sol::type_name(arg.lua_state(), t)) + "]";
-            }
-        }
-        UE_LOG("[Lua] %s\n", output.c_str());
-    });
+    Lua->set_function("print", sol::overload(                             
+        [](const FString& msg) {                                          
+            UE_LOG("[Lua-Str] %s\n", msg.c_str());                        
+        },                                                                
+                                                                          
+        [](int num){                                                      
+            UE_LOG("[Lua] %d\n", num);                                    
+        },                                                                
+                                                                          
+        [](double num){                                                   
+            UE_LOG("[Lua] %f\n", num);                                    
+        },                                                                
+                                                                          
+        [](FVector Vector)                                                    
+        {                                                                 
+            UE_LOG("[Lua] (%f, %f, %f)\n", Vector.X, Vector.Y, Vector.Z); 
+        }                                                                 
+    ));
     
     // GlobalConfig는 전역 table
     SharedLib["GlobalConfig"] = Lua->create_table(); 
@@ -361,10 +344,6 @@ FLuaManager::FLuaManager()
     sol::table MetaTableShared = Lua->create_table();
     MetaTableShared[sol::meta_function::index] = Lua->globals();
     SharedLib[sol::metatable_key]  = MetaTableShared;
-
-    // Debug: 등록된 Lua 바인더 개수 출력
-    const auto& Builders = FLuaBindRegistry::Get().GetBuilders();
-    UE_LOG("[LuaManager] Registered %d Lua binders\n", Builders.size());
 }
 
 FLuaManager::~FLuaManager()
