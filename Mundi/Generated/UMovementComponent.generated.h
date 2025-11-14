@@ -5,6 +5,9 @@
 
 // Macro expansion for GENERATED_REFLECTION_BODY()
 // This file must be included BEFORE the class definition
+#ifdef CURRENT_CLASS_GENERATED_BODY
+#undef CURRENT_CLASS_GENERATED_BODY
+#endif
 #define CURRENT_CLASS_GENERATED_BODY \
 public: \
     using Super = UActorComponent; \
@@ -19,10 +22,8 @@ public: \
     UMovementComponent(const UMovementComponent&) = default; \
     UMovementComponent* Duplicate() const override \
     { \
-        UMovementComponent* NewObject = ObjectFactory::DuplicateObject<UMovementComponent>(this); \
-        NewObject->DuplicateSubObjects(); \
-        NewObject->PostDuplicate(); \
-        return NewObject; \
+        assert(false && "Cannot duplicate abstract class UMovementComponent"); \
+        return nullptr; \
     } \
 private: \
     static void StaticRegisterProperties(); \

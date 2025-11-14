@@ -16,7 +16,7 @@ namespace {
         {
             ObjectFactory::RegisterClassType(
                 UMovementComponent::StaticClass(),
-                []() -> UObject* { return new UMovementComponent(); }
+                nullptr
             );
         }
     };
