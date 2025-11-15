@@ -154,6 +154,11 @@ void UResourceManager::SetSkeletalMeshs()
     SkeletalMeshs = GetAll<USkeletalMesh>();
 }
 
+void UResourceManager::SetAnimations()
+{
+    Animations = GetAll<UAnimSequence>();
+}
+
 void UResourceManager::SetAudioFiles()
 { 
     Sounds = GetAll<USound>();

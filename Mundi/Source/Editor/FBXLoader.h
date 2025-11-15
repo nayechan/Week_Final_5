@@ -15,7 +15,14 @@ public:
 	USkeletalMesh* LoadFbxMesh(const FString& FilePath);
 
 	FSkeletalMeshData* LoadFbxMeshAsset(const FString& FilePath);
-	
+
+	/**
+	 * FBX 파일에서 애니메이션 로드
+	 * @param FilePath FBX 파일 경로
+	 * @param TargetSkeleton 대상 스켈레톤 (본 인덱스 매칭용)
+	 * @return 로드된 애니메이션 시퀀스
+	 */
+	class UAnimSequence* LoadFbxAnimation(const FString& FilePath, const struct FSkeleton* TargetSkeleton);
 
 protected:
 	~UFbxLoader() override;

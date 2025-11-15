@@ -100,7 +100,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Generated;$(ProjectDir)Source\Runtime\Core\Object;$(ProjectDir)Source\Runtime\Core\Math;$(ProjectDir)Source\Runtime\Core\Containers;$(ProjectDir)Source\Runtime\Core\Misc;$(ProjectDir)Source\Runtime\Core\Memory;$(ProjectDir)Source\Runtime\Engine\GameFramework;$(ProjectDir)Source\Runtime\Engine\Scripting;$(ProjectDir)Source\Runtime\Engine\Components;$(ProjectDir)Source\Runtime\Engine\Collision;$(ProjectDir)Source\Runtime\Engine\Spatial;$(ProjectDir)Source\Runtime\RHI;$(ProjectDir)Source\Runtime\Renderer;$(ProjectDir)Source\Runtime\AssetManagement;$(ProjectDir)Source\Runtime\InputCore;$(ProjectDir)Source\Editor;$(ProjectDir)Source\Slate;ThirdParty\DirectXTex\include;ThirdParty\DirectXTK\include;ThirdParty\Lua\include;ThirdParty\sol;ThirdParty;ThirdParty\FBXSDK\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Generated;$(ProjectDir)Source\Runtime\Core\Object;$(ProjectDir)Source\Runtime\Core\Math;$(ProjectDir)Source\Runtime\Core\Containers;$(ProjectDir)Source\Runtime\Core\Misc;$(ProjectDir)Source\Runtime\Core\Memory;$(ProjectDir)Source\Runtime\Engine\GameFramework;$(ProjectDir)Source\Runtime\Engine\Scripting;$(ProjectDir)Source\Runtime\Engine\Components;$(ProjectDir)Source\Runtime\Engine\Collision;$(ProjectDir)Source\Runtime\Engine\Spatial;$(ProjectDir)Source\Runtime\Engine\Animation;$(ProjectDir)Source\Runtime\RHI;$(ProjectDir)Source\Runtime\Renderer;$(ProjectDir)Source\Runtime\AssetManagement;$(ProjectDir)Source\Runtime\InputCore;$(ProjectDir)Source\Editor;$(ProjectDir)Source\Slate;ThirdParty\DirectXTex\include;ThirdParty\DirectXTK\include;ThirdParty\Lua\include;ThirdParty\sol;ThirdParty;ThirdParty\FBXSDK\include</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -272,10 +272,14 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimationRuntime.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimInstance.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimSingleNodeInstance.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Animation\AnimationAsset.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Animation\AnimDataModel.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Animation\AnimSequence.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Animation\AnimSequenceBase.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\SkeletalMeshComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\SkinnedMeshComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\SkeletalMeshActor.cpp" />
-      <ClCompile Include="Source\Runtime\Engine\Components\BoneAnchorComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Components\BoneAnchorComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Fade.cpp" />
     <FxCompile Include="Shaders\Materials\Fireball.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -501,7 +505,13 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Slate\Windows\SWindow.cpp" />
     <ClCompile Include="Source\Slate\Windows\UIWindow.cpp" />
     <ClCompile Include="Generated\UMeshComponent.generated.cpp" />
-  <ClCompile Include="Generated\UMovementComponent.generated.cpp" /><ClCompile Include="Generated\AInfo.generated.cpp" /><ClCompile Include="Generated\UAnimInstance.generated.cpp" /></ItemGroup>
+    <ClCompile Include="Generated\UMovementComponent.generated.cpp" />
+    <ClCompile Include="Generated\AInfo.generated.cpp" />
+    <ClCompile Include="Generated\UAnimDataModel.generated.cpp" />
+    <ClCompile Include="Generated\UAnimationAsset.generated.cpp" />
+    <ClCompile Include="Generated\UAnimSequence.generated.cpp" />
+    <ClCompile Include="Generated\UAnimSequenceBase.generated.cpp" />
+  <ClCompile Include="Generated\UAnimInstance.generated.cpp" /><ClCompile Include="Generated\UAnimSingleNodeInstance.generated.cpp" /></ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Common\LightingBuffers.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -666,6 +676,11 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Runtime\Core\Misc\PathUtils.h" />
     <ClInclude Include="Source\Runtime\Core\Object\FireballActor.h" />
     <ClInclude Include="Source\Runtime\Core\Object\Property.h" />
+    <ClInclude Include="Source\Runtime\Engine\Animation\AnimationAsset.h" />
+    <ClInclude Include="Source\Runtime\Engine\Animation\AnimDataModel.h" />
+    <ClInclude Include="Source\Runtime\Engine\Animation\AnimSequence.h" />
+    <ClInclude Include="Source\Runtime\Engine\Animation\AnimSequenceBase.h" />
+    <ClInclude Include="Source\Runtime\Engine\Animation\AnimTypes.h" />
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimationRuntime.h" />
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimInstance.h" />
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimNodeBase.h" />
@@ -879,7 +894,14 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="ThirdParty\Lua\include\lualib.h" />
     <ClInclude Include="Generated\UMeshComponent.generated.h" />
     <ClInclude Include="Generated\ASkinnedMeshActor.generated.h" />
-  <ClInclude Include="Generated\ASkeletalMeshActor.generated.h" /><ClInclude Include="Generated\UMovementComponent.generated.h" /><ClInclude Include="Generated\AInfo.generated.h" /><ClInclude Include="Generated\UAnimInstance.generated.h" /></ItemGroup>
+    <ClInclude Include="Generated\ASkeletalMeshActor.generated.h" />
+    <ClInclude Include="Generated\UMovementComponent.generated.h" />
+    <ClInclude Include="Generated\AInfo.generated.h" />
+    <ClInclude Include="Generated\UAnimDataModel.generated.h" />
+    <ClInclude Include="Generated\UAnimationAsset.generated.h" />
+    <ClInclude Include="Generated\UAnimSequence.generated.h" />
+    <ClInclude Include="Generated\UAnimSequenceBase.generated.h" />
+  <ClInclude Include="Generated\UAnimInstance.generated.h" /><ClInclude Include="Generated\UAnimSingleNodeInstance.generated.h" /></ItemGroup>
   <ItemGroup>
     <None Include="BuildTools\CodeGenerator\generate.py" />
     <None Include="BuildTools\CodeGenerator\lua_generator.py" />

@@ -10,11 +10,8 @@
 #include "../Engine/Audio/Sound.h"
 #include "Quad.h"
 #include "LineDynamicMesh.h"
-
-#pragma once
-#include "ObjectFactory.h"
-#include "Object.h"
 #include "SkeletalMesh.h"
+#include "AnimSequence.h"
 // ... 기타 include ...
 
 // --- 전방 선언 ---
@@ -89,7 +86,9 @@ public:
 	FMeshBVH* GetOrBuildMeshBVH(const FString& ObjPath, const struct FStaticMesh* StaticMeshAsset);
 	void SetStaticMeshs();
 	void SetSkeletalMeshs();
+	void SetAnimations();
 	const TArray<UStaticMesh*>& GetStaticMeshs() { return StaticMeshs; }
+	const TArray<UAnimSequence*>& GetAnimations() { return Animations; }
 
 	void SetAudioFiles();  
 
@@ -117,6 +116,7 @@ protected:
 
 	TArray<UStaticMesh*> StaticMeshs;
 	TArray<USkeletalMesh*> SkeletalMeshs;
+	TArray<UAnimSequence*> Animations;
 
 	TArray<USound*> Sounds;
 
@@ -259,6 +259,8 @@ EResourceType UResourceManager::GetResourceType()
         return EResourceType::Material;
     if (T::StaticClass() == USound::StaticClass())
         return EResourceType::Sound;
+    if (T::StaticClass() == UAnimSequence::StaticClass())
+        return EResourceType::Animation;
 
     return EResourceType::None;
 }
