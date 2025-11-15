@@ -1280,11 +1280,8 @@ UAnimSequence* UFbxLoader::LoadFbxAnimation(const FString& FilePath, const struc
 			UE_LOG("UFbxLoader::LoadFbxAnimation: Deleting corrupt cache and forcing regeneration.");
 
 			std::filesystem::remove(AnimCacheFileName);
-			if (DataModel)
-			{
-				delete DataModel;
-				DataModel = nullptr;
-			}
+			// UObject는 ObjectFactory가 관리하므로 수동 delete 금지
+			DataModel = nullptr;
 			bLoadedFromCache = false;
 		}
 	}

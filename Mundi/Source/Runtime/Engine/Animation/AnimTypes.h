@@ -125,7 +125,17 @@ public:
 	friend FArchive& operator<<(FArchive& Ar, FBoneAnimationTrack& Track)
 	{
 		Ar << Track.BoneIndex;
-		Ar << Track.BoneName;
+
+		// FString 직렬화 (내부 포인터가 아닌 실제 문자열 데이터 직렬화)
+		if (Ar.IsSaving())
+		{
+			Serialization::WriteString(Ar, Track.BoneName);
+		}
+		else if (Ar.IsLoading())
+		{
+			Serialization::ReadString(Ar, Track.BoneName);
+		}
+
 		Ar << Track.InternalTrack;
 		return Ar;
 	}
