@@ -31,12 +31,16 @@
 #include "DecalStatManager.h"
 #include "SceneRenderer.h"
 #include "SceneView.h"
+#include "SkinningStats.h"
 
 #include <Windows.h>
 #include "DirectionalLightComponent.h"
 URenderer::URenderer(D3D11RHI* InDevice) : RHIDevice(InDevice)
 {
 	InitializeLineBatch();
+
+	// GPU 타이머 초기화 (스키닝 성능 측정용)
+	FSkinningStatManager::GetInstance().InitializeGPUTimer(RHIDevice->GetDevice());
 }
 
 URenderer::~URenderer()

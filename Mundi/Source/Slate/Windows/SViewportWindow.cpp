@@ -441,6 +441,9 @@ void SViewportWindow::LoadToolbarIcons(ID3D11Device* Device)
 	IconShadowAA = NewObject<UTexture>();
 	IconShadowAA->Load(GDataDir + "/Icon/Viewport_ShadowAA.png", Device);
 
+	IconGPUSkinning = NewObject<UTexture>();
+	IconGPUSkinning->Load(GDataDir + "/Icon/Viewport_SkinningGPU.png", Device);
+
 	// 뷰포트 레이아웃 전환 아이콘 로드
 	IconSingleToMultiViewport = NewObject<UTexture>();
 	IconSingleToMultiViewport->Load(GDataDir + "/Icon/Viewport_SingleToMultiViewport.png", Device);
@@ -1403,6 +1406,7 @@ void SViewportWindow::RenderShowFlagDropdownMenu()
 				UStatsOverlayD2D::Get().SetShowTileCulling(false);
 				UStatsOverlayD2D::Get().SetShowLights(false);
 				UStatsOverlayD2D::Get().SetShowShadow(false);
+				UStatsOverlayD2D::Get().SetShowSkinning(false);
 			}
 
 			if (ImGui::IsItemHovered())
@@ -1490,6 +1494,16 @@ void SViewportWindow::RenderShowFlagDropdownMenu()
 			if (ImGui::IsItemHovered())
 			{
 				ImGui::SetTooltip("셉도우 맵 통계를 표시합니다. (셉도우 라이트 개수, 아틀라스 크기, 메모리 사용량)");
+			}
+
+			bool bSkinningStats = UStatsOverlayD2D::Get().IsSkinningVisible();
+			if (ImGui::Checkbox(" SKINNING", &bSkinningStats))
+			{
+				UStatsOverlayD2D::Get().ToggleSkinning();
+			}
+			if (ImGui::IsItemHovered())
+			{
+				ImGui::SetTooltip("스키닝 통계를 표시합니다. (GPU/CPU 스키닝 메시 개수, 버텍스 개수)");
 			}
 
 			ImGui::EndMenu();
@@ -1927,6 +1941,34 @@ void SViewportWindow::RenderShowFlagDropdownMenu()
 		if (ImGui::IsItemHovered())
 		{
 			ImGui::SetTooltip("그림자 안티 에일리어싱 기술 설정");
+		}
+
+		// GPU Skinning
+		bool bGPUSkinning = RenderSettings.IsShowFlagEnabled(EEngineShowFlags::SF_GPUSkinning);
+		if (ImGui::Checkbox("##GPUSkinning", &bGPUSkinning))
+		{
+			RenderSettings.ToggleShowFlag(EEngineShowFlags::SF_GPUSkinning);
+
+			// Show Flag와 스키닝 모드 동기화
+			if (bGPUSkinning)
+			{
+				RenderSettings.SetGlobalSkinningMode(ESkinningMode::ForceGPU);
+			}
+			else
+			{
+				RenderSettings.SetGlobalSkinningMode(ESkinningMode::ForceCPU);
+			}
+		}
+		ImGui::SameLine();
+		if (IconGPUSkinning && IconGPUSkinning->GetShaderResourceView())
+		{
+			ImGui::Image((void*)IconGPUSkinning->GetShaderResourceView(), IconSize);
+			ImGui::SameLine(0, 4);
+		}
+		ImGui::Text(" GPU 스키닝");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("GPU 스키닝을 사용합니다. (비활성화 시 CPU 스키닝)");
 		}
 
 		ImGui::PopStyleColor(3);

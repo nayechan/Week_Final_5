@@ -21,6 +21,7 @@
 #include "SelectionManager.h"
 #include "StaticMeshComponent.h"
 #include "DecalStatManager.h"
+#include "SkinningStats.h"
 #include "BillboardComponent.h"
 #include "TextRenderComponent.h"
 #include "OBB.h"
@@ -77,6 +78,35 @@ void FSceneRenderer::Render()
 {
     if (!IsValid()) return;
 
+	// 현재 스키닝 모드 확인
+	ESkinningMode GlobalMode = World->GetRenderSettings().GetGlobalSkinningMode();
+	bool bIsCPUMode = (GlobalMode == ESkinningMode::ForceCPU);
+
+	// 이전 프레임의 GPU draw 시간 가져오기 (비동기, N-3 프레임 결과)
+	double LastGPUDrawTimeMS = FSkinningStatManager::GetInstance().GetGPUDrawTimeMS(RHIDevice->GetDeviceContext());
+
+	// TimeProfile 시스템에 GPU Draw Time 추가 (프로파일링 통합)
+	if (LastGPUDrawTimeMS >= 0.0)
+	{
+		FScopeCycleCounter::AddTimeProfile(TStatId("GPUDrawTime"), LastGPUDrawTimeMS);
+	}
+
+	// 프레임 단위 통계 리셋 (선택적 리셋: 비활성 모드의 마지막 통계 보존)
+	FDecalStatManager::GetInstance().ResetFrameStats();
+	FSkinningStatManager::GetInstance().ResetFrameStats(bIsCPUMode);
+
+	// GPU draw 시간을 현재 활성 모드 통계에 추가
+	// CPU 모드: CPU 본 계산 + 버텍스 스키닝 + 버퍼 업로드 + GPU draw
+	// GPU 모드: CPU 본 계산 + 본 버퍼 업로드 + GPU draw(셰이더 스키닝 포함)
+	if (bIsCPUMode)
+	{
+		FSkinningStatManager::GetInstance().AddCPUGPUDrawTime(LastGPUDrawTimeMS);
+	}
+	else
+	{
+		FSkinningStatManager::GetInstance().AddGPUDrawTime(LastGPUDrawTimeMS);
+	}
+
 	/*static bool Loaded = false;
 	if (!Loaded)
 	{
@@ -85,7 +115,7 @@ void FSceneRenderer::Render()
 	}*/
     // 뷰(View) 준비: 행렬, 절두체 등 프레임에 필요한 기본 데이터 계산
     PrepareView();
-    // (Background is cleared per-path when binding scene color)
+    // (Background is cleared per-path when binding service color)
     // 렌더링할 대상 수집 (Cull + Gather)
     GatherVisibleProxies();
 
@@ -164,8 +194,9 @@ void FSceneRenderer::RenderLitPath()
         RHIDevice->ClearDepthBuffer(1.0f, 0);
     }
 
-	// Base Pass
+	// Base Pass (GPU 타이머는 DrawMeshBatches 내에서 스켈레탈 메시만 측정)
 	RenderOpaquePass(View->RenderSettings->GetViewMode());
+
 	RenderDecalPass();
 }
 
@@ -446,6 +477,15 @@ void FSceneRenderer::RenderShadowMaps()
 	
 	// ViewProjBufferType 복구 (라이트 시점 Override 일 경우 마지막 라이트 시점으로 설정됨)
 	RHIDevice->SetAndUpdateConstantBuffer(ViewProjBufferType(OriginViewProjBuffer));
+
+	// Release GPU skinning bone buffers
+	for (const FMeshBatchElement& Batch : ShadowMeshBatches)
+	{
+		if (Batch.BoneMatricesBuffer)
+		{
+			Batch.BoneMatricesBuffer->Release();
+		}
+	}
 }
 
 void FSceneRenderer::RenderShadowDepthPass(FShadowRenderRequest& ShadowRequest, const TArray<FMeshBatchElement>& InShadowBatches)
@@ -869,6 +909,14 @@ void FSceneRenderer::PerformFrustumCulling()
 void FSceneRenderer::RenderOpaquePass(EViewMode InRenderViewMode)
 {
 	// --- 1. 수집 (Collect) ---
+	// Release any GPU skinning bone buffers from previous frame
+	for (const FMeshBatchElement& Batch : MeshBatchElements)
+	{
+		if (Batch.BoneMatricesBuffer)
+		{
+			Batch.BoneMatricesBuffer->Release();
+		}
+	}
 	MeshBatchElements.Empty();
 	for (UMeshComponent* MeshComponent : Proxies.Meshes)
 	{
@@ -890,7 +938,11 @@ void FSceneRenderer::RenderOpaquePass(EViewMode InRenderViewMode)
 	MeshBatchElements.Sort();
 
 	// --- 3. 그리기 (Draw) ---
+	// GPU 타이머 시작 - Opaque Pass의 Draw Time 측정
+	FSkinningStatManager::GetInstance().BeginGPUTimer(RHIDevice->GetDeviceContext());
 	DrawMeshBatches(MeshBatchElements, true);
+	// GPU 타이머 종료
+	FSkinningStatManager::GetInstance().EndGPUTimer(RHIDevice->GetDeviceContext());
 }
 
 void FSceneRenderer::RenderDecalPass()
@@ -1416,6 +1468,11 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 		// 4. 오브젝트별 상수 버퍼 설정 (매번 변경)
 		RHIDevice->SetAndUpdateConstantBuffer(ModelBufferType(Batch.WorldMatrix, Batch.WorldMatrix.InverseAffine().Transpose()));
 		RHIDevice->SetAndUpdateConstantBuffer(ColorBufferType(Batch.InstanceColor, Batch.ObjectID));
+
+		// GPU 스키닝: 본 행렬 상수 버퍼 바인딩 (b6)
+		// nullptr를 전달하면 해당 슬롯을 언바인드합니다
+		ID3D11Buffer* BoneBuffer = Batch.BoneMatricesBuffer;
+		RHIDevice->GetDeviceContext()->VSSetConstantBuffers(6, 1, &BoneBuffer);
 
 		// 5. 드로우 콜 실행
 		RHIDevice->GetDeviceContext()->DrawIndexed(Batch.IndexCount, Batch.StartIndex, Batch.BaseVertexIndex);

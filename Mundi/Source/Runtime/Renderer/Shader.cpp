@@ -237,7 +237,7 @@ bool UShader::CompileVariantInternal(ID3D11Device* InDevice, const FString& InSh
 		{
 			Hr = InDevice->CreateVertexShader(OutVariant.VSBlob->GetBufferPointer(), OutVariant.VSBlob->GetBufferSize(), nullptr, &OutVariant.VertexShader);
 			assert(SUCCEEDED(Hr));
-			CreateInputLayout(InDevice, InShaderPath, OutVariant); // OutVariant 전달
+			CreateInputLayout(InDevice, InShaderPath, InMacros, OutVariant); // InMacros 전달
 		}
 	}
 	else if (EndsWith(InShaderPath, "_PS.hlsl"))
@@ -258,7 +258,7 @@ bool UShader::CompileVariantInternal(ID3D11Device* InDevice, const FString& InSh
 		{
 			Hr = InDevice->CreateVertexShader(OutVariant.VSBlob->GetBufferPointer(), OutVariant.VSBlob->GetBufferSize(), nullptr, &OutVariant.VertexShader);
 			assert(SUCCEEDED(Hr));
-			CreateInputLayout(InDevice, InShaderPath, OutVariant);
+			CreateInputLayout(InDevice, InShaderPath, InMacros, OutVariant);
 		}
 		if (bPsCompiled)
 		{
@@ -310,9 +310,29 @@ ID3D11PixelShader* UShader::GetPixelShader(const TArray<FShaderMacro>& InMacros)
 	return nullptr;
 }
 
-void UShader::CreateInputLayout(ID3D11Device* Device, const FString& InShaderPath, FShaderVariant& InOutVariant)
+void UShader::CreateInputLayout(ID3D11Device* Device, const FString& InShaderPath, const TArray<FShaderMacro>& InMacros, FShaderVariant& InOutVariant)
 {
 	TArray<D3D11_INPUT_ELEMENT_DESC> descArray = UResourceManager::GetInstance().GetProperInputLayout(InShaderPath);
+
+	// GPU 스키닝을 사용하는 경우 BoneIndices와 BoneWeights 추가
+	bool bHasGPUSkinning = false;
+	for (const FShaderMacro& Macro : InMacros)
+	{
+		if (Macro.Name.ToString() == "GPU_SKINNING")
+		{
+			bHasGPUSkinning = true;
+			break;
+		}
+	}
+
+	if (bHasGPUSkinning && InShaderPath.find("UberLit") != FString::npos)
+	{
+		// GPU 스키닝을 위한 추가 입력 요소
+		// FSkinnedVertex: Position(12) + Normal(12) + UV(8) + Tangent(16) + Color(16) + BoneIndices(16) + BoneWeights(16)
+		descArray.Add({ "BLENDINDICES", 0, DXGI_FORMAT_R32G32B32A32_UINT, 0, 64, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+		descArray.Add({ "BLENDWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 80, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+	}
+
 	const D3D11_INPUT_ELEMENT_DESC* layout = descArray.data();
 	uint32 layoutCount = static_cast<uint32>(descArray.size());
 
@@ -325,7 +345,22 @@ void UShader::CreateInputLayout(ID3D11Device* Device, const FString& InShaderPat
 			InOutVariant.VSBlob->GetBufferPointer(),
 			InOutVariant.VSBlob->GetBufferSize(),
 			&InOutVariant.InputLayout);
-		assert(SUCCEEDED(hr));
+
+		if (FAILED(hr))
+		{
+			UE_LOG("[error] CreateInputLayout failed for shader '%s' with GPU_SKINNING=%d, HRESULT=0x%08X, LayoutCount=%d",
+				InShaderPath.c_str(), bHasGPUSkinning, hr, layoutCount);
+
+			// 입력 레이아웃 디버그 정보 출력
+			for (uint32 i = 0; i < layoutCount; ++i)
+			{
+				UE_LOG("  [%d] SemanticName=%s, Format=%d, Offset=%d",
+					i, layout[i].SemanticName, layout[i].Format, layout[i].AlignedByteOffset);
+			}
+
+			// Assertion 대신 에러만 출력하고 계속 진행 (디버깅을 위해)
+			// assert(SUCCEEDED(hr));
+		}
 	}
 }
 

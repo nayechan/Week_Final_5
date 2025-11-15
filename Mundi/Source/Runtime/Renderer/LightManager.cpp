@@ -18,11 +18,11 @@ void FLightManager::Initialize(D3D11RHI* RHIDevice, uint32 InShadowAtlasSize2D, 
 	// Check if owning world is a preview world and adjust shadow atlas sizes accordingly
 	if (OwningWorld && OwningWorld->IsPreviewWorld())
 	{
-		// For preview worlds, use minimal shadow resources to save memory (~900+ MB savings)
-		InShadowAtlasSize2D = 512;  // Reduce from 8192 to 512 (256 MB -> ~1 MB)
+		// For preview worlds, disable shadows entirely to save memory (~900+ MB savings)
+		InShadowAtlasSize2D = 64;    // Minimal atlas (shadows disabled, atlas kept to avoid null checks)
 		InAtlasSizeCube = 0;         // Disable cube shadows entirely
 		InCubeArrayCount = 0;        // No point light shadows
-		UE_LOG("FLightManager: Initializing for preview world with minimal shadow resources");
+		UE_LOG("FLightManager: Initializing for preview world with shadows disabled");
 	}
 
 	// Set shadow atlas sizes from parameters
@@ -553,7 +553,11 @@ void FLightManager::AllocateAtlasRegions2D(TArray<FShadowRenderRequest>& InOutRe
 		if (CurrentAtlasY + Request.Size > ShadowAtlasSize2D)
 		{
 			Request.Size = 0; // 꽉 참 (렌더링 실패)
-			UE_LOG("그림자 맵 아틀라스가 가득차서 더 이상 그림자를 추가할 수 없습니다.");
+			// Only log error for non-preview worlds (preview worlds have shadows disabled intentionally)
+			if (!OwningWorld || !OwningWorld->IsPreviewWorld())
+			{
+				UE_LOG("그림자 맵 아틀라스가 가득차서 더 이상 그림자를 추가할 수 없습니다.");
+			}
 			continue;
 		}
 

@@ -70,7 +70,7 @@ private:
 	TArray<FString> IncludedFiles;
 	TMap<FString, std::filesystem::file_time_type> IncludedFileTimestamps;
 
-	void CreateInputLayout(ID3D11Device* Device, const FString& InShaderPath, FShaderVariant& InOutVariant);
+	void CreateInputLayout(ID3D11Device* Device, const FString& InShaderPath, const TArray<FShaderMacro>& InMacros, FShaderVariant& InOutVariant);
 	void ReleaseResources();
 
 	// Include 파일 파싱 및 추적

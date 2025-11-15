@@ -62,6 +62,9 @@ struct FMeshBatchElement
 	// (기본값으로 흰색(1,1,1,1)을 설정하는 것이 일반적입니다.)
 	FLinearColor InstanceColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
+	// GPU 스키닝용 본 행렬 상수 버퍼 (register b6)
+	ID3D11Buffer* BoneMatricesBuffer = nullptr;
+
 	// --- 기본 생성자 ---
 	FMeshBatchElement() = default;
 

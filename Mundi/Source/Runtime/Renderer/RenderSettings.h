@@ -1,6 +1,13 @@
 ﻿#pragma once
 #include "pch.h"
 
+// 스키닝 모드 (언리얼 엔진 방식)
+enum class ESkinningMode
+{
+    ForceGPU,   // 모든 메시 GPU 스키닝
+    ForceCPU    // 모든 메시 CPU 스키닝
+};
+
 // Per-world render settings (view mode + show flags)
 class URenderSettings {
 public:
@@ -40,6 +47,10 @@ public:
     void SetShadowAATechnique(EShadowAATechnique In) { ShadowAATechnique = In; }
     EShadowAATechnique GetShadowAATechnique() const { return ShadowAATechnique; }
 
+    // 전역 스키닝 모드 (언리얼 엔진 방식)
+    void SetGlobalSkinningMode(ESkinningMode Mode) { GlobalSkinningMode = Mode; }
+    ESkinningMode GetGlobalSkinningMode() const { return GlobalSkinningMode; }
+
 private:
     EEngineShowFlags ShowFlags = EEngineShowFlags::SF_DefaultEnabled;
     EViewMode ViewMode = EViewMode::VMI_Lit_Phong;
@@ -55,4 +66,7 @@ private:
 
     // 그림자 안티 에일리어싱
     EShadowAATechnique ShadowAATechnique = EShadowAATechnique::PCF; // 기본값 PCF
+
+    // 전역 스키닝 모드 (언리얼 엔진 방식)
+    ESkinningMode GlobalSkinningMode = ESkinningMode::ForceGPU;  // 기본값: 자동
 };

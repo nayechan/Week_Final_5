@@ -437,6 +437,9 @@
     <ClCompile Include="Source\Runtime\RHI\D3D11RHI.cpp">
       <Filter>Source\Runtime\RHI</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\RHI\GPUTimer.cpp">
+      <Filter>Source\Runtime\RHI</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Runtime\RHI\PipelineStateManager.cpp">
       <Filter>Source\Runtime\RHI</Filter>
     </ClCompile>
@@ -1052,6 +1055,9 @@
     <ClInclude Include="Source\Runtime\Renderer\DecalStatManager.h">
       <Filter>Source\Runtime\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Renderer\SkinningStats.h">
+      <Filter>Source\Runtime\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Runtime\Renderer\SceneRenderer.h">
       <Filter>Source\Runtime\Renderer</Filter>
     </ClInclude>
@@ -1137,6 +1143,9 @@
       <Filter>Source\Runtime\RHI</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RHI\D3D11RHI.h">
+      <Filter>Source\Runtime\RHI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\RHI\GPUTimer.h">
       <Filter>Source\Runtime\RHI</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\RHI\PipelineStateManager.h">

@@ -72,6 +72,27 @@ void USkeletalMesh::UpdateVertexBuffer(const TArray<FNormalVertex>& SkinnedVerti
     GEngine.GetRHIDevice()->VertexBufferUpdate(InVertexBuffer, SkinnedVertices);
 }
 
+void USkeletalMesh::CreateGPUSkinnedVertexBuffer(ID3D11Buffer** InVertexBuffer)
+{
+    if (!Data) { return; }
+    ID3D11Device* Device = GEngine.GetRHIDevice()->GetDevice();
+
+    // FSkinnedVertex를 그대로 사용하는 버텍스 버퍼 생성
+    D3D11_BUFFER_DESC BufferDesc;
+    ZeroMemory(&BufferDesc, sizeof(BufferDesc));
+    BufferDesc.Usage = D3D11_USAGE_IMMUTABLE; // GPU 스키닝 모드에서는 버텍스 데이터 변경 없음
+    BufferDesc.ByteWidth = static_cast<UINT>(sizeof(FSkinnedVertex) * Data->Vertices.size());
+    BufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    BufferDesc.CPUAccessFlags = 0;
+
+    D3D11_SUBRESOURCE_DATA InitData;
+    ZeroMemory(&InitData, sizeof(InitData));
+    InitData.pSysMem = Data->Vertices.data();
+
+    HRESULT hr = Device->CreateBuffer(&BufferDesc, &InitData, InVertexBuffer);
+    assert(SUCCEEDED(hr));
+}
+
 void USkeletalMesh::CreateIndexBuffer(FSkeletalMeshData* InSkeletalMesh, ID3D11Device* InDevice)
 {
     HRESULT hr = D3D11RHI::CreateIndexBuffer(InDevice, InSkeletalMesh, &IndexBuffer);

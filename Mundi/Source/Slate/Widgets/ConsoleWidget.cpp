@@ -4,6 +4,7 @@
 #include "GlobalConsole.h"
 #include "StatsOverlayD2D.h"
 #include "USlateManager.h"
+#include "SkinnedMeshComponent.h"
 #include <windows.h>
 #include <cstdarg>
 #include <cctype>
@@ -48,6 +49,9 @@ void UConsoleWidget::Initialize()
 	HelpCommandList.Add("STAT MEMORY");
 	HelpCommandList.Add("STAT PICKING");
 	HelpCommandList.Add("STAT DECAL");
+	HelpCommandList.Add("STAT SKINNING");
+	HelpCommandList.Add("SKINNING GPU");
+	HelpCommandList.Add("SKINNING CPU");
 	HelpCommandList.Add("STAT ALL");
 	HelpCommandList.Add("STAT NONE");
 	HelpCommandList.Add("STAT LIGHT");
@@ -352,6 +356,7 @@ void UConsoleWidget::ExecCommand(const char* command_line)
 		AddLog("- STAT MEMORY");
 		AddLog("- STAT PICKING");
 		AddLog("- STAT DECAL");
+		AddLog("- STAT SKINNING");
 		AddLog("- STAT ALL");
 		AddLog("- STAT LIGHT");
 		AddLog("- STAT NONE");
@@ -390,6 +395,11 @@ void UConsoleWidget::ExecCommand(const char* command_line)
 		UStatsOverlayD2D::Get().SetShowTileCulling(true);
 		AddLog("STAT: ON");
 	}
+	else if (Stricmp(command_line, "STAT SKINNING") == 0)
+	{
+		UStatsOverlayD2D::Get().ToggleSkinning();
+		AddLog("STAT SKINNING TOGGLED");
+	}
 	else if (Stricmp(command_line, "STAT NONE") == 0)
 	{
 		UStatsOverlayD2D::Get().SetShowFPS(false);
@@ -397,7 +407,60 @@ void UConsoleWidget::ExecCommand(const char* command_line)
 		UStatsOverlayD2D::Get().SetShowPicking(false);
 		UStatsOverlayD2D::Get().SetShowDecal(false);
 		UStatsOverlayD2D::Get().SetShowTileCulling(false);
+		UStatsOverlayD2D::Get().SetShowSkinning(false);
 		AddLog("STAT: OFF");
+	}
+	else if (Strnicmp(command_line, "SKINNING GPU", 12) == 0)
+	{
+		// 현재 활성 World(PIE면 PIE, Editor면 Editor)만 스키닝 모드 변경
+		// Show Flag처럼 PIE 종료 시 Editor 설정으로 되돌아감
+		const TArray<FWorldContext>& WorldContexts = GEngine.GetWorldContexts();
+
+		// 가장 마지막 World가 활성 World (PIE가 있으면 PIE, 없으면 Editor)
+		if (!WorldContexts.empty())
+		{
+			UWorld* ActiveWorld = WorldContexts.back().World;
+			if (ActiveWorld)
+			{
+				ActiveWorld->GetRenderSettings().SetGlobalSkinningMode(ESkinningMode::ForceGPU);
+				ActiveWorld->GetRenderSettings().EnableShowFlag(EEngineShowFlags::SF_GPUSkinning);
+				AddLog("GPU Skinning enabled (current world only)");
+			}
+			else
+			{
+				AddLog("ERROR: Active World is null");
+			}
+		}
+		else
+		{
+			AddLog("ERROR: Could not find any World");
+		}
+	}
+	else if (Strnicmp(command_line, "SKINNING CPU", 12) == 0)
+	{
+		// 현재 활성 World(PIE면 PIE, Editor면 Editor)만 스키닝 모드 변경
+		// Show Flag처럼 PIE 종료 시 Editor 설정으로 되돌아감
+		const TArray<FWorldContext>& WorldContexts = GEngine.GetWorldContexts();
+
+		// 가장 마지막 World가 활성 World (PIE가 있으면 PIE, 없으면 Editor)
+		if (!WorldContexts.empty())
+		{
+			UWorld* ActiveWorld = WorldContexts.back().World;
+			if (ActiveWorld)
+			{
+				ActiveWorld->GetRenderSettings().SetGlobalSkinningMode(ESkinningMode::ForceCPU);
+				ActiveWorld->GetRenderSettings().DisableShowFlag(EEngineShowFlags::SF_GPUSkinning);
+				AddLog("CPU Skinning enabled (current world only)");
+			}
+			else
+			{
+				AddLog("ERROR: Active World is null");
+			}
+		}
+		else
+		{
+			AddLog("ERROR: Could not find any World");
+		}
 	}
 	else
 	{

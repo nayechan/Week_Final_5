@@ -297,7 +297,10 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* InEditorWorld)
 	//ULevel* NewLevel = ULevelService::CreateNewLevel();
 	UWorld* PIEWorld = NewObject<UWorld>(); // 레벨도 새로 생성됨
 	PIEWorld->bPie = true;
-	
+
+	// Copy RenderSettings from EditorWorld to PIEWorld
+	PIEWorld->GetRenderSettings() = InEditorWorld->GetRenderSettings();
+
 	FWorldContext PIEWorldContext = FWorldContext(PIEWorld, EWorldType::Game);
 	GEngine.AddWorldContext(PIEWorldContext);
 	

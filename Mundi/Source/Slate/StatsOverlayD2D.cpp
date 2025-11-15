@@ -13,6 +13,8 @@
 #include "TileCullingStats.h"
 #include "LightStats.h"
 #include "ShadowStats.h"
+#include "SkinningStats.h"
+#include "SkinnedMeshComponent.h"
 
 #pragma comment(lib, "d2d1")
 #pragma comment(lib, "dwrite")
@@ -98,7 +100,7 @@ static void DrawTextBlock(
 
 void UStatsOverlayD2D::Draw()
 {
-	if (!bInitialized || (!bShowFPS && !bShowMemory && !bShowPicking && !bShowDecal && !bShowTileCulling && !bShowLights && !bShowShadow) || !SwapChain)
+	if (!bInitialized || (!bShowFPS && !bShowMemory && !bShowPicking && !bShowDecal && !bShowTileCulling && !bShowLights && !bShowShadow && !bShowSkinning) || !SwapChain)
 		return;
 
 	ID2D1Factory1* D2dFactory = nullptr;
@@ -179,6 +181,7 @@ void UStatsOverlayD2D::Draw()
 	const float Margin = 12.0f;
 	const float Space = 8.0f;   // 패널간의 간격
 	const float PanelWidth = 200.0f;
+	const float SkinningPanelWidth = 340.0f;  // 스키닝 통계용 넓은 패널
 	const float PanelHeight = 48.0f;
 	float NextY = 70.0f;
 
@@ -363,7 +366,8 @@ void UStatsOverlayD2D::Draw()
 		NextY += shadowPanelHeight + Space;
 
 
-		rc = D2D1::RectF(Margin, NextY, Margin + PanelWidth, NextY + 40);
+		const float shadowMapPassHeight = 40.0f;
+		rc = D2D1::RectF(Margin, NextY, Margin + PanelWidth, NextY + shadowMapPassHeight);
 
 		// 4. DrawTextBlock 함수를 호출하여 화면에 그립니다. 색상은 구분을 위해 한색(Magenta)으로 설정합니다.
 		DrawTextBlock(
@@ -371,9 +375,86 @@ void UStatsOverlayD2D::Draw()
 			D2D1::ColorF(0, 0, 0, 0.6f),
 			D2D1::ColorF(D2D1::ColorF::DeepPink));
 
-		NextY += shadowPanelHeight + Space;
+		NextY += shadowMapPassHeight + Space;
 	}
-	
+
+	if (bShowSkinning)
+	{
+		// 스키닝 통계 매니저에서 데이터 가져오기
+		const FSkinningStats& Stats = FSkinningStatManager::GetInstance().GetStats();
+
+		// 전역 스키닝 모드 확인
+		UWorld* World = GEngine.GetDefaultWorld();
+		ESkinningMode GlobalMode = ESkinningMode::ForceCPU;
+		if (World)
+		{
+			GlobalMode = World->GetRenderSettings().GetGlobalSkinningMode();
+		}
+		bool bUseGPU = (GlobalMode == ESkinningMode::ForceGPU);
+
+		// CPU 스키닝 상자 (파란색) - 제목 포함
+		wchar_t CPUBuf[1024];
+		swprintf_s(CPUBuf,
+			L"[Skinning Performance]\n"
+			L"CPU Skinning\n"
+			L"Bone Matrix Calc:     %.3f ms\n"
+			L"Vertex Skinning:      %.3f ms\n"
+			L"Vertex Buffer Upload: %.3f ms\n"
+			L"GPU Draw Time:        %.3f ms\n"
+			L"Total Skinning Time:  %.3f ms\n"
+			L"\n"
+			L"Vertices: %d | Bones: %d\n"
+			L"Vertex Buffer: %.2f KB\n"
+			L"Buffer Updates: %d",
+			Stats.CPUBoneMatrixCalcTimeMS,
+			Stats.CPUVertexSkinningTimeMS,
+			Stats.CPUVertexBufferUploadTimeMS,
+			Stats.CPUGPUDrawTimeMS,
+			Stats.GetCPUTotalTimeMS(),
+			Stats.CPUTotalVertices,
+			Stats.CPUTotalBones,
+			Stats.CPUVertexBufferMemory / 1024.0,
+			Stats.CPUBufferUpdateCount);
+
+		const float cpuPanelHeight = 250.0f; // 제목 2줄 추가로 높이 증가
+		D2D1_RECT_F cpuRc = D2D1::RectF(Margin, NextY, Margin + SkinningPanelWidth, NextY + cpuPanelHeight);
+		DrawTextBlock(
+			D2dCtx, Dwrite, CPUBuf, cpuRc, 16.0f,
+			D2D1::ColorF(0, 0, 0, 0.6f),
+			D2D1::ColorF(0.4f, 0.7f, 1.0f)); // 파란색
+		NextY += cpuPanelHeight + Space;
+
+		// GPU 스키닝 상자 (연두색) - 제목 포함
+		wchar_t GPUBuf[1024];
+		swprintf_s(GPUBuf,
+			L"[Skinning Performance]\n"
+			L"GPU Skinning\n"
+			L"Bone Matrix Calc:     %.3f ms\n"
+			L"Bone Buffer Upload:   %.3f ms\n"
+			L"GPU Draw Time:        %.3f ms\n"
+			L"Total Skinning Time:  %.3f ms\n"
+			L"\n"
+			L"Vertices: %d | Bones: %d\n"
+			L"Bone Buffer: %.2f KB\n"
+			L"Buffer Updates: %d",
+			Stats.GPUBoneMatrixCalcTimeMS,
+			Stats.GPUBoneBufferUploadTimeMS,
+			Stats.GPUDrawTimeMS,
+			Stats.GetGPUTotalTimeMS(),
+			Stats.GPUTotalVertices,
+			Stats.GPUTotalBones,
+			Stats.GPUBoneBufferMemory / 1024.0,
+			Stats.GPUBufferUpdateCount);
+
+		const float gpuPanelHeight = 230.0f; // 제목 2줄 추가로 높이 증가
+		D2D1_RECT_F gpuRc = D2D1::RectF(Margin, NextY, Margin + SkinningPanelWidth, NextY + gpuPanelHeight);
+		DrawTextBlock(
+			D2dCtx, Dwrite, GPUBuf, gpuRc, 16.0f,
+			D2D1::ColorF(0, 0, 0, 0.6f),
+			D2D1::ColorF(0.5f, 1.0f, 0.5f)); // 연두색
+		NextY += gpuPanelHeight + Space;
+	}
+
 	D2dCtx->EndDraw();
 	D2dCtx->SetTarget(nullptr);
 
@@ -457,4 +538,14 @@ void UStatsOverlayD2D::SetShowShadow(bool b)
 void UStatsOverlayD2D::ToggleShadow()
 {
 	bShowShadow = !bShowShadow;
+}
+
+void UStatsOverlayD2D::SetShowSkinning(bool b)
+{
+	bShowSkinning = b;
+}
+
+void UStatsOverlayD2D::ToggleSkinning()
+{
+	bShowSkinning = !bShowSkinning;
 }

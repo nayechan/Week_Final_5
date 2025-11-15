@@ -462,6 +462,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Runtime\Engine\Spatial\Octree.cpp" />
     <ClCompile Include="Source\Runtime\InputCore\InputManager.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\SceneRenderer.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\SkinningStats.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\FViewport.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\FViewportClient.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\Material.cpp" />
@@ -470,6 +471,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Runtime\Renderer\RenderManager.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\Shader.cpp" />
     <ClCompile Include="Source\Runtime\RHI\D3D11RHI.cpp" />
+    <ClCompile Include="Source\Runtime\RHI\GPUTimer.cpp" />
     <ClCompile Include="Source\Runtime\RHI\PipelineStateManager.cpp" />
     <ClCompile Include="Source\Runtime\RHI\PipelineStateObject.cpp" />
     <ClCompile Include="Source\Runtime\RHI\RHIDevice.cpp" />
@@ -839,6 +841,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Runtime\Engine\Spatial\WorldPartitionManager.h" />
     <ClInclude Include="Source\Runtime\InputCore\InputManager.h" />
     <ClInclude Include="Source\Runtime\Renderer\DecalStatManager.h" />
+    <ClInclude Include="Source\Runtime\Renderer\SkinningStats.h" />
     <ClInclude Include="Source\Runtime\Renderer\SceneRenderer.h" />
     <ClInclude Include="Source\Runtime\Renderer\FViewport.h" />
     <ClInclude Include="Source\Runtime\Renderer\FViewportClient.h" />
@@ -849,6 +852,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Runtime\Renderer\RenderSettings.h" />
     <ClInclude Include="Source\Runtime\Renderer\Shader.h" />
     <ClInclude Include="Source\Runtime\RHI\D3D11RHI.h" />
+    <ClInclude Include="Source\Runtime\RHI\GPUTimer.h" />
     <ClInclude Include="Source\Runtime\RHI\PipelineStateManager.h" />
     <ClInclude Include="Source\Runtime\RHI\PipelineStateObject.h" />
     <ClInclude Include="Source\Runtime\RHI\RHIDevice.h" />

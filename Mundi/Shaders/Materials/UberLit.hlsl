@@ -72,6 +72,15 @@ cbuffer FLightShadowmBufferType : register(b5)
     float2 ShadowPadding;
 };
 
+// b6: BoneMatrices (VS) - GPU Skinning용 본 행렬 배열
+#ifdef GPU_SKINNING
+#define MAX_BONES 256
+cbuffer BoneMatricesBuffer : register(b6)
+{
+    row_major float4x4 BoneMatrices[MAX_BONES];          // 본 변환 행렬 (위치, 노멀, 탄젠트 모두 사용)
+};
+#endif
+
 // --- Material.SpecularColor 지원 매크로 ---
 // LightingCommon.hlsl의 CalculateSpecular에서 Material.SpecularColor를 사용하도록 설정
 // 금속 재질의 컬러 Specular 지원
@@ -104,6 +113,10 @@ struct VS_INPUT
     float2 TexCoord : TEXCOORD0;
     float4 Tangent : TANGENT0;
     float4 Color : COLOR;
+#ifdef GPU_SKINNING
+    uint4 BoneIndices : BLENDINDICES;    // 영향을 주는 본 인덱스 (최대 4개)
+    float4 BoneWeights : BLENDWEIGHT;    // 본 가중치 (합=1.0)
+#endif
 };
 
 struct PS_INPUT
@@ -128,9 +141,44 @@ struct PS_OUTPUT
 PS_INPUT mainVS(VS_INPUT Input)
 {
     PS_INPUT Out;
-    
+
+#ifdef GPU_SKINNING
+    // GPU 스키닝: 본 행렬로 버텍스 블렌딩
+    float3 skinnedPosition = float3(0.0f, 0.0f, 0.0f);
+    float3 skinnedNormal = float3(0.0f, 0.0f, 0.0f);
+    float3 skinnedTangent = float3(0.0f, 0.0f, 0.0f);
+
+    for (int i = 0; i < 4; i++)
+    {
+        uint boneIndex = Input.BoneIndices[i];
+        float weight = Input.BoneWeights[i];
+
+        if (weight > 0.0f)
+        {
+            // Position 블렌딩
+            skinnedPosition += mul(float4(Input.Position, 1.0f), BoneMatrices[boneIndex]).xyz * weight;
+
+            // Normal 블렌딩 (w=0, 방향 벡터) - 비균등 스케일 무시하고 일반 행렬 사용
+            skinnedNormal += mul(float4(Input.Normal, 0.0f), BoneMatrices[boneIndex]).xyz * weight;
+
+            // Tangent 블렌딩 (w=0, 방향 벡터) - 비균등 스케일 무시하고 일반 행렬 사용
+            skinnedTangent += mul(float4(Input.Tangent.xyz, 0.0f), BoneMatrices[boneIndex]).xyz * weight;
+        }
+    }
+
+    // 스키닝된 결과를 사용
+    float3 localPosition = skinnedPosition;
+    float3 localNormal = normalize(skinnedNormal);
+    float3 localTangent = normalize(skinnedTangent);
+#else
+    // CPU 스키닝: 이미 변환된 버텍스 사용
+    float3 localPosition = Input.Position;
+    float3 localNormal = Input.Normal;
+    float3 localTangent = Input.Tangent.xyz;
+#endif
+
     // 위치를 월드 공간으로 먼저 변환
-    float4 worldPos = mul(float4(Input.Position, 1.0f), WorldMatrix);
+    float4 worldPos = mul(float4(localPosition, 1.0f), WorldMatrix);
     Out.WorldPos = worldPos.xyz;
     
     // 뷰 공간으로 변환
@@ -142,9 +190,9 @@ PS_INPUT mainVS(VS_INPUT Input)
     // 노멀을 월드 공간으로 변환
     // 비균등 스케일에서 올바른 노멀 변환을 위해 WorldInverseTranspose 사용
     // 노멀 벡터는 transpose(inverse(WorldMatrix))로 변환됨
-    float3 worldNormal = normalize(mul(Input.Normal, (float3x3) WorldInverseTranspose));
+    float3 worldNormal = normalize(mul(localNormal, (float3x3) WorldInverseTranspose));
     Out.Normal = worldNormal;
-    float3 Tangent = normalize(mul(Input.Tangent.xyz, (float3x3) WorldMatrix));
+    float3 Tangent = normalize(mul(localTangent, (float3x3) WorldMatrix));
     float3 BiTangent = normalize(cross(Tangent, worldNormal) * Input.Tangent.w);
     row_major float3x3 TBN;
     TBN._m00_m01_m02 = Tangent;
