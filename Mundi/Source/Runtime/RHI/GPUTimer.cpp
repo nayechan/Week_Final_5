@@ -67,6 +67,15 @@ void FGPUTimer::Begin(ID3D11DeviceContext* DeviceContext)
 	// 현재 쿼리 인덱스의 쿼리 사용
 	int Index = CurrentQueryIndex;
 
+	// 이 쿼리 슬롯의 이전 결과를 먼저 소비 (경고 방지)
+	// D3D11은 GetData를 호출하면 "이전 결과를 읽으려고 시도했다"고 인식
+	// 결과가 준비되지 않았어도 (S_FALSE) 괜찮음 - 단순히 경고 방지용
+	UINT64 DummyTimestamp = 0;
+	D3D11_QUERY_DATA_TIMESTAMP_DISJOINT DummyDisjoint = {};
+	DeviceContext->GetData(QueryBegin[Index], &DummyTimestamp, sizeof(DummyTimestamp), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+	DeviceContext->GetData(QueryEnd[Index], &DummyTimestamp, sizeof(DummyTimestamp), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+	DeviceContext->GetData(QueryDisjoint[Index], &DummyDisjoint, sizeof(DummyDisjoint), D3D11_ASYNC_GETDATA_DONOTFLUSH);
+
 	// Disjoint 쿼리 시작 (주파수 측정 시작)
 	DeviceContext->Begin(QueryDisjoint[Index]);
 
