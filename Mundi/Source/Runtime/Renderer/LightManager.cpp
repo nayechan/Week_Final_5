@@ -280,17 +280,15 @@ void FLightManager::Release()
 
 void FLightManager::UpdateLightBuffer(D3D11RHI* RHIDevice)
 {
-	// 1. 아무것도 변경되지 않았으면 모든 작업을 건너뜀
-	if (!bHaveToUpdate && !bPointLightDirty && !bSpotLightDirty && !bShadowDataDirty)
-	{
-		return;
-	}
-
-	// 2. 초기화 확인
+	// 1. 초기화 확인
 	if (!PointLightBuffer || !SpotLightBuffer)
 	{
 		Initialize(RHIDevice);
 	}
+
+	// 2. 변경사항이 없으면 StructuredBuffer 업데이트는 건너뛰되, CBuffer와 SRV는 항상 바인딩
+	// 이유: 다른 World의 라이트가 GPU에 남아있을 수 있으므로, 라이트가 0개라도 명시적으로 바인딩 필요
+	bool bNeedUpdate = bHaveToUpdate || bPointLightDirty || bSpotLightDirty || bShadowDataDirty;
 
 	// 3. CBuffer 업데이트 (Ambient, Directional)
 	FLightBufferType LightBuffer{}; // 셰이더의 CBuffer 'b1'과 일치해야 함
@@ -318,62 +316,69 @@ void FLightManager::UpdateLightBuffer(D3D11RHI* RHIDevice)
 		}
 	}
 
-	// 4. Point Light Structured Buffer 업데이트 (t3)
-	if (bPointLightDirty || bShadowDataDirty)
+	// 4. Structured Buffer 업데이트 (변경사항이 있을 때만)
+	if (bNeedUpdate)
 	{
-		PointLightInfoList.clear();
-		for (UPointLightComponent* Light : PointLightList)
+		// 4.1. Point Light Structured Buffer 업데이트 (t3)
+		if (bPointLightDirty || bShadowDataDirty)
 		{
-			if (Light->IsVisible() && Light->GetOwner()->IsActorVisible())
+			PointLightInfoList.clear();
+			for (UPointLightComponent* Light : PointLightList)
 			{
-				FPointLightInfo Info = Light->GetLightInfo(); // 기본 정보
-
-				// 섀도우 데이터 (큐브맵 인덱스) 병합
-				if (Light->IsCastShadows() && ShadowDataCacheCube.Contains(Light))
+				if (Light->IsVisible() && Light->GetOwner()->IsActorVisible())
 				{
-					Info.ShadowArrayIndex = ShadowDataCacheCube[Light];
-					Info.bCastShadows = (Info.ShadowArrayIndex != -1);
+					FPointLightInfo Info = Light->GetLightInfo(); // 기본 정보
+
+					// 섀도우 데이터 (큐브맵 인덱스) 병합
+					if (Light->IsCastShadows() && ShadowDataCacheCube.Contains(Light))
+					{
+						Info.ShadowArrayIndex = ShadowDataCacheCube[Light];
+						Info.bCastShadows = (Info.ShadowArrayIndex != -1);
+					}
+					PointLightInfoList.Add(Info);
 				}
-				PointLightInfoList.Add(Info);
 			}
+			PointLightNum = PointLightInfoList.Num();
+			RHIDevice->UpdateStructuredBuffer(PointLightBuffer, PointLightInfoList.data(), PointLightNum * sizeof(FPointLightInfo));
+			bPointLightDirty = false;
 		}
-		PointLightNum = PointLightInfoList.Num();
-		RHIDevice->UpdateStructuredBuffer(PointLightBuffer, PointLightInfoList.data(), PointLightNum * sizeof(FPointLightInfo));
-		bPointLightDirty = false;
+
+		// 4.2. Spot Light Structured Buffer 업데이트 (t4)
+		if (bSpotLightDirty || bShadowDataDirty)
+		{
+			SpotLightInfoList.clear();
+			for (USpotLightComponent* Light : SpotLightList)
+			{
+				if (Light->IsVisible() && Light->GetOwner()->IsActorVisible())
+				{
+					FSpotLightInfo Info = Light->GetLightInfo(); // 기본 정보
+
+					// 섀도우 데이터 (2D 아틀라스) 병합
+					if (Light->IsCastShadows() && ShadowDataCache2D.Contains(Light) && ShadowDataCache2D[Light].Num() > 0)
+					{
+						Info.ShadowData = ShadowDataCache2D[Light][0]; // 스포트라이트는 0번 인덱스 사용
+						Info.bCastShadows = 1;
+					}
+					SpotLightInfoList.Add(Info);
+				}
+			}
+			SpotLightNum = SpotLightInfoList.Num();
+			RHIDevice->UpdateStructuredBuffer(SpotLightBuffer, SpotLightInfoList.data(), SpotLightNum * sizeof(FSpotLightInfo));
+			bSpotLightDirty = false;
+		}
 	}
 
-	// 5. Spot Light Structured Buffer 업데이트 (t4)
-	if (bSpotLightDirty || bShadowDataDirty)
-	{
-		SpotLightInfoList.clear();
-		for (USpotLightComponent* Light : SpotLightList)
-		{
-			if (Light->IsVisible() && Light->GetOwner()->IsActorVisible())
-			{
-				FSpotLightInfo Info = Light->GetLightInfo(); // 기본 정보
-
-				// 섀도우 데이터 (2D 아틀라스) 병합
-				if (Light->IsCastShadows() && ShadowDataCache2D.Contains(Light) && ShadowDataCache2D[Light].Num() > 0)
-				{
-					Info.ShadowData = ShadowDataCache2D[Light][0]; // 스포트라이트는 0번 인덱스 사용
-					Info.bCastShadows = 1;
-				}
-				SpotLightInfoList.Add(Info);
-			}
-		}
-		SpotLightNum = SpotLightInfoList.Num();
-		RHIDevice->UpdateStructuredBuffer(SpotLightBuffer, SpotLightInfoList.data(), SpotLightNum * sizeof(FSpotLightInfo));
-		bSpotLightDirty = false;
-	}
-
-	// 6. CBuffer에 라이트 개수 업데이트 및 바인딩
+	// 5. CBuffer에 라이트 개수 업데이트 및 바인딩 (매 프레임)
+	// 라이트가 0개라도 반드시 업데이트하여 다른 World의 라이트 간섭 방지
 	LightBuffer.PointLightCount = PointLightNum;
 	LightBuffer.SpotLightCount = SpotLightNum;
 	RHIDevice->SetAndUpdateConstantBuffer(LightBuffer);
 
-	// --- 7. 모든 SRV 바인딩 (매 프레임) ---
+	// --- 6. 모든 SRV 바인딩 (매 프레임) ---
+	// 이유: DirectX11 DeviceContext는 상태머신이므로 이전 World의 SRV가 남아있을 수 있음
+	//       매 프레임 현재 World의 버퍼를 명시적으로 바인딩하여 World 간 격리 보장
 
-	// 7.1. 섀도우 아틀라스 (t8, t9)
+	// 6.1. 섀도우 아틀라스 (t8, t9, t10)
 	if (ShadowAtlasSRVCube)
 	{
 		RHIDevice->GetDeviceContext()->PSSetShaderResources(8, 1, &ShadowAtlasSRVCube);
@@ -382,21 +387,23 @@ void FLightManager::UpdateLightBuffer(D3D11RHI* RHIDevice)
 	{
 		RHIDevice->GetDeviceContext()->PSSetShaderResources(9, 1, &ShadowAtlasSRV2D);
 	}
-
 	if (VSMShadowAtlasSRV2D)
 	{
 		RHIDevice->GetDeviceContext()->PSSetShaderResources(10, 1, &VSMShadowAtlasSRV2D);
 	}
 
-	// 7.2. 라이트 버퍼 (t3, t4)
+	// 6.2. 라이트 버퍼 (t3, t4) - 매 프레임 바인딩하여 World 격리 보장
 	ID3D11ShaderResourceView* LightSRVs[2] = { PointLightBufferSRV, SpotLightBufferSRV };
 	RHIDevice->GetDeviceContext()->PSSetShaderResources(3, 2, LightSRVs);
 	RHIDevice->GetDeviceContext()->VSSetShaderResources(3, 2, LightSRVs); // Gouraud용
 
-	// 8. 모든 Dirty Flag 클리어
-	bHaveToUpdate = false;
-	bShadowDataDirty = false;
-	// (bPointLightDirty, bSpotLightDirty는 이미 위에서 개별 클리어됨)
+	// 7. 모든 Dirty Flag 클리어
+	if (bNeedUpdate)
+	{
+		bHaveToUpdate = false;
+		bShadowDataDirty = false;
+		// (bPointLightDirty, bSpotLightDirty는 이미 위에서 개별 클리어됨)
+	}
 }
 
 void FLightManager::SetDirtyFlag()

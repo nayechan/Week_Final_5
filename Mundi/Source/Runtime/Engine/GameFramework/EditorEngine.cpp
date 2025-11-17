@@ -206,9 +206,6 @@ bool UEditorEngine::Startup(HINSTANCE hInstance)
     FRect ScreenRect(0, 0, ClientWidth, ClientHeight);
     SLATE.Initialize(RHIDevice.GetDevice(), GWorld, ScreenRect);
 
-    // 최근에 사용한 레벨 불러오기를 시도합니다.
-    GWorld->TryLoadLastUsedLevel();
-
     bRunning = true;
     return true;
 }
