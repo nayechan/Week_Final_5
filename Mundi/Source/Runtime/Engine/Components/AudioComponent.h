@@ -1,8 +1,8 @@
 ﻿#pragma once
 #include "SceneComponent.h"
+#include "../Audio/Sound.h"
 #include "UAudioComponent.generated.h"
 
-class USound;
 struct IXAudio2SourceVoice;
 
 UCLASS(DisplayName="오디오 컴포넌트", Description="사운드를 재생하는 컴포넌트입니다")
