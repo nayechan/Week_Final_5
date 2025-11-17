@@ -40,11 +40,9 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_USkinnedMeshComponent() {}
-
 LUA_BIND_BEGIN(USkinnedMeshComponent)
 {
-    // No functions to bind
+    AddPropertyPtr<USkinnedMeshComponent, USkeletalMesh>(
+        T, "SkeletalMesh", &USkinnedMeshComponent::SkeletalMesh);
 }
 LUA_BIND_END()
-

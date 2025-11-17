@@ -25,6 +25,20 @@ protected:
     ~USceneComponent() override;
 
 public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+    UPROPERTY(EditAnywhere, Category="렌더링")
+    bool bIsVisible = true;
+
+    UPROPERTY(EditAnywhere, Category="Transform")
+    FVector RelativeLocation{ 0,0,0 };
+
+    UPROPERTY(EditAnywhere, Category="Transform")
+    FVector RelativeScale{ 1,1,1 };
+
+    UPROPERTY(EditAnywhere, Category="Transform")
+    FVector RelativeRotationEuler{ 0,0,0 };
     // ──────────────────────────────
     // Relative Transform API
     // ──────────────────────────────
@@ -136,21 +150,13 @@ protected:
 
     bool bWantsOnUpdateTransform = false;
 
-    UPROPERTY(EditAnywhere, Category="렌더링")
-    bool bIsVisible = true;
 
-    UPROPERTY(EditAnywhere, Category="Transform")
-    FVector RelativeLocation{ 0,0,0 };
 
     FQuat   RelativeRotation;
 
-    UPROPERTY(EditAnywhere, Category="Transform")
-    FVector RelativeScale{ 1,1,1 };
 
     // UI 편집용 Euler Angle (Degrees)
     // RelativeRotation과 항상 동기화됨
-    UPROPERTY(EditAnywhere, Category="Transform")
-    FVector RelativeRotationEuler{ 0,0,0 };
 
     mutable FMatrix CachedWorldMatrix = FMatrix::Identity();
     mutable bool bIsTransformDirty = true;

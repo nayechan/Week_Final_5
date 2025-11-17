@@ -42,11 +42,15 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UActorComponent() {}
-
 LUA_BIND_BEGIN(UActorComponent)
 {
-    // No functions to bind
+    AddProperty<UActorComponent, FName>(
+        T, "ObjectName", &UActorComponent::ObjectName);
+    AddProperty<UActorComponent, bool>(
+        T, "bIsActive", &UActorComponent::bIsActive);
+    AddProperty<UActorComponent, bool>(
+        T, "bHiddenInGame", &UActorComponent::bHiddenInGame);
+    AddProperty<UActorComponent, bool>(
+        T, "bTickEnabled", &UActorComponent::bTickEnabled);
 }
 LUA_BIND_END()
-

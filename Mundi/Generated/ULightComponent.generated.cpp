@@ -44,11 +44,17 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_ULightComponent() {}
-
 LUA_BIND_BEGIN(ULightComponent)
 {
-    // No functions to bind
+    AddProperty<ULightComponent, float>(
+        T, "Temperature", &ULightComponent::Temperature);
+    AddProperty<ULightComponent, int>(
+        T, "ShadowResolutionScale", &ULightComponent::ShadowResolutionScale);
+    AddProperty<ULightComponent, float>(
+        T, "ShadowBias", &ULightComponent::ShadowBias);
+    AddProperty<ULightComponent, float>(
+        T, "ShadowSlopeBias", &ULightComponent::ShadowSlopeBias);
+    AddProperty<ULightComponent, float>(
+        T, "ShadowSharpen", &ULightComponent::ShadowSharpen);
 }
 LUA_BIND_END()
-

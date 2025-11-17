@@ -42,11 +42,13 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_URotatingMovementComponent() {}
-
 LUA_BIND_BEGIN(URotatingMovementComponent)
 {
-    // No functions to bind
+    AddProperty<URotatingMovementComponent, FVector>(
+        T, "RotationRate", &URotatingMovementComponent::RotationRate);
+    AddProperty<URotatingMovementComponent, FVector>(
+        T, "PivotTranslation", &URotatingMovementComponent::PivotTranslation);
+    AddProperty<URotatingMovementComponent, bool>(
+        T, "bRotationInLocalSpace", &URotatingMovementComponent::bRotationInLocalSpace);
 }
 LUA_BIND_END()
-

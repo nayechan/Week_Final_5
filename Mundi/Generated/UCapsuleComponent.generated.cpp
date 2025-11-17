@@ -41,11 +41,11 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UCapsuleComponent() {}
-
 LUA_BIND_BEGIN(UCapsuleComponent)
 {
-    // No functions to bind
+    AddProperty<UCapsuleComponent, float>(
+        T, "CapsuleHalfHeight", &UCapsuleComponent::CapsuleHalfHeight);
+    AddProperty<UCapsuleComponent, float>(
+        T, "CapsuleRadius", &UCapsuleComponent::CapsuleRadius);
 }
 LUA_BIND_END()
-

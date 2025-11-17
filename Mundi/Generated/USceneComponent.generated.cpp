@@ -43,11 +43,15 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_USceneComponent() {}
-
 LUA_BIND_BEGIN(USceneComponent)
 {
-    // No functions to bind
+    AddProperty<USceneComponent, bool>(
+        T, "bIsVisible", &USceneComponent::bIsVisible);
+    AddProperty<USceneComponent, FVector>(
+        T, "RelativeLocation", &USceneComponent::RelativeLocation);
+    AddProperty<USceneComponent, FVector>(
+        T, "RelativeScale", &USceneComponent::RelativeScale);
+    AddProperty<USceneComponent, FVector>(
+        T, "RelativeRotationEuler", &USceneComponent::RelativeRotationEuler);
 }
 LUA_BIND_END()
-

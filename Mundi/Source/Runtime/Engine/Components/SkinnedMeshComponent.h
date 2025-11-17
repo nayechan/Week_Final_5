@@ -20,6 +20,11 @@ public:
     
 // Mesh Component Section
 public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+    UPROPERTY(EditAnywhere, Category = "Skeletal Mesh", Tooltip = "Skeletal mesh asset to render")
+    USkeletalMesh* SkeletalMesh;
     void CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View) override;
     
     FAABB GetWorldAABB() const override;
@@ -55,8 +60,6 @@ protected:
      */
     void UpdateBoneMatrixBuffer();
     
-    UPROPERTY(EditAnywhere, Category = "Skeletal Mesh", Tooltip = "Skeletal mesh asset to render")
-    USkeletalMesh* SkeletalMesh;
 
     /**
      * @brief CPU 스키닝 최종 결과물. 렌더러가 이 데이터를 사용합니다.

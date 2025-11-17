@@ -40,11 +40,9 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_ULuaScriptComponent() {}
-
 LUA_BIND_BEGIN(ULuaScriptComponent)
 {
-    // No functions to bind
+    AddProperty<ULuaScriptComponent, FString>(
+        T, "ScriptFilePath", &ULuaScriptComponent::ScriptFilePath);
 }
 LUA_BIND_END()
-

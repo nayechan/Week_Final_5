@@ -33,6 +33,16 @@ public:
 
 	GENERATED_REFLECTION_BODY();
 
+public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+	UPROPERTY(EditAnywhere, Category="Shape")
+	bool bShapeIsVisible;
+
+	UPROPERTY(EditAnywhere, Category="Shape")
+	bool bShapeHiddenInGame;
+
 	UShapeComponent();
 
 	virtual void TickComponent(float DeltaSeconds) override;
@@ -61,11 +71,7 @@ protected:
 	FVector4 ShapeColor ;
 	bool bDrawOnlyIfSelected;
 
-	UPROPERTY(EditAnywhere, Category="Shape")
-	bool bShapeIsVisible;
 
-	UPROPERTY(EditAnywhere, Category="Shape")
-	bool bShapeHiddenInGame;
 	TArray<FOverlapInfo> OverlapInfos; 
 	//TODO: float LineThickness;
 

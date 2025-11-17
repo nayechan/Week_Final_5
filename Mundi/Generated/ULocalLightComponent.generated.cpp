@@ -42,11 +42,13 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_ULocalLightComponent() {}
-
 LUA_BIND_BEGIN(ULocalLightComponent)
 {
-    // No functions to bind
+    AddProperty<ULocalLightComponent, float>(
+        T, "AttenuationRadius", &ULocalLightComponent::AttenuationRadius);
+    AddProperty<ULocalLightComponent, float>(
+        T, "FalloffExponent", &ULocalLightComponent::FalloffExponent);
+    AddProperty<ULocalLightComponent, bool>(
+        T, "bUseInverseSquareFalloff", &ULocalLightComponent::bUseInverseSquareFalloff);
 }
 LUA_BIND_END()
-

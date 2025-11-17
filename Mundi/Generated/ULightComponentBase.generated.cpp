@@ -42,11 +42,13 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_ULightComponentBase() {}
-
 LUA_BIND_BEGIN(ULightComponentBase)
 {
-    // No functions to bind
+    AddProperty<ULightComponentBase, float>(
+        T, "Intensity", &ULightComponentBase::Intensity);
+    AddProperty<ULightComponentBase, FLinearColor>(
+        T, "LightColor", &ULightComponentBase::LightColor);
+    AddProperty<ULightComponentBase, bool>(
+        T, "bCastShadows", &ULightComponentBase::bCastShadows);
 }
 LUA_BIND_END()
-

@@ -41,11 +41,11 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UPrimitiveComponent() {}
-
 LUA_BIND_BEGIN(UPrimitiveComponent)
 {
-    // No functions to bind
+    AddProperty<UPrimitiveComponent, bool>(
+        T, "bGenerateOverlapEvents", &UPrimitiveComponent::bGenerateOverlapEvents);
+    AddProperty<UPrimitiveComponent, bool>(
+        T, "bBlockComponent", &UPrimitiveComponent::bBlockComponent);
 }
 LUA_BIND_END()
-

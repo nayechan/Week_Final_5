@@ -44,11 +44,17 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UCameraComponent() {}
-
 LUA_BIND_BEGIN(UCameraComponent)
 {
-    // No functions to bind
+    AddProperty<UCameraComponent, float>(
+        T, "FieldOfView", &UCameraComponent::FieldOfView);
+    AddProperty<UCameraComponent, float>(
+        T, "AspectRatio", &UCameraComponent::AspectRatio);
+    AddProperty<UCameraComponent, float>(
+        T, "NearClip", &UCameraComponent::NearClip);
+    AddProperty<UCameraComponent, float>(
+        T, "FarClip", &UCameraComponent::FarClip);
+    AddProperty<UCameraComponent, float>(
+        T, "ZoomFactor", &UCameraComponent::ZoomFactor);
 }
 LUA_BIND_END()
-

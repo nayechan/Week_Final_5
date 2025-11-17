@@ -31,6 +31,14 @@ protected:
 	~UDecalComponent() override = default;
 
 public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+	UPROPERTY(EditAnywhere, Category="Decal", Range="0.0, 1.0", Tooltip="데칼 불투명도입니다.")
+	float DecalOpacity = 1.0f;
+
+	UPROPERTY(EditAnywhere, Category="Decal", Range="0.0, 10.0", Tooltip="페이드 속도입니다 (초당 변화량).")
+	float FadeSpeed = 0.5f;   // 초당 변화 속도 (0.5 = 2초에 완전 페이드)
 	virtual void RenderDebugVolume(URenderer* Renderer) const override;
 
 	// Decal Resource API
@@ -71,12 +79,8 @@ private:
 
 	bool bIsVisible = true;
 
-	UPROPERTY(EditAnywhere, Category="Decal", Range="0.0, 1.0", Tooltip="데칼 불투명도입니다.")
-	float DecalOpacity = 1.0f;
 
 	// for PIE Tick
-	UPROPERTY(EditAnywhere, Category="Decal", Range="0.0, 10.0", Tooltip="페이드 속도입니다 (초당 변화량).")
-	float FadeSpeed = 0.5f;   // 초당 변화 속도 (0.5 = 2초에 완전 페이드)
 
 	int FadeDirection = -1;   // -1 = 감소 중, +1 = 증가 중
 };

@@ -41,11 +41,11 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UShapeComponent() {}
-
 LUA_BIND_BEGIN(UShapeComponent)
 {
-    // No functions to bind
+    AddProperty<UShapeComponent, bool>(
+        T, "bShapeIsVisible", &UShapeComponent::bShapeIsVisible);
+    AddProperty<UShapeComponent, bool>(
+        T, "bShapeHiddenInGame", &UShapeComponent::bShapeHiddenInGame);
 }
 LUA_BIND_END()
-

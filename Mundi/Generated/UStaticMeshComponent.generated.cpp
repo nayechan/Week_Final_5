@@ -40,11 +40,9 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UStaticMeshComponent() {}
-
 LUA_BIND_BEGIN(UStaticMeshComponent)
 {
-    // No functions to bind
+    AddPropertyPtr<UStaticMeshComponent, UStaticMesh>(
+        T, "StaticMesh", &UStaticMeshComponent::StaticMesh);
 }
 LUA_BIND_END()
-

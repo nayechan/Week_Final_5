@@ -40,10 +40,12 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UMeshComponent() {}
-
 LUA_BIND_BEGIN(UMeshComponent)
 {
+    AddPropertyArrayPtr<UMeshComponent, UMaterialInterface>(
+        T, "MaterialSlots", &UMeshComponent::MaterialSlots);
+    AddProperty<UMeshComponent, bool>(
+        T, "bCastShadows", &UMeshComponent::bCastShadows);
     AddAlias<UMeshComponent, const uint32, const FString&, const FLinearColor&>(
         T, "SetColor", &UMeshComponent::SetMaterialColorByUser);
     AddAlias<UMeshComponent, const uint32, const FString&, float>(

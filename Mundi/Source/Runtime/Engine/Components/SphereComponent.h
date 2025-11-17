@@ -17,12 +17,15 @@ public:
     virtual void DuplicateSubObjects() override;
 
 private:
-    UPROPERTY(EditAnywhere, Category="SphereRaidus")
-    float SphereRadius = 0;
 
     void GetShape(FShape& Out) const override;
 
 public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+    UPROPERTY(EditAnywhere, Category="SphereRaidus")
+    float SphereRadius = 0;
 
     void RenderDebugVolume(class URenderer* Renderer) const override;
 };

@@ -40,11 +40,9 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_AHeightFogActor() {}
-
 LUA_BIND_BEGIN(AHeightFogActor)
 {
-    // No functions to bind
+    // No properties or functions to bind
 }
 LUA_BIND_END()
 

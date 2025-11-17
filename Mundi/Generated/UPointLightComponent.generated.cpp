@@ -43,11 +43,15 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UPointLightComponent() {}
-
 LUA_BIND_BEGIN(UPointLightComponent)
 {
-    // No functions to bind
+    AddProperty<UPointLightComponent, float>(
+        T, "SourceRadius", &UPointLightComponent::SourceRadius);
+    AddPropertyPtr<UPointLightComponent, ID3D11ShaderResourceView>(
+        T, "ShadowMapSRV", &UPointLightComponent::ShadowMapSRV);
+    AddProperty<UPointLightComponent, bool>(
+        T, "bOverrideCameraLightPerspective", &UPointLightComponent::bOverrideCameraLightPerspective);
+    AddProperty<UPointLightComponent, uint32>(
+        T, "OverrideCameraLightNum", &UPointLightComponent::OverrideCameraLightNum);
 }
 LUA_BIND_END()
-

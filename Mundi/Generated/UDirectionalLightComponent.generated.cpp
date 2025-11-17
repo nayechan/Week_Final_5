@@ -46,11 +46,21 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UDirectionalLightComponent() {}
-
 LUA_BIND_BEGIN(UDirectionalLightComponent)
 {
-    // No functions to bind
+    AddPropertyPtr<UDirectionalLightComponent, ID3D11ShaderResourceView>(
+        T, "ShadowMapSRV", &UDirectionalLightComponent::ShadowMapSRV);
+    AddProperty<UDirectionalLightComponent, bool>(
+        T, "bCascaded", &UDirectionalLightComponent::bCascaded);
+    AddProperty<UDirectionalLightComponent, int>(
+        T, "CascadedCount", &UDirectionalLightComponent::CascadedCount);
+    AddProperty<UDirectionalLightComponent, float>(
+        T, "CascadedLinearBlendingValue", &UDirectionalLightComponent::CascadedLinearBlendingValue);
+    AddProperty<UDirectionalLightComponent, float>(
+        T, "CascadedOverlapValue", &UDirectionalLightComponent::CascadedOverlapValue);
+    AddProperty<UDirectionalLightComponent, float>(
+        T, "CascadedAreaColorDebugValue", &UDirectionalLightComponent::CascadedAreaColorDebugValue);
+    AddProperty<UDirectionalLightComponent, int>(
+        T, "CascadedAreaShadowDebugValue", &UDirectionalLightComponent::CascadedAreaShadowDebugValue);
 }
 LUA_BIND_END()
-

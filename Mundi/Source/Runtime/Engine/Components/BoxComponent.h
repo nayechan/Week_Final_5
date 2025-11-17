@@ -19,12 +19,15 @@ public:
 	virtual void DuplicateSubObjects() override;
 
 private:
-	UPROPERTY(EditAnywhere, Category="BoxExtent")
-	FVector BoxExtent; // Half Extent
 
 	void GetShape(FShape& Out) const override;
 
 public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+	UPROPERTY(EditAnywhere, Category="BoxExtent")
+	FVector BoxExtent; // Half Extent
 	//GetReenderCollection 
 	void RenderDebugVolume(class URenderer* Renderer) const override;
 };

@@ -40,11 +40,9 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UPerspectiveDecalComponent() {}
-
 LUA_BIND_BEGIN(UPerspectiveDecalComponent)
 {
-    // No functions to bind
+    AddProperty<UPerspectiveDecalComponent, float>(
+        T, "FovY", &UPerspectiveDecalComponent::FovY);
 }
 LUA_BIND_END()
-

@@ -16,6 +16,23 @@ protected:
     ~UCameraComponent() override;
 
 public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+    UPROPERTY(EditAnywhere, Category="Camera", Range="1.0, 179.0")
+    float FieldOfView;   // degrees
+
+    UPROPERTY(EditAnywhere, Category="Camera", Range="0.1, 10.0")
+    float AspectRatio;  //사용x
+
+    UPROPERTY(EditAnywhere, Category="Camera", Range="0.01, 1000.0")
+    float NearClip;
+
+    UPROPERTY(EditAnywhere, Category="Camera", Range="1.0, 100000.0")
+    float FarClip;
+
+    UPROPERTY(EditAnywhere, Category="Camera", Range="0.1, 10.0")
+    float ZoomFactor;
     void OnRegister(UWorld* InWorld) override;
     void OnUnregister() override;
 
@@ -61,20 +78,10 @@ public:
     void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
 private:
-    UPROPERTY(EditAnywhere, Category="Camera", Range="1.0, 179.0")
-    float FieldOfView;   // degrees
 
-    UPROPERTY(EditAnywhere, Category="Camera", Range="0.1, 10.0")
-    float AspectRatio;  //사용x
 
-    UPROPERTY(EditAnywhere, Category="Camera", Range="0.01, 1000.0")
-    float NearClip;
 
-    UPROPERTY(EditAnywhere, Category="Camera", Range="1.0, 100000.0")
-    float FarClip;
 
-    UPROPERTY(EditAnywhere, Category="Camera", Range="0.1, 10.0")
-    float ZoomFactor;
 
     ECameraProjectionMode ProjectionMode;
 

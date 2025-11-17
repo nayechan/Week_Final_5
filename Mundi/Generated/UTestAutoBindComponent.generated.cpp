@@ -43,10 +43,16 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UTestAutoBindComponent() {}
-
 LUA_BIND_BEGIN(UTestAutoBindComponent)
 {
+    AddProperty<UTestAutoBindComponent, float>(
+        T, "Intensity", &UTestAutoBindComponent::Intensity);
+    AddProperty<UTestAutoBindComponent, float>(
+        T, "Percentage", &UTestAutoBindComponent::Percentage);
+    AddProperty<UTestAutoBindComponent, bool>(
+        T, "bEnabled", &UTestAutoBindComponent::bEnabled);
+    AddProperty<UTestAutoBindComponent, FVector>(
+        T, "Position", &UTestAutoBindComponent::Position);
     AddAlias<UTestAutoBindComponent, float>(
         T, "SetIntensity", &UTestAutoBindComponent::SetTestIntensity);
     AddMethodR<float, UTestAutoBindComponent>(

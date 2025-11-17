@@ -16,6 +16,17 @@ protected:
     ~UActorComponent() override;
 
 public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+    UPROPERTY(EditAnywhere, Category = "렌더링")
+    bool bIsActive = true;       // 활성 상태(사용자 on/off), 물리 적용
+
+    UPROPERTY(EditAnywhere, Category="렌더링")
+    bool bHiddenInGame = false; // 게임에서 숨김 여부
+
+    UPROPERTY(EditAnywhere, Category = "렌더링")
+    bool bTickEnabled = true;   // 현재 틱 켜짐 여부
     // ─────────────── Lifecycle (게임 수명)
     virtual void InitializeComponent();                // BeginPlay 전에 1회
     virtual void BeginPlay();                          // PIE 중에 월드에 등록 시 호출됨
@@ -82,14 +93,8 @@ protected:
     bool bCanEverTick = false;   // 컴포넌트 설계상 틱 지원 여부
 
     // 설정 가능한 데이터
-    UPROPERTY(EditAnywhere, Category = "렌더링")
-    bool bIsActive = true;       // 활성 상태(사용자 on/off), 물리 적용
 
-    UPROPERTY(EditAnywhere, Category="렌더링")
-    bool bHiddenInGame = false; // 게임에서 숨김 여부
 
-    UPROPERTY(EditAnywhere, Category = "렌더링")
-    bool bTickEnabled = true;   // 현재 틱 켜짐 여부
 
     // 저장되지 않는 실시간 상태 변수
     bool bRegistered = false;       // RegisterComponent가 호출됐는가

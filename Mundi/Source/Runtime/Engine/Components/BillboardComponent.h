@@ -16,6 +16,13 @@ public:
 
     GENERATED_REFLECTION_BODY()
 
+public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+    UPROPERTY(EditAnywhere, Category="Billboard")
+    UTexture* Texture = nullptr;  // 리플렉션 시스템용 Texture 포인터
+
     UBillboardComponent();
     ~UBillboardComponent() override = default;
 
@@ -40,8 +47,6 @@ public:
 private:
     FString TexturePath;
 
-    UPROPERTY(EditAnywhere, Category="Billboard")
-    UTexture* Texture = nullptr;  // 리플렉션 시스템용 Texture 포인터
 
     UMaterialInterface* Material = nullptr;
     UQuad* Quad = nullptr;

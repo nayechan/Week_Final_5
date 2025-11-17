@@ -40,11 +40,9 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_USphereComponent() {}
-
 LUA_BIND_BEGIN(USphereComponent)
 {
-    // No functions to bind
+    AddProperty<USphereComponent, float>(
+        T, "SphereRadius", &USphereComponent::SphereRadius);
 }
 LUA_BIND_END()
-

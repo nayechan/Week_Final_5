@@ -17,6 +17,17 @@ public:
 	virtual ~ULightComponentBase() override;
 
 public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+	UPROPERTY(EditAnywhere, Category="Light", Range="0.0, 100.0")
+	float Intensity = 1.0f;
+
+	UPROPERTY(EditAnywhere, Category="Light")
+	FLinearColor LightColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+	UPROPERTY(EditAnywhere, Category="Light")
+	bool bCastShadows = true;
 	//// Light Properties
 	//void SetEnabled(bool bInEnabled) { bIsEnabled = bInEnabled; }
 	//bool IsEnabled() const { return bIsEnabled; }
@@ -40,12 +51,6 @@ public:
 protected:
 	//bool bIsEnabled = true;
 
-	UPROPERTY(EditAnywhere, Category="Light", Range="0.0, 100.0")
-	float Intensity = 1.0f;
 
-	UPROPERTY(EditAnywhere, Category="Light")
-	FLinearColor LightColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-	UPROPERTY(EditAnywhere, Category="Light")
-	bool bCastShadows = true;
 };

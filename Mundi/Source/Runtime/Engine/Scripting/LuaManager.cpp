@@ -9,7 +9,6 @@
 #include <tuple>
 
 sol::object MakeCompProxy(sol::state_view SolState, void* Instance, UClass* Class) {
-    BuildBoundClass(Class);
     LuaComponentProxy Proxy;
     Proxy.Instance = Instance;
     Proxy.Class = Class;

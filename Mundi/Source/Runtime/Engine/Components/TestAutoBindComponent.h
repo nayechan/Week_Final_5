@@ -11,14 +11,11 @@
 UCLASS(DisplayName="테스트 자동 바인딩 컴포넌트", Description="자동 바인딩 테스트용 컴포넌트입니다")
 class UTestAutoBindComponent : public USceneComponent
 {
-
 	GENERATED_REFLECTION_BODY()
 
 public:
 	UTestAutoBindComponent() = default;
 	virtual ~UTestAutoBindComponent() = default;
-
-	// ===== Auto-bound Properties =====
 
 	UPROPERTY(EditAnywhere, Category="Test", Tooltip="Test intensity value")
 	float Intensity = 1.0f;
@@ -31,8 +28,6 @@ public:
 
 	UPROPERTY(EditAnywhere, Category="Test")
 	FVector Position = FVector(0, 0, 0);
-
-	// ===== Auto-bound Methods =====
 
 	UFUNCTION(LuaBind, DisplayName="SetIntensity")
 	void SetTestIntensity(float Value)

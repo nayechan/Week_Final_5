@@ -17,6 +17,11 @@ class APlayerCameraManager : public AActor
 	GENERATED_REFLECTION_BODY()
 
 public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+	UPROPERTY(EditAnywhere, Category="트랜지션", Tooltip="카메라 전환에 사용할 이징 곡선입니다. X축:시간, Y축:강도")
+	float TransitionCurve[4] = { 0.47f, 0.0f, 0.745f, 0.715f };
 	APlayerCameraManager() { ObjectName = "Player Camera Manager";  };
 
 protected:
@@ -85,8 +90,6 @@ private:
 	float BlendTimeTotal = 0.0f;
 	float BlendTimeRemaining = 0.0f;
 
-	UPROPERTY(EditAnywhere, Category="트랜지션", Tooltip="카메라 전환에 사용할 이징 곡선입니다. X축:시간, Y축:강도")
-	float TransitionCurve[4] = { 0.47f, 0.0f, 0.745f, 0.715f };
 
 	// TODO : 감싸기 or 배열로 관리, 현재 vignette 1개만 Update 가능
 	// Vignette 연속 효과를 위한 IDX

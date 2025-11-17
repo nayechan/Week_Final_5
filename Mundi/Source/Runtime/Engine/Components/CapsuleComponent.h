@@ -17,14 +17,18 @@ public:
 	virtual void DuplicateSubObjects() override;
 
 protected:
+
+
+	void GetShape(FShape& Out) const override; 
+
+public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
 	UPROPERTY(EditAnywhere, Category="CapsuleHalfHeight")
 	float CapsuleHalfHeight;
 
 	UPROPERTY(EditAnywhere, Category="CapsuleHalfHeight")
 	float CapsuleRadius;
-
-	void GetShape(FShape& Out) const override; 
-
-public:
 	void RenderDebugVolume(class URenderer* Renderer) const override;
 };

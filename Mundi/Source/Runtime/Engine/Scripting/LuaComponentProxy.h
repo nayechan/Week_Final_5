@@ -5,21 +5,10 @@
 
 #include "LuaBindingRegistry.h"
 
-struct FBoundProp
-{
-    const FProperty* Property = nullptr;  // TODO: editable/readonly flags... 
-};
-
-struct FBoundClassDesc   // Property list per class
-{
-    UClass* Class = nullptr;
-    TMap<FString, FBoundProp> PropsByName;
-};
-
-extern TMap<UClass*, FBoundClassDesc> GBoundClasses;
-
-void BuildBoundClass(UClass* Class);
-
+/**
+ * Proxy object that bridges C++ component instances to Lua
+ * Properties and methods are registered via LuaBindHelpers (AddProperty, AddMethod, etc.)
+ */
 struct LuaComponentProxy
 {
     void* Instance = nullptr;

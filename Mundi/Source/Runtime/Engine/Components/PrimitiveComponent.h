@@ -24,6 +24,16 @@ public:
 
     GENERATED_REFLECTION_BODY();
 
+public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+    UPROPERTY(EditAnywhere, Category="Shape")
+    bool bGenerateOverlapEvents;
+
+    UPROPERTY(EditAnywhere, Category="Shape")
+    bool bBlockComponent;
+
     UPrimitiveComponent();
     virtual ~UPrimitiveComponent() = default;
 
@@ -78,9 +88,5 @@ protected:
     bool bIsCulled = false;
      
     // ───── 충돌 관련 ────────────────────────────
-    UPROPERTY(EditAnywhere, Category="Shape")
-    bool bGenerateOverlapEvents;
 
-    UPROPERTY(EditAnywhere, Category="Shape")
-    bool bBlockComponent;
 };

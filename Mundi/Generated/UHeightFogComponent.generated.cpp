@@ -45,11 +45,19 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UHeightFogComponent() {}
-
 LUA_BIND_BEGIN(UHeightFogComponent)
 {
-    // No functions to bind
+    AddProperty<UHeightFogComponent, float>(
+        T, "FogDensity", &UHeightFogComponent::FogDensity);
+    AddProperty<UHeightFogComponent, float>(
+        T, "FogHeightFalloff", &UHeightFogComponent::FogHeightFalloff);
+    AddProperty<UHeightFogComponent, float>(
+        T, "StartDistance", &UHeightFogComponent::StartDistance);
+    AddProperty<UHeightFogComponent, float>(
+        T, "FogCutoffDistance", &UHeightFogComponent::FogCutoffDistance);
+    AddProperty<UHeightFogComponent, float>(
+        T, "FogMaxOpacity", &UHeightFogComponent::FogMaxOpacity);
+    AddProperty<UHeightFogComponent, FLinearColor>(
+        T, "FogInscatteringColor", &UHeightFogComponent::FogInscatteringColor);
 }
 LUA_BIND_END()
-

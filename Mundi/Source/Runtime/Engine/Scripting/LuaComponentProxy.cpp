@@ -1,99 +1,122 @@
 ﻿#include "pch.h"
 #include "LuaComponentProxy.h"
 
-TMap<UClass*, FBoundClassDesc> GBoundClasses;
-
-void BuildBoundClass(UClass* Class)
-{
-    if (!Class) return;
-    if (GBoundClasses.count(Class)) return;
-
-    FBoundClassDesc Desc;
-    Desc.Class = Class;
-
-    for (auto& Property : Class->GetAllProperties())
-    {
-        if (!Property.bIsEditAnywhere) continue;
-
-        FBoundProp BoundProp;
-        BoundProp.Property = &Property;
-        Desc.PropsByName.emplace(Property.Name, BoundProp);
-    }
-    GBoundClasses.emplace(Class, std::move(Desc));
-}
-
 sol::object LuaComponentProxy::Index(sol::this_state LuaState, LuaComponentProxy& Self, const char* Key)
 {
-    if (!Self.Instance) return sol::nil;
+    if (!Self.Instance)
+    {
+        UE_LOG("[LuaProxy] Index: Instance is null for key '%s'\n", Key);
+        return sol::nil;
+    }
+
     sol::state_view LuaView(LuaState);
 
-    BuildBoundClass(Self.Class);
+    // 이 클래스에 등록된 Lua 테이블 가져오기 (프로퍼티와 메서드 모두 포함)
+    sol::table& BindTable = FLuaBindRegistry::Get().EnsureTable(LuaView, Self.Class);
 
-
-    sol::table& FuncTable = FLuaBindRegistry::Get().EnsureTable(LuaView, Self.Class);
-    sol::object Func = (FuncTable.valid() ? FuncTable.raw_get<sol::object>(Key) : sol::object());
-
-    if (Func.valid() && Func.get_type() == sol::type::function)
-        return Func;
-
-    auto It = GBoundClasses.find(Self.Class);
-    if (It == GBoundClasses.end()) return sol::nil;
-
-    auto ItProp = It->second.PropsByName.find(Key);
-    if (ItProp == It->second.PropsByName.end()) return sol::nil;
-
-    const FProperty* Property = ItProp->second.Property;
-    switch (Property->Type)
+    if (!BindTable.valid())
     {
-    case EPropertyType::Float:   return sol::make_object(LuaView, *Property->GetValuePtr<float>(Self.Instance));
-    case EPropertyType::Int32:   return sol::make_object(LuaView, *Property->GetValuePtr<int>(Self.Instance));
-    case EPropertyType::FString: return sol::make_object(LuaView, *Property->GetValuePtr<FString>(Self.Instance));
-    case EPropertyType::FVector: return sol::make_object(LuaView, *Property->GetValuePtr<FVector>(Self.Instance));
-    default: return sol::nil;
+        UE_LOG("[LuaProxy] Index: BindTable invalid for class %p, key '%s'\n",
+            Self.Class, Key);
+        return sol::nil;
     }
+
+    sol::object Result = BindTable[Key];
+
+    if (!Result.valid())
+    {
+        UE_LOG("[LuaProxy] Index: Key '%s' not found in BindTable for class %p\n",
+            Key, Self.Class);
+        return sol::nil;
+    }
+
+    // 프로퍼티 descriptor 테이블인지 확인
+    if (Result.is<sol::table>())
+    {
+        sol::table propDesc = Result.as<sol::table>();
+        sol::optional<bool> isProperty = propDesc["is_property"];
+
+        if (isProperty && *isProperty)
+        {
+            UE_LOG("[LuaProxy] Index: Property '%s' found for class %p\n",
+                Key, Self.Class);
+
+            // 프로퍼티 - getter 함수 호출
+            sol::object getterObj = propDesc["get"];
+            if (getterObj.valid())
+            {
+                sol::protected_function getter = getterObj.as<sol::protected_function>();
+                auto pfr = getter(Self);
+
+                if (!pfr.valid())
+                {
+                    sol::error err = pfr;
+                    UE_LOG("[LuaProxy] Index: Property '%s' getter error: %s\n", Key, err.what());
+                    return sol::nil;
+                }
+
+                UE_LOG("[LuaProxy] Index: Property '%s' getter succeeded\n", Key);
+                // 첫 번째 반환값을 sol::object로 가져오기
+                return pfr.get<sol::object>();
+            }
+            else
+            {
+                UE_LOG("[LuaProxy] Index: Property '%s' has no getter\n", Key);
+            }
+            return sol::nil;
+        }
+    }
+
+    // 함수면 그대로 반환 (메서드용)
+    UE_LOG("[LuaProxy] Index: Returning method '%s' for class %p\n",
+        Key, Self.Class);
+    return Result;
 }
 
 void LuaComponentProxy::NewIndex(LuaComponentProxy& Self, const char* Key, sol::object Obj)
 {
-    auto IterateClass = GBoundClasses.find(Self.Class);
-    if (IterateClass == GBoundClasses.end()) return;
+    if (!Self.Instance || !Self.Class) return;
 
-    auto It = IterateClass->second.PropsByName.find(Key);
-    if (It == IterateClass->second.PropsByName.end()) return;
+    sol::state_view LuaView = Obj.lua_state();
+    sol::table& BindTable = FLuaBindRegistry::Get().EnsureTable(LuaView, Self.Class);
 
-    const FProperty* Property = It->second.Property;
+    if (!BindTable.valid()) return;
 
-    switch (Property->Type)
+    sol::object Property = BindTable[Key];
+
+    if (!Property.valid())
+        return; // 프로퍼티가 존재하지 않음
+
+    // 프로퍼티 descriptor 테이블인지 확인
+    if (Property.is<sol::table>())
     {
-    case EPropertyType::Float:
-        if (Obj.get_type() == sol::type::number)
-            *Property->GetValuePtr<float>(Self.Instance) = static_cast<float>(Obj.as<double>());
-        break;
-    case EPropertyType::Int32:
-        if (Obj.get_type() == sol::type::number)
-            *Property->GetValuePtr<int>(Self.Instance) = static_cast<int>(Obj.as<double>());
-        break;
-    case EPropertyType::FString:
-        if (Obj.get_type() == sol::type::string)
-            *Property->GetValuePtr<FString>(Self.Instance) = Obj.as<FString>();
-        break;
-    case EPropertyType::FVector:
-        if (Obj.is<FVector>())
+        sol::table propDesc = Property.as<sol::table>();
+        sol::optional<bool> isProperty = propDesc["is_property"];
+
+        if (isProperty && *isProperty)
         {
-            *Property->GetValuePtr<FVector>(Self.Instance) = Obj.as<FVector>();
+            // 읽기 전용인지 확인
+            sol::optional<bool> readOnly = propDesc["read_only"];
+            if (readOnly && *readOnly)
+            {
+                UE_LOG("[LuaProxy] Attempted to set read-only property: %s\n", Key);
+                return;
+            }
+
+            // 쓰기 가능한 프로퍼티 - setter 호출
+            sol::optional<sol::function> setter = propDesc["set"];
+            if (setter)
+            {
+                auto result = (*setter)(Self, Obj);
+                if (!result.valid())
+                {
+                    sol::error err = result;
+                    UE_LOG("[LuaProxy] Error setting property %s: %s\n", Key, err.what());
+                }
+            }
+            return;
         }
-        else if (Obj.get_type() == sol::type::table)
-        {
-            sol::table t = Obj.as<sol::table>();
-            FVector tmp{
-                static_cast<float>(t.get_or("X", 0.0)),
-                static_cast<float>(t.get_or("Y", 0.0)),
-                static_cast<float>(t.get_or("Z", 0.0))
-            };
-            *Property->GetValuePtr<FVector>(Self.Instance) = tmp;
-        }
-        break;
-    default:
-        break;
     }
+
+    // 프로퍼티가 아니면 아무것도 하지 않음 (메서드는 설정 불가)
 }

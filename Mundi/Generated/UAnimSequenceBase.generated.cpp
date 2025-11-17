@@ -40,11 +40,9 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UAnimSequenceBase() {}
-
 LUA_BIND_BEGIN(UAnimSequenceBase)
 {
-    // No functions to bind
+    // No properties or functions to bind
 }
 LUA_BIND_END()
 

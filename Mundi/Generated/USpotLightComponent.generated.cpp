@@ -41,11 +41,11 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_USpotLightComponent() {}
-
 LUA_BIND_BEGIN(USpotLightComponent)
 {
-    // No functions to bind
+    AddProperty<USpotLightComponent, float>(
+        T, "InnerConeAngle", &USpotLightComponent::InnerConeAngle);
+    AddProperty<USpotLightComponent, float>(
+        T, "OuterConeAngle", &USpotLightComponent::OuterConeAngle);
 }
 LUA_BIND_END()
-

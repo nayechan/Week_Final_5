@@ -17,6 +17,13 @@ public:
 
 	GENERATED_REFLECTION_BODY()
 
+public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+	UPROPERTY(EditAnywhere, Category="Decal", Range="1.0, 179.0", Tooltip="수직 시야각 (FOV, Degrees)입니다.")
+	float FovY = 60;
+
 	UPerspectiveDecalComponent();
 	~UPerspectiveDecalComponent() override = default;
 
@@ -36,6 +43,4 @@ public:
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
 private:
-	UPROPERTY(EditAnywhere, Category="Decal", Range="1.0, 179.0", Tooltip="수직 시야각 (FOV, Degrees)입니다.")
-	float FovY = 60;
 };

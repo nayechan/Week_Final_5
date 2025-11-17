@@ -40,11 +40,9 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UBoxComponent() {}
-
 LUA_BIND_BEGIN(UBoxComponent)
 {
-    // No functions to bind
+    AddProperty<UBoxComponent, FVector>(
+        T, "BoxExtent", &UBoxComponent::BoxExtent);
 }
 LUA_BIND_END()
-

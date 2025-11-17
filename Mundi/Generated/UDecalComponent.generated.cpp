@@ -41,11 +41,11 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UDecalComponent() {}
-
 LUA_BIND_BEGIN(UDecalComponent)
 {
-    // No functions to bind
+    AddProperty<UDecalComponent, float>(
+        T, "DecalOpacity", &UDecalComponent::DecalOpacity);
+    AddProperty<UDecalComponent, float>(
+        T, "FadeSpeed", &UDecalComponent::FadeSpeed);
 }
 LUA_BIND_END()
-

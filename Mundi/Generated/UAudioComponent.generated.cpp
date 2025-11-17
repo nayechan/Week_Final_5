@@ -44,10 +44,18 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UAudioComponent() {}
-
 LUA_BIND_BEGIN(UAudioComponent)
 {
+    AddPropertyArrayPtr<UAudioComponent, USound>(
+        T, "Sounds", &UAudioComponent::Sounds);
+    AddProperty<UAudioComponent, float>(
+        T, "Volume", &UAudioComponent::Volume);
+    AddProperty<UAudioComponent, float>(
+        T, "Pitch", &UAudioComponent::Pitch);
+    AddProperty<UAudioComponent, bool>(
+        T, "bIsLooping", &UAudioComponent::bIsLooping);
+    AddProperty<UAudioComponent, bool>(
+        T, "bAutoPlay", &UAudioComponent::bAutoPlay);
     AddAlias<UAudioComponent>(
         T, "Play", &UAudioComponent::Play);
     AddAlias<UAudioComponent>(

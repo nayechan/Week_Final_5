@@ -47,11 +47,23 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UProjectileMovementComponent() {}
-
 LUA_BIND_BEGIN(UProjectileMovementComponent)
 {
-    // No functions to bind
+    AddProperty<UProjectileMovementComponent, float>(
+        T, "Gravity", &UProjectileMovementComponent::Gravity);
+    AddProperty<UProjectileMovementComponent, FVector>(
+        T, "Velocity", &UProjectileMovementComponent::Velocity);
+    AddProperty<UProjectileMovementComponent, float>(
+        T, "InitialSpeed", &UProjectileMovementComponent::InitialSpeed);
+    AddProperty<UProjectileMovementComponent, float>(
+        T, "MaxSpeed", &UProjectileMovementComponent::MaxSpeed);
+    AddProperty<UProjectileMovementComponent, float>(
+        T, "HomingAccelerationMagnitude", &UProjectileMovementComponent::HomingAccelerationMagnitude);
+    AddProperty<UProjectileMovementComponent, bool>(
+        T, "bIsHomingProjectile", &UProjectileMovementComponent::bIsHomingProjectile);
+    AddProperty<UProjectileMovementComponent, float>(
+        T, "ProjectileLifespan", &UProjectileMovementComponent::ProjectileLifespan);
+    AddProperty<UProjectileMovementComponent, bool>(
+        T, "bAutoDestroyWhenLifespanExceeded", &UProjectileMovementComponent::bAutoDestroyWhenLifespanExceeded);
 }
 LUA_BIND_END()
-

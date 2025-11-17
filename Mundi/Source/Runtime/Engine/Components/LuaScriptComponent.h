@@ -21,6 +21,11 @@ public:
 	~ULuaScriptComponent() override;
 
 public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+	UPROPERTY(EditAnywhere, Category="Script", Tooltip="Lua Script 파일 경로입니다")
+	FString ScriptFilePath{};
 	void BeginPlay() override;
 	void TickComponent(float DeltaTime) override;       // 매 프레임
 	void EndPlay() override;							// 파괴/월드 제거 시
@@ -34,8 +39,6 @@ public:
 	void CleanupLuaResources();
 protected:
 	// 이 컴포넌트가 실행할 .lua 스크립트 파일의 경로 (에디터에서 설정)
-	UPROPERTY(EditAnywhere, Category="Script", Tooltip="Lua Script 파일 경로입니다")
-	FString ScriptFilePath{};
 
 	sol::state* Lua = nullptr;
 	sol::environment Env{};

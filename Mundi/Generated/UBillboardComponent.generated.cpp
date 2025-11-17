@@ -40,10 +40,10 @@ END_PROPERTIES()
 
 // ===== Lua Binding =====
 
-extern "C" void LuaBind_Anchor_UBillboardComponent() {}
-
 LUA_BIND_BEGIN(UBillboardComponent)
 {
+    AddPropertyPtr<UBillboardComponent, UTexture>(
+        T, "Texture", &UBillboardComponent::Texture);
     AddAlias<UBillboardComponent, FString>(
         T, "SetTexture", &UBillboardComponent::SetTexture);
 }

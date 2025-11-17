@@ -31,6 +31,14 @@ protected:
     ~AActor() override;
 
 public:
+
+    // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
+
+    UPROPERTY(EditAnywhere, Category="[액터]")
+    bool bActorHiddenInGame = false;
+
+    UPROPERTY(EditAnywhere, Category="[액터]")
+    bool bActorIsActive = true;       // 활성 상태(사용자 on/off), tick 적용
     // 수명
     virtual void BeginPlay();   // Override 시 Super::BeginPlay() 권장
     virtual void Tick(float DeltaSeconds);   // Override 시 Super::Tick() 권장
@@ -188,11 +196,7 @@ protected:
     
     bool bTickInEditor = false; // 에디터에서도 틱 허용
 
-    UPROPERTY(EditAnywhere, Category="[액터]")
-    bool bActorHiddenInGame = false;
 
-    UPROPERTY(EditAnywhere, Category="[액터]")
-    bool bActorIsActive = true;       // 활성 상태(사용자 on/off), tick 적용
 
     // Actor의 Visibility는 루트 컴포넌트로 설정
     bool bHiddenInEditor = false;
