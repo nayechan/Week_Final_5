@@ -31,28 +31,82 @@ static void AddMethod(sol::table& T, const char* Name, void(C::*Method)(P...))
 template<typename R, typename C, typename... P>
 static void AddMethodR(sol::table& T, const char* Name, R(C::*Method)(P...))
 {
-    T.set_function(Name, [Method](LuaComponentProxy& Proxy, P... Args) -> R
+    // Check if R is a pointer type
+    if constexpr (std::is_pointer_v<R>)
     {
-        if (!Proxy.Instance || Proxy.Class != C::StaticClass())
+        // For pointer return types, wrap in LuaComponentProxy
+        using PointeeType = std::remove_pointer_t<R>;
+        T.set_function(Name, [Method](sol::this_state s, LuaComponentProxy& Proxy, P... Args) -> sol::object
         {
-            if constexpr (!std::is_void_v<R>) return R{};
-        }
-        return (static_cast<C*>(Proxy.Instance)->*Method)(std::forward<P>(Args)...);
-    });
+            if (!Proxy.Instance || Proxy.Class != C::StaticClass())
+            {
+                sol::state_view L(s);
+                return sol::make_object(L, sol::nil);
+            }
+            R result = (static_cast<C*>(Proxy.Instance)->*Method)(std::forward<P>(Args)...);
+            if (!result)
+            {
+                sol::state_view L(s);
+                return sol::make_object(L, sol::nil);
+            }
+            // Wrap the returned object pointer in a LuaComponentProxy
+            sol::state_view L(s);
+            return MakeCompProxy(L, result, PointeeType::StaticClass());
+        });
+    }
+    else
+    {
+        // Non-pointer return types - use original implementation
+        T.set_function(Name, [Method](LuaComponentProxy& Proxy, P... Args) -> R
+        {
+            if (!Proxy.Instance || Proxy.Class != C::StaticClass())
+            {
+                if constexpr (!std::is_void_v<R>) return R{};
+            }
+            return (static_cast<C*>(Proxy.Instance)->*Method)(std::forward<P>(Args)...);
+        });
+    }
 }
 
 // const 멤버 함수용 오버로드
 template<typename R, typename C, typename... P>
 static void AddMethodR(sol::table& T, const char* Name, R(C::*Method)(P...) const)
 {
-    T.set_function(Name, [Method](LuaComponentProxy& Proxy, P... Args) -> R
+    // Check if R is a pointer type
+    if constexpr (std::is_pointer_v<R>)
     {
-        if (!Proxy.Instance || Proxy.Class != C::StaticClass())
+        // For pointer return types, wrap in LuaComponentProxy
+        using PointeeType = std::remove_pointer_t<R>;
+        T.set_function(Name, [Method](sol::this_state s, LuaComponentProxy& Proxy, P... Args) -> sol::object
         {
-            if constexpr (!std::is_void_v<R>) return R{};
-        }
-        return (static_cast<const C*>(Proxy.Instance)->*Method)(std::forward<P>(Args)...);
-    });
+            if (!Proxy.Instance || Proxy.Class != C::StaticClass())
+            {
+                sol::state_view L(s);
+                return sol::make_object(L, sol::nil);
+            }
+            R result = (static_cast<const C*>(Proxy.Instance)->*Method)(std::forward<P>(Args)...);
+            if (!result)
+            {
+                sol::state_view L(s);
+                return sol::make_object(L, sol::nil);
+            }
+            // Wrap the returned object pointer in a LuaComponentProxy
+            sol::state_view L(s);
+            return MakeCompProxy(L, result, PointeeType::StaticClass());
+        });
+    }
+    else
+    {
+        // Non-pointer return types - use original implementation
+        T.set_function(Name, [Method](LuaComponentProxy& Proxy, P... Args) -> R
+        {
+            if (!Proxy.Instance || Proxy.Class != C::StaticClass())
+            {
+                if constexpr (!std::is_void_v<R>) return R{};
+            }
+            return (static_cast<const C*>(Proxy.Instance)->*Method)(std::forward<P>(Args)...);
+        });
+    }
 }
 
 // 친절한 별칭 부여용

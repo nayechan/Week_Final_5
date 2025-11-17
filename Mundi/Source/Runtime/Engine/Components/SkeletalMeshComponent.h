@@ -4,6 +4,8 @@
 
 class UAnimInstance;
 class UAnimationAsset;
+class UAnimSequence;
+class UAnimStateMachineInstance;
 
 UCLASS(DisplayName="스켈레탈 메시 컴포넌트", Description="스켈레탈 메시를 렌더링하는 컴포넌트입니다")
 class USkeletalMeshComponent : public USkinnedMeshComponent
@@ -28,6 +30,13 @@ public:
     void SetAnimationPosition(float InSeconds);
     float GetAnimationPosition();
     bool IsPlayingAnimation() const;
+
+    //==== Minimal Lua-friendly helper to switch to a state machine anim instance ====
+    UFUNCTION(LuaBind, DisplayName="UseStateMachine")
+    void UseStateMachine();
+
+    UFUNCTION(LuaBind, DisplayName="GetOrCreateStateMachine")
+    UAnimStateMachineInstance* GetOrCreateStateMachine();
 
 // Editor Section
 public:

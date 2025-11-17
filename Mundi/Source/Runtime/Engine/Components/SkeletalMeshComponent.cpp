@@ -2,13 +2,10 @@
 #include "SkeletalMeshComponent.h"
 #include "PlatformTime.h"
 #include "AnimSequence.h"
-#include "AnimDataModel.h"
 #include "FbxLoader.h"
-#include "ResourceManager.h"
-
 #include "AnimNodeBase.h"
-#include "AnimInstance.h"
 #include "AnimSingleNodeInstance.h"
+#include "AnimStateMachineInstance.h"
 
 USkeletalMeshComponent::USkeletalMeshComponent()
 {
@@ -126,6 +123,34 @@ void USkeletalMeshComponent::PlayAnimation(UAnimationAsset* Asset, bool bLooping
         Single->SetPlayRate(InPlayRate);
         Single->Play(true);
     }
+}
+
+// ==== Lua-friendly State Machine helper: switch this component to a state machine anim instance ====
+void USkeletalMeshComponent::UseStateMachine()
+{
+    UAnimStateMachineInstance* StateMachine = Cast<UAnimStateMachineInstance>(AnimInstance);
+    if (!StateMachine)
+    {
+        UE_LOG("[SkeletalMeshComponent] Creating new AnimStateMachineInstance\n");
+        StateMachine = NewObject<UAnimStateMachineInstance>();
+        SetAnimInstance(StateMachine);
+    }
+    else
+    {
+        UE_LOG("[SkeletalMeshComponent] AnimStateMachineInstance already exists\n");
+    }
+}
+
+UAnimStateMachineInstance* USkeletalMeshComponent::GetOrCreateStateMachine()
+{
+    UAnimStateMachineInstance* StateMachine = Cast<UAnimStateMachineInstance>(AnimInstance);
+    if (!StateMachine)
+    {
+        UE_LOG("[SkeletalMeshComponent] Creating new AnimStateMachineInstance\n");
+        StateMachine = NewObject<UAnimStateMachineInstance>();
+        SetAnimInstance(StateMachine);
+    }
+    return StateMachine;
 }
 
 void USkeletalMeshComponent::StopAnimation()

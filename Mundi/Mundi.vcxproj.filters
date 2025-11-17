@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
     <FxCompile Include="Shaders\PostProcess\GammaCorrection_PS.hlsl">
@@ -105,6 +105,9 @@
       <Filter>Source\Runtime\Engine\Animation</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimSequenceBase.cpp">
+      <Filter>Source\Runtime\Engine\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\Animation\AnimSequencePlayer.cpp">
       <Filter>Source\Runtime\Engine\Animation</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Engine\Components\SkeletalMeshComponent.cpp">
@@ -773,6 +776,33 @@
     <ClCompile Include="Source\Runtime\Engine\Viewer\EditorAssetPreviewContext.cpp">
       <Filter>Source\Runtime\Engine\Viewer</Filter>
     </ClCompile>
+    <ClCompile Include="Generated\AController.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\APlayerController.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\UInputComponent.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\APawn.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\UCharacterMovementComponent.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\ACharacter.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\USpringArmComponent.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\AGameModeBase.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\AGameStateBase.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Generated\USkinnedMeshComponent.generated.h">
@@ -783,6 +813,9 @@
     </ClInclude>
     <ClInclude Include="pch.h" />
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimStateMachine.h">
+      <Filter>Source\Runtime\Engine\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Animation\AnimSequencePlayer.h">
       <Filter>Source\Runtime\Engine\Animation</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimTestUtil.h">
@@ -1636,6 +1669,33 @@
     </ClInclude>
     <ClInclude Include="Source\Runtime\Engine\Viewer\EditorAssetPreviewContext.h">
       <Filter>Source\Runtime\Engine\Viewer</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\AController.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\APlayerController.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UInputComponent.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\APawn.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UCharacterMovementComponent.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ACharacter.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\USpringArmComponent.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\AGameModeBase.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\AGameStateBase.generated.h">
+      <Filter>Generated</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

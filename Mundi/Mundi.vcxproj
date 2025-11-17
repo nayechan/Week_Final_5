@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_StandAlone|x64">
@@ -274,9 +274,19 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimSequence.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimSequenceBase.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimStateMachine.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Animation\AnimTestUtil.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Animation\AnimStateMachineInstance.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Animation\AnimSequencePlayer.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Components\CharacterMovementComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Components\InputComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\SkeletalMeshComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\SkinnedMeshComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Components\SpringArmComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\Character.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\Controller.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\GameModeBase.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\GameStateBase.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\Pawn.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\PlayerController.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\SkeletalMeshActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\BoneAnchorComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Fade.cpp" />
@@ -522,6 +532,15 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Generated\UAnimInstance.generated.cpp" />
     <ClCompile Include="Generated\UAnimSingleNodeInstance.generated.cpp" />
     <ClCompile Include="Generated\UAnimStateMachineInstance.generated.cpp" />
+    <ClCompile Include="Generated\AController.generated.cpp" />
+    <ClCompile Include="Generated\APlayerController.generated.cpp" />
+    <ClCompile Include="Generated\UInputComponent.generated.cpp" />
+    <ClCompile Include="Generated\APawn.generated.cpp" />
+    <ClCompile Include="Generated\UCharacterMovementComponent.generated.cpp" />
+    <ClCompile Include="Generated\ACharacter.generated.cpp" />
+    <ClCompile Include="Generated\USpringArmComponent.generated.cpp" />
+    <ClCompile Include="Generated\AGameModeBase.generated.cpp" />
+    <ClCompile Include="Generated\AGameStateBase.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Common\LightingBuffers.hlsl">
@@ -692,7 +711,8 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimSequence.h" />
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimSequenceBase.h" />
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimStateMachine.h" />
-    <ClInclude Include="Source\Runtime\Engine\Animation\AnimTestUtil.h" />
+    <ClInclude Include="Source\Runtime\Engine\Animation\AnimStateMachineInstance.h" />
+    <ClInclude Include="Source\Runtime\Engine\Animation\AnimSequencePlayer.h" />
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimTypes.h" />
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimationRuntime.h" />
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimInstance.h" />
@@ -701,6 +721,8 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Runtime\Engine\Audio\Sound.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\AudioComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\CapsuleComponent.h" />
+    <ClInclude Include="Source\Runtime\Engine\Components\CharacterMovementComponent.h" />
+    <ClInclude Include="Source\Runtime\Engine\Components\InputComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\LuaScriptComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\MovementComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\ProjectileMovementComponent.h" />
@@ -711,19 +733,26 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Runtime\Engine\Components\SkeletalMeshComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\SkinnedMeshComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\SphereComponent.h" />
+    <ClInclude Include="Source\Runtime\Engine\Components\SpringArmComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\AmbientLightActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_LetterBox.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Vignette.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\Character.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\Controller.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\FAudioDevice.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CameraModifierBase.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Fade.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Shake.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\GameEngine.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\GameModeBase.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\GameStateBase.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\Pawn.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\PlayerCameraManager.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\DirectionalLightActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\EmptyActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\HeightFogActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Info.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\PlayerController.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\PointLightActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\SkeletalMeshActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\SpotLightActor.h" />
@@ -924,6 +953,15 @@ xcopy /y /d "$(ProjectDir)ThirdParty\Lua\lib\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Generated\UAnimInstance.generated.h" />
     <ClInclude Include="Generated\UAnimSingleNodeInstance.generated.h" />
     <ClInclude Include="Generated\UAnimStateMachineInstance.generated.h" />
+    <ClInclude Include="Generated\AController.generated.h" />
+    <ClInclude Include="Generated\APlayerController.generated.h" />
+    <ClInclude Include="Generated\UInputComponent.generated.h" />
+    <ClInclude Include="Generated\APawn.generated.h" />
+    <ClInclude Include="Generated\UCharacterMovementComponent.generated.h" />
+    <ClInclude Include="Generated\ACharacter.generated.h" />
+    <ClInclude Include="Generated\USpringArmComponent.generated.h" />
+    <ClInclude Include="Generated\AGameModeBase.generated.h" />
+    <ClInclude Include="Generated\AGameStateBase.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BuildTools\CodeGenerator\generate.py" />

@@ -113,3 +113,18 @@ struct FAnimExtractContext
     }
 };
 
+// Minimal base for graph-like animation nodes
+struct FAnimNode_Base
+{
+    virtual ~FAnimNode_Base() = default;
+
+    // Called before Evaluate to advance internal state based on DeltaSeconds
+    virtual void Update(FAnimationBaseContext& /*Context*/) {}
+
+    // Fills Output.LocalSpacePose. Default: ref pose.
+    virtual void Evaluate(FPoseContext& Output)
+    {
+        Output.ResetToRefPose();
+    }
+};
+

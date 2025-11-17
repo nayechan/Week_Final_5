@@ -34,3 +34,6 @@ private:
 
     FLuaCoroutineScheduler CoroutineSchedular;    // 씬 단위 Coroutine Manager
 };
+
+// Helper function to wrap C++ object pointers in LuaComponentProxy for Lua
+sol::object MakeCompProxy(sol::state_view SolState, void* Instance, UClass* Class);

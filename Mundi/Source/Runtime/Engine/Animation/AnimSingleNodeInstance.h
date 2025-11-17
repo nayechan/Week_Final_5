@@ -1,5 +1,6 @@
 #pragma once
 #include "AnimInstance.h"
+#include "AnimSequencePlayer.h"
 #include "UAnimSingleNodeInstance.generated.h"
 
 class UAnimationAsset;
@@ -21,7 +22,7 @@ public:
     void SetLooping(bool bInLooping);
     void SetPlayRate(float InRate);
     void SetPosition(float InSeconds, bool bFireNotifies = false);
-    float GetPosition() const { return ExtractCtx.CurrentTime; }
+    float GetPosition() const { return Player.GetExtractContext().CurrentTime; }
     bool IsPlaying() const override { return bPlaying; }
 
     // UAnimInstance overrides
@@ -34,8 +35,7 @@ public:
     void SetReferenceTime(float InRefTime) { ReferenceTime = InRefTime; }
 
 private:
-    UAnimationAsset* CurrentAsset = nullptr;
-    FAnimExtractContext ExtractCtx; // holds time/looping/playrate/interp
+    FAnimNode_SequencePlayer Player; // drives playback (time/loop/rate)
     bool bPlaying = false;
 
     // Additive

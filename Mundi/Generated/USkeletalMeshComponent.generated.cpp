@@ -6,6 +6,8 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+#include "AnimStateMachineInstance.h"
+
 // ===== Class Factory Registration (IMPLEMENT_CLASS) =====
 
 // IMPLEMENT_CLASS(USkeletalMeshComponent) expansion
@@ -42,7 +44,9 @@ END_PROPERTIES()
 
 LUA_BIND_BEGIN(USkeletalMeshComponent)
 {
-    // No properties or functions to bind
+    AddAlias<USkeletalMeshComponent>(
+        T, "UseStateMachine", &USkeletalMeshComponent::UseStateMachine);
+    AddMethodR<UAnimStateMachineInstance*, USkeletalMeshComponent>(
+        T, "GetOrCreateStateMachine", &USkeletalMeshComponent::GetOrCreateStateMachine);
 }
 LUA_BIND_END()
-

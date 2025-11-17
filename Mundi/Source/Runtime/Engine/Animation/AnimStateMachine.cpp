@@ -1,21 +1,36 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "AnimStateMachine.h"
 #include "AnimNodeBase.h"
 #include "AnimationRuntime.h"
 #include "AnimSequenceBase.h"
 #include "SkeletalMeshComponent.h"
+#include "AnimSequencePlayer.h"
 
-int32 UAnimStateMachineInstance::AddState(const FAnimState& State)
+int32 FAnimNode_StateMachine::AddState(const FAnimState& State, UAnimSequenceBase* Sequence)
 {
-    return States.Add(State);
+    const int32 Index = States.Add(State);
+    EnsureTransitionBuckets();
+    // Wire authoring fields into the internal sequence player for this state
+    FAnimState& S = States[Index];
+    S.Player.SetSequence(Sequence);
+    S.Player.SetPlayRate(S.PlayRate);
+    S.Player.SetLooping(S.bLooping);
+    S.Player.SetInterpolationEnabled(true);
+    return Index;
 }
 
-void UAnimStateMachineInstance::AddTransition(const FAnimTransition& Transition)
+void FAnimNode_StateMachine::AddTransition(const FAnimTransition& Transition)
 {
     Transitions.Add(Transition);
+    // Also index by source state for O(outgoing) lookup
+    EnsureTransitionBuckets();
+    if (Transition.FromStateIndex >= 0 && Transition.FromStateIndex < TransitionsByFrom.Num())
+    {
+        TransitionsByFrom[Transition.FromStateIndex].Add(Transition);
+    }
 }
 
-int32 UAnimStateMachineInstance::FindStateByName(const FString& Name) const
+int32 FAnimNode_StateMachine::FindStateByName(const FString& Name) const
 {
     for (int32 i = 0; i < States.Num(); ++i)
     {
@@ -27,7 +42,43 @@ int32 UAnimStateMachineInstance::FindStateByName(const FString& Name) const
     return -1;
 }
 
-void UAnimStateMachineInstance::SetCurrentState(int32 StateIndex, float BlendTime)
+const FString& FAnimNode_StateMachine::GetStateName(int32 Index) const
+{
+    static FString Empty;
+    if (Index < 0 || Index >= States.Num()) return Empty;
+    return States[Index].Name;
+}
+
+bool FAnimNode_StateMachine::SetStatePlayRate(int32 Index, float Rate)
+{
+    if (Index < 0 || Index >= States.Num()) return false;
+    States[Index].PlayRate = Rate;
+    States[Index].Player.SetPlayRate(Rate);
+    return true;
+}
+
+bool FAnimNode_StateMachine::SetStateLooping(int32 Index, bool bInLooping)
+{
+    if (Index < 0 || Index >= States.Num()) return false;
+    States[Index].bLooping = bInLooping;
+    States[Index].Player.SetLooping(bInLooping);
+    return true;
+}
+
+float FAnimNode_StateMachine::GetStateTime(int32 Index) const
+{
+    if (Index < 0 || Index >= States.Num()) return 0.f;
+    return States[Index].Player.GetExtractContext().CurrentTime;
+}
+
+bool FAnimNode_StateMachine::SetStateTime(int32 Index, float TimeSeconds)
+{
+    if (Index < 0 || Index >= States.Num()) return false;
+    States[Index].Player.GetExtractContext().CurrentTime = TimeSeconds;
+    return true;
+}
+
+void FAnimNode_StateMachine::SetCurrentState(int32 StateIndex, float BlendTime)
 {
     if (StateIndex < 0 || StateIndex >= States.Num())
     {
@@ -38,20 +89,33 @@ void UAnimStateMachineInstance::SetCurrentState(int32 StateIndex, float BlendTim
         return;
     }
 
-    if (Runtime.CurrentState == -1 || BlendTime <= 0.f)
+    // Resolve blend time: if negative, try transition data; otherwise use explicit value
+    float EffectiveBlendTime = BlendTime;
+    if (EffectiveBlendTime < 0.f)
+    {
+        if (const FAnimTransition* Trans = FindTransition(Runtime.CurrentState, StateIndex))
+        {
+            EffectiveBlendTime = Trans->BlendTime;
+        }
+        else
+        {
+            EffectiveBlendTime = 0.f; // default immediate if not specified
+        }
+    }
+
+    if (Runtime.CurrentState == -1 || EffectiveBlendTime <= 0.f)
     {
         // Immediate switch
         Runtime.CurrentState = StateIndex;
         Runtime.NextState = -1;
         Runtime.BlendAlpha = 0.f;
         Runtime.BlendDuration = 0.f;
-        // initialize sampling context for current state
-        Runtime.CtxA = FAnimExtractContext{};
-        Runtime.CtxA.CurrentTime = 0.f;
-        Runtime.CtxA.PlayRate = States[StateIndex].PlayRate;
-        Runtime.CtxA.bLooping = States[StateIndex].bLooping;
-        Runtime.CtxA.bEnableInterpolation = true;
-        Runtime.CtxB = FAnimExtractContext{};
+        // Reset current state's player time/settings
+        FAnimState& Curr = States[StateIndex];
+        Curr.Player.GetExtractContext() = FAnimExtractContext{};
+        Curr.Player.SetPlayRate(Curr.PlayRate);
+        Curr.Player.SetLooping(Curr.bLooping);
+        Curr.Player.SetInterpolationEnabled(true);
         return;
     }
 
@@ -63,36 +127,60 @@ void UAnimStateMachineInstance::SetCurrentState(int32 StateIndex, float BlendTim
 
     // Begin transition
     Runtime.NextState = StateIndex;
-    Runtime.BlendDuration = std::max(0.f, BlendTime);
+    Runtime.BlendDuration = std::max(0.f, EffectiveBlendTime);
     Runtime.BlendAlpha = 0.f;
-    // initialize next state's sampling context
-    Runtime.CtxB = FAnimExtractContext{};
-    Runtime.CtxB.CurrentTime = 0.f;
-    Runtime.CtxB.PlayRate = States[StateIndex].PlayRate;
-    Runtime.CtxB.bLooping = States[StateIndex].bLooping;
-    Runtime.CtxB.bEnableInterpolation = true;
+    // Reset next state's player time/settings
+    FAnimState& Next = States[StateIndex];
+    Next.Player.GetExtractContext() = FAnimExtractContext{};
+    Next.Player.SetPlayRate(Next.PlayRate);
+    Next.Player.SetLooping(Next.bLooping);
+    Next.Player.SetInterpolationEnabled(true);
 }
 
-const FAnimState* UAnimStateMachineInstance::GetStateChecked(int32 Index) const
+const FAnimState* FAnimNode_StateMachine::GetStateChecked(int32 Index) const
 {
     if (Index < 0 || Index >= States.Num()) return nullptr;
     return &States[Index];
 }
 
-void UAnimStateMachineInstance::NativeUpdateAnimation(float DeltaSeconds)
+const FAnimTransition* FAnimNode_StateMachine::FindTransition(int32 FromIndex, int32 ToIndex) const
 {
-    // Advance current state time
-    if (const FAnimState* Curr = GetStateChecked(Runtime.CurrentState))
-    {
-        const float Length = Curr->Asset ? Curr->Asset->GetPlayLength() : 0.f;
-        Runtime.CtxA.Advance(DeltaSeconds, Length);
-    }
+    if (FromIndex < 0 || FromIndex >= TransitionsByFrom.Num())
+        return nullptr;
+    for (const FAnimTransition& T : TransitionsByFrom[FromIndex])
+        if (T.ToStateIndex == ToIndex)
+            return &T;
+    return nullptr;
+}
 
-    // If blending, advance next state time and blend alpha
-    if (const FAnimState* Next = GetStateChecked(Runtime.NextState))
+void FAnimNode_StateMachine::EnsureTransitionBuckets()
+{
+    if (TransitionsByFrom.Num() < States.Num())
     {
-        const float Length = Next->Asset ? Next->Asset->GetPlayLength() : 0.f;
-        Runtime.CtxB.Advance(DeltaSeconds, Length);
+        TransitionsByFrom.SetNum(States.Num());
+    }
+}
+
+void FAnimNode_StateMachine::Reset()
+{
+    States.Empty();
+    Transitions.Empty();
+    TransitionsByFrom.Empty();
+    Runtime = FAnimSMRuntime{};
+}
+
+void FAnimNode_StateMachine::Update(FAnimationBaseContext& Context)
+{
+    const float DeltaSeconds = Context.GetDeltaSeconds();
+
+    // Advance current/next players
+    if (FAnimState* Curr = (Runtime.CurrentState >= 0 && Runtime.CurrentState < States.Num()) ? &States[Runtime.CurrentState] : nullptr)
+    {
+        Curr->Player.Update(Context);
+    }
+    if (FAnimState* Next = (Runtime.NextState >= 0 && Runtime.NextState < States.Num()) ? &States[Runtime.NextState] : nullptr)
+    {
+        Next->Player.Update(Context);
 
         // Advance blend alpha
         if (Runtime.BlendDuration <= 0.f)
@@ -109,16 +197,14 @@ void UAnimStateMachineInstance::NativeUpdateAnimation(float DeltaSeconds)
             // Finalize transition
             Runtime.BlendAlpha = 1.f;
             Runtime.CurrentState = Runtime.NextState;
-            Runtime.CtxA = Runtime.CtxB;
             Runtime.NextState = -1;
             Runtime.BlendAlpha = 0.f;
             Runtime.BlendDuration = 0.f;
-            Runtime.CtxB = FAnimExtractContext{};
         }
     }
 }
 
-void UAnimStateMachineInstance::EvaluateAnimation(FPoseContext& Output)
+void FAnimNode_StateMachine::Evaluate(FPoseContext& Output)
 {
     const FSkeleton* Skeleton = Output.Skeleton;
     if (!Skeleton)
@@ -127,44 +213,37 @@ void UAnimStateMachineInstance::EvaluateAnimation(FPoseContext& Output)
         return;
     }
 
-    // Build component poses for current and (optional) next states
-    TArray<FTransform> CompA, CompB, CompOut;
+    // Evaluate current and optional next via sequence players
+    FPoseContext PoseA; PoseA.Initialize(Output.GetComponent(), Skeleton, Output.GetDeltaSeconds());
+    FPoseContext PoseB; PoseB.Initialize(Output.GetComponent(), Skeleton, Output.GetDeltaSeconds());
 
-    const FAnimState* Curr = GetStateChecked(Runtime.CurrentState);
-    const FAnimState* Next = GetStateChecked(Runtime.NextState);
+    FAnimState* Curr = (Runtime.CurrentState >= 0 && Runtime.CurrentState < States.Num()) ? &States[Runtime.CurrentState] : nullptr;
+    FAnimState* Next = (Runtime.NextState >= 0 && Runtime.NextState < States.Num()) ? &States[Runtime.NextState] : nullptr;
 
-    // Extract A
-    if (Curr && Curr->Asset)
+    if (Curr)
     {
-        UAnimSequenceBase* SeqA = Cast<UAnimSequenceBase>(Curr->Asset);
-        FAnimationRuntime::ExtractPoseFromSequence(SeqA, Runtime.CtxA, *Skeleton, CompA);
+        Curr->Player.Evaluate(PoseA);
     }
     else
     {
-        // Fallback to bind/component ref pose via runtime helper
-        FAnimationRuntime::ExtractPoseFromSequence(nullptr, FAnimExtractContext{}, *Skeleton, CompA);
+        PoseA.ResetToRefPose();
     }
 
-    // If blending, extract B and blend; otherwise just use A
-    if (Next && Next->Asset)
+    if (Next)
     {
-        UAnimSequenceBase* SeqB = Cast<UAnimSequenceBase>(Next->Asset);
-        FAnimationRuntime::ExtractPoseFromSequence(SeqB, Runtime.CtxB, *Skeleton, CompB);
-
+        Next->Player.Evaluate(PoseB);
+        TArray<FTransform> CompA, CompB, CompOut;
+        FAnimationRuntime::ConvertLocalToComponentSpace(*Skeleton, PoseA.LocalSpacePose, CompA);
+        FAnimationRuntime::ConvertLocalToComponentSpace(*Skeleton, PoseB.LocalSpacePose, CompB);
         const float Alpha = std::clamp(Runtime.BlendAlpha, 0.f, 1.f);
         FAnimationRuntime::BlendTwoPoses(*Skeleton, CompA, CompB, Alpha, CompOut);
+        FAnimationRuntime::ConvertComponentToLocalSpace(*Skeleton, CompOut, Output.LocalSpacePose);
     }
     else
     {
-        CompOut = CompA;
+        Output.LocalSpacePose = PoseA.LocalSpacePose;
     }
-
-    // Convert to local-space for output
-    FAnimationRuntime::ConvertComponentToLocalSpace(*Skeleton, CompOut, Output.LocalSpacePose);
 }
 
-bool UAnimStateMachineInstance::IsPlaying() const
-{
-    // Consider playing if we have a valid current state or are mid-transition
-    return (Runtime.CurrentState != -1) || (Runtime.NextState != -1);
-}
+
+
