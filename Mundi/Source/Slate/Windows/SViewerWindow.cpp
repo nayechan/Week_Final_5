@@ -1011,14 +1011,22 @@ void SViewerWindow::RenderViewerGizmoSpaceButton()
 void SViewerWindow::RenderViewerToolbar()
 {
     // 툴바 높이
-    const float ToolbarHeight = 35.0f;
+    const float ToolbarHeight = 32.0f;
 
     // 툴바 영역 시작 (탭 키 네비게이션 완전 비활성화)
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.05f, 0.05f, 0.05f, 1.0f));
     ImGui::BeginChild("ViewerToolbar", ImVec2(0, ToolbarHeight), false,
         ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNavInputs | ImGuiWindowFlags_NoNavFocus);
 
-    // 상단 여백 추가 (메인 뷰처럼)
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
+    // 세로 중앙 정렬
+    float BtnHeight = ImGui::GetFrameHeight();
+    float CenterY = (ToolbarHeight - BtnHeight) * 0.5f + 1.0f;
+    ImGui::SetCursorPosY(CenterY);
+
+    // 왼쪽 패딩
+    const float SidePadding = 8.0f;
+    ImGui::Dummy(ImVec2(SidePadding, 0));
+    ImGui::SameLine();
 
     // 기즈모 버튼 스타일 설정 (메인 뷰와 동일)
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 0));      // 간격 좁히기
@@ -1085,13 +1093,11 @@ void SViewerWindow::RenderViewerToolbar()
     char cameraText[64];
     sprintf_s(cameraText, "%s %s", "원근", "∨");
     ImVec2 cameraTextSize = ImGui::CalcTextSize(cameraText);
-    const float CameraButtonWidth = 17.0f + 4.0f + cameraTextSize.x + 16.0f;
+    const float CameraButtonWidth = 8.0f + 4.0f + cameraTextSize.x + 16.0f;
 
     // 오른쪽부터 역순으로 위치 계산
     // ViewMode는 오른쪽 끝
-    float ViewModeX = CursorStartX + AvailableWidth - ViewModeButtonWidth;
-
-    // Camera는 ViewMode 왼쪽
+    float ViewModeX = CursorStartX + AvailableWidth - ViewModeButtonWidth - SidePadding;
     float CameraX = ViewModeX - ButtonSpacing - CameraButtonWidth;
 
     // 버튼들을 순서대로 그리기
@@ -1102,6 +1108,7 @@ void SViewerWindow::RenderViewerToolbar()
     RenderViewModeDropdownMenu();
 
     ImGui::EndChild();
+    ImGui::PopStyleColor(); // ChildBg
 }
 
 void SViewerWindow::RenderCameraOptionDropdownMenu()
@@ -1111,7 +1118,7 @@ void SViewerWindow::RenderCameraOptionDropdownMenu()
     ImVec2 cursorPos = ImGui::GetCursorPos();
     ImGui::SetCursorPosY(cursorPos.y - 0.7f);
 
-    const ImVec2 IconSize(17, 17);
+    const ImVec2 IconSize(16, 16);
 
     // 현재 뷰포트 타입 가져오기
     EViewportType ViewportType = ActiveState->Client->GetViewportType();
@@ -1167,7 +1174,12 @@ void SViewerWindow::RenderCameraOptionDropdownMenu()
     sprintf_s(ButtonID, "##ViewerCameraBtn_%p", this);
 
     // 버튼 클릭 영역
-    if (ImGui::Button(ButtonID, ButtonSize))
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    dl->AddRectFilled(ButtonCursorPos,
+        ImVec2(ButtonCursorPos.x + ButtonSize.x, ButtonCursorPos.y + ButtonSize.y),
+        IM_COL32(135, 135, 135, 255), 4.0f);
+    ImGui::SetCursorPos(ButtonCursorPos);
+    if (ImGui::InvisibleButton(ButtonID, ButtonSize))
     {
         char PopupID[64];
         sprintf_s(PopupID, "ViewerCameraPopup_%p", this);
@@ -1221,8 +1233,9 @@ void SViewerWindow::RenderCameraOptionDropdownMenu()
         ImGui::SameLine(0, 4);
     }
 
+    ImGui::SetWindowFontScale(0.96f);
     ImGui::Text("%s", ButtonText);
-
+    ImGui::SetWindowFontScale(1.0f);
     ImGui::PopStyleColor(3);
     ImGui::PopStyleVar(1);
 
@@ -1443,7 +1456,7 @@ void SViewerWindow::RenderViewModeDropdownMenu()
     ImVec2 cursorPos = ImGui::GetCursorPos();
     ImGui::SetCursorPosY(cursorPos.y - 1.0f);
 
-    const ImVec2 IconSize(17, 17);
+    const ImVec2 IconSize(15, 15);
 
     // 현재 뷰모드 이름 및 아이콘 가져오기
     EViewMode CurrentViewMode = ActiveState->Client->GetViewMode();
@@ -1500,7 +1513,12 @@ void SViewerWindow::RenderViewModeDropdownMenu()
     sprintf_s(ButtonID, "##ViewerViewModeBtn_%p", this);
 
     // 버튼 클릭 영역
-    if (ImGui::Button(ButtonID, ButtonSize))
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    dl->AddRectFilled(ButtonCursorPos, 
+        ImVec2(ButtonCursorPos.x + ButtonSize.x, ButtonCursorPos.y + ButtonSize.y), 
+        IM_COL32(135, 135, 135, 255), 4.0f);
+    ImGui::SetCursorPos(ButtonCursorPos);
+    if (ImGui::InvisibleButton(ButtonID, ButtonSize))
     {
         char PopupID[64];
         sprintf_s(PopupID, "ViewerViewModePopup_%p", this);
@@ -1524,9 +1542,9 @@ void SViewerWindow::RenderViewModeDropdownMenu()
         ImGui::Image((void*)CurrentViewModeIcon->GetShaderResourceView(), IconSize);
         ImGui::SameLine(0, 4);
     }
-
+    ImGui::SetWindowFontScale(0.96f);
     ImGui::Text("%s", ButtonText);
-
+    ImGui::SetWindowFontScale(1.0f);
     ImGui::PopStyleColor(3);
     ImGui::PopStyleVar(1);
 
