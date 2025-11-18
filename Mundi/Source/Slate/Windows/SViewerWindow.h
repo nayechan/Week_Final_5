@@ -31,6 +31,7 @@ public:
 	// 윈도우 상태 접근자
 	bool IsWindowHovered() const { return bIsWindowHovered; }
 	bool IsWindowFocused() const { return bIsWindowFocused; }
+	const FRect& GetCenterRect() const { return CenterRect; }
 
 protected:
 	// Per-tab state

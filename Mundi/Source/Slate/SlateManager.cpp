@@ -183,7 +183,7 @@ void USlateManager::OpenAssetViewer(UEditorAssetPreviewContext* Context)
     // Check if a viewer for this Context is already open
     for (SWindow* Window : DetachedWindows)
     {
-        if (SViewerWindow* ExistingViewer = dynamic_cast<SViewerWindow*>(Window))
+        if (SViewerWindow* ExistingViewer = static_cast<SViewerWindow*>(Window))
         {
             // Check if the viewer's Context is valid and if both the type and asset path match
             UEditorAssetPreviewContext* ExistingContext = ExistingViewer->GetContext();
@@ -617,8 +617,19 @@ void USlateManager::ProcessInput()
         SWindow* Window = DetachedWindows[i];
         if (Window && Window->Rect.Contains(MousePosition))
         {
+            // 뷰어 윈도우인 경우 추가 체크: collapsed 상태면 스킵
+            SViewerWindow* ViewerWindow = dynamic_cast<SViewerWindow*>(Window);
+            if (ViewerWindow)
+            {
+                // 뷰어가 접혀있으면(collapsed) IsWindowHovered가 false
+                // 접혀있는 뷰어는 메인 뷰포트 입력을 막지 않도록 스킵
+                if (!ViewerWindow->IsWindowHovered())
+                {
+                    continue;  // 다음 윈도우 체크
+                }
+            }
+
             // 영역 안에 마우스가 있으면 해당 윈도우 선택
-            // 포커스 여부와 관계없이 클릭하면 포커스를 가져올 수 있어야 함
             HoveredDetachedWindow = Window;
             break;
         }
@@ -632,7 +643,21 @@ void USlateManager::ProcessInput()
     if ((bLeftClicked || bRightClicked) && HoveredDetachedWindow)
     {
         SViewerWindow* ClickedViewer = dynamic_cast<SViewerWindow*>(HoveredDetachedWindow);
+
+        bool bShouldBringToFront = false;
         if (ClickedViewer)
+        {
+            // 뷰어 윈도우: 어디를 클릭하든 항상 bring-to-front (언리얼 엔진처럼)
+            // 패널 클릭, 뷰포트 클릭 상관없이 뷰어를 클릭하면 최상단으로
+            bShouldBringToFront = true;
+        }
+        else
+        {
+            // 뷰어가 아닌 윈도우: ImGui가 마우스를 원하지 않을 때만
+            bShouldBringToFront = !bImGuiWantsMouse;
+        }
+
+        if (bShouldBringToFront)
         {
             // 배열에서 해당 윈도우의 위치 찾기
             int32 WindowIndex = DetachedWindows.Find(HoveredDetachedWindow);
@@ -643,7 +668,10 @@ void USlateManager::ProcessInput()
                 DetachedWindows.Add(HoveredDetachedWindow);
 
                 // ImGui 포커스 요청
-                ClickedViewer->RequestFocus();
+                if (ClickedViewer)
+                {
+                    ClickedViewer->RequestFocus();
+                }
             }
         }
     }
@@ -748,6 +776,17 @@ void USlateManager::OnMouseMove(FVector2D MousePos)
         SWindow* Window = DetachedWindows[i];
         if (Window && Window->IsHover(MousePos))
         {
+            // 뷰어 윈도우인 경우: collapsed 상태면 스킵
+            SViewerWindow* ViewerWindow = dynamic_cast<SViewerWindow*>(Window);
+            if (ViewerWindow)
+            {
+                // 뷰어가 접혀있으면 메인 뷰포트로 입력 전달
+                if (!ViewerWindow->IsWindowHovered())
+                {
+                    continue;  // 다음 윈도우 체크
+                }
+            }
+
             Window->OnMouseMove(MousePos);
             return;
         }
