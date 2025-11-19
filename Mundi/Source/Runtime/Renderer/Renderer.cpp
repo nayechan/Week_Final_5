@@ -50,6 +50,16 @@ URenderer::~URenderer()
 	{
 		delete LineBatchData;
 	}
+
+	// 지연 해제 큐에 남아있는 모든 버퍼 해제
+	for (FDeferredRelease& Entry : DeferredReleaseQueue)
+	{
+		if (Entry.Buffer)
+		{
+			Entry.Buffer->Release();
+		}
+	}
+	DeferredReleaseQueue.Empty();
 }
 
 void URenderer::BeginFrame()
