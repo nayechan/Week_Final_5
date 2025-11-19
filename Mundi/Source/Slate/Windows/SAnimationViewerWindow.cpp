@@ -7,6 +7,7 @@
 #include "AnimSingleNodeInstance.h"
 #include "Source/Runtime/Renderer/FViewport.h"
 #include "Source/Runtime/Engine/Components/AudioComponent.h"
+#include "Source/Runtime/AssetManagement/Texture.h"
 
 SAnimationViewerWindow::SAnimationViewerWindow()
 {
@@ -26,6 +27,16 @@ SAnimationViewerWindow::~SAnimationViewerWindow()
     }
     Tabs.Empty();
     ActiveState = nullptr;
+
+    IconJumpToStart = nullptr;
+    IconStepBack = nullptr;
+    IconPlay = nullptr;
+    IconPause = nullptr;
+    IconStepForward = nullptr;
+    IconJumpToEnd = nullptr;
+    IconReverse = nullptr;
+    IconLooping = nullptr;
+    IconNoLooping = nullptr;
 }
 
 void SAnimationViewerWindow::OnRender()
@@ -35,6 +46,12 @@ void SAnimationViewerWindow::OnRender()
     {
         USlateManager::GetInstance().RequestCloseDetachedWindow(this);
         return;
+    }
+
+    if (!bIconsLoaded && Device)
+    {
+        LoadTimelineIcons(Device);
+        bIconsLoaded = true;
     }
 
     // Parent detachable window (movable, top-level) with solid background
@@ -895,45 +912,64 @@ void SAnimationViewerWindow::RenderTimelineArea(float width, float height)
 
 void SAnimationViewerWindow::RenderTimelineControls()
 {
+    if (!bIconsLoaded) return;
+
     ImGui::Spacing();
 
     // -------------------------------------------------------------------------
     // Left-Aligned Animation Controls
     // -------------------------------------------------------------------------
-    if (ImGui::Button("|<<")) AnimJumpToStart();
+    const ImVec2 IconSize(18, 18);
+    const ImVec4 BgColor(0, 0, 0, 0);
+    const ImVec4 TintColor(1, 1, 1, 1);
+
+    // ToFront & ToPrevious Button
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+    if (ImGui::ImageButton("##JumpToStart", (void*)IconJumpToStart->GetShaderResourceView(), IconSize, ImVec2(0, 0), ImVec2(1, 1), BgColor, TintColor)) { AnimJumpToStart(); }
     ImGui::SameLine();
-    if (ImGui::Button("<")) AnimStep(false);
+    if (ImGui::ImageButton("##StepBack", (void*)IconStepBack->GetShaderResourceView(), IconSize, ImVec2(0, 0), ImVec2(1, 1), BgColor, TintColor)) { AnimStep(false); }
     ImGui::SameLine();
 
-    if (ActiveState->bIsPlaying)
+    // Reverse Button
+    if (ActiveState->bReversePlay)
     {
-        if (ImGui::Button("Pause")) ActiveState->bIsPlaying = false;
+        if (ImGui::ImageButton("##ReversePause", (void*)IconPause->GetShaderResourceView(), IconSize, ImVec2(0, 0), ImVec2(1, 1), BgColor, TintColor)) { ActiveState->bReversePlay = false; }
+
     }
     else
     {
-        if (ImGui::Button("Play")) ActiveState->bIsPlaying = true;
+        if (ImGui::ImageButton("##ReversePlay", (void*)IconReverse->GetShaderResourceView(), IconSize, ImVec2(0, 0), ImVec2(1, 1), BgColor, TintColor)) { ActiveState->bReversePlay = true; ActiveState->bIsPlaying = false; }
     }
-
-    ImGui::SameLine();
-    if (ImGui::Button(">")) AnimStep(true);
-    ImGui::SameLine();
-    if (ImGui::Button(">>|")) AnimJumpToEnd();
-
     ImGui::SameLine();
 
-    // Reverse Button with highlight
-    bool bHighlighted = ActiveState->bReversePlay;
-    if (bHighlighted)
+    // Playing Button
+    if (ActiveState->bIsPlaying)
     {
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.7f, 1.0f, 1.0f));
+        if (ImGui::ImageButton("##Pause", (void*)IconPause->GetShaderResourceView(), IconSize, ImVec2(0, 0), ImVec2(1, 1), BgColor, TintColor)) { ActiveState->bIsPlaying = false; }
     }
-    if (ImGui::Button("Reverse"))
-        ActiveState->bReversePlay = !ActiveState->bReversePlay;
-    if (bHighlighted) ImGui::PopStyleColor(2);
-
+    else
+    {
+        if (ImGui::ImageButton("##Play", (void*)IconPlay->GetShaderResourceView(), IconSize, ImVec2(0, 0), ImVec2(1, 1), BgColor, TintColor)) { ActiveState->bIsPlaying = true; }
+    }
     ImGui::SameLine();
-    ImGui::Checkbox("Loop", &ActiveState->bIsLooping);
+
+    // ToNext & ToEnd Button
+    if (ImGui::ImageButton("##StepForward", (void*)IconStepForward->GetShaderResourceView(), IconSize, ImVec2(0, 0), ImVec2(1, 1), BgColor, TintColor)) { AnimStep(true); }
+    ImGui::SameLine();
+    if (ImGui::ImageButton("##JumpToEnd", (void*)IconJumpToEnd->GetShaderResourceView(), IconSize, ImVec2(0, 0), ImVec2(1, 1), BgColor, TintColor)) { AnimJumpToEnd(); }
+    ImGui::SameLine();
+    
+    // Looping Button
+    if (ActiveState->bIsLooping)
+    {
+        if (ImGui::ImageButton("##Looping", (void*)IconLooping->GetShaderResourceView(), IconSize, ImVec2(0, 0), ImVec2(1, 1), BgColor, TintColor)) { ActiveState->bIsLooping = false; }
+    }
+    else
+    {
+        if (ImGui::ImageButton("##NoLooping", (void*)IconNoLooping->GetShaderResourceView(), IconSize, ImVec2(0, 0), ImVec2(1, 1), BgColor, TintColor)) { ActiveState->bIsLooping = true; }
+    }
+
+    ImGui::PopStyleColor();
 
     const float windowRightEdge = ImGui::GetWindowContentRegionMax().x;
     const float speedButtonWidth = 70.0f;
@@ -1645,4 +1681,36 @@ void SAnimationViewerWindow::ViewportRenderCallback(const ImDrawList* parent_lis
             context->Release();
         }
     }
+}
+
+void SAnimationViewerWindow::LoadTimelineIcons(ID3D11Device* InDevice)
+{
+    if (!Device)    return;
+
+    IconJumpToStart = NewObject<UTexture>();
+    IconJumpToStart->Load(GDataDir + "/Icon/Anim_ToFront.png", Device);
+
+    IconStepBack = NewObject<UTexture>();
+    IconStepBack->Load(GDataDir + "/Icon/Anim_ToPrevious.png", Device);
+
+    IconPlay = NewObject<UTexture>();
+    IconPlay->Load(GDataDir + "/Icon/Anim_Play.png", Device);
+
+    IconPause = NewObject<UTexture>();
+    IconPause->Load(GDataDir + "/Icon/Anim_Pause.png", Device);
+
+    IconStepForward = NewObject<UTexture>();
+    IconStepForward->Load(GDataDir + "/Icon/Anim_ToNext.png", Device);
+
+    IconJumpToEnd = NewObject<UTexture>();
+    IconJumpToEnd->Load(GDataDir + "/Icon/Anim_ToEnd.png", Device);
+
+    IconReverse = NewObject<UTexture>();
+    IconReverse->Load(GDataDir + "/Icon/Anim_Reverse.png", Device);
+
+    IconLooping = NewObject<UTexture>();
+    IconLooping->Load(GDataDir + "/Icon/Anim_Looping.png", Device);
+
+    IconNoLooping = NewObject<UTexture>();
+    IconNoLooping->Load(GDataDir + "/Icon/Anim_NoLooping.png", Device);
 }

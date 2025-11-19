@@ -6,6 +6,7 @@ class FViewport;
 class FViewportClient;
 class UWorld;
 struct ID3D11Device;
+class UTexture;
 
 class SAnimationViewerWindow : public SViewerWindow
 {
@@ -55,4 +56,17 @@ private:
 
     // ImGui draw callback for viewport rendering
     static void ViewportRenderCallback(const ImDrawList* parent_list, const ImDrawCmd* cmd);
+
+    // --- Editor-Specific Icons ---
+    void LoadTimelineIcons(ID3D11Device* InDevice);
+    UTexture* IconJumpToStart = nullptr;
+    UTexture* IconStepBack = nullptr;
+    UTexture* IconPlay = nullptr;
+    UTexture* IconPause = nullptr;
+    UTexture* IconStepForward = nullptr;
+    UTexture* IconJumpToEnd = nullptr;
+    UTexture* IconReverse = nullptr;
+    UTexture* IconLooping = nullptr;
+    UTexture* IconNoLooping = nullptr;
+    bool bIconsLoaded = false;
 };
