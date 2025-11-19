@@ -101,7 +101,7 @@ protected:
 
 	void UpdateBoneTransformFromSkeleton(ViewerState* State);
 	void UpdateBoneTransformFromGizmo(ViewerState* State);
-	void ApplyBoneTransform(ViewerState* State);
+	void ApplyBoneTransform(ViewerState* State, bool bLocationChanged = true, bool bRotationChanged = true, bool bScaleChanged = true);
 	void ExpandToSelectedBone(ViewerState* State, int32 BoneIndex);
 
 	// 뷰어 툴바 관련 메서드

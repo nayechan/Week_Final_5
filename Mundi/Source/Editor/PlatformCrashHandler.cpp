@@ -62,18 +62,15 @@ void FPlatformCrashHandler::TickCrashMode()
     if (!bContinuousCrashMode)
         return;
 
-    // GUObjectArray에서 랜덤하게 객체를 선택하여 삭제
     if (GUObjectArray.empty())
         return;
 
-    // 매 프레임마다 여러 개의 객체를 삭제하여 빠르게 크래시
+    // 매 프레임마다 랜덤 객체를 삭제하여 빠르게 크래시
     static std::random_device rd;
     static std::mt19937 gen(rd());
-
     // 랜덤 객체 삭제
     std::uniform_int_distribution<size_t> dist(0, GUObjectArray.size() - 1);
     size_t randomIndex = dist(gen);
-
     UObject* targetObject = GUObjectArray[randomIndex];
     if (targetObject)
     {

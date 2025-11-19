@@ -179,6 +179,9 @@ void ASkeletalMeshActor::RepositionAnchorToBone(int32 BoneIndex)
     // Wire target/index first, then place anchor without writeback
     BoneAnchor->SetTarget(SkeletalMeshComponent, BoneIndex);
 
+    // 뷰어에서는 additive 시스템을 사용하므로 OnTransformUpdated에서 직접 본 수정을 방지
+    BoneAnchor->SetSuppressWriteback(true);
+
     BoneAnchor->SetEditability(true);
     BoneAnchor->SetVisibility(true);
 }

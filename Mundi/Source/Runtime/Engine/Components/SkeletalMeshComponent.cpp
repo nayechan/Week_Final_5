@@ -36,6 +36,8 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
         AnimInstance->EvaluateAnimation(OutputPose);
 
         // Apply local-space pose to component and rebuild skinning
+        // 애니메이션 포즈를 BaseAnimationPose에 저장 (additive 적용 전 리셋용)
+        BaseAnimationPose = OutputPose.LocalSpacePose;
         CurrentLocalSpacePose = OutputPose.LocalSpacePose;
         ForceRecomputePose();
         return; // skip test code when animation is active
@@ -322,16 +324,52 @@ void USkeletalMeshComponent::ApplyAdditiveTransforms(const TMap<int32, FTransfor
 {
     if (AdditiveTransforms.IsEmpty()) return;
 
-    // CurrentLocalSpacePose should already contain the base animation pose from TickComponent
+    // CurrentLocalSpacePose는 TickComponent에서 이미 기본 애니메이션 포즈를 포함하고 있어야 함
     for (auto const& [BoneIndex, AdditiveTransform] : AdditiveTransforms)
     {
         if (BoneIndex >= 0 && BoneIndex < CurrentLocalSpacePose.Num())
         {
-            CurrentLocalSpacePose[BoneIndex] = AdditiveTransform * CurrentLocalSpacePose[BoneIndex];
+            // 회전이 위치에 영향을 주지 않도록 각 성분을 개별적으로 적용
+            FTransform& BasePose = CurrentLocalSpacePose[BoneIndex];
+
+            // 위치: 단순 덧셈
+            FVector FinalLocation = BasePose.Translation + AdditiveTransform.Translation;
+
+            // 회전: 쿼터니언 곱셈
+            FQuat FinalRotation = AdditiveTransform.Rotation * BasePose.Rotation;
+
+            // 스케일: 성분별 곱셈
+            FVector FinalScale = FVector(
+                BasePose.Scale3D.X * AdditiveTransform.Scale3D.X,
+                BasePose.Scale3D.Y * AdditiveTransform.Scale3D.Y,
+                BasePose.Scale3D.Z * AdditiveTransform.Scale3D.Z
+            );
+
+            CurrentLocalSpacePose[BoneIndex] = FTransform(FinalLocation, FinalRotation, FinalScale);
         }
     }
 
-    // Recompute the final pose once after all additives are applied
+    // 모든 additive 적용 후 최종 포즈 재계산
+    ForceRecomputePose();
+}
+
+void USkeletalMeshComponent::ResetToRefPose()
+{
+    CurrentLocalSpacePose = RefPose;
+    ForceRecomputePose();
+}
+
+void USkeletalMeshComponent::ResetToAnimationPose()
+{
+    // BaseAnimationPose가 비어있으면 RefPose 사용
+    if (BaseAnimationPose.IsEmpty())
+    {
+        CurrentLocalSpacePose = RefPose;
+    }
+    else
+    {
+        CurrentLocalSpacePose = BaseAnimationPose;
+    }
     ForceRecomputePose();
 }
 

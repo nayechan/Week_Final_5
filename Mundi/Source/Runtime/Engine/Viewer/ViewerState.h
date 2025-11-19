@@ -86,4 +86,7 @@ public:
 
     // Additive bone transforms applied on top of animation
     TMap<int32, FTransform> BoneAdditiveTransforms;
+
+    // 기즈모 드래그 첫 프레임 감지용 (부동소수점 오차로 인한 불필요한 업데이트 방지)
+    bool bWasGizmoDragging = false;
 };

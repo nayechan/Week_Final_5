@@ -245,6 +245,46 @@ void SSkeletalMeshViewerWindow::OnRender()
 
 void SSkeletalMeshViewerWindow::PreRenderViewportUpdate()
 {
+    if (!ActiveState || !ActiveState->PreviewActor) return;
+
+    // 기본 포즈 위에 사용자가 조작한 본 트랜스폼 오프셋을 적용
+    // SAnimationViewerWindow는 TickComponent()가 매 프레임 포즈를 리셋하지만,
+    // 여기서는 애니메이션이 없으므로 수동으로 RefPose로 리셋해야 누적을 방지할 수 있음
+    if (USkeletalMeshComponent* MeshComp = ActiveState->PreviewActor->GetSkeletalMeshComponent())
+    {
+        // 누적 방지를 위해 먼저 참조 포즈로 리셋
+        MeshComp->ResetToRefPose();
+
+        if (!ActiveState->BoneAdditiveTransforms.IsEmpty())
+        {
+            MeshComp->ApplyAdditiveTransforms(ActiveState->BoneAdditiveTransforms);
+        }
+    }
+
+    // 본이 선택된 경우, 기즈모 위치를 본의 최종 트랜스폼에 맞춰 업데이트
+    if (ActiveState->SelectedBoneIndex >= 0 && ActiveState->World)
+    {
+        AGizmoActor* Gizmo = ActiveState->World->GetGizmoActor();
+        bool bCurrentlyDragging = Gizmo && Gizmo->GetbIsDragging();
+
+        // 드래그 첫 프레임인지 확인 (World→Relative→World 변환 오차 방지)
+        bool bIsFirstDragFrame = bCurrentlyDragging && !ActiveState->bWasGizmoDragging;
+
+        if (bCurrentlyDragging && !bIsFirstDragFrame)
+        {
+            // 첫 프레임이 아닐 때만 기즈모로부터 트랜스폼 업데이트
+            UpdateBoneTransformFromGizmo(ActiveState);
+        }
+        else if (!bCurrentlyDragging)
+        {
+            ActiveState->PreviewActor->RepositionAnchorToBone(ActiveState->SelectedBoneIndex);
+        }
+        // 첫 프레임에서는 아무것도 하지 않음 (앵커가 아직 움직이지 않았으므로)
+
+        // 드래그 상태 업데이트 (다음 프레임에서 첫 프레임 감지용)
+        ActiveState->bWasGizmoDragging = bCurrentlyDragging;
+    }
+
     // Reconstruct bone overlay
     if (ActiveState->bShowBones)
     {

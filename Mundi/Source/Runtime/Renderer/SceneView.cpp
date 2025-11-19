@@ -54,7 +54,7 @@ FSceneView::FSceneView(UCameraComponent* InCamera, FViewport* InViewport, URende
 
 	// --- 이 로직이 FSceneRenderer::PrepareView()에서 이동해 옴 ---
 
-	float AspectRatio = 1.0f;
+	AspectRatio = 1.0f;
 	if (InViewport->GetSizeY() > 0)
 	{
 		AspectRatio = (float)InViewport->GetSizeX() / (float)InViewport->GetSizeY();

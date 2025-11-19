@@ -27,6 +27,11 @@ void UBoneAnchorComponent::OnTransformUpdated()
     if (!Target || BoneIndex < 0)
         return;
 
+    // Additive 시스템 사용 시 직접 본 수정을 건너뜀
+    // (뷰어에서는 UpdateBoneTransformFromGizmo가 additive를 통해 처리함)
+    if (bSuppressWriteback)
+        return;
+
     const FTransform AnchorWorld = GetWorldTransform();
     Target->SetBoneWorldTransform(BoneIndex, AnchorWorld);
 }
