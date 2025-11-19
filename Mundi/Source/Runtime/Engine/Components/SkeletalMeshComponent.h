@@ -6,6 +6,7 @@ class UAnimInstance;
 class UAnimationAsset;
 class UAnimSequence;
 class UAnimStateMachineInstance;
+class UAnimBlendSpaceInstance;
 
 UCLASS(DisplayName="스켈레탈 메시 컴포넌트", Description="스켈레탈 메시를 렌더링하는 컴포넌트입니다")
 class USkeletalMeshComponent : public USkinnedMeshComponent
@@ -37,6 +38,13 @@ public:
 
     UFUNCTION(LuaBind, DisplayName="GetOrCreateStateMachine")
     UAnimStateMachineInstance* GetOrCreateStateMachine();
+
+    //==== Minimal Lua-friendly helper to switch to a blend space 2D anim instance ====
+    UFUNCTION(LuaBind, DisplayName="UseBlendSpace2D")
+    void UseBlendSpace2D();
+
+    UFUNCTION(LuaBind, DisplayName="GetOrCreateBlendSpace2D")
+    UAnimBlendSpaceInstance* GetOrCreateBlendSpace2D();
 
 // Editor Section
 public:

@@ -404,17 +404,49 @@ void FLuaManager::ExposeAllComponentsToLua()
                 UE_LOG("[Lua][error] Error: Expected GameObject\n");
                 return sol::make_object(*Lua, sol::nil);
             }
-            
+
             FGameObject& GameObject = Obj.as<FGameObject&>();
             AActor* Actor = GameObject.GetOwner();
 
             UClass* Class = UClass::FindClass(ClassName);
             if (!Class) return sol::make_object(*Lua, sol::nil);
-            
+
             UActorComponent* Comp = Actor->GetComponent(Class);
-            if (!Comp) return sol::make_object(*Lua, sol::nil); 
-            
+            if (!Comp) return sol::make_object(*Lua, sol::nil);
+
             return MakeCompProxy(*Lua, Comp, Class);
+        }
+    );
+
+    SharedLib.set_function("GetOwnerAs",
+        [this](sol::object Obj, const FString& ClassName)
+        {
+            if (!Obj.is<FGameObject&>()) {
+                UE_LOG("[Lua][error] GetOwnerAs: Expected GameObject\n");
+                return sol::make_object(*Lua, sol::nil);
+            }
+
+            FGameObject& GameObject = Obj.as<FGameObject&>();
+            AActor* Actor = GameObject.GetOwner();
+
+            if (!Actor) {
+                UE_LOG("[Lua][error] GetOwnerAs: Actor is null\n");
+                return sol::make_object(*Lua, sol::nil);
+            }
+
+            UClass* Class = UClass::FindClass(ClassName);
+            if (!Class) {
+                UE_LOG("[Lua][error] GetOwnerAs: Class '%s' not found\n", ClassName.c_str());
+                return sol::make_object(*Lua, sol::nil);
+            }
+
+            // Actor가 해당 클래스인지 확인 (Cast 검증)
+            if (!Actor->IsA(Class)) {
+                UE_LOG("[Lua][error] GetOwnerAs: Actor is not of type '%s'\n", ClassName.c_str());
+                return sol::make_object(*Lua, sol::nil);
+            }
+
+            return MakeCompProxy(*Lua, Actor, Class);
         }
     );
 }

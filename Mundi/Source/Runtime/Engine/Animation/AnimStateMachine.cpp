@@ -121,7 +121,14 @@ void FAnimNode_StateMachine::SetCurrentState(int32 StateIndex, float BlendTime)
 
     if (Runtime.CurrentState == StateIndex)
     {
-        // No-op
+        // No-op: already in this state
+        return;
+    }
+
+    // Check if we're already transitioning to this state
+    if (Runtime.NextState == StateIndex)
+    {
+        // No-op: already transitioning to this state
         return;
     }
 

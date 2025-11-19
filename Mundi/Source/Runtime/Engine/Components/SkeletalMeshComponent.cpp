@@ -6,6 +6,7 @@
 #include "AnimNodeBase.h"
 #include "AnimSingleNodeInstance.h"
 #include "AnimStateMachineInstance.h"
+#include "AnimBlendSpaceInstance.h"
 
 USkeletalMeshComponent::USkeletalMeshComponent()
 {
@@ -151,6 +152,34 @@ UAnimStateMachineInstance* USkeletalMeshComponent::GetOrCreateStateMachine()
         SetAnimInstance(StateMachine);
     }
     return StateMachine;
+}
+
+// ==== Lua-friendly Blend Space helper: switch this component to a blend space 2D anim instance ====
+void USkeletalMeshComponent::UseBlendSpace2D()
+{
+    UAnimBlendSpaceInstance* BS = Cast<UAnimBlendSpaceInstance>(AnimInstance);
+    if (!BS)
+    {
+        UE_LOG("[SkeletalMeshComponent] Creating new AnimBlendSpaceInstance\n");
+        BS = NewObject<UAnimBlendSpaceInstance>();
+        SetAnimInstance(BS);
+    }
+    else
+    {
+        UE_LOG("[SkeletalMeshComponent] AnimBlendSpaceInstance already exists\n");
+    }
+}
+
+UAnimBlendSpaceInstance* USkeletalMeshComponent::GetOrCreateBlendSpace2D()
+{
+    UAnimBlendSpaceInstance* BS = Cast<UAnimBlendSpaceInstance>(AnimInstance);
+    if (!BS)
+    {
+        UE_LOG("[SkeletalMeshComponent] Creating new AnimBlendSpaceInstance\n");
+        BS = NewObject<UAnimBlendSpaceInstance>();
+        SetAnimInstance(BS);
+    }
+    return BS;
 }
 
 void USkeletalMeshComponent::StopAnimation()

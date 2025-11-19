@@ -34,6 +34,11 @@ public:
 	bool IsWindowFocused() const { return bIsWindowFocused; }
 	const FRect& GetCenterRect() const { return CenterRect; }
 
+	// 뷰어 툴
+	void RenderAnimationBrowser(
+		std::function<void(UAnimSequence*)> OnAnimationSelected = nullptr,
+		std::function<bool(UAnimSequence*)> IsAnimationSelected = nullptr);
+
 protected:
 	// Per-tab state
 	UEditorAssetPreviewContext* Context = nullptr;

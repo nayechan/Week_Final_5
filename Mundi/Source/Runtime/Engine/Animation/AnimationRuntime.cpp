@@ -150,3 +150,103 @@ void FAnimationRuntime::NormalizeRotations(TArray<FTransform>& InComponentPose)
     }
 }
 
+void FAnimationRuntime::BlendMultiplePoses(const FSkeleton& Skeleton,
+    const TArray<TArray<FTransform>>& ComponentPoses,
+    const TArray<float>& Weights,
+    TArray<FTransform>& OutComponentPose)
+{
+    const int32 NumBones = Skeleton.Bones.Num();
+    OutComponentPose.SetNum(NumBones);
+
+    const int32 NumPoses = static_cast<int32>(ComponentPoses.Num());
+    if (NumPoses == 0 || NumBones == 0)
+    {
+        OutComponentPose.Empty();
+        return;
+    }
+
+    // Early cases
+    if (NumPoses == 1)
+    {
+        OutComponentPose = ComponentPoses[0];
+        return;
+    }
+
+    // Compute total weight and guard against degenerate input
+    float TotalW = 0.f;
+    const int32 NumWeights = static_cast<int32>(Weights.Num());
+    for (int32 i = 0; i < NumWeights && i < NumPoses; ++i)
+    {
+        TotalW += std::max(0.f, Weights[i]);
+    }
+    if (TotalW <= 1e-6f)
+    {
+        // Fallback: copy first
+        OutComponentPose = ComponentPoses[0];
+        return;
+    }
+
+    // Normalize weights to sum to 1
+    TArray<float> NormW; NormW.SetNum(NumPoses);
+    for (int32 i = 0; i < NumPoses; ++i)
+    {
+        const float W = (i < NumWeights) ? std::max(0.f, Weights[i]) : 0.f;
+        NormW[i] = W / TotalW;
+    }
+
+    for (int32 BoneIndex = 0; BoneIndex < NumBones; ++BoneIndex)
+    {
+        // Choose reference quaternion from first pose (or first with non-zero weight)
+        int32 RefIdx = 0;
+        for (int32 i = 0; i < NumPoses; ++i)
+        {
+            if (NormW[i] > 0.f) { RefIdx = i; break; }
+        }
+
+        const FQuat& Qref = ComponentPoses[RefIdx][BoneIndex].Rotation;
+
+        // Weighted quaternion sum with antipodal correction
+        float AccX = 0.f, AccY = 0.f, AccZ = 0.f, AccW = 0.f;
+        FVector AccT(0.f, 0.f, 0.f);
+        FVector AccS(0.f, 0.f, 0.f);
+
+        for (int32 i = 0; i < NumPoses; ++i)
+        {
+            const float w = NormW[i];
+            if (w <= 0.f) continue;
+
+            const FTransform& Ti = ComponentPoses[i][BoneIndex];
+            FQuat Qi = Ti.Rotation;
+            // Flip sign if needed to avoid averaging antipodal quaternions
+            if (FQuat::Dot(Qi, Qref) < 0.f)
+            {
+                Qi.X = -Qi.X; Qi.Y = -Qi.Y; Qi.Z = -Qi.Z; Qi.W = -Qi.W;
+            }
+
+            AccX += Qi.X * w; AccY += Qi.Y * w; AccZ += Qi.Z * w; AccW += Qi.W * w;
+            AccT.X += Ti.Translation.X * w; AccT.Y += Ti.Translation.Y * w; AccT.Z += Ti.Translation.Z * w;
+            AccS.X += Ti.Scale3D.X * w; AccS.Y += Ti.Scale3D.Y * w; AccS.Z += Ti.Scale3D.Z * w;
+        }
+
+        FQuat OutR(AccX, AccY, AccZ, AccW);
+        OutR.Normalize();
+        const FVector OutT = AccT;
+        const FVector OutS = AccS;
+        OutComponentPose[BoneIndex] = FTransform(OutT, OutR, OutS);
+    }
+}
+
+void FAnimationRuntime::BlendThreePoses(const FSkeleton& Skeleton,
+    const TArray<FTransform>& A,
+    const TArray<FTransform>& B,
+    const TArray<FTransform>& C,
+    float WA, float WB, float WC,
+    TArray<FTransform>& OutComponentPose)
+{
+    TArray<TArray<FTransform>> Poses;
+    Poses.SetNum(3);
+    Poses[0] = A; Poses[1] = B; Poses[2] = C;
+    TArray<float> Weights; Weights.SetNum(3);
+    Weights[0] = WA; Weights[1] = WB; Weights[2] = WC;
+    BlendMultiplePoses(Skeleton, Poses, Weights, OutComponentPose);
+}

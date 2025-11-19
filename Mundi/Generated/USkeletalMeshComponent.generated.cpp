@@ -6,6 +6,7 @@
 #include "Source/Runtime/Core/Object/ObjectMacros.h"
 #include "Source/Runtime/Engine/Scripting/LuaBindHelpers.h"
 
+#include "AnimBlendSpaceInstance.h"
 #include "AnimStateMachineInstance.h"
 
 // ===== Class Factory Registration (IMPLEMENT_CLASS) =====
@@ -48,5 +49,9 @@ LUA_BIND_BEGIN(USkeletalMeshComponent)
         T, "UseStateMachine", &USkeletalMeshComponent::UseStateMachine);
     AddMethodR<UAnimStateMachineInstance*, USkeletalMeshComponent>(
         T, "GetOrCreateStateMachine", &USkeletalMeshComponent::GetOrCreateStateMachine);
+    AddAlias<USkeletalMeshComponent>(
+        T, "UseBlendSpace2D", &USkeletalMeshComponent::UseBlendSpace2D);
+    AddMethodR<UAnimBlendSpaceInstance*, USkeletalMeshComponent>(
+        T, "GetOrCreateBlendSpace2D", &USkeletalMeshComponent::GetOrCreateBlendSpace2D);
 }
 LUA_BIND_END()

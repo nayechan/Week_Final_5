@@ -26,7 +26,6 @@ protected:
 private:
     // Load a skeletal mesh into the active tab
     void LoadSkeletalMesh(ViewerState* State, const FString& Path);
-    void RenderAnimationBrowser();
     void RenderNotifyProperties();
 
     void AnimJumpToStart();
