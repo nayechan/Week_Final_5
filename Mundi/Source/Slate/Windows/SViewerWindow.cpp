@@ -2358,7 +2358,7 @@ void SViewerWindow::RenderAnimationBrowser(
 
                 // Name column
                 ImGui::SameLine();
-                ImGui::Text("%s", Anim->GetName().c_str());
+                ImGui::Text("%s", GetBaseFilenameFromPath(Anim->GetFilePath()).c_str());
 
                 // Path column
                 ImGui::TableSetColumnIndex(1);
