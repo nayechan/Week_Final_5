@@ -16,7 +16,7 @@ namespace {
         {
             ObjectFactory::RegisterClassType(
                 UMeshComponent::StaticClass(),
-                []() -> UObject* { return new UMeshComponent(); }
+                nullptr
             );
         }
     };
@@ -34,7 +34,6 @@ const bool UMeshComponent::bPropertiesRegistered = []() {
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UMeshComponent)
-    MARK_AS_COMPONENT("UMeshComponent", "Auto-generated UMeshComponent")
     ADD_PROPERTY_ARRAY(EPropertyType::Material, MaterialSlots, "Materials", true, "Material slots for the mesh")
     ADD_PROPERTY(bool, bCastShadows, "Rendering", true, "그림자를 드리울지 여부입니다")
 END_PROPERTIES()

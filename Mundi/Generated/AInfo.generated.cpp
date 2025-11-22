@@ -16,7 +16,7 @@ namespace {
         {
             ObjectFactory::RegisterClassType(
                 AInfo::StaticClass(),
-                []() -> UObject* { return new AInfo(); }
+                nullptr
             );
         }
     };
@@ -34,7 +34,7 @@ const bool AInfo::bPropertiesRegistered = []() {
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(AInfo)
-    MARK_AS_SPAWNABLE("AInfo", "Auto-generated AInfo")
+
 END_PROPERTIES()
 
 

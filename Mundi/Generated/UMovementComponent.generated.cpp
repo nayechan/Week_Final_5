@@ -16,7 +16,7 @@ namespace {
         {
             ObjectFactory::RegisterClassType(
                 UMovementComponent::StaticClass(),
-                []() -> UObject* { return new UMovementComponent(); }
+                nullptr
             );
         }
     };
@@ -34,7 +34,7 @@ const bool UMovementComponent::bPropertiesRegistered = []() {
 // ===== Property Reflection =====
 
 BEGIN_PROPERTIES(UMovementComponent)
-    MARK_AS_COMPONENT("UMovementComponent", "Auto-generated UMovementComponent")
+
 END_PROPERTIES()
 
 
