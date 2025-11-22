@@ -3,6 +3,7 @@
 #include "Vector.h"
 #include "Color.h"
 #include "UEContainer.h"
+#include <algorithm>  // std::sort
 
 class UMaterialInterface;
 
@@ -227,37 +228,26 @@ struct FDynamicSpriteEmitterDataBase : public FDynamicEmitterDataBase
 			return;
 		}
 
-		// 간단한 버블 정렬 (파티클 수가 적으므로 충분)
-		// 프로덕션에서는 std::sort 사용 권장
-		for (int32 i = 0; i < SourceData.ActiveParticleCount - 1; i++)
-		{
-			for (int32 j = 0; j < SourceData.ActiveParticleCount - i - 1; j++)
+		// std::sort 사용 (O(N log N) - 버블 정렬보다 훨씬 빠름)
+		std::sort(Indices, Indices + SourceData.ActiveParticleCount,
+			[&](uint16 IndexA, uint16 IndexB) -> bool
 			{
-				const FBaseParticle* P1 = (const FBaseParticle*)(ParticleData + Indices[j] * ParticleStride);
-				const FBaseParticle* P2 = (const FBaseParticle*)(ParticleData + Indices[j + 1] * ParticleStride);
-
-				bool bShouldSwap = false;
+				const FBaseParticle* PA = (const FBaseParticle*)(ParticleData + IndexA * ParticleStride);
+				const FBaseParticle* PB = (const FBaseParticle*)(ParticleData + IndexB * ParticleStride);
 
 				if (SortMode == 1)  // Age 정렬 (오래된 것부터)
 				{
-					bShouldSwap = P1->RelativeTime < P2->RelativeTime;
+					return PA->RelativeTime > PB->RelativeTime;
 				}
 				else if (SortMode == 2)  // Distance 정렬 (먼 것부터 - 투명도 렌더링)
 				{
-					float Dist1 = (P1->Location - ViewOrigin).SizeSquared();
-					float Dist2 = (P2->Location - ViewOrigin).SizeSquared();
-					bShouldSwap = Dist1 < Dist2;  // 먼 것을 먼저 렌더링
+					float DistA = (PA->Location - ViewOrigin).SizeSquared();
+					float DistB = (PB->Location - ViewOrigin).SizeSquared();
+					return DistA > DistB;  // 먼 것을 먼저 렌더링
 				}
 
-				if (bShouldSwap)
-				{
-					// 인덱스 교환
-					uint16 Temp = Indices[j];
-					Indices[j] = Indices[j + 1];
-					Indices[j + 1] = Temp;
-				}
-			}
-		}
+				return false;
+			});
 	}
 
 	virtual int32 GetDynamicVertexStride() const = 0;
