@@ -1,0 +1,27 @@
+{
+  "symbolServer": {
+    "path": "\\\\172.21.11.114\\MundiSymbols\\Symbols",
+    "product": "Mundi",
+    "comment": "Mundi Engine Symbol Server"
+  },
+  "winDbgKit": {
+    "path": "C:\\Program Files (x86)\\Windows Kits\\10\\Debuggers\\x64",
+    "tools": {
+      "srctool": "srcsrv\\srctool.exe",
+      "pdbstr": "srcsrv\\pdbstr.exe",
+      "symstore": "symstore.exe"
+    }
+  },
+  "configurations": [
+    "Debug",
+    "Release",
+    "Debug_StandAlone",
+    "Release_StandAlone"
+  ],
+  "autoPublishConfigurations": [
+    "Debug",
+    "Release",
+    "Debug_StandAlone",
+    "Release_StandAlone"
+  ]
+}

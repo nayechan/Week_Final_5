@@ -116,7 +116,10 @@
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)ThirdParty\lib\FBXSDK\$(Configuration)\libfbxsdk.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
+xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"
+REM Symbol Server: PDB 배포
+powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)BuildTools\SymbolServer\IndexAndPublish.ps1" -Configuration "$(Configuration)"</Command>
+      <Message>[PostBuild] Copying dependencies and publishing symbols...</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_StandAlone|x64'">
@@ -145,7 +148,10 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)ThirdParty\lib\FBXSDK\Debug\libfbxsdk.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
+xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"
+REM Symbol Server: PDB 배포
+powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)BuildTools\SymbolServer\IndexAndPublish.ps1" -Configuration "Debug_StandAlone"</Command>
+      <Message>[PostBuild] Copying dependencies and publishing symbols...</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -178,7 +184,10 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)ThirdParty\lib\FBXSDK\$(Configuration)\libfbxsdk.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
+xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"
+REM Symbol Server: PDB 배포
+powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)BuildTools\SymbolServer\IndexAndPublish.ps1" -Configuration "$(Configuration)"</Command>
+      <Message>[PostBuild] Copying dependencies and publishing symbols...</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_StandAlone|x64'">
@@ -211,7 +220,10 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)ThirdParty\lib\FBXSDK\Release\libfbxsdk.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
+xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"
+REM Symbol Server: PDB 배포
+powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)BuildTools\SymbolServer\IndexAndPublish.ps1" -Configuration "Release_StandAlone"</Command>
+      <Message>[PostBuild] Copying dependencies and publishing symbols...</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -265,6 +277,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Source\Editor\FbxLoader.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\SkeletalMesh.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Misc\DebugUtils.cpp" />
     <ClCompile Include="Source\Runtime\Core\Misc\VertexData.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimationRuntime.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimBlendMath.cpp" />
@@ -757,6 +770,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Editor\PlatformProcess.h" />
     <ClInclude Include="Source\Editor\PlatformCrashHandler.h" />
     <ClInclude Include="Source\Runtime\AssetManagement\SkeletalMesh.h" />
+    <ClInclude Include="Source\Runtime\Core\Misc\DebugUtils.h" />
     <ClInclude Include="Source\Runtime\Core\Misc\Delegates.h" />
     <ClInclude Include="Source\Runtime\Core\Misc\Hash.h" />
     <ClInclude Include="Source\Runtime\Core\Misc\PathUtils.h" />
