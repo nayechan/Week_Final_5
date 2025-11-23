@@ -59,7 +59,7 @@ struct FModuleUpdateContext
 // 파티클 기본 크기를 가져오는 헬퍼 함수
 inline FVector GetParticleBaseSize(const FBaseParticle& Particle)
 {
-	return FVector(1.0f, 1.0f, 1.0f);
+	return Particle.BaseSize;
 }
 
 // 언리얼 엔진 호환: 인덱스로 파티클을 가져오는 헬퍼 함수
