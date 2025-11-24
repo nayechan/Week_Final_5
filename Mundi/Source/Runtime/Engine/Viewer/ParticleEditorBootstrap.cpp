@@ -39,9 +39,9 @@ ViewerState* ParticleEditorBootstrap::CreateViewerState(const char* Name, UWorld
 	Client->SetViewportType(EViewportType::Perspective);
 	Client->SetViewMode(EViewMode::VMI_Lit_Phong);
 
-	// 카메라 설정 (파티클을 잘 볼 수 있는 위치)
-	Client->GetCamera()->SetActorLocation(FVector(0.f, -2.f, 1.f));
-	Client->GetCamera()->SetRotationFromEulerAngles(FVector(-15.f, 0.f, 0.f));
+	// 카메라 설정
+	Client->GetCamera()->SetActorLocation(FVector(-2.f, 0.f, 1.f));
+	Client->GetCamera()->SetRotationFromEulerAngles(FVector(0.f, 20.f, 0.f));
 
 	State->Client = Client;
 	State->Viewport->SetViewportClient(Client);
@@ -57,6 +57,7 @@ ViewerState* ParticleEditorBootstrap::CreateViewerState(const char* Name, UWorld
 			UParticleSystemComponent* ParticleComp = NewObject<UParticleSystemComponent>();
 			PreviewActor->AddOwnedComponent(ParticleComp);
 			ParticleComp->RegisterComponent(State->World);
+			ParticleComp->SetWorldLocation(FVector(0.f, 0.f, 0.f));
 
 			State->PreviewActor = PreviewActor;
 			State->PreviewComponent = ParticleComp;

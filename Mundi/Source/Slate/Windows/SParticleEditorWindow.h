@@ -17,6 +17,7 @@ public:
 
 	virtual void OnRender() override;
 	virtual void OnUpdate(float DeltaSeconds) override;
+	virtual void PreRenderViewportUpdate() override;
 
 protected:
 	virtual ViewerState* CreateViewerState(const char* Name, UEditorAssetPreviewContext* Context) override;
@@ -49,8 +50,9 @@ private:
 	void SaveParticleSystemAs();
 	void LoadParticleSystem();
 
-	// 레이아웃 비율
+	// 레이아웃 비율 및 크기
 	float BottomPanelHeight = 250.f;
+	float ViewportDetailsRatio = 0.6f;  // 왼쪽 패널 내에서 뷰포트:디테일 비율
 
 	// 헬퍼 함수
 	ParticleEditorState* GetActiveParticleState() const

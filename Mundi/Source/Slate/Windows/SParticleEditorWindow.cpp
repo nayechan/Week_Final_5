@@ -92,15 +92,16 @@ void SParticleEditorWindow::OnRender()
 		float totalWidth = contentAvail.x;
 		float totalHeight = contentAvail.y;
 
-		// 하단 패널 높이
-		float bottomHeight = BottomPanelHeight;
-		float topHeight = totalHeight - bottomHeight - 10.f;
+		// 하단 패널 높이 (최소/최대 제한)
+		BottomPanelHeight = ImClamp(BottomPanelHeight, 100.f, totalHeight - 200.f);
+		float topHeight = totalHeight - BottomPanelHeight - 4.f;
 
 		// ========== 상단 영역 (뷰포트 + 디테일 | 이미터 패널) ==========
 		ImGui::BeginChild("TopArea", ImVec2(0, topHeight), false);
 		{
+			// 좌우 패널 너비 계산
 			float leftWidth = totalWidth * LeftPanelRatio;
-			float rightWidth = totalWidth * RightPanelRatio;
+			leftWidth = ImClamp(leftWidth, 200.f, totalWidth - 300.f);
 
 			// 왼쪽: 뷰포트 + 디테일 (상하 분할)
 			ImGui::BeginChild("LeftArea", ImVec2(leftWidth, 0), true);
@@ -108,6 +109,18 @@ void SParticleEditorWindow::OnRender()
 				RenderLeftPanel(leftWidth);
 			}
 			ImGui::EndChild();
+
+			// 수직 스플리터 (좌우 패널 간)
+			ImGui::SameLine();
+			ImGui::Button("##VSplitter", ImVec2(4.f, -1));
+			if (ImGui::IsItemActive())
+			{
+				float delta = ImGui::GetIO().MouseDelta.x;
+				LeftPanelRatio += delta / totalWidth;
+				LeftPanelRatio = ImClamp(LeftPanelRatio, 0.15f, 0.7f);
+			}
+			if (ImGui::IsItemHovered())
+				ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
 
 			ImGui::SameLine();
 
@@ -119,6 +132,16 @@ void SParticleEditorWindow::OnRender()
 			ImGui::EndChild();
 		}
 		ImGui::EndChild();
+
+		// 수평 스플리터 (상하 패널 간)
+		ImGui::Button("##HSplitter", ImVec2(-1, 4.f));
+		if (ImGui::IsItemActive())
+		{
+			float delta = ImGui::GetIO().MouseDelta.y;
+			BottomPanelHeight -= delta;
+		}
+		if (ImGui::IsItemHovered())
+			ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
 
 		// ========== 하단 영역 (커브 에디터) ==========
 		ImGui::BeginChild("BottomArea", ImVec2(0, 0), true);
@@ -133,6 +156,12 @@ void SParticleEditorWindow::OnRender()
 void SParticleEditorWindow::OnUpdate(float DeltaSeconds)
 {
 	SViewerWindow::OnUpdate(DeltaSeconds);
+}
+
+void SParticleEditorWindow::PreRenderViewportUpdate()
+{
+	// 파티클 시스템 업데이트는 ParticleSystemComponent에서 자동으로 처리됨
+	// 필요시 추가 업데이트 로직 구현
 }
 
 ViewerState* SParticleEditorWindow::CreateViewerState(const char* Name, UEditorAssetPreviewContext* Context)
@@ -202,18 +231,33 @@ void SParticleEditorWindow::RenderLeftPanel(float PanelWidth)
 	ParticleEditorState* State = GetActiveParticleState();
 	if (!State) return;
 
-	// 뷰포트 영역 (상단 60%)
-	float ViewportHeight = ImGui::GetContentRegionAvail().y * 0.6f;
+	float totalHeight = ImGui::GetContentRegionAvail().y;
+
+	// 뷰포트 높이 계산 (최소/최대 제한)
+	float ViewportHeight = totalHeight * ViewportDetailsRatio;
+	ViewportHeight = ImClamp(ViewportHeight, 150.f, totalHeight - 150.f);
+
+	// 뷰포트 영역
 	ImGui::BeginChild("ViewportArea", ImVec2(0, ViewportHeight), true);
 	{
-		RenderViewportArea(PanelWidth - 20.f, ViewportHeight - 40.f);
+		ImVec2 viewportAvail = ImGui::GetContentRegionAvail();
+		RenderViewportArea(viewportAvail.x, viewportAvail.y);
 	}
 	ImGui::EndChild();
 
-	ImGui::Separator();
+	// 수평 스플리터 (뷰포트-디테일 간)
+	ImGui::Button("##VDSplitter", ImVec2(-1, 4.f));
+	if (ImGui::IsItemActive())
+	{
+		float delta = ImGui::GetIO().MouseDelta.y;
+		ViewportDetailsRatio += delta / totalHeight;
+		ViewportDetailsRatio = ImClamp(ViewportDetailsRatio, 0.3f, 0.8f);
+	}
+	if (ImGui::IsItemHovered())
+		ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
 
-	// 디테일 영역 (하단 40%)
-	ImGui::BeginChild("DetailsArea", ImVec2(0, 0), false);
+	// 디테일 영역
+	ImGui::BeginChild("DetailsArea", ImVec2(0, 0), true);
 	{
 		RenderDetailsPanel(PanelWidth);
 	}
@@ -266,7 +310,19 @@ void SParticleEditorWindow::RenderViewportArea(float width, float height)
 		return;
 	}
 
-	// 뷰포트 텍스처 렌더링
+	// CenterRect 업데이트 (뷰포트 영역)
+	ImVec2 Pos = ImGui::GetCursorScreenPos();
+	CenterRect.Left = Pos.x;
+	CenterRect.Top = Pos.y;
+	CenterRect.Right = Pos.x + width;
+	CenterRect.Bottom = Pos.y + height;
+	CenterRect.UpdateMinMax();
+
+	// 뷰포트 업데이트 및 렌더링
+	PreRenderViewportUpdate();
+	OnRenderViewport();
+
+	// 렌더링된 텍스처 표시
 	ID3D11ShaderResourceView* ViewportSRV = State->Viewport->GetSRV();
 	if (ViewportSRV)
 	{
