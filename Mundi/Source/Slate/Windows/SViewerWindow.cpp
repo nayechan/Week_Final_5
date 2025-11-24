@@ -23,6 +23,142 @@ SViewerWindow::SViewerWindow()
 
 SViewerWindow::~SViewerWindow()
 {
+	// 뷰어 툴바 아이콘 정리
+	if (IconSelect)
+	{
+		DeleteObject(IconSelect);
+		IconSelect = nullptr;
+	}
+	if (IconMove)
+	{
+		DeleteObject(IconMove);
+		IconMove = nullptr;
+	}
+	if (IconRotate)
+	{
+		DeleteObject(IconRotate);
+		IconRotate = nullptr;
+	}
+	if (IconScale)
+	{
+		DeleteObject(IconScale);
+		IconScale = nullptr;
+	}
+	if (IconWorldSpace)
+	{
+		DeleteObject(IconWorldSpace);
+		IconWorldSpace = nullptr;
+	}
+	if (IconLocalSpace)
+	{
+		DeleteObject(IconLocalSpace);
+		IconLocalSpace = nullptr;
+	}
+	if (IconCamera)
+	{
+		DeleteObject(IconCamera);
+		IconCamera = nullptr;
+	}
+	if (IconPerspective)
+	{
+		DeleteObject(IconPerspective);
+		IconPerspective = nullptr;
+	}
+	if (IconTop)
+	{
+		DeleteObject(IconTop);
+		IconTop = nullptr;
+	}
+	if (IconBottom)
+	{
+		DeleteObject(IconBottom);
+		IconBottom = nullptr;
+	}
+	if (IconLeft)
+	{
+		DeleteObject(IconLeft);
+		IconLeft = nullptr;
+	}
+	if (IconRight)
+	{
+		DeleteObject(IconRight);
+		IconRight = nullptr;
+	}
+	if (IconFront)
+	{
+		DeleteObject(IconFront);
+		IconFront = nullptr;
+	}
+	if (IconBack)
+	{
+		DeleteObject(IconBack);
+		IconBack = nullptr;
+	}
+	if (IconSpeed)
+	{
+		DeleteObject(IconSpeed);
+		IconSpeed = nullptr;
+	}
+	if (IconFOV)
+	{
+		DeleteObject(IconFOV);
+		IconFOV = nullptr;
+	}
+	if (IconNearClip)
+	{
+		DeleteObject(IconNearClip);
+		IconNearClip = nullptr;
+	}
+	if (IconFarClip)
+	{
+		DeleteObject(IconFarClip);
+		IconFarClip = nullptr;
+	}
+	if (IconViewMode_Lit)
+	{
+		DeleteObject(IconViewMode_Lit);
+		IconViewMode_Lit = nullptr;
+	}
+	if (IconViewMode_Unlit)
+	{
+		DeleteObject(IconViewMode_Unlit);
+		IconViewMode_Unlit = nullptr;
+	}
+	if (IconViewMode_Wireframe)
+	{
+		DeleteObject(IconViewMode_Wireframe);
+		IconViewMode_Wireframe = nullptr;
+	}
+	if (IconViewMode_BufferVis)
+	{
+		DeleteObject(IconViewMode_BufferVis);
+		IconViewMode_BufferVis = nullptr;
+	}
+	if (IconBone)
+	{
+		DeleteObject(IconBone);
+		IconBone = nullptr;
+	}
+	if (IconSave)
+	{
+		DeleteObject(IconSave);
+		IconSave = nullptr;
+	}
+	if (IconSkeletalViewer)
+	{
+		DeleteObject(IconSkeletalViewer);
+		IconSkeletalViewer = nullptr;
+	}
+	if (IconAnimationViewer)
+	{
+		DeleteObject(IconAnimationViewer);
+		IconAnimationViewer = nullptr;
+	}
+	if (IconBlendSpaceEditor)
+	{
+		DeleteObject(IconBlendSpaceEditor);
+		IconBlendSpaceEditor = nullptr;
+	}
 }
 
 static inline FString GetBaseFilenameFromPath(const FString& InPath)

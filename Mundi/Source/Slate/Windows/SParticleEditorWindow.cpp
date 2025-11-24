@@ -9,6 +9,7 @@
 #include "ParticleModule.h"
 #include "ParticleSystemComponent.h"
 #include "FViewport.h"
+#include "FViewportClient.h"
 #include "Source/Runtime/Engine/Components/LineComponent.h"
 
 SParticleEditorWindow::SParticleEditorWindow()
@@ -26,6 +27,73 @@ SParticleEditorWindow::SParticleEditorWindow()
 
 SParticleEditorWindow::~SParticleEditorWindow()
 {
+	// 툴바 아이콘 정리
+	if (IconSave)
+	{
+		DeleteObject(IconSave);
+		IconSave = nullptr;
+	}
+	if (IconLoad)
+	{
+		DeleteObject(IconLoad);
+		IconLoad = nullptr;
+	}
+	if (IconRestart)
+	{
+		DeleteObject(IconRestart);
+		IconRestart = nullptr;
+	}
+	if (IconBounds)
+	{
+		DeleteObject(IconBounds);
+		IconBounds = nullptr;
+	}
+	if (IconOriginAxis)
+	{
+		DeleteObject(IconOriginAxis);
+		IconOriginAxis = nullptr;
+	}
+	if (IconBackgroundColor)
+	{
+		DeleteObject(IconBackgroundColor);
+		IconBackgroundColor = nullptr;
+	}
+	if (IconLODFirst)
+	{
+		DeleteObject(IconLODFirst);
+		IconLODFirst = nullptr;
+	}
+	if (IconLODPrev)
+	{
+		DeleteObject(IconLODPrev);
+		IconLODPrev = nullptr;
+	}
+	if (IconLODInsertBefore)
+	{
+		DeleteObject(IconLODInsertBefore);
+		IconLODInsertBefore = nullptr;
+	}
+	if (IconLODInsertAfter)
+	{
+		DeleteObject(IconLODInsertAfter);
+		IconLODInsertAfter = nullptr;
+	}
+	if (IconLODDelete)
+	{
+		DeleteObject(IconLODDelete);
+		IconLODDelete = nullptr;
+	}
+	if (IconLODNext)
+	{
+		DeleteObject(IconLODNext);
+		IconLODNext = nullptr;
+	}
+	if (IconLODLast)
+	{
+		DeleteObject(IconLODLast);
+		IconLODLast = nullptr;
+	}
+
 	// LineComponent 정리
 	if (OriginAxisLineComponent)
 	{
@@ -158,19 +226,28 @@ void SParticleEditorWindow::OnUpdate(float DeltaSeconds)
 
 void SParticleEditorWindow::PreRenderViewportUpdate()
 {
-	// 원점축 LineComponent 처리
 	ParticleEditorState* State = GetActiveParticleState();
-	if (State && State->PreviewActor && OriginAxisLineComponent)
+	if (State)
 	{
-		// LineComponent가 아직 PreviewActor에 연결되지 않았으면 연결
-		if (OriginAxisLineComponent->GetOwner() != State->PreviewActor)
+		// 배경색 설정 (ViewportClient에 전달)
+		if (State->Client)
 		{
-			State->PreviewActor->AddOwnedComponent(OriginAxisLineComponent);
-			OriginAxisLineComponent->RegisterComponent(State->World);
+			State->Client->SetBackgroundColor(State->BackgroundColor);
 		}
 
-		// bShowOriginAxis 플래그에 따라 가시성 제어
-		OriginAxisLineComponent->SetLineVisible(State->bShowOriginAxis);
+		// 원점축 LineComponent 처리
+		if (State->PreviewActor && OriginAxisLineComponent)
+		{
+			// LineComponent가 아직 PreviewActor에 연결되지 않았으면 연결
+			if (OriginAxisLineComponent->GetOwner() != State->PreviewActor)
+			{
+				State->PreviewActor->AddOwnedComponent(OriginAxisLineComponent);
+				OriginAxisLineComponent->RegisterComponent(State->World);
+			}
+
+			// bShowOriginAxis 플래그에 따라 가시성 제어
+			OriginAxisLineComponent->SetLineVisible(State->bShowOriginAxis);
+		}
 	}
 }
 

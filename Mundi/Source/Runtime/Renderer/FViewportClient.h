@@ -42,6 +42,10 @@ public:
     void SetOwnerWindow(SViewportWindow* InOwner) { OwnerWindow = InOwner; }
     SViewportWindow* GetOwnerWindow() const { return OwnerWindow; }
 
+    // 배경색 설정
+    void SetBackgroundColor(const FLinearColor& InColor) { BackgroundColor = InColor; }
+    const FLinearColor& GetBackgroundColor() const { return BackgroundColor; }
+
     // 카메라 매트릭스 계산
     FMatrix GetViewMatrix() const;
 
@@ -61,6 +65,9 @@ protected:
     int32 MouseLastY{};
     bool bIsMouseButtonDown = false;
     bool bIsMouseRightButtonDown = false;
+
+    // 배경색 (기본값: 검은색)
+    FLinearColor BackgroundColor = FLinearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     // 언리얼 방식: 모든 직교 뷰포트가 하나의 3D 위치를 공유 (연동되어 움직임)
     static FVector CameraAddPosition;

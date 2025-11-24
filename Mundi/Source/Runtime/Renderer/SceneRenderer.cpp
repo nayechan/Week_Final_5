@@ -188,7 +188,7 @@ void FSceneRenderer::RenderLitPath()
         vp.Height   = (float)View->ViewRect.Height();
         vp.MinDepth = 0.0f; vp.MaxDepth = 1.0f;
         RHIDevice->GetDeviceContext()->RSSetViewports(1, &vp);
-        const float bg[4] = { 0.0f, 0.0f, 0.0f, 1.00f };
+        const float bg[4] = { View->BackgroundColor.R, View->BackgroundColor.G, View->BackgroundColor.B, View->BackgroundColor.A };
         RHIDevice->GetDeviceContext()->ClearRenderTargetView(RHIDevice->GetCurrentTargetRTV(), bg);
         RHIDevice->ClearDepthBuffer(1.0f, 0);
     }
@@ -223,7 +223,7 @@ void FSceneRenderer::RenderWireframePath()
         vp.Height   = (float)View->ViewRect.Height();
         vp.MinDepth = 0.0f; vp.MaxDepth = 1.0f;
         RHIDevice->GetDeviceContext()->RSSetViewports(1, &vp);
-        const float bg[4] = { 0.0f, 0.0f, 0.0f, 1.00f };
+        const float bg[4] = { View->BackgroundColor.R, View->BackgroundColor.G, View->BackgroundColor.B, View->BackgroundColor.A };
         RHIDevice->GetDeviceContext()->ClearRenderTargetView(RHIDevice->GetCurrentTargetRTV(), bg);
         RHIDevice->ClearDepthBuffer(1.0f, 0);
     }
@@ -252,7 +252,7 @@ void FSceneRenderer::RenderSceneDepthPath()
 		vp.Height = (float)View->ViewRect.Height();
 		vp.MinDepth = 0.0f; vp.MaxDepth = 1.0f;
 		RHIDevice->GetDeviceContext()->RSSetViewports(1, &vp);
-		const float bg[4] = { 0.0f, 0.0f, 0.0f, 1.00f };
+		const float bg[4] = { View->BackgroundColor.R, View->BackgroundColor.G, View->BackgroundColor.B, View->BackgroundColor.A };
 		RHIDevice->GetDeviceContext()->ClearRenderTargetView(RHIDevice->GetCurrentTargetRTV(), bg);
 		RHIDevice->ClearDepthBuffer(1.0f, 0);
 	}

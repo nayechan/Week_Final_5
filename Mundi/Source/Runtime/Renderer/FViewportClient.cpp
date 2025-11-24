@@ -128,6 +128,9 @@ void FViewportClient::Draw(FViewport* Viewport)
 				FSceneView CurrentViewInfo(MinimalViewInfo, &World->GetRenderSettings());
 				CurrentViewInfo.Modifiers = Modifiers;
 
+				// 배경색 설정 (ViewportClient에서 설정된 색상 사용)
+				CurrentViewInfo.BackgroundColor = BackgroundColor;
+
 				// 더 명확한 이름의 함수를 호출
 				Renderer->RenderSceneForView(World, &CurrentViewInfo, Viewport);
 				// 뷰포트 렌더 타겟 오버라이드 해제 (뷰어용)
@@ -162,6 +165,9 @@ void FViewportClient::Draw(FViewport* Viewport)
 	World->GetRenderSettings().SetViewMode(ViewMode);
 
 	FSceneView RenderView(Camera->GetCameraComponent(), Viewport, &World->GetRenderSettings());
+
+	// 배경색 설정 (ViewportClient에서 설정된 색상 사용)
+	RenderView.BackgroundColor = BackgroundColor;
 
 	// 더 명확한 이름의 함수를 호출
 	Renderer->RenderSceneForView(World, &RenderView, Viewport);

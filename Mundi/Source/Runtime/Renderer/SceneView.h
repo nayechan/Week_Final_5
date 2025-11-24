@@ -74,5 +74,8 @@ public:
     float AspectRatio = 0.0f;
     float ZoomFactor = 0.0f;
 
+    // 배경색 설정 (기본값: 검은색)
+    FLinearColor BackgroundColor = FLinearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
     TArray<FPostProcessModifier> Modifiers;
 };
