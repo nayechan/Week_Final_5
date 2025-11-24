@@ -112,6 +112,23 @@ struct FParticleSpriteVertex
 	float RelativeTime;
 };
 
+struct FParticleBeamVertex
+{
+	FVector Position;
+	FVector2D UV;
+	FLinearColor Color;
+	float Width;
+};
+
+struct FParticleRibbonVertex
+{
+	FVector Position;
+	FVector ControlPoint;
+	FVector Tangent;
+	FLinearColor Color;
+	FVector2D UV;
+};
+
 // 스프라이트 파티클 인스턴싱용 인스턴스 데이터 (48바이트)
 // 하나의 쿼드 메시를 모든 파티클이 공유, 인스턴스별 데이터만 전송
 struct FSpriteParticleInstanceVertex
@@ -363,5 +380,45 @@ struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterData
 		// 메시 복제 방식: FVertexDynamic 사용 (StaticMesh와 동일한 버텍스 포맷)
 		// 추후 인스턴싱 전환 시: sizeof(FMeshParticleInstanceVertex) 사용
 		return sizeof(FVertexDynamic);
+	}
+};
+
+// 빔 이미터 데이터 구현
+struct FDynamicBeamEmitterData : public FDynamicSpriteEmitterDataBase
+{
+	FDynamicBeamEmitterReplayDataBase Source;
+
+	virtual ~FDynamicBeamEmitterData() = default;
+
+	virtual const FDynamicEmitterReplayDataBase& GetSource() const override
+	{
+		return Source;
+	}
+
+	virtual int32 GetDynamicVertexStride() const override
+	{
+		// 빔 버텍스: Position + UV + 색상 + 폭 정보 등이 포함되므로
+		// 별도의 Beam Vertex 구조 사용
+		return sizeof(FParticleBeamVertex);
+	}
+};
+
+// 리본 이미터 데이터 구현
+struct FDynamicRibbonEmitterData : public FDynamicSpriteEmitterDataBase
+{
+	FDynamicRibbonEmitterReplayDataBase Source;
+
+	virtual ~FDynamicRibbonEmitterData() = default;
+
+	virtual const FDynamicEmitterReplayDataBase& GetSource() const override
+	{
+		return Source;
+	}
+
+	virtual int32 GetDynamicVertexStride() const override
+	{
+		// 리본 버텍스: 보통 위치 + 노멀 + UV + 컬러
+		// 사용자 엔진에서 정의한 FParticleRibbonVertex를 사용할 것
+		return sizeof(FParticleRibbonVertex);
 	}
 };

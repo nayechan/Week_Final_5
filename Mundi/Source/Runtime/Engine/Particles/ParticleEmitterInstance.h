@@ -6,6 +6,9 @@
 #include "ParticleRandomStream.h"
 
 class UParticleSystemComponent;
+class UParticleModuleTypeDataMesh;
+class UParticleModuleTypeDataBeam;
+class UParticleModuleTypeDataRibbon;
 
 struct FParticleEmitterInstance
 {
@@ -109,6 +112,12 @@ struct FParticleEmitterInstance
 
 	// 렌더링을 위한 동적 데이터 생성
 	FDynamicEmitterDataBase* GetDynamicData(bool bSelected);
+
+	// Dynamic Data builders (Sprite / Mesh / Beam / Ribbon)
+	bool BuildSpriteDynamicData(FDynamicSpriteEmitterData* Data);
+	bool BuildMeshDynamicData(FDynamicMeshEmitterData* Data, UParticleModuleTypeDataMesh* MeshType);
+	bool BuildBeamDynamicData(FDynamicBeamEmitterData* Data, UParticleModuleTypeDataBeam* BeamType);
+	bool BuildRibbonDynamicData(FDynamicRibbonEmitterData* Data, UParticleModuleTypeDataRibbon* RibbonType);
 };
 
 // 언리얼 엔진 호환: 인덱스로 파티클을 가져오는 헬퍼 함수 구현
