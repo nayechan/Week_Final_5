@@ -31,7 +31,7 @@ void UParticleModuleSize::Spawn(FParticleEmitterInstance* Owner, int32 Offset, f
 	LocalInitialSize.Z = FMath::Max(LocalInitialSize.Z, 0.01f);
 
 	const float ComponentScaleX = Owner->Component->GetWorldScale().X;
-	FVector FinalWorldScale = LocalInitialSize * FVector(ComponentScaleX, 0.f, 0.f);
+	FVector FinalWorldScale = LocalInitialSize * ComponentScaleX;  // 균일 스케일 적용
 
 	ParticleBase->Size = FinalWorldScale;
 	ParticleBase->BaseSize = FinalWorldScale;
