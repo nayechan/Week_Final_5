@@ -1527,26 +1527,29 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 		}
 
 		// 3. IA (Input Assembler) 상태 변경
-		if (Batch.VertexBuffer != CurrentVertexBuffer ||
-			Batch.IndexBuffer != CurrentIndexBuffer ||
-			Batch.VertexStride != CurrentVertexStride ||
-			Batch.PrimitiveTopology != CurrentTopology)
 		{
-			UINT Stride = Batch.VertexStride;
-			UINT Offset = 0;
+			// 인스턴싱 여부에 따라 버텍스 버퍼 바인딩 방식이 다름
+			if (Batch.NumInstances > 1 && Batch.InstanceBuffer)
+			{
+				// 인스턴싱: 2개 스트림 (슬롯 0: 메시, 슬롯 1: 인스턴스)
+				ID3D11Buffer* Buffers[2] = { Batch.VertexBuffer, Batch.InstanceBuffer };
+				UINT Strides[2] = { Batch.VertexStride, Batch.InstanceStride };
+				UINT Offsets[2] = { 0, 0 };
+				RHIDevice->GetDeviceContext()->IASetVertexBuffers(0, 2, Buffers, Strides, Offsets);
+			}
+			else
+			{
+				// 일반: 1개 스트림
+				UINT Stride = Batch.VertexStride;
+				UINT Offset = 0;
+				RHIDevice->GetDeviceContext()->IASetVertexBuffers(0, 1, &Batch.VertexBuffer, &Stride, &Offset);
+			}
 
-			// Vertex/Index 버퍼 바인딩
-			RHIDevice->GetDeviceContext()->IASetVertexBuffers(0, 1, &Batch.VertexBuffer, &Stride, &Offset);
+			// Index 버퍼 바인딩
 			RHIDevice->GetDeviceContext()->IASetIndexBuffer(Batch.IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-			// 토폴로지 설정 (이전 코드의 5번에서 이동하여 최적화)
+			// 토폴로지 설정
 			RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(Batch.PrimitiveTopology);
-
-			// 현재 IA 상태 캐싱
-			CurrentVertexBuffer = Batch.VertexBuffer;
-			CurrentIndexBuffer = Batch.IndexBuffer;
-			CurrentVertexStride = Batch.VertexStride;
-			CurrentTopology = Batch.PrimitiveTopology;
 		}
 
 		// 4. 오브젝트별 상수 버퍼 설정 (매번 변경)
@@ -1559,7 +1562,22 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 		RHIDevice->GetDeviceContext()->VSSetConstantBuffers(6, 1, &BoneBuffer);
 
 		// 5. 드로우 콜 실행
-		RHIDevice->GetDeviceContext()->DrawIndexed(Batch.IndexCount, Batch.StartIndex, Batch.BaseVertexIndex);
+		if (Batch.NumInstances > 1)
+		{
+			// GPU 인스턴싱
+			RHIDevice->GetDeviceContext()->DrawIndexedInstanced(
+				Batch.IndexCount,
+				Batch.NumInstances,
+				Batch.StartIndex,
+				Batch.BaseVertexIndex,
+				0  // StartInstanceLocation
+			);
+		}
+		else
+		{
+			// 일반 드로우
+			RHIDevice->GetDeviceContext()->DrawIndexed(Batch.IndexCount, Batch.StartIndex, Batch.BaseVertexIndex);
+		}
 	}
 
 	// GPU 스키닝 본 버퍼 해제

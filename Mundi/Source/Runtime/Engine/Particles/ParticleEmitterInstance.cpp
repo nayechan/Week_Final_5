@@ -3,6 +3,7 @@
 #include "ParticleSystemComponent.h"
 #include "Modules/ParticleModule.h"
 #include "Modules/ParticleModuleSpawn.h"
+#include "Modules/ParticleModuleMeshRotation.h"
 #include "ParticleModuleTypeDataMesh.h"
 
 FParticleEmitterInstance::FParticleEmitterInstance()
@@ -22,6 +23,16 @@ FParticleEmitterInstance::FParticleEmitterInstance()
 	, MaxActiveParticles(0)
 	, SpawnFraction(0.0f)
 	, bBurstFired(false)  // 언리얼 엔진 호환: Burst 초기화
+	, EmitterTime(0.0f)
+	, SecondsSinceCreation(0.0f)
+	, EmitterDurationActual(0.0f)
+	, EmitterDelayActual(0.0f)
+	, bDelayComplete(false)
+	, CurrentLoopCount(0)
+	, bEmitterEnabled(true)
+	, CachedEmitterOrigin(0.0f, 0.0f, 0.0f)
+	, CachedEmitterRotation(0.0f, 0.0f, 0.0f)
+	, EmitterToWorld(FMatrix::Identity())
 {
 }
 
@@ -51,11 +62,67 @@ void FParticleEmitterInstance::Init(UParticleSystemComponent* InComponent, UPart
 	// 현재 LOD 레벨 가져오기 (기본값 0)
 	CurrentLODLevelIndex = 0;
 	CurrentLODLevel = SpriteTemplate->GetLODLevel(CurrentLODLevelIndex);
-	
+
 	if (!CurrentLODLevel)
 		return;
 
 	ParticleSize = SpriteTemplate->ParticleSize;
+
+	// 언리얼 엔진 호환: 타이밍 상태 초기화
+	EmitterTime = 0.0f;
+	SecondsSinceCreation = 0.0f;
+	CurrentLoopCount = 0;
+	bEmitterEnabled = true;
+	bDelayComplete = false;
+	bBurstFired = false;  // Burst도 초기화
+	SpawnFraction = 0.0f;
+
+	// 언리얼 엔진 호환: Required 모듈에서 설정 읽기
+	if (CurrentLODLevel->RequiredModule)
+	{
+		UParticleModuleRequired* RequiredModule = CurrentLODLevel->RequiredModule;
+
+		// EmitterDelay 초기화 (랜덤 범위 지원)
+		if (RequiredModule->EmitterDelayLow > 0.0f)
+		{
+			EmitterDelayActual = RandomStream.GetRangeFloat(
+				RequiredModule->EmitterDelayLow,
+				RequiredModule->EmitterDelay
+			);
+		}
+		else
+		{
+			EmitterDelayActual = RequiredModule->EmitterDelay;
+		}
+
+		// EmitterDuration 초기화 (랜덤 범위 지원)
+		if (RequiredModule->EmitterDurationLow > 0.0f)
+		{
+			EmitterDurationActual = RandomStream.GetRangeFloat(
+				RequiredModule->EmitterDurationLow,
+				RequiredModule->EmitterDuration
+			);
+		}
+		else
+		{
+			EmitterDurationActual = RequiredModule->EmitterDuration;
+		}
+
+		// 이미터 트랜스폼 캐시
+		CachedEmitterOrigin = RequiredModule->EmitterOrigin;
+		CachedEmitterRotation = RequiredModule->EmitterRotation;
+
+		// 이미터 회전 행렬 생성 (Euler angles → Quaternion → Matrix)
+		if (CachedEmitterRotation.X != 0.0f || CachedEmitterRotation.Y != 0.0f || CachedEmitterRotation.Z != 0.0f)
+		{
+			FQuat RotationQuat = FQuat::MakeFromEulerZYX(CachedEmitterRotation);
+			EmitterToWorld = RotationQuat.ToMatrix();
+		}
+		else
+		{
+			EmitterToWorld = FMatrix::Identity();
+		}
+	}
 
 	// 초기화 로직 호출
 	SetupEmitter();
@@ -80,6 +147,56 @@ void FParticleEmitterInstance::SetLODLevel(int32 NewLODIndex)
 	// 수명/스폰 관련 상태 초기화
 	SpawnFraction = 0.f;
 	bBurstFired = false;
+
+	// 언리얼 엔진 호환: 타이밍 상태 리셋
+	EmitterTime = 0.0f;
+	CurrentLoopCount = 0;
+	bDelayComplete = false;
+	bEmitterEnabled = true;
+
+	// 새 LOD의 Delay/Duration 재계산
+	if (NewLODLevel->RequiredModule)
+	{
+		UParticleModuleRequired* RequiredModule = NewLODLevel->RequiredModule;
+
+		if (RequiredModule->EmitterDelayLow > 0.0f)
+		{
+			EmitterDelayActual = RandomStream.GetRangeFloat(
+				RequiredModule->EmitterDelayLow,
+				RequiredModule->EmitterDelay
+			);
+		}
+		else
+		{
+			EmitterDelayActual = RequiredModule->EmitterDelay;
+		}
+
+		if (RequiredModule->EmitterDurationLow > 0.0f)
+		{
+			EmitterDurationActual = RandomStream.GetRangeFloat(
+				RequiredModule->EmitterDurationLow,
+				RequiredModule->EmitterDuration
+			);
+		}
+		else
+		{
+			EmitterDurationActual = RequiredModule->EmitterDuration;
+		}
+
+		// 이미터 트랜스폼 재캐시
+		CachedEmitterOrigin = RequiredModule->EmitterOrigin;
+		CachedEmitterRotation = RequiredModule->EmitterRotation;
+
+		if (CachedEmitterRotation.X != 0.0f || CachedEmitterRotation.Y != 0.0f || CachedEmitterRotation.Z != 0.0f)
+		{
+			FQuat RotationQuat = FQuat::MakeFromEulerZYX(CachedEmitterRotation);
+			EmitterToWorld = RotationQuat.ToMatrix();
+		}
+		else
+		{
+			EmitterToWorld = FMatrix::Identity();
+		}
+	}
 
 	KillAllParticles();
 	SetupEmitter();
@@ -173,10 +290,11 @@ void FParticleEmitterInstance::Resize(int32 NewMaxActiveParticles)
 		else
 		{
 			// 할당 실패 시 폴백: 이전 상태 유지
+			UE_LOG("[ParticleEmitterInstance] Failed to allocate particle memory: requested %d particles (%d bytes)\n",
+				MaxActiveParticles, ParticleDataSize);
 			ParticleData = nullptr;
 			ParticleIndices = nullptr;
 			MaxActiveParticles = 0;
-			// TODO: 로깅 또는 에러 처리 추가
 		}
 	}
 	else
@@ -192,30 +310,93 @@ void FParticleEmitterInstance::Resize(int32 NewMaxActiveParticles)
 
 void FParticleEmitterInstance::Tick(float DeltaTime, bool bSuppressSpawning)
 {
-	if (!CurrentLODLevel)
+	if (!CurrentLODLevel || !bEmitterEnabled)
 	{
 		return;
 	}
 
+	UParticleModuleRequired* RequiredModule = CurrentLODLevel->RequiredModule;
+
+	// 언리얼 엔진 호환: 타이머 업데이트
+	EmitterTime += DeltaTime;
+	SecondsSinceCreation += DeltaTime;
+
+	// ====== PHASE 1: DELAY PHASE ======
+	// 딜레이가 끝나지 않았으면 스폰 억제
+	if (!bDelayComplete)
+	{
+		if (EmitterTime < EmitterDelayActual)
+		{
+			// 아직 딜레이 중 - 기존 파티클만 업데이트
+			UpdateParticles(DeltaTime);
+			return;  // 새 파티클 생성 안 함
+		}
+		else
+		{
+			// 딜레이 완료
+			bDelayComplete = true;
+		}
+	}
+
+	// ====== PHASE 2: ACTIVE EMISSION PHASE ======
 	// 기존 파티클 업데이트
 	UpdateParticles(DeltaTime);
 
-	// 언리얼 엔진 호환: 새 파티클 생성 (억제되지 않은 경우)
-	if (!bSuppressSpawning)
+	// Duration 체크: 생성 시간이 만료되었는지 확인
+	bool bSuppressSpawningDuration = false;
+
+	if (RequiredModule && EmitterDurationActual > 0.0f)  // 0 = 무한
 	{
-		// 언리얼 엔진 호환: SpawnModule은 별도 멤버 (직접 접근)
+		float TimeIntoEmission = EmitterTime - EmitterDelayActual;
+
+		if (TimeIntoEmission >= EmitterDurationActual)
+		{
+			// Duration 만료
+			bSuppressSpawningDuration = true;
+
+			// ====== PHASE 3: DURATION END / LOOP CHECK ======
+			// 루프 체크
+			if (RequiredModule->EmitterLoops == 0 ||
+				CurrentLoopCount < RequiredModule->EmitterLoops - 1)
+			{
+				// 루프 재시작
+				CurrentLoopCount++;
+				EmitterTime = 0.0f;
+				bBurstFired = false;
+				SpawnFraction = 0.0f;
+				bSuppressSpawningDuration = false;
+
+				// 첫 루프에만 딜레이 적용하는 옵션
+				if (!RequiredModule->bDelayFirstLoopOnly)
+				{
+					bDelayComplete = false;
+					return;  // 딜레이 페이즈로 돌아감
+				}
+			}
+			else
+			{
+				// 더 이상 루프 없음 - 이미터 비활성화
+				bEmitterEnabled = false;
+				return;
+			}
+		}
+	}
+
+	// 새 파티클 생성
+	if (!bSuppressSpawning && !bSuppressSpawningDuration)
+	{
 		UParticleModuleSpawn* SpawnModule = CurrentLODLevel->SpawnModule;
 
-		// 언리얼 엔진 호환: 스폰 로직을 모듈에 위임 (책임 분리)
 		if (SpawnModule && SpawnModule->bEnabled)
 		{
 			int32 SpawnCount = SpawnModule->CalculateSpawnCount(DeltaTime, SpawnFraction, bBurstFired);
 
 			if (SpawnCount > 0)
 			{
-				// 파티클 간 균등한 시간 간격 계산
 				float Increment = (SpawnCount > 1) ? (DeltaTime / SpawnCount) : 0.0f;
-				SpawnParticles(SpawnCount, 0.0f, Increment, FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 0.0f, 0.0f));
+
+				// 언리얼 엔진 호환: EmitterOrigin을 InitialLocation으로 전달
+				SpawnParticles(SpawnCount, 0.0f, Increment, CachedEmitterOrigin, FVector(0.0f, 0.0f, 0.0f));
 			}
 		}
 	}
@@ -266,6 +447,14 @@ void FParticleEmitterInstance::SpawnParticles(int32 Count, float StartTime, floa
 				// PayloadOffset 추가: 페이로드는 FBaseParticle 뒤에 위치
 				Module->Spawn(this, PayloadOffset + Module->ModuleOffsetInParticle, SpawnTime, Particle);
 			}
+		}
+
+		// 언리얼 엔진 호환: EmitterRotation 적용
+		// 모든 spawn 모듈이 실행된 후 파티클 속도를 회전시킴
+		if (CachedEmitterRotation.X != 0.0f || CachedEmitterRotation.Y != 0.0f || CachedEmitterRotation.Z != 0.0f)
+		{
+			Particle->Velocity = EmitterToWorld.TransformVector(Particle->Velocity);
+			Particle->BaseVelocity = EmitterToWorld.TransformVector(Particle->BaseVelocity);
 		}
 
 		// 생성 후
@@ -423,7 +612,28 @@ FDynamicEmitterDataBase* FParticleEmitterInstance::GetDynamicData(bool bSelected
 
 		MeshData->MeshSource.ActiveParticleCount = ActiveParticles;
 		MeshData->MeshSource.ParticleStride = ParticleStride;
-		MeshData->MeshSource.DataContainer = ParticleDataContainer;
+
+		// 파티클 데이터 복사 (스프라이트와 동일한 방식: 깊은 복사)
+		int32 ParticleDataBytes = ActiveParticles * ParticleStride;
+		bool bAllocSuccess = MeshData->MeshSource.DataContainer.Alloc(ParticleDataBytes, ActiveParticles);
+
+		if (!bAllocSuccess)
+		{
+			delete MeshData;
+			return nullptr;
+		}
+
+		// 컴팩트 복사: 활성 파티클만 연속으로 복사
+		uint8* DstData = MeshData->MeshSource.DataContainer.ParticleData;
+		for (int32 i = 0; i < ActiveParticles; i++)
+		{
+			int32 SrcIndex = ParticleIndices[i];
+			const uint8* SrcParticle = ParticleData + SrcIndex * ParticleStride;
+			memcpy(DstData + i * ParticleStride, SrcParticle, ParticleStride);
+
+			// 인덱스는 컴팩트 복사 후 순차적으로 재매핑
+			MeshData->MeshSource.DataContainer.ParticleIndices[i] = static_cast<uint16>(i);
+		}
 
 		// TypeData에서 Mesh 정보 받아오기
 		UParticleModuleTypeDataBase* TypeData = CurrentLODLevel->TypeDataModule;
@@ -435,6 +645,22 @@ FDynamicEmitterDataBase* FParticleEmitterInstance::GetDynamicData(bool bSelected
 		}
 		MeshData->MeshSource.MaterialInterface = CurrentLODLevel->RequiredModule ? CurrentLODLevel->RequiredModule->Material : nullptr;
 		MeshData->MeshSource.SortMode = CurrentLODLevel->RequiredModule ? CurrentLODLevel->RequiredModule->SortMode : 0;
+
+		// MeshRotation 모듈 오프셋 찾기
+		MeshData->MeshSource.MeshRotationPayloadOffset = -1;
+		for (UParticleModule* Module : CurrentLODLevel->Modules)
+		{
+			if (Module && Module->bEnabled)
+			{
+				UParticleModuleMeshRotation* MeshRotModule = Cast<UParticleModuleMeshRotation>(Module);
+				if (MeshRotModule)
+				{
+					// PayloadOffset + ModuleOffsetInParticle = 파티클 내 페이로드 위치
+					MeshData->MeshSource.MeshRotationPayloadOffset = PayloadOffset + MeshRotModule->ModuleOffsetInParticle;
+					break;
+				}
+			}
+		}
 
 		return MeshData;
 	}
@@ -458,6 +684,8 @@ FDynamicEmitterDataBase* FParticleEmitterInstance::GetDynamicData(bool bSelected
 		if (!bAllocSuccess)
 		{
 			// 할당 실패 시 데이터 삭제 후 nullptr 반환
+			UE_LOG("[ParticleEmitterInstance] Failed to allocate render thread data: %d particles (%d bytes)\n",
+				ActiveParticles, ParticleDataBytes);
 			delete NewData;
 			return nullptr;
 		}

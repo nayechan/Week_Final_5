@@ -1,13 +1,15 @@
 ﻿#include "pch.h"
 #include "ParticleModuleLocation.h"
 #include "ParticleEmitterInstance.h"
+#include "ParticleSystemComponent.h"
 
 void UParticleModuleLocation::Spawn(FParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, FBaseParticle* ParticleBase)
 {
-	if (!ParticleBase)
+	if (!ParticleBase || !Owner || !Owner->Component)
 	{
 		return;
 	}
+	const FTransform& ComponentTransform = Owner->Component->GetWorldTransform();
 
 	// 언리얼 엔진 호환: CurrentOffset 초기화
 	uint32 CurrentOffset = Offset;
@@ -16,23 +18,27 @@ void UParticleModuleLocation::Spawn(FParticleEmitterInstance* Owner, int32 Offse
 	PARTICLE_ELEMENT(FParticleLocationPayload, Payload);
 
 	// 분포 형태에 따라 랜덤 위치 생성
-	FVector RandomOffset;
+	FVector LocalRandomOffset;
 	switch (static_cast<ELocationDistributionShape>(DistributionShape))
 	{
 	case ELocationDistributionShape::Sphere:
-		RandomOffset = GenerateRandomLocationSphere();
+		LocalRandomOffset = GenerateRandomLocationSphere();
 		break;
 	case ELocationDistributionShape::Cylinder:
-		RandomOffset = GenerateRandomLocationCylinder();
+		LocalRandomOffset = GenerateRandomLocationCylinder();
 		break;
 	case ELocationDistributionShape::Box:
 	default:
-		RandomOffset = GenerateRandomLocationBox();
+		LocalRandomOffset = GenerateRandomLocationBox();
 		break;
 	}
 
+	// 총 로컬 오프셋을 컴포넌트의 월드 변환을 적용해 최종 월드 위치로 변환
+	FVector TotalLocalOffset = StartLocation + LocalRandomOffset;
+	FVector FinalWorldPosition = ComponentTransform.TransformPosition(TotalLocalOffset);
+
 	// 최종 스폰 위치 계산
-	Payload.SpawnLocation = StartLocation + RandomOffset;
+	Payload.SpawnLocation = FinalWorldPosition;
 	ParticleBase->Location = Payload.SpawnLocation;
 	ParticleBase->OldLocation = Payload.SpawnLocation;
 }

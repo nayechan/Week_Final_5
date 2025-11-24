@@ -45,11 +45,20 @@ public:
 
 	TArray<FParticleParameter> InstanceParameters;
 
-	// Dynamic Vertex / Index Buffer
-	ID3D11Buffer* ParticleVertexBuffer = nullptr;
-	ID3D11Buffer* ParticleIndexBuffer = nullptr;
-	uint32 AllocatedVertexCount = 0;
-	uint32 AllocatedIndexCount = 0;
+	// Dynamic Instance Buffer (메시 파티클 인스턴싱용)
+	ID3D11Buffer* MeshInstanceBuffer = nullptr;
+	uint32 AllocatedMeshInstanceCount = 0;
+
+	// Dynamic Instance Buffer (스프라이트 파티클 인스턴싱용)
+	ID3D11Buffer* SpriteInstanceBuffer = nullptr;
+	uint32 AllocatedSpriteInstanceCount = 0;
+
+	// Shared Quad Mesh (스프라이트 인스턴싱용)
+	static ID3D11Buffer* SpriteQuadVertexBuffer;
+	static ID3D11Buffer* SpriteQuadIndexBuffer;
+	static bool bQuadBuffersInitialized;
+	static void InitializeQuadBuffers();
+	static void ReleaseQuadBuffers();
 
 	UParticleSystemComponent();
 	virtual ~UParticleSystemComponent();
@@ -81,13 +90,18 @@ public:
 	// 직렬화
 	virtual void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
+	// PIE 복사 시 포인터 배열 초기화
+	virtual void DuplicateSubObjects() override;
+
 	void CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View) override;
 
-	void EnsureBufferSize(uint32 RequiredVertexCount, uint32 RequiredIndexCount);
+	// 메시 파티클 인스턴싱
+	void FillMeshInstanceBuffer(uint32 TotalInstances);
+	void CreateMeshParticleBatch(TArray<FMeshBatchElement>& OutMeshBatchElements);
 
-	void FillVertexBuffer(const FSceneView* View);
-
-	void CreateMeshBatch(TArray<FMeshBatchElement>& OutMeshBatchElements, uint32 IndexCount);
+	// 스프라이트 파티클 인스턴싱
+	void FillSpriteInstanceBuffer(uint32 TotalInstances);
+	void CreateSpriteParticleBatch(TArray<FMeshBatchElement>& OutMeshBatchElements);
 
 private:
 	void InitializeEmitterInstances();
@@ -95,5 +109,6 @@ private:
 	void UpdateRenderData();
 
 	// 테스트용 디버그 파티클 시스템 생성
-	void CreateDebugParticleSystem();
+	void CreateDebugParticleSystem();        // 메시 파티클 테스트
+	void CreateDebugSpriteParticleSystem();  // 스프라이트 파티클 테스트
 };

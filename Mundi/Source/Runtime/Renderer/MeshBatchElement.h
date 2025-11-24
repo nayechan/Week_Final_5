@@ -45,7 +45,20 @@ struct FMeshBatchElement
 	uint32 VertexStride = 0;
 
 
-	// --- 3. 인스턴스 데이터 (Instance Data) ---
+	// --- 3. GPU 인스턴싱 데이터 (GPU Instancing Data) ---
+	// DrawIndexedInstanced를 위한 인스턴싱 파라미터입니다.
+
+	// 그릴 인스턴스 수입니다. (1이면 일반 DrawIndexed, 2 이상이면 DrawIndexedInstanced)
+	uint32 NumInstances = 1;
+
+	// 인스턴스별 데이터를 담는 버퍼입니다. (Transform, Color 등)
+	ID3D11Buffer* InstanceBuffer = nullptr;
+
+	// 인스턴스 데이터의 스트라이드입니다. (인스턴스 1개의 크기)
+	uint32 InstanceStride = 0;
+
+
+	// --- 4. 오브젝트별 데이터 (Per-Object Data) ---
 	// 드로우 콜마다 고유하게 설정되는 데이터입니다. (정렬 키가 아님)
 
 	// 이 오브젝트의 월드 변환 행렬입니다. (Model Matrix)

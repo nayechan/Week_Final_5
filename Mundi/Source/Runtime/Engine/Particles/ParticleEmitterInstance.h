@@ -53,6 +53,20 @@ struct FParticleEmitterInstance
 	// 랜덤 스트림 (언리얼 엔진 호환)
 	FParticleRandomStream RandomStream;
 
+	// 언리얼 엔진 호환: 이미터 타이밍 상태
+	float EmitterTime;               // 이미터가 시작된 이후 경과 시간 (초)
+	float SecondsSinceCreation;      // 이미터 인스턴스 생성 이후 총 경과 시간 (루프에도 리셋 안됨)
+	float EmitterDurationActual;     // 실제로 선택된 지속 시간 (랜덤 범위에서 선택)
+	float EmitterDelayActual;        // 실제로 선택된 딜레이 (랜덤 범위에서 선택)
+	bool bDelayComplete;             // 초기 딜레이가 끝났는지 여부
+	int32 CurrentLoopCount;          // 현재 루프 횟수
+	bool bEmitterEnabled;            // 이미터가 활성화되어 있는지 (Duration 만료 시 false)
+
+	// 언리얼 엔진 호환: 이미터 트랜스폼 캐시
+	FVector CachedEmitterOrigin;     // Required 모듈의 EmitterOrigin 캐시
+	FVector CachedEmitterRotation;   // Required 모듈의 EmitterRotation 캐시 (Euler angles)
+	FMatrix EmitterToWorld;          // 이미터 회전 변환 행렬 (파티클 속도 회전용)
+
 	// 생성자 / 소멸자
 	FParticleEmitterInstance();
 	virtual ~FParticleEmitterInstance();

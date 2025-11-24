@@ -983,6 +983,9 @@
     <ClCompile Include="Generated\UParticleModuleSizeScaleBySpeed.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
+    <ClCompile Include="Generated\UParticleModuleMeshRotation.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -2068,6 +2071,9 @@
     </ClInclude>
     <ClInclude Include="Source\Runtime\Engine\Particles\Distribution.h" />
     <ClInclude Include="Generated\UParticleModuleSizeScaleBySpeed.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UParticleModuleMeshRotation.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
   </ItemGroup>

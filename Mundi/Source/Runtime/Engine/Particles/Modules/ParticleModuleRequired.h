@@ -28,6 +28,44 @@ public:
 	UPROPERTY(EditAnywhere, Category="Required")
 	int32 SortMode = 0;
 
+	// 언리얼 엔진 호환: 이미터 원점 (파티클 스폰 위치 오프셋)
+	UPROPERTY(EditAnywhere, Category="Emitter")
+	FVector EmitterOrigin = FVector(0.0f, 0.0f, 0.0f);
+
+	// 언리얼 엔진 호환: 이미터 회전 (Euler angles in degrees: X=Roll, Y=Pitch, Z=Yaw)
+	// 파티클 속도 방향을 회전시킴
+	UPROPERTY(EditAnywhere, Category="Emitter")
+	FVector EmitterRotation = FVector(0.0f, 0.0f, 0.0f);
+
+	// 언리얼 엔진 호환: 이미터 지속 시간 (초 단위, 0 = 무한)
+	// 이 시간 동안만 파티클을 생성함
+	UPROPERTY(EditAnywhere, Category="Duration")
+	float EmitterDuration = 0.0f;
+
+	// 언리얼 엔진 호환: 이미터 지속 시간 최소값 (랜덤 범위용)
+	// EmitterDurationLow > 0이면 [EmitterDurationLow, EmitterDuration] 범위에서 랜덤 선택
+	UPROPERTY(EditAnywhere, Category="Duration")
+	float EmitterDurationLow = 0.0f;
+
+	// 언리얼 엔진 호환: 이미터 시작 딜레이 (초 단위)
+	// 이 시간 동안 파티클 생성을 지연시킴
+	UPROPERTY(EditAnywhere, Category="Delay")
+	float EmitterDelay = 0.0f;
+
+	// 언리얼 엔진 호환: 이미터 시작 딜레이 최소값 (랜덤 범위용)
+	// EmitterDelayLow > 0이면 [EmitterDelayLow, EmitterDelay] 범위에서 랜덤 선택
+	UPROPERTY(EditAnywhere, Category="Delay")
+	float EmitterDelayLow = 0.0f;
+
+	// 언리얼 엔진 호환: 이미터 반복 횟수 (0 = 무한 반복)
+	UPROPERTY(EditAnywhere, Category="Duration")
+	int32 EmitterLoops = 0;
+
+	// 언리얼 엔진 호환: 첫 루프에만 딜레이 적용
+	// true면 EmitterDelay는 첫 루프에만 적용되고 이후 루프는 즉시 시작
+	UPROPERTY(EditAnywhere, Category="Delay")
+	bool bDelayFirstLoopOnly = false;
+
 	UParticleModuleRequired() = default;
 	virtual ~UParticleModuleRequired() = default;
 

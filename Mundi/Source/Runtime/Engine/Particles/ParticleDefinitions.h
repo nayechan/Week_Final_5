@@ -2,6 +2,7 @@
 
 #include "Vector.h"
 #include "Color.h"
+#include "VertexData.h"
 
 class UMaterialInterface;
 
@@ -109,6 +110,29 @@ struct FParticleSpriteVertex
 	float RelativeTime;
 };
 
+// 스프라이트 파티클 인스턴싱용 인스턴스 데이터 (48바이트)
+// 하나의 쿼드 메시를 모든 파티클이 공유, 인스턴스별 데이터만 전송
+struct FSpriteParticleInstanceVertex
+{
+	FVector WorldPosition;    // 파티클 중심 위치 (12바이트)
+	float Rotation;           // Z축 회전 (라디안) (4바이트)
+	FVector2D Size;           // 파티클 크기 (8바이트)
+	FLinearColor Color;       // 파티클 색상 (16바이트)
+	float RelativeTime;       // 상대 시간 (4바이트)
+	float Padding[1];         // 16바이트 정렬 (4바이트)
+	// 총 48바이트
+};
+
+// 추후 GPU 인스턴싱을 위한 인스턴스 데이터 구조체
+// 현재는 메시 복제 방식을 사용하지만, 인스턴싱 전환 시 활용
+struct FMeshParticleInstanceVertex
+{
+	FLinearColor Color;           // 파티클 색상
+	FVector4 Transform[3];        // 3x4 변환 행렬 (전치됨, 위치는 W에 저장)
+	float RelativeTime;           // 파티클 상대 시간 (0-1)
+	float Padding[3];             // 16바이트 정렬
+};
+
 // 파티클 데이터 컨테이너 (언리얼 엔진 호환)
 // 메모리 레이아웃: [ParticleData 영역][ParticleIndices 영역]
 // 하나의 메모리 블록에 파티클 데이터와 인덱스 배열을 함께 저장
@@ -190,9 +214,14 @@ struct FDynamicMeshEmitterReplayDataBase : public FDynamicEmitterReplayDataBase
 	UMaterialInterface* MaterialInterface;
 	class UStaticMesh* MeshData;
 
+	// 메시 회전 페이로드 오프셋 (FBaseParticle 이후의 오프셋)
+	// -1이면 MeshRotation 모듈이 없음
+	int32 MeshRotationPayloadOffset;
+
 	FDynamicMeshEmitterReplayDataBase()
 		: MaterialInterface(nullptr)
 		, MeshData(nullptr)
+		, MeshRotationPayloadOffset(-1)
 	{
 		eEmitterType = EDynamicEmitterType::Mesh;
 	}
@@ -297,7 +326,8 @@ struct FDynamicMeshEmitterData : public FDynamicSpriteEmitterData
 
 	virtual int32 GetDynamicVertexStride() const override
 	{
-		// sizeof(FMeshParticleInstanceVertex) - 렌더링 구현 시 정의 예정
-		return 0;
+		// 메시 복제 방식: FVertexDynamic 사용 (StaticMesh와 동일한 버텍스 포맷)
+		// 추후 인스턴싱 전환 시: sizeof(FMeshParticleInstanceVertex) 사용
+		return sizeof(FVertexDynamic);
 	}
 };

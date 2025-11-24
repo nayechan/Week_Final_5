@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "ParticleModuleSize.h"
 #include "Source/Runtime/Engine/Particles/ParticleEmitterInstance.h" // BEGIN_UPDATE_LOOP 매크로에서 필요
+#include "ParticleSystemComponent.h"
 
 // 언리얼 엔진 호환: 페이로드 크기 반환
 uint32 UParticleModuleSize::RequiredBytes(FParticleEmitterInstance* Owner)
@@ -22,15 +23,18 @@ void UParticleModuleSize::Spawn(FParticleEmitterInstance* Owner, int32 Offset, f
 		Owner->RandomStream.GetSignedFraction() * StartSizeRange.Z
 	);
 
-	FVector InitialSize = StartSize + RandomOffset;
+	FVector LocalInitialSize = StartSize + RandomOffset;
 
 	// 음수 크기 방지
-	InitialSize.X = FMath::Max(InitialSize.X, 0.01f);
-	InitialSize.Y = FMath::Max(InitialSize.Y, 0.01f);
-	InitialSize.Z = FMath::Max(InitialSize.Z, 0.01f);
+	LocalInitialSize.X = FMath::Max(LocalInitialSize.X, 0.01f);
+	LocalInitialSize.Y = FMath::Max(LocalInitialSize.Y, 0.01f);
+	LocalInitialSize.Z = FMath::Max(LocalInitialSize.Z, 0.01f);
 
-	ParticleBase->Size = InitialSize;
-	ParticleBase->BaseSize = InitialSize;
+	const float ComponentScaleX = Owner->Component->GetWorldScale().X;
+	FVector FinalWorldScale = LocalInitialSize * ComponentScaleX;  // 균일 스케일 적용
+
+	ParticleBase->Size = FinalWorldScale;
+	ParticleBase->BaseSize = FinalWorldScale;
 
 	// 언리얼 엔진 호환: CurrentOffset 초기화
 	uint32 CurrentOffset = Offset;
@@ -38,8 +42,8 @@ void UParticleModuleSize::Spawn(FParticleEmitterInstance* Owner, int32 Offset, f
 	// 언리얼 엔진 호환: PARTICLE_ELEMENT 매크로 (CurrentOffset 자동 증가)
 	PARTICLE_ELEMENT(FParticleSizePayload, SizePayload);
 
-	SizePayload.InitialSize = InitialSize;
-	SizePayload.EndSize = EndSize;
+	SizePayload.InitialSize = FinalWorldScale;
+	SizePayload.EndSize = EndSize * ComponentScaleX;
 	SizePayload.SizeMultiplierOverLife = 1.0f;  // 기본 배율
 
 	// SizeOverLife 활성화 시 Update 모듈로 동작

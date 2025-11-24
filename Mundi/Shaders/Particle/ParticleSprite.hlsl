@@ -1,5 +1,6 @@
-// Particle Sprite Shader
-// CPU에서 시뮬레이션, GPU에서 빌보드 정렬 및 Z축 회전
+// Particle Sprite Instancing Shader
+// GPU 인스턴싱을 사용하여 스프라이트 파티클 렌더링
+// 슬롯 0: 쿼드 버텍스, 슬롯 1: 인스턴스 데이터
 
 // b1: ViewProjBuffer (VS)
 cbuffer ViewProjBuffer : register(b1)
@@ -10,15 +11,20 @@ cbuffer ViewProjBuffer : register(b1)
     row_major float4x4 InverseProjectionMatrix;
 };
 
-// VS_INPUT은 FParticleSpriteVertex 구조체와 일치해야 함
-struct VS_INPUT
+// 슬롯 0: 쿼드 버텍스 (4개 코너)
+struct VS_QUAD_INPUT
 {
-    float3 WorldPosition : POSITION;    // 파티클 중심 위치
-    float Rotation : TEXCOORD0;         // Z축 회전 (라디안)
-    float2 UV : TEXCOORD1;              // 쿼드 코너 UV
-    float2 Size : TEXCOORD2;            // 파티클 크기
-    float4 Color : COLOR0;              // 파티클 색상
-    float RelativeTime : TEXCOORD3;     // 상대 시간 (0~1)
+    float2 UV : TEXCOORD0;              // 쿼드 코너 UV (0,0), (1,0), (0,1), (1,1)
+};
+
+// 슬롯 1: 인스턴스 데이터 (FSpriteParticleInstanceVertex)
+struct VS_INSTANCE_INPUT
+{
+    float3 WorldPosition : INST_POSITION;   // 파티클 중심 위치
+    float Rotation : INST_ROTATION;         // Z축 회전 (라디안)
+    float2 Size : INST_SIZE;                // 파티클 크기
+    float4 Color : INST_COLOR;              // 파티클 색상
+    float RelativeTime : INST_TIME;         // 상대 시간
 };
 
 struct PS_INPUT
@@ -37,16 +43,16 @@ struct PS_OUTPUT
 Texture2D ParticleTexture : register(t0);
 SamplerState LinearSampler : register(s0);
 
-PS_INPUT mainVS(VS_INPUT input)
+PS_INPUT mainVS(VS_QUAD_INPUT quad, VS_INSTANCE_INPUT inst)
 {
     PS_INPUT output;
 
     // 로컬 오프셋 계산 (UV 0.5 중심 기준)
-    float2 localOffset = (input.UV - 0.5f) * input.Size;
+    float2 localOffset = (quad.UV - 0.5f) * inst.Size;
 
     // Z축 회전 적용 (카메라 Forward 축 기준 회전)
-    float cosR = cos(input.Rotation);
-    float sinR = sin(input.Rotation);
+    float cosR = cos(inst.Rotation);
+    float sinR = sin(inst.Rotation);
     float2 rotatedOffset;
     rotatedOffset.x = localOffset.x * cosR - localOffset.y * sinR;
     rotatedOffset.y = localOffset.x * sinR + localOffset.y * cosR;
@@ -56,13 +62,13 @@ PS_INPUT mainVS(VS_INPUT input)
     float3 worldOffset = mul(float4(viewSpaceOffset, 0.0f), InverseViewMatrix).xyz;
 
     // 월드 위치에 빌보드 오프셋 적용
-    float3 worldPos = input.WorldPosition + worldOffset;
+    float3 worldPos = inst.WorldPosition + worldOffset;
 
     // View-Projection 변환
     output.Position = mul(float4(worldPos, 1.0f), mul(ViewMatrix, ProjectionMatrix));
-    output.UV = input.UV;
-    output.Color = input.Color;
-    output.RelativeTime = input.RelativeTime;
+    output.UV = quad.UV;
+    output.Color = inst.Color;
+    output.RelativeTime = inst.RelativeTime;
 
     return output;
 }

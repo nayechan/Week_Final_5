@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Object.h"
 #include "Modules/ParticleModule.h"
@@ -36,7 +36,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="Modules")
 	UParticleModuleSpawn* SpawnModule = nullptr;
 
-	// 언리얼 엔진 호환: 빠른 접근을 위한 캐시된 모듈 배열 (직렬화 안 됨)
+	// 언리얼 엔진 호환: 빠른 접근을 위한 캐시된 모듈 배열 (직렬화하면 안 됨)
 	TArray<UParticleModule*> SpawnModules;
 	TArray<UParticleModule*> UpdateModules;
 

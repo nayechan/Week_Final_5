@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "ParticleModuleVelocity.h"
 #include "ParticleEmitterInstance.h"  // BEGIN_UPDATE_LOOP 매크로에서 FParticleEmitterInstance 정의 필요
+#include "ParticleSystemComponent.h"
 
 // 언리얼 엔진 호환: 페이로드 크기 반환
 uint32 UParticleModuleVelocity::RequiredBytes(FParticleEmitterInstance* Owner)
@@ -10,7 +11,7 @@ uint32 UParticleModuleVelocity::RequiredBytes(FParticleEmitterInstance* Owner)
 
 void UParticleModuleVelocity::Spawn(FParticleEmitterInstance* Owner, int32 Offset, float SpawnTime, FBaseParticle* ParticleBase)
 {
-	if (!ParticleBase)
+	if (!ParticleBase || !Owner || !Owner->Component)
 	{
 		return;
 	}
@@ -29,19 +30,21 @@ void UParticleModuleVelocity::Spawn(FParticleEmitterInstance* Owner, int32 Offse
 		dist(gen) * StartVelocityRange.Z
 	);
 
-	FVector InitialVel = StartVelocity + RandomOffset;
-	ParticleBase->Velocity = InitialVel;
-	ParticleBase->BaseVelocity = InitialVel;
+	// 로컬 공간에서 초기 속도 계산 + 월드 공간 속도로 변환
+	const FTransform& ComponentTransform = Owner->Component->GetWorldTransform();
+	FVector LocalInitialVel = StartVelocity + RandomOffset;
+	FVector WorldInitialVel = ComponentTransform.TransformVector(LocalInitialVel);
+
+	// 월드 공간 속도를 파티클에 적용
+	ParticleBase->Velocity = WorldInitialVel;
+	ParticleBase->BaseVelocity = WorldInitialVel;
 
 	// 언리얼 엔진 호환: PARTICLE_ELEMENT 매크로 사용 (CurrentOffset 자동 증가)
 	PARTICLE_ELEMENT(FParticleVelocityPayload, VelPayload);
 
-	VelPayload.InitialVelocity = InitialVel;
-	VelPayload.VelocityMagnitude = std::sqrt(
-		InitialVel.X * InitialVel.X +
-		InitialVel.Y * InitialVel.Y +
-		InitialVel.Z * InitialVel.Z
-	);
+	// 페이로드 설정
+	VelPayload.InitialVelocity = WorldInitialVel;
+	VelPayload.VelocityMagnitude = WorldInitialVel.Size();
 }
 
 // 언리얼 엔진 호환: Context를 사용한 업데이트 (페이로드 시스템 예시)
