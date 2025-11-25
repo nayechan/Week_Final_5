@@ -1393,7 +1393,7 @@ void SParticleEditorWindow::RenderEmitterColumn(int32 EmitterIndex, UParticleEmi
 			{
 				AddModuleToLOD<UParticleModuleSize>(LOD, State);
 			}
-			if (ImGui::MenuItem("속도 크기 스케일"))
+			if (ImGui::MenuItem("속도 기준 크기"))
 			{
 				AddModuleToLOD<UParticleModuleSizeScaleBySpeed>(LOD, State);
 			}
@@ -1450,7 +1450,7 @@ void SParticleEditorWindow::RenderModuleBlock(int32 EmitterIdx, int32 ModuleIdx,
 			{"Rotation", "초기 회전"},
 			{"MeshRotation", "메시 회전"},
 			{"RotationRate", "초기 회전 속도"},
-			{"SizeScaleBySpeed", "속도 크기 스케일"}
+			{"SizeScaleBySpeed", "속도 기준 크기"}
 		};
 
 		auto it = ModuleNameMap.find(DisplayName);

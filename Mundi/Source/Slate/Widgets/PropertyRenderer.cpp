@@ -22,6 +22,7 @@
 #include "ImGui/imgui_curve.hpp"
 #include "Source/Runtime/Engine/Viewer/EditorAssetPreviewContext.h"
 #include "EnumRegistry.generated.h"
+#include "ParticleModule.h"
 #include "ParticleSystemComponent.h"
 #include "ParticleSystem.h"
 
@@ -1937,6 +1938,105 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 	bool bElementChanged = false;
 	UMaterialInterface* CurrentMaterial = *MaterialPtr;
 
+	// 파티클 모듈 여부 체크
+	UParticleModule* ParticleModule = Cast<UParticleModule>(OwningObject);
+
+	// 파티클 모듈 전용 UI
+	if (ParticleModule)
+	{
+		// 텍스처 캐시 확인
+		if (CachedTextureItems.empty())
+		{
+			ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "텍스처 캐시가 비어있습니다.");
+			return false;
+		}
+
+		// 현재 머티리얼의 Diffuse 텍스처 가져오기
+		UTexture* CurrentDiffuse = CurrentMaterial ? CurrentMaterial->GetTexture(EMaterialTextureSlot::Diffuse) : nullptr;
+		FString CurrentTexturePath = CurrentDiffuse ? CurrentDiffuse->GetFilePath() : "None";
+
+		// 썸네일 + 콤보박스 레이아웃
+		ImGui::BeginGroup();
+
+		// 썸네일 (64x64)
+		const float ThumbnailSize = 64.0f;
+		ImVec2 ThumbnailSizeVec(ThumbnailSize, ThumbnailSize);
+
+		if (CurrentDiffuse && CurrentDiffuse->GetShaderResourceView())
+		{
+			ImGui::Image((void*)CurrentDiffuse->GetShaderResourceView(), ThumbnailSizeVec);
+		}
+		else
+		{
+			// 빈 썸네일 (검정 배경)
+			ImVec2 pos = ImGui::GetCursorScreenPos();
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			drawList->AddRectFilled(pos, ImVec2(pos.x + ThumbnailSize, pos.y + ThumbnailSize), IM_COL32(30, 30, 30, 255));
+			drawList->AddRect(pos, ImVec2(pos.x + ThumbnailSize, pos.y + ThumbnailSize), IM_COL32(60, 60, 60, 255));
+			ImGui::Dummy(ThumbnailSizeVec);
+		}
+
+		ImGui::SameLine();
+
+		// 텍스처 선택 콤보박스
+		ImGui::BeginGroup();
+		ImGui::Text("%s", Label);
+
+		// UMaterial로 캐스팅 (SetMaterialInfo, ResolveTextures는 UMaterial에만 있음)
+		UMaterial* Material = Cast<UMaterial>(CurrentMaterial);
+
+		ImGui::SetNextItemWidth(200);
+		FString ComboLabel = "##ParticleTexture" + FString(Label);
+		if (ImGui::BeginCombo(ComboLabel.c_str(), CurrentTexturePath.c_str()))
+		{
+			// "None" 옵션
+			bool bIsNoneSelected = (CurrentDiffuse == nullptr);
+			if (ImGui::Selectable("None", bIsNoneSelected))
+			{
+				if (Material)
+				{
+					FMaterialInfo Info = Material->GetMaterialInfo();
+					Info.DiffuseTextureFileName = "";
+					Material->SetMaterialInfo(Info);
+					Material->ResolveTextures();
+					bElementChanged = true;
+				}
+			}
+			if (bIsNoneSelected) ImGui::SetItemDefaultFocus();
+
+			// 캐시된 텍스처 목록
+			for (int j = 0; j < (int)CachedTexturePaths.size(); ++j)
+			{
+				const FString& Path = CachedTexturePaths[j];
+				const char* DisplayName = CachedTextureItems[j + 1];
+				bool bIsSelected = (CurrentTexturePath == Path);
+
+				if (ImGui::Selectable(DisplayName, bIsSelected))
+				{
+					if (Material)
+					{
+						// 셰이더는 유지하고 텍스처만 변경
+						FMaterialInfo Info = Material->GetMaterialInfo();
+						Info.DiffuseTextureFileName = Path;
+						Material->SetMaterialInfo(Info);
+						Material->ResolveTextures();
+						bElementChanged = true;
+					}
+				}
+				if (bIsSelected) ImGui::SetItemDefaultFocus();
+			}
+
+			ImGui::EndCombo();
+		}
+
+		ImGui::EndGroup();
+		ImGui::EndGroup();
+
+		return bElementChanged;
+	}
+
+	// ========== 일반 컴포넌트용 기존 UI ==========
+
 	// 캐시가 비어있으면 아무것도 렌더링하지 않음 (필수)
 	if (CachedMaterialItems.empty())
 	{
@@ -2026,7 +2126,7 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 		{
 			ImGui::Text("UMeshComponent만 텍스처를 변경할 수 있습니다");
 			ImGui::Unindent();
-			return false;
+			return bElementChanged;
 		}
 
 		for (uint8 TexSlotIndex = 0; TexSlotIndex < (uint8)EMaterialTextureSlot::Max; ++TexSlotIndex)
