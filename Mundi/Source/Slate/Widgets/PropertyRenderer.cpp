@@ -1989,6 +1989,9 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 		FString ComboLabel = "##ParticleTexture" + FString(Label);
 		if (ImGui::BeginCombo(ComboLabel.c_str(), CurrentTexturePath.c_str()))
 		{
+			// 미리보기 썸네일 크기
+			const float PreviewSize = 96.0f;
+
 			// "None" 옵션
 			bool bIsNoneSelected = (CurrentDiffuse == nullptr);
 			if (ImGui::Selectable("None", bIsNoneSelected))
@@ -2023,6 +2026,21 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 						bElementChanged = true;
 					}
 				}
+
+				// 호버링 시 텍스처 미리보기 툴팁
+				if (ImGui::IsItemHovered())
+				{
+					// 텍스처 로드 (캐시에서 가져옴)
+					UTexture* PreviewTexture = UResourceManager::GetInstance().Load<UTexture>(Path);
+					if (PreviewTexture && PreviewTexture->GetShaderResourceView())
+					{
+						ImGui::BeginTooltip();
+						ImGui::Image((void*)PreviewTexture->GetShaderResourceView(), ImVec2(PreviewSize, PreviewSize));
+						ImGui::Text("%s", Path.c_str());
+						ImGui::EndTooltip();
+					}
+				}
+
 				if (bIsSelected) ImGui::SetItemDefaultFocus();
 			}
 
