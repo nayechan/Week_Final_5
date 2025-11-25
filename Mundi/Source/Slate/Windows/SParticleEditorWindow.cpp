@@ -32,6 +32,7 @@
 #include "StaticMesh.h"
 #include "ResourceManager.h"
 #include "Shader.h"
+#include "Widgets/PropertyRenderer.h"
 
 SParticleEditorWindow::SParticleEditorWindow()
 {
@@ -936,10 +937,42 @@ void SParticleEditorWindow::RenderToolbar()
 
 void SParticleEditorWindow::RenderDetailsPanel(float PanelWidth)
 {
-	// 디테일 패널 (5단계에서 구현)
+	ParticleEditorState* State = GetActiveParticleState();
+	if (!State)
+	{
+		ImGui::TextDisabled("파티클 시스템이 로드되지 않았습니다");
+		return;
+	}
+
 	ImGui::Text("디테일");
 	ImGui::Separator();
-	ImGui::TextDisabled("모듈을 선택하세요 (5단계에서 구현)");
+
+	if (!State->SelectedModule)
+	{
+		ImGui::TextDisabled("모듈을 선택하세요");
+		return;
+	}
+
+	// 모듈 클래스 이름 표시
+	UClass* ModuleClass = State->SelectedModule->GetClass();
+	const char* DisplayName = ModuleClass->DisplayName;
+	ImGui::Text("모듈: %s", DisplayName ? DisplayName : ModuleClass->Name);
+	ImGui::Separator();
+
+	// 프로퍼티 렌더링
+	ImGui::PushItemWidth(PanelWidth * 0.55f);
+	bool bChanged = UPropertyRenderer::RenderAllPropertiesWithInheritance(State->SelectedModule);
+	ImGui::PopItemWidth();
+
+	// 변경 시 Dirty 플래그 및 프리뷰 갱신
+	if (bChanged)
+	{
+		State->bIsDirty = true;
+		if (State->PreviewComponent)
+		{
+			State->PreviewComponent->RefreshEmitterInstances();
+		}
+	}
 }
 
 // 일반 모듈 추가 헬퍼 함수

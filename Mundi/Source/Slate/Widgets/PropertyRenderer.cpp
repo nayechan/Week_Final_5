@@ -375,15 +375,62 @@ void UPropertyRenderer::RenderAllProperties(UObject* Object)
 	RenderProperties(Properties, Object);
 }
 
-void UPropertyRenderer::RenderAllPropertiesWithInheritance(UObject* Object)
+bool UPropertyRenderer::RenderAllPropertiesWithInheritance(UObject* Object)
 {
 	if (!Object)
-		return;
+		return false;
 
+	bool bAnyChanged = false;
 	UClass* Class = Object->GetClass();
 	const TArray<FProperty>& AllProperties = Class->GetAllProperties();
 
-	RenderProperties(AllProperties, Object);
+	// 카테고리별 그룹핑
+	TArray<TPair<FString, TArray<const FProperty*>>> CategorizedProps;
+	TMap<FString, int32> CategoryIndexMap;
+
+	for (const FProperty& Prop : AllProperties)
+	{
+		if (Prop.bIsEditAnywhere)
+		{
+			FString CategoryName = Prop.Category ? Prop.Category : "Default";
+			int32* IndexPtr = CategoryIndexMap.Find(CategoryName);
+
+			if (IndexPtr)
+			{
+				CategorizedProps[*IndexPtr].second.Add(&Prop);
+			}
+			else
+			{
+				TArray<const FProperty*> NewPropArray;
+				NewPropArray.Add(&Prop);
+				int32 NewIndex = CategorizedProps.Add(
+					TPair<FString, TArray<const FProperty*>>(CategoryName, NewPropArray));
+				CategoryIndexMap.Add(CategoryName, NewIndex);
+			}
+		}
+	}
+
+	// 카테고리별 렌더링 및 변경 감지
+	for (auto& Pair : CategorizedProps)
+	{
+		const FString& Category = Pair.first;
+		const TArray<const FProperty*>& Props = Pair.second;
+
+		ImGui::Separator();
+		ImGui::Text("%s", Category.c_str());
+
+		for (const FProperty* Prop : Props)
+		{
+			ImGui::PushID(Prop);
+			if (RenderProperty(*Prop, Object))
+			{
+				bAnyChanged = true;
+			}
+			ImGui::PopID();
+		}
+	}
+
+	return bAnyChanged;
 }
 
 // ===== 리소스 캐싱 =====
