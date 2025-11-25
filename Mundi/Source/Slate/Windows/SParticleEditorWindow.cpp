@@ -1,6 +1,5 @@
 ﻿#include "pch.h"
 #include "SParticleEditorWindow.h"
-#include <unordered_map>
 #include "SlateManager.h"
 #include "Source/Runtime/Engine/Viewer/ParticleEditorBootstrap.h"
 #include "Source/Runtime/Engine/Viewer/EditorAssetPreviewContext.h"
@@ -18,8 +17,17 @@
 #include "Modules/ParticleModuleVelocity.h"
 #include "Modules/ParticleModuleColor.h"
 #include "Modules/ParticleModuleTypeDataSprite.h"
+#include "Modules/ParticleModuleTypeDataMesh.h"
+#include "Modules/ParticleModuleTypeDataRibbon.h"
+#include "Modules/ParticleModuleTypeDataBeam.h"
 #include "Modules/ParticleModuleRequired.h"
 #include "Modules/ParticleModuleSpawn.h"
+#include "Modules/ParticleModuleAcceleration.h"
+#include "Modules/ParticleModuleLocation.h"
+#include "Modules/ParticleModuleRotation.h"
+#include "Modules/ParticleModuleMeshRotation.h"
+#include "Modules/ParticleModuleRotationRate.h"
+#include "Modules/ParticleModuleSizeScaleBySpeed.h"
 #include "Material.h"
 
 SParticleEditorWindow::SParticleEditorWindow()
@@ -810,10 +818,26 @@ void SParticleEditorWindow::RenderDetailsPanel(float PanelWidth)
 	ImGui::TextDisabled("모듈을 선택하세요 (5단계에서 구현)");
 }
 
+// 일반 모듈 추가 헬퍼 함수
 template<typename T>
 static void AddModuleToLOD(UParticleLODLevel* LOD, ParticleEditorState* State)
 {
 	T* NewModule = NewObject<T>();
+	LOD->Modules.Add(NewModule);
+	LOD->CacheModuleInfo();
+	if (State->PreviewComponent)
+	{
+		State->PreviewComponent->RefreshEmitterInstances();
+	}
+	State->bIsDirty = true;
+}
+
+// 타입 데이터 모듈 설정 헬퍼 함수
+template<typename T>
+static void SetTypeDataModule(UParticleLODLevel* LOD, ParticleEditorState* State)
+{
+	T* NewModule = NewObject<T>();
+	LOD->TypeDataModule = NewModule;
 	LOD->Modules.Add(NewModule);
 	LOD->CacheModuleInfo();
 	if (State->PreviewComponent)
@@ -1018,30 +1042,13 @@ void SParticleEditorWindow::RenderEmitterColumn(int32 EmitterIndex, UParticleEmi
 
 	if (ImGui::BeginPopupContextWindow(ContextMenuId, ImGuiPopupFlags_MouseButtonRight))
 	{
-		// 모듈 추가 서브메뉴
-		if (ImGui::BeginMenu("모듈 추가"))
-		{
-			if (ImGui::MenuItem("Lifetime"))
-				AddModuleToLOD<UParticleModuleLifetime>(LOD, State);
-			if (ImGui::MenuItem("Size"))
-				AddModuleToLOD<UParticleModuleSize>(LOD, State);
-			if (ImGui::MenuItem("Velocity"))
-				AddModuleToLOD<UParticleModuleVelocity>(LOD, State);
-			if (ImGui::MenuItem("Color"))
-				AddModuleToLOD<UParticleModuleColor>(LOD, State);
-			ImGui::EndMenu();
-		}
-
-		ImGui::Separator();
-
-		// 이미터 관리
+		// 이미터 삭제
 		if (ImGui::MenuItem("이미터 삭제"))
 		{
 			UParticleSystem* System = State->EditingTemplate;
 			if (System && EmitterIndex < System->Emitters.Num())
 			{
 				System->Emitters.RemoveAt(EmitterIndex);
-				
 				State->SelectedEmitterIndex = -1;
 				State->SelectedModuleIndex = -1;
 				State->SelectedModule = nullptr;
@@ -1052,6 +1059,91 @@ void SParticleEditorWindow::RenderEmitterColumn(int32 EmitterIndex, UParticleEmi
 				}
 			}
 		}
+
+		ImGui::Separator();
+
+		// 타입 데이터
+		if (ImGui::BeginMenu("타입 데이터"))
+		{
+			if (ImGui::MenuItem("스프라이트"))
+				SetTypeDataModule<UParticleModuleTypeDataSprite>(LOD, State);
+			if (ImGui::MenuItem("메시"))
+				SetTypeDataModule<UParticleModuleTypeDataMesh>(LOD, State);
+			if (ImGui::MenuItem("리본"))
+				SetTypeDataModule<UParticleModuleTypeDataRibbon>(LOD, State);
+			if (ImGui::MenuItem("빔"))
+				SetTypeDataModule<UParticleModuleTypeDataBeam>(LOD, State);
+			ImGui::EndMenu();
+		}
+
+		// 가속
+		if (ImGui::BeginMenu("가속"))
+		{
+			if (ImGui::MenuItem("가속"))
+				AddModuleToLOD<UParticleModuleAcceleration>(LOD, State);
+			ImGui::EndMenu();
+		}
+
+		// 컬러
+		if (ImGui::BeginMenu("컬러"))
+		{
+			if (ImGui::MenuItem("컬러 오버 라이프"))
+				AddModuleToLOD<UParticleModuleColor>(LOD, State);
+			ImGui::EndMenu();
+		}
+
+		// 수명
+		if (ImGui::BeginMenu("수명"))
+		{
+			if (ImGui::MenuItem("수명"))
+				AddModuleToLOD<UParticleModuleLifetime>(LOD, State);
+			ImGui::EndMenu();
+		}
+
+		// 위치
+		if (ImGui::BeginMenu("위치"))
+		{
+			if (ImGui::MenuItem("초기 위치"))
+				AddModuleToLOD<UParticleModuleLocation>(LOD, State);
+			ImGui::EndMenu();
+		}
+
+		// 회전
+		if (ImGui::BeginMenu("회전"))
+		{
+			if (ImGui::MenuItem("초기 회전"))
+				AddModuleToLOD<UParticleModuleRotation>(LOD, State);
+			if (ImGui::MenuItem("메시 회전"))
+				AddModuleToLOD<UParticleModuleMeshRotation>(LOD, State);
+			ImGui::EndMenu();
+		}
+
+		// 회전 속도
+		if (ImGui::BeginMenu("회전 속도"))
+		{
+			if (ImGui::MenuItem("초기 회전 속도"))
+				AddModuleToLOD<UParticleModuleRotationRate>(LOD, State);
+			ImGui::EndMenu();
+		}
+
+		// 크기
+		if (ImGui::BeginMenu("크기"))
+		{
+			if (ImGui::MenuItem("초기 크기"))
+				AddModuleToLOD<UParticleModuleSize>(LOD, State);
+			if (ImGui::MenuItem("속도 크기 스케일"))
+				AddModuleToLOD<UParticleModuleSizeScaleBySpeed>(LOD, State);
+			ImGui::EndMenu();
+		}
+
+		// 속도
+		if (ImGui::BeginMenu("속도"))
+		{
+			if (ImGui::MenuItem("초기 속도"))
+				AddModuleToLOD<UParticleModuleVelocity>(LOD, State);
+			ImGui::EndMenu();
+		}
+
 		ImGui::EndPopup();
 	}
 
@@ -1077,16 +1169,22 @@ void SParticleEditorWindow::RenderModuleBlock(int32 EmitterIdx, int32 ModuleIdx,
 
 		// 언리얼 엔진 표준 모듈 이름 매핑
 		static const std::unordered_map<FString, FString> ModuleNameMap = {
-			{"Color", "Color Over Life"},
-			{"Size", "Initial Size"},
-			{"Velocity", "Initial Velocity"},
-			{"Lifetime", "Lifetime"},
-			{"Spawn", "Spawn"},
-			{"Required", "Required"},
-			{"TypeDataSprite", "Sprite TypeData"},
-			{"TypeDataMesh", "Mesh TypeData"},
-			{"TypeDataRibbon", "Ribbon TypeData"},
-			{"TypeDataBeam", "Beam TypeData"}
+			{"Color", "컬러 오버 라이프"},
+			{"Size", "초기 크기"},
+			{"Velocity", "초기 속도"},
+			{"Lifetime", "수명"},
+			{"Spawn", "스폰"},
+			{"Required", "필수"},
+			{"TypeDataSprite", "스프라이트 타입데이터"},
+			{"TypeDataMesh", "메시 타입데이터"},
+			{"TypeDataRibbon", "리본 타입데이터"},
+			{"TypeDataBeam", "빔 타입데이터"},
+			{"Acceleration", "가속"},
+			{"Location", "초기 위치"},
+			{"Rotation", "초기 회전"},
+			{"MeshRotation", "메시 회전"},
+			{"RotationRate", "초기 회전 속도"},
+			{"SizeScaleBySpeed", "속도 크기 스케일"}
 		};
 
 		auto it = ModuleNameMap.find(DisplayName);
