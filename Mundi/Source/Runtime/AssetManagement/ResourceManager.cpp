@@ -526,12 +526,12 @@ void UResourceManager::InitShaderILMap()
     // ────────────────────────────────
     // 슬롯 0: 쿼드 버텍스 (Per-Vertex)
     layout.Add({ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });       // UV
-    // 슬롯 1: 인스턴스 데이터 (Per-Instance)
-    layout.Add({ "INST_POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 });   // WorldPosition (12 bytes)
-    layout.Add({ "INST_ROTATION", 0, DXGI_FORMAT_R32_FLOAT, 1, 12, D3D11_INPUT_PER_INSTANCE_DATA, 1 });        // Rotation (4 bytes)
-    layout.Add({ "INST_SIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 });         // Size (8 bytes)
-    layout.Add({ "INST_COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 24, D3D11_INPUT_PER_INSTANCE_DATA, 1 });  // Color (16 bytes)
-    layout.Add({ "INST_TIME", 0, DXGI_FORMAT_R32_FLOAT, 1, 40, D3D11_INPUT_PER_INSTANCE_DATA, 1 });            // RelativeTime (4 bytes)
+    // 슬롯 1: 인스턴스 데이터 (Per-Instance) - 표준 시맨틱 사용
+    layout.Add({ "TEXCOORD", 1, DXGI_FORMAT_R32G32B32_FLOAT, 1, 0, D3D11_INPUT_PER_INSTANCE_DATA, 1 });   // WorldPosition (12 bytes)
+    layout.Add({ "TEXCOORD", 2, DXGI_FORMAT_R32_FLOAT, 1, 12, D3D11_INPUT_PER_INSTANCE_DATA, 1 });        // Rotation (4 bytes)
+    layout.Add({ "TEXCOORD", 3, DXGI_FORMAT_R32G32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 });     // Size (8 bytes)
+    layout.Add({ "COLOR", 1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 24, D3D11_INPUT_PER_INSTANCE_DATA, 1 });  // Color (16 bytes)
+    layout.Add({ "TEXCOORD", 4, DXGI_FORMAT_R32_FLOAT, 1, 40, D3D11_INPUT_PER_INSTANCE_DATA, 1 });        // RelativeTime (4 bytes)
     ShaderToInputLayoutMap["Shaders/Particle/ParticleSprite.hlsl"] = layout;
     layout.clear();
 

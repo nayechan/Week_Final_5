@@ -257,8 +257,8 @@ void UParticleSystemComponent::CreateDebugSpriteParticleSystem()
 
 	// 스폰 모듈 생성
 	UParticleModuleSpawn* SpawnModule = NewObject<UParticleModuleSpawn>();
-	SpawnModule->SpawnRate = 50.0f;    // 초당 50개 파티클
-	SpawnModule->BurstCount = 20;      // 시작 시 20개 버스트
+	SpawnModule->SpawnRate = 5000.0f;    // 초당 50개 파티클
+	SpawnModule->BurstCount = 10000;      // 시작 시 20개 버스트
 	LODLevel->SpawnModule = SpawnModule;
 	LODLevel->Modules.Add(SpawnModule);
 
@@ -283,8 +283,8 @@ void UParticleSystemComponent::CreateDebugSpriteParticleSystem()
 
 	// 색상 모듈 (페이드 아웃 효과 - bUpdateModule이 기본 true라 자동 보간)
 	UParticleModuleColor* ColorModule = NewObject<UParticleModuleColor>();
-	ColorModule->StartColor = FLinearColor(1.0f, 0.8f, 0.3f, 1.0f);  // 주황색
-	ColorModule->EndColor = FLinearColor(0.5f, 0.5f, 0.5f, 0.0f);    // 회색 + 투명
+	ColorModule->StartColor = FLinearColor(1.0f, 1.0f, 1.0f, 1.0f);  // 불투명 흰색
+	ColorModule->EndColor = FLinearColor(1.0f, 1.0f, 1.0f, 0.0f);    // 투명 흰색
 	LODLevel->Modules.Add(ColorModule);
 
 	// 회전 모듈 (2D 회전)
@@ -295,7 +295,7 @@ void UParticleSystemComponent::CreateDebugSpriteParticleSystem()
 
 	// 회전 속도 모듈
 	UParticleModuleRotationRate* RotRateModule = NewObject<UParticleModuleRotationRate>();
-	RotRateModule->StartRotationRate = 0.5f;  // 천천히 회전
+	RotRateModule->StartRotationRate = 3.0f;  // 천천히 회전
 	LODLevel->Modules.Add(RotRateModule);
 
 	// 위치 모듈 생성
@@ -1012,10 +1012,26 @@ void UParticleSystemComponent::CreateSpriteParticleBatch(TArray<FMeshBatchElemen
 		return;
 	}
 
-	// Material이 없으면 기본 스프라이트 셰이더 사용
+	// Material이 없으면 기본 스프라이트 셰이더 + 기본 텍스처로 생성
 	if (!Material)
 	{
-		Material = UResourceManager::GetInstance().Load<UMaterial>("Shaders/Particle/ParticleSprite.hlsl");
+		// ParticleSprite 셰이더 로드
+		UShader* ParticleSpriteShader = UResourceManager::GetInstance().Load<UShader>("Shaders/Particle/ParticleSprite.hlsl");
+
+		if (ParticleSpriteShader)
+		{
+			// 새 파티클 머터리얼 생성
+			UMaterial* ParticleMaterial = NewObject<UMaterial>();
+			ParticleMaterial->SetShader(ParticleSpriteShader);
+
+			// 기본 파티클 텍스처 설정
+			FMaterialInfo MatInfo;
+			MatInfo.DiffuseTextureFileName = GDataDir + "/Particles/Particle_Gaussian.png";
+			ParticleMaterial->SetMaterialInfo(MatInfo);
+			ParticleMaterial->ResolveTextures();
+
+			Material = ParticleMaterial;
+		}
 	}
 
 	if (!Material || !Material->GetShader())

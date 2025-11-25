@@ -17,14 +17,14 @@ struct VS_QUAD_INPUT
     float2 UV : TEXCOORD0;              // 쿼드 코너 UV (0,0), (1,0), (0,1), (1,1)
 };
 
-// 슬롯 1: 인스턴스 데이터 (FSpriteParticleInstanceVertex)
+// 슬롯 1: 인스턴스 데이터 (FSpriteParticleInstanceVertex) - 표준 시맨틱 사용
 struct VS_INSTANCE_INPUT
 {
-    float3 WorldPosition : INST_POSITION;   // 파티클 중심 위치
-    float Rotation : INST_ROTATION;         // Z축 회전 (라디안)
-    float2 Size : INST_SIZE;                // 파티클 크기
-    float4 Color : INST_COLOR;              // 파티클 색상
-    float RelativeTime : INST_TIME;         // 상대 시간
+    float3 WorldPosition : TEXCOORD1;   // 파티클 중심 위치
+    float Rotation : TEXCOORD2;         // Z축 회전 (라디안)
+    float2 Size : TEXCOORD3;            // 파티클 크기
+    float4 Color : COLOR1;              // 파티클 색상
+    float RelativeTime : TEXCOORD4;     // 상대 시간
 };
 
 struct PS_INPUT

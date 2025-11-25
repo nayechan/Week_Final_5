@@ -4,7 +4,10 @@
 #include "Modules/ParticleModule.h"
 #include "Modules/ParticleModuleSpawn.h"
 #include "Modules/ParticleModuleMeshRotation.h"
+#include "ParticleModuleTypeDataSprite.h"
 #include "ParticleModuleTypeDataMesh.h"
+#include "ParticleModuleTypeDataBeam.h"
+#include "ParticleModuleTypeDataRibbon.h"
 
 FParticleEmitterInstance::FParticleEmitterInstance()
 	: SpriteTemplate(nullptr)
@@ -599,136 +602,260 @@ FDynamicEmitterDataBase* FParticleEmitterInstance::GetDynamicData(bool bSelected
 		return nullptr;
 	}
 
-	const bool bIsMeshEmitter =	
-		(CurrentLODLevel->TypeDataModule && CurrentLODLevel->TypeDataModule->HasMesh());
-	
-	if (bIsMeshEmitter)
+	UParticleModuleTypeDataBase* TypeData = CurrentLODLevel->TypeDataModule;
+
+	// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	// BeamEmitter DynamicData
+	// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	if (auto* BeamType = Cast<UParticleModuleTypeDataBeam>(TypeData))
 	{
-		// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-		// MeshEmitter DynamicData
-		// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+		auto* BeamData = new FDynamicBeamEmitterData();
+		if (!BuildBeamDynamicData(BeamData, BeamType))
+		{
+			delete BeamData;
+			return nullptr;
+		}
+		return BeamData;
+	}
 
+	// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	// RibbonEmitter DynamicData
+	// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	if (auto* RibbonType = Cast<UParticleModuleTypeDataRibbon>(TypeData))
+	{
+		auto* RibbonData = new FDynamicRibbonEmitterData();
+		if (!BuildRibbonDynamicData(RibbonData, RibbonType))
+		{
+			delete RibbonData;
+			return nullptr;
+		}
+		return RibbonData;
+	}
+
+	// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	// MeshEmitter DynamicData
+	// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	if (auto* MeshType = Cast<UParticleModuleTypeDataMesh>(TypeData))
+	{
 		FDynamicMeshEmitterData* MeshData = new FDynamicMeshEmitterData();
-
-		MeshData->MeshSource.ActiveParticleCount = ActiveParticles;
-		MeshData->MeshSource.ParticleStride = ParticleStride;
-
-		// 파티클 데이터 복사 (스프라이트와 동일한 방식: 깊은 복사)
-		int32 ParticleDataBytes = ActiveParticles * ParticleStride;
-		bool bAllocSuccess = MeshData->MeshSource.DataContainer.Alloc(ParticleDataBytes, ActiveParticles);
-
-		if (!bAllocSuccess)
+		if (!BuildMeshDynamicData(MeshData, MeshType))
 		{
 			delete MeshData;
 			return nullptr;
 		}
-
-		// 컴팩트 복사: 활성 파티클만 연속으로 복사
-		uint8* DstData = MeshData->MeshSource.DataContainer.ParticleData;
-		for (int32 i = 0; i < ActiveParticles; i++)
-		{
-			int32 SrcIndex = ParticleIndices[i];
-			const uint8* SrcParticle = ParticleData + SrcIndex * ParticleStride;
-			memcpy(DstData + i * ParticleStride, SrcParticle, ParticleStride);
-
-			// 인덱스는 컴팩트 복사 후 순차적으로 재매핑
-			MeshData->MeshSource.DataContainer.ParticleIndices[i] = static_cast<uint16>(i);
-		}
-
-		// TypeData에서 Mesh 정보 받아오기
-		UParticleModuleTypeDataBase* TypeData = CurrentLODLevel->TypeDataModule;
-		UParticleModuleTypeDataMesh* MeshType = Cast<UParticleModuleTypeDataMesh>(TypeData);
-		
-		if (MeshType)
-		{
-			MeshData->MeshSource.MeshData = MeshType->Mesh;
-		}
-		MeshData->MeshSource.MaterialInterface = CurrentLODLevel->RequiredModule ? CurrentLODLevel->RequiredModule->Material : nullptr;
-		MeshData->MeshSource.SortMode = CurrentLODLevel->RequiredModule ? CurrentLODLevel->RequiredModule->SortMode : 0;
-
-		// MeshRotation 모듈 오프셋 찾기
-		MeshData->MeshSource.MeshRotationPayloadOffset = -1;
-		for (UParticleModule* Module : CurrentLODLevel->Modules)
-		{
-			if (Module && Module->bEnabled)
-			{
-				UParticleModuleMeshRotation* MeshRotModule = Cast<UParticleModuleMeshRotation>(Module);
-				if (MeshRotModule)
-				{
-					// PayloadOffset + ModuleOffsetInParticle = 파티클 내 페이로드 위치
-					MeshData->MeshSource.MeshRotationPayloadOffset = PayloadOffset + MeshRotModule->ModuleOffsetInParticle;
-					break;
-				}
-			}
-		}
-
 		return MeshData;
+	}
+
+	// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	// SpriteEmitter DynamicData
+	// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	{
+		FDynamicSpriteEmitterData* SpriteData = new FDynamicSpriteEmitterData();
+		if (!BuildSpriteDynamicData(SpriteData))
+		{
+			delete SpriteData;
+			return nullptr;
+		}
+		return SpriteData;
+	}
+}
+
+bool FParticleEmitterInstance::BuildSpriteDynamicData(FDynamicSpriteEmitterData* Data)
+{
+	if(!Data)	return false;
+
+	// 소스 데이터 설정
+	Data->Source.ActiveParticleCount = ActiveParticles;
+	Data->Source.ParticleStride = ParticleStride;
+
+	// 파티클 데이터 복사 (언리얼 엔진 방식: Alloc 사용)
+	int32 ParticleDataBytes = ActiveParticles * ParticleStride;
+	bool bAllocSuccess = Data->Source.DataContainer.Alloc(ParticleDataBytes, ActiveParticles);
+
+	if (!bAllocSuccess)
+	{
+		// 할당 실패 시 데이터 삭제 후 nullptr 반환
+		UE_LOG("[ParticleEmitterInstance] Failed to allocate render thread data: %d particles (%d bytes)\n",
+			ActiveParticles, ParticleDataBytes);
+		return false;
+	}
+
+	// 컴팩트 복사: 활성 파티클만 연속으로 복사 (sparse array → dense array)
+	uint8* DstData = Data->Source.DataContainer.ParticleData;
+	for (int32 i = 0; i < ActiveParticles; i++)
+	{
+		int32 SrcIndex = ParticleIndices[i];
+		const uint8* SrcParticle = ParticleData + SrcIndex * ParticleStride;
+		memcpy(DstData + i * ParticleStride, SrcParticle, ParticleStride);
+
+		// 인덱스는 컴팩트 복사 후 순차적으로 재매핑
+		Data->Source.DataContainer.ParticleIndices[i] = static_cast<uint16>(i);
+	}
+
+	// 언리얼 엔진 호환: Required 모듈과 Material 설정 (렌더링 시 필요)
+	if (CurrentLODLevel && CurrentLODLevel->RequiredModule)
+	{
+		// 렌더 스레드용 데이터로 변환하여 저장 (TUniquePtr 사용)
+		Data->Source.RequiredModule = std::make_unique<FParticleRequiredModule>(
+			CurrentLODLevel->RequiredModule->ToRenderThreadData()
+		);
+		Data->Source.MaterialInterface = Data->Source.RequiredModule->Material;
+		Data->Source.SortMode = CurrentLODLevel->RequiredModule->SortMode;
 	}
 	else
 	{
-		// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-		// SpriteEmitter DynamicData
-		// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-		
-		// 스프라이트 이미터 데이터 생성
-		FDynamicSpriteEmitterData* NewData = new FDynamicSpriteEmitterData();
-
-		// 소스 데이터 설정
-		NewData->Source.ActiveParticleCount = ActiveParticles;
-		NewData->Source.ParticleStride = ParticleStride;
-
-		// 파티클 데이터 복사 (언리얼 엔진 방식: Alloc 사용)
-		int32 ParticleDataBytes = ActiveParticles * ParticleStride;
-		bool bAllocSuccess = NewData->Source.DataContainer.Alloc(ParticleDataBytes, ActiveParticles);
-
-		if (!bAllocSuccess)
-		{
-			// 할당 실패 시 데이터 삭제 후 nullptr 반환
-			UE_LOG("[ParticleEmitterInstance] Failed to allocate render thread data: %d particles (%d bytes)\n",
-				ActiveParticles, ParticleDataBytes);
-			delete NewData;
-			return nullptr;
-		}
-
-		// 컴팩트 복사: 활성 파티클만 연속으로 복사 (sparse array → dense array)
-		uint8* DstData = NewData->Source.DataContainer.ParticleData;
-		for (int32 i = 0; i < ActiveParticles; i++)
-		{
-			int32 SrcIndex = ParticleIndices[i];
-			const uint8* SrcParticle = ParticleData + SrcIndex * ParticleStride;
-			memcpy(DstData + i * ParticleStride, SrcParticle, ParticleStride);
-
-			// 인덱스는 컴팩트 복사 후 순차적으로 재매핑
-			NewData->Source.DataContainer.ParticleIndices[i] = static_cast<uint16>(i);
-		}
-
-		// 언리얼 엔진 호환: Required 모듈과 Material 설정 (렌더링 시 필요)
-		if (CurrentLODLevel && CurrentLODLevel->RequiredModule)
-		{
-			// 렌더 스레드용 데이터로 변환하여 저장 (TUniquePtr 사용)
-			NewData->Source.RequiredModule = std::make_unique<FParticleRequiredModule>(
-				CurrentLODLevel->RequiredModule->ToRenderThreadData()
-			);
-			NewData->Source.MaterialInterface = NewData->Source.RequiredModule->Material;
-			NewData->Source.SortMode = CurrentLODLevel->RequiredModule->SortMode;
-		}
-		else
-		{
-			NewData->Source.RequiredModule = nullptr;
-			NewData->Source.MaterialInterface = nullptr;
-			NewData->Source.SortMode = 0;  // 정렬 없음
-		}
-
-		// 컴포넌트 스케일 설정
-		if (Component)
-		{
-			NewData->Source.Scale = Component->GetRelativeScale();
-		}
-		else
-		{
-			NewData->Source.Scale = FVector(1.0f, 1.0f, 1.0f);
-		}
-
-		return NewData;
+		Data->Source.RequiredModule = nullptr;
+		Data->Source.MaterialInterface = nullptr;
+		Data->Source.SortMode = 0;  // 정렬 없음
 	}
+
+	// 컴포넌트 스케일 설정
+	if (Component)
+	{
+		Data->Source.Scale = Component->GetRelativeScale();
+	}
+	else
+	{
+		Data->Source.Scale = FVector(1.0f, 1.0f, 1.0f);
+	}
+
+	return true;
+}
+
+bool FParticleEmitterInstance::BuildMeshDynamicData(FDynamicMeshEmitterData* Data, UParticleModuleTypeDataMesh* MeshType)
+{
+	if (!Data || !MeshType)
+	{
+		return false;
+	}
+
+	Data->MeshSource.ActiveParticleCount = ActiveParticles;
+	Data->MeshSource.ParticleStride = ParticleStride;
+
+	// 파티클 데이터 복사 (스프라이트와 동일한 방식: 깊은 복사)
+	int32 ParticleDataBytes = ActiveParticles * ParticleStride;
+	bool bAllocSuccess = Data->MeshSource.DataContainer.Alloc(ParticleDataBytes, ActiveParticles);
+
+	if (!bAllocSuccess)
+	{
+		return false;
+	}
+
+	// 컴팩트 복사: 활성 파티클만 연속으로 복사
+	uint8* DstData = Data->MeshSource.DataContainer.ParticleData;
+	for (int32 i = 0; i < ActiveParticles; i++)
+	{
+		int32 SrcIndex = ParticleIndices[i];
+		const uint8* SrcParticle = ParticleData + SrcIndex * ParticleStride;
+		memcpy(DstData + i * ParticleStride, SrcParticle, ParticleStride);
+
+		// 인덱스는 컴팩트 복사 후 순차적으로 재매핑
+		Data->MeshSource.DataContainer.ParticleIndices[i] = static_cast<uint16>(i);
+	}
+
+	// TypeData에서 Mesh 정보 받아오기
+	if (MeshType)
+	{
+		Data->MeshSource.MeshData = MeshType->Mesh;
+	}
+	Data->MeshSource.MaterialInterface = CurrentLODLevel->RequiredModule ? CurrentLODLevel->RequiredModule->Material : nullptr;
+	Data->MeshSource.SortMode = CurrentLODLevel->RequiredModule ? CurrentLODLevel->RequiredModule->SortMode : 0;
+
+	// MeshRotation 모듈 오프셋 찾기
+	Data->MeshSource.MeshRotationPayloadOffset = -1;
+	for (UParticleModule* Module : CurrentLODLevel->Modules)
+	{
+		if (Module && Module->bEnabled)
+		{
+			UParticleModuleMeshRotation* MeshRotModule = Cast<UParticleModuleMeshRotation>(Module);
+			if (MeshRotModule)
+			{
+				// PayloadOffset + ModuleOffsetInParticle = 파티클 내 페이로드 위치
+				Data->MeshSource.MeshRotationPayloadOffset = PayloadOffset + MeshRotModule->ModuleOffsetInParticle;
+				break;
+			}
+		}
+	}
+	return true;
+}
+
+bool FParticleEmitterInstance::BuildBeamDynamicData(FDynamicBeamEmitterData* Data, UParticleModuleTypeDataBeam* BeamType)
+{
+	if (!Data || !BeamType)
+		return false;
+
+	// Beam은 보통 하나의 EmitterInstance에서 한 개의 Beam 생성 (단순 버전)
+	// SegmentCount는 TypeData에서 관리한다고 가정
+	const int32 SegmentCount = BeamType->SegmentCount;   // 예: 8
+	if (SegmentCount <= 0)
+		return false;
+
+	// 현 프레임에서 Beam을 구성할 파티클 포인트가 필요함.
+	// 간단한 형태: 첫 번째 파티클 = StartPoint, 마지막 파티클 = EndPoint로 사용
+	if (ActiveParticles <= 0)
+		return false;
+
+	// Source 설정
+	Data->Source.Width = BeamType->BeamWidth;
+	Data->Source.Material = CurrentLODLevel->RequiredModule
+		? CurrentLODLevel->RequiredModule->Material
+		: nullptr;
+
+	// -----------------------------
+	// 1) BeamPoints 채우기
+	// -----------------------------
+
+	Data->Source.BeamPoints.Empty();
+	Data->Source.BeamPoints.Reserve(SegmentCount + 1);
+
+	// Start / End를 파티클 데이터에서 얻는다.
+	// 첫 번째 활성 파티클 → Start
+	// 마지막 활성 파티클 → End
+	const FBaseParticle* StartParticle = GetParticleAtIndex(ParticleIndices[0]);
+	const FBaseParticle* EndParticle = GetParticleAtIndex(ParticleIndices[ActiveParticles - 1]);
+
+	FVector StartPos = StartParticle->Location;
+	FVector EndPos = EndParticle->Location;
+
+	// 세그먼트 분할
+	for (int32 i = 0; i <= SegmentCount; i++)
+	{
+		float T = (float)i / (float)SegmentCount;
+		FVector P = FMath::Lerp(StartPos, EndPos, T);
+		Data->Source.BeamPoints.Add(P);
+	}
+
+	return true;
+}
+
+bool FParticleEmitterInstance::BuildRibbonDynamicData(FDynamicRibbonEmitterData* Data, UParticleModuleTypeDataRibbon* RibbonType)
+{
+	if (!Data || !RibbonType)
+		return false;
+
+	if (ActiveParticles <= 1)
+		return false; // 최소 2개 파티클 필요
+
+	// Material
+	Data->Source.Material = CurrentLODLevel->RequiredModule
+		? CurrentLODLevel->RequiredModule->Material
+		: nullptr;
+
+	// Width
+	float RibbonWidth = RibbonType->RibbonWidth;
+
+	// RibbonPoints 배열 채우기
+	Data->Source.RibbonPoints.Empty();
+	Data->Source.RibbonPoints.Reserve(ActiveParticles);
+
+	for (int32 i = 0; i < ActiveParticles; i++)
+	{
+		const FBaseParticle* P = GetParticleAtIndex(ParticleIndices[i]);
+		Data->Source.RibbonPoints.Add(P->Location);
+	}
+
+	// UV, Color, Tangent 같은 추가 정보는 이후 확장 가능
+	// Renderer에서 RibbonPoints를 기반으로 Triangle Strip을 만들면 됨.
+
+	return true;
 }

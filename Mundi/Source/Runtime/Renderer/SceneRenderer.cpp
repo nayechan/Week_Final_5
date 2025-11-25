@@ -128,9 +128,9 @@ void FSceneRenderer::Render()
 	
 	if (!World->bPie)
 	{
-		//그리드와 디버그용 Primitive는 Post Processing 적용하지 않음.
+		// 디버그 요소는 Post Processing 적용하지 않음
+		// NOTE: RenderDebugPass()는 이미 투명 패스 전에 호출됨 (파티클과의 깊이 관계를 위해)
 		RenderEditorPrimitivesPass();	// 빌보드, 기타 화살표 출력 (상호작용, 피킹 O)
-		RenderDebugPass();	//  그리드, 선택한 물체의 경계 출력 (상호작용, 피킹 X)
 
 		// 오버레이(Overlay) Primitive 렌더링
 		RenderOverayEditorPrimitivesPass();	// 기즈모 출력
@@ -194,7 +194,16 @@ void FSceneRenderer::RenderLitPath()
     }
 
 	// Base Pass (GPU 타이머는 DrawMeshBatches 내에서 스켈레탈 메시만 측정)
+	RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual);  // 불투명: 깊이 쓰기 ON
+	RHIDevice->OMSetBlendState(false);  // 불투명: 블렌딩 OFF
 	RenderOpaquePass(View->RenderSettings->GetViewMode());
+
+	// 디버그 요소들(그리드, 선택 박스 등)을 투명 패스 전에 렌더링
+	// 깊이 버퍼에 기록하여 파티클과 올바른 깊이 관계 유지
+	if (!World->bPie)
+	{
+		RenderDebugPass();
+	}
 
 	RenderDecalPass();
 	RenderParticleSystemPass();
@@ -1110,9 +1119,21 @@ void FSceneRenderer::RenderParticleSystemPass()
 		}
 	}
 
-	// 수집된 배치 그리기
+	// 수집된 배치를 카메라로부터의 거리 순으로 정렬 (Back-to-Front)
 	if (ParticleBatches.Num() > 0)
 	{
+		// 카메라 위치
+		FVector CameraPosition = View->ViewLocation;
+
+		// 거리 기준 정렬: 카메라에서 먼 파티클을 먼저 그림 (Back-to-Front)
+		ParticleBatches.Sort([&CameraPosition](const FMeshBatchElement& A, const FMeshBatchElement& B)
+		{
+			FVector PosA = { A.WorldMatrix.M[3][0], A.WorldMatrix.M[3][1], A.WorldMatrix.M[3][2] };
+			FVector PosB = { B.WorldMatrix.M[3][0], B.WorldMatrix.M[3][1], B.WorldMatrix.M[3][2] };
+
+			return (PosA - CameraPosition).SizeSquared() > (PosB - CameraPosition).SizeSquared();
+		});
+
 		DrawMeshBatches(ParticleBatches, true);
 	}
 
@@ -1407,7 +1428,8 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 	if (InMeshBatches.IsEmpty()) return;
 
 	// RHI 상태 초기 설정 (Opaque Pass 기본값)
-	RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual); // 깊이 쓰기 ON
+	// NOTE: 파티클 등 투명 오브젝트는 호출 전에 이미 깊이/블렌드 스테이트를 설정했으므로
+	// 여기서 덮어쓰지 않음 (호출자가 상태 관리 책임)
 
 	// PS 리소스 초기화
 	ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
