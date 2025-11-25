@@ -58,6 +58,15 @@
     <FxCompile Include="Shaders\Utility\SceneDepth_PS.hlsl">
       <Filter>Shaders\Utility</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\Particle\ParticleSprite.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Particle\ParticleMesh.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Particle\ParticleBeam.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Generated\UParticleModuleSizeScaleBySpeed.generated.cpp">
@@ -2347,6 +2356,9 @@
     </Filter>
     <Filter Include="BuildTools\CodeGenerator">
       <UniqueIdentifier>{b66d2f99-2219-437b-afcc-ecbff59572f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Particle">
+      <UniqueIdentifier>{3909ef3b-bebf-4ae0-8ef6-005273aa628f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

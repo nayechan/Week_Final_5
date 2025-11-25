@@ -803,7 +803,7 @@ bool FParticleEmitterInstance::BuildBeamDynamicData(FDynamicBeamEmitterData* Dat
 
 	// 현 프레임에서 Beam을 구성할 파티클 포인트가 필요함.
 	// 간단한 형태: 첫 번째 파티클 = StartPoint, 마지막 파티클 = EndPoint로 사용
-	if (ActiveParticles <= 0)
+	if (ActiveParticles < 2)
 		return false;
 
 	// Source 설정
@@ -822,17 +822,66 @@ bool FParticleEmitterInstance::BuildBeamDynamicData(FDynamicBeamEmitterData* Dat
 	// Start / End를 파티클 데이터에서 얻는다.
 	// 첫 번째 활성 파티클 → Start
 	// 마지막 활성 파티클 → End
-	const FBaseParticle* StartParticle = GetParticleAtIndex(ParticleIndices[0]);
-	const FBaseParticle* EndParticle = GetParticleAtIndex(ParticleIndices[ActiveParticles - 1]);
+	const FBaseParticle* StartParticle = GetParticleAtIndex(0);
+	const FBaseParticle* EndParticle = GetParticleAtIndex(ActiveParticles - 1);
 
-	FVector StartPos = StartParticle->Location;
-	FVector EndPos = EndParticle->Location;
+	if (!StartParticle || !EndParticle) // Keep the null checks, even if the particle positions are ignored later.
+		return false;
+
+	// NOTE: 파티클 위치를 사용하는 대신, 컴포넌트 로컬 공간에 정적인 빔을 직접 정의합니다.
+	// 이렇게 하면 기즈모 조작에 따라 움직이는, 길이가 고정된 빔을 안정적으로 테스트할 수 있습니다.
+	const FMatrix& ComponentToWorld = Component->GetWorldTransform().ToMatrix();
+	FVector StartPos = ComponentToWorld.TransformPosition(FVector::Zero());
+	FVector EndPos = ComponentToWorld.TransformPosition(FVector(50.f, 0.f, 0.f));
+
+	FVector BeamDir = EndPos - StartPos;
+	float BeamLen = BeamDir.Size();
+	if (BeamLen > KINDA_SMALL_NUMBER)
+	{
+		BeamDir.Normalize();
+	}
+	else
+	{
+		BeamDir = FVector(0.0f, 0.0f, 1.0f);
+	}
+	
+	float NoiseStrength = BeamType->NoiseStrength;
 
 	// 세그먼트 분할
 	for (int32 i = 0; i <= SegmentCount; i++)
 	{
 		float T = (float)i / (float)SegmentCount;
 		FVector P = FMath::Lerp(StartPos, EndPos, T);
+
+		if (i > 0 && i < SegmentCount && NoiseStrength > KINDA_SMALL_NUMBER)
+		{
+			FVector RandomDir = FVector(
+				RandomStream.GetRangeFloat(-1.0f, 1.0f),
+				RandomStream.GetRangeFloat(-1.0f, 1.0f),
+				RandomStream.GetRangeFloat(-1.0f, 1.0f)
+			);
+			RandomDir.Normalize();
+
+			FVector DisplacementDir = RandomDir - (BeamDir * FVector::Dot(RandomDir, BeamDir));
+
+			if (DisplacementDir.SizeSquared() > KINDA_SMALL_NUMBER)
+			{
+				DisplacementDir.Normalize();
+			}
+			else
+			{
+				DisplacementDir = FVector::Cross(BeamDir, FVector(0.0f, 1.0f, 0.0f));
+				if (DisplacementDir.SizeSquared() < KINDA_SMALL_NUMBER)
+				{
+					DisplacementDir = FVector::Cross(BeamDir, FVector(1.0f, 0.0f, 0.0f));
+				}
+				DisplacementDir.Normalize();
+			}
+
+			float DisplacementMagnitude = RandomStream.GetRangeFloat(0.0f, NoiseStrength);
+			P += DisplacementDir * DisplacementMagnitude;
+		}
+
 		Data->Source.BeamPoints.Add(P);
 	}
 

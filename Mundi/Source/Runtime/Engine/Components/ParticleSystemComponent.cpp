@@ -12,6 +12,7 @@
 #include "Modules/ParticleModuleVelocity.h"
 #include "Modules/ParticleModuleTypeDataMesh.h"
 #include "Modules/ParticleModuleTypeDataSprite.h"
+#include "Modules/ParticleModuleTypeDataBeam.h"
 #include "Modules/ParticleModuleMeshRotation.h"
 #include "Modules/ParticleModuleSize.h"
 #include "Modules/ParticleModuleColor.h"
@@ -110,6 +111,18 @@ UParticleSystemComponent::~UParticleSystemComponent()
 		MeshInstanceBuffer = nullptr;
 	}
 
+	// 빔 버퍼 해제
+	if (BeamVertexBuffer)
+	{
+		BeamVertexBuffer->Release();
+		BeamVertexBuffer = nullptr;
+	}
+	if (BeamIndexBuffer)
+	{
+		BeamIndexBuffer->Release();
+		BeamIndexBuffer = nullptr;
+	}
+
 	// 테스트용 리소스 정리 (디버그 함수에서 생성한 리소스)
 	CleanupTestResources();
 }
@@ -149,6 +162,7 @@ void UParticleSystemComponent::OnRegister(UWorld* InWorld)
 	{
 		//CreateDebugParticleSystem();        // 메시 파티클 테스트
 		CreateDebugSpriteParticleSystem();  // 스프라이트 파티클 테스트
+		//CreateDebugBeamParticleSystem();
 	}
 
 	// 에디터에서도 파티클 미리보기를 위해 자동 활성화
@@ -158,7 +172,7 @@ void UParticleSystemComponent::OnRegister(UWorld* InWorld)
 	}
 }
 
-void UParticleSystemComponent::CreateDebugParticleSystem()
+void UParticleSystemComponent::CreateDebugMeshParticleSystem()
 {
 	// 디버그/테스트용 메시 파티클 시스템 생성
 	// Editor 통합 완료 후에는 Editor에서 설정한 Template 사용
@@ -172,13 +186,15 @@ void UParticleSystemComponent::CreateDebugParticleSystem()
 	UParticleLODLevel* LODLevel = NewObject<UParticleLODLevel>();
 	LODLevel->bEnabled = true;
 
-	// 필수 모듈 생성
-	LODLevel->RequiredModule = NewObject<UParticleModuleRequired>();
+	// 필수 모듈 생성 - Modules 배열에 추가
+	UParticleModuleRequired* RequiredModule = NewObject<UParticleModuleRequired>();
+	LODLevel->Modules.Add(RequiredModule);
 
-	// 메시 타입 데이터 모듈 생성 (스프라이트 대신 메시 사용)
+	// 메시 타입 데이터 모듈 생성 - Modules 배열에 추가
 	UParticleModuleTypeDataMesh* MeshTypeData = NewObject<UParticleModuleTypeDataMesh>();
 	// 테스트용 메시 로드 (큐브) - ResourceManager가 관리하는 공유 리소스
 	MeshTypeData->Mesh = UResourceManager::GetInstance().Load<UStaticMesh>(GDataDir + "/cube-tex.obj");
+	LODLevel->Modules.Add(MeshTypeData);
 
 	// 메시 파티클용 Material 설정 (테스트용으로 직접 생성)
 	UMaterial* MeshParticleMaterial = NewObject<UMaterial>();
@@ -200,14 +216,12 @@ void UParticleSystemComponent::CreateDebugParticleSystem()
 			}
 		}
 	}
-	LODLevel->RequiredModule->Material = MeshParticleMaterial;
-	LODLevel->TypeDataModule = MeshTypeData;
+	RequiredModule->Material = MeshParticleMaterial;
 
-	// 스폰 모듈 생성
+	// 스폰 모듈 생성 - Modules 배열에 추가
 	UParticleModuleSpawn* SpawnModule = NewObject<UParticleModuleSpawn>();
 	SpawnModule->SpawnRate = FDistributionFloat(10000.0f);   // 초당 100개 파티클 (메시는 무거우므로 줄임)
 	SpawnModule->BurstCount = FDistributionFloat(100.0f);     // 시작 시 100개 버스트
-	LODLevel->SpawnModule = SpawnModule;
 	LODLevel->Modules.Add(SpawnModule);
 
 	// 라이프타임 모듈 생성 (파티클 수명 설정)
@@ -261,8 +275,13 @@ void UParticleSystemComponent::CreateDebugSpriteParticleSystem()
 	UParticleLODLevel* LODLevel = NewObject<UParticleLODLevel>();
 	LODLevel->bEnabled = true;
 
-	// 필수 모듈 생성
-	LODLevel->RequiredModule = NewObject<UParticleModuleRequired>();
+	// 필수 모듈 생성 - Modules 배열에 추가
+	UParticleModuleRequired* RequiredModule = NewObject<UParticleModuleRequired>();
+	LODLevel->Modules.Add(RequiredModule);
+
+	// 스프라이트 타입 데이터 모듈 - Modules 배열에 추가
+	UParticleModuleTypeDataSprite* SpriteTypeData = NewObject<UParticleModuleTypeDataSprite>();
+	LODLevel->Modules.Add(SpriteTypeData);
 
 	// 스프라이트용 Material 설정 (테스트용으로 직접 생성)
 	UMaterial* SpriteMaterial = NewObject<UMaterial>();
@@ -276,17 +295,12 @@ void UParticleSystemComponent::CreateDebugSpriteParticleSystem()
 	SpriteMaterial->SetMaterialInfo(MatInfo);
 	SpriteMaterial->ResolveTextures();
 
-	LODLevel->RequiredModule->Material = SpriteMaterial;
+	RequiredModule->Material = SpriteMaterial;
 
-	// 스프라이트 타입 데이터 모듈 (TypeDataModule이 nullptr이면 기본적으로 스프라이트)
-	UParticleModuleTypeDataSprite* SpriteTypeData = NewObject<UParticleModuleTypeDataSprite>();
-	LODLevel->TypeDataModule = SpriteTypeData;
-
-	// 스폰 모듈 생성
+	// 스폰 모듈 생성 - Modules 배열에 추가
 	UParticleModuleSpawn* SpawnModule = NewObject<UParticleModuleSpawn>();
 	SpawnModule->SpawnRate = FDistributionFloat(5000.0f);    // 초당 50개 파티클
 	SpawnModule->BurstCount = FDistributionFloat(10000.0f);      // 시작 시 20개 버스트
-	LODLevel->SpawnModule = SpawnModule;
 	LODLevel->Modules.Add(SpawnModule);
 
 	// 라이프타임 모듈 생성
@@ -334,6 +348,67 @@ void UParticleSystemComponent::CreateDebugSpriteParticleSystem()
 	Emitter->CacheEmitterModuleInfo();
 
 	// 이미터를 시스템에 추가
+	Template->Emitters.Add(Emitter);
+}
+
+void UParticleSystemComponent::CreateDebugBeamParticleSystem()
+{
+	// 디버그/테스트용 빔 파티클 시스템 생성
+	TestTemplate = NewObject<UParticleSystem>();
+	Template = TestTemplate;
+
+	// 이미터 생성
+	UParticleEmitter* Emitter = NewObject<UParticleEmitter>();
+
+	// LOD 레벨 생성
+	UParticleLODLevel* LODLevel = NewObject<UParticleLODLevel>();
+	LODLevel->bEnabled = true;
+
+	// 필수 모듈 생성 (Modules 배열에 추가)
+	UParticleModuleRequired* RequiredModule = NewObject<UParticleModuleRequired>();
+	LODLevel->Modules.Add(RequiredModule);
+
+	// 빔용 Material 설정 (나중에 빔 셰이더로 교체)
+	UMaterial* BeamMaterial = NewObject<UMaterial>();
+	UShader* BeamShader = UResourceManager::GetInstance().Load<UShader>("Shaders/Particle/ParticleBeam.hlsl");
+	BeamMaterial->SetShader(BeamShader);
+	RequiredModule->Material = BeamMaterial;
+
+	// 빔 타입 데이터 모듈 생성 (Modules 배열에 추가)
+	UParticleModuleTypeDataBeam* BeamTypeData = NewObject<UParticleModuleTypeDataBeam>();
+	BeamTypeData->SegmentCount = 6;
+	BeamTypeData->BeamWidth = 1.0f;
+	BeamTypeData->NoiseStrength = 1.0f;
+	LODLevel->Modules.Add(BeamTypeData);
+
+	// 스폰 모듈 생성 - 빔은 최소 2개의 파티클(시작/끝)이 필요 (Modules 배열에 추가)
+	UParticleModuleSpawn* SpawnModule = NewObject<UParticleModuleSpawn>();
+	SpawnModule->SpawnRate = FDistributionFloat(0.0f);    // 연속 스폰 안함
+	SpawnModule->BurstCount = FDistributionFloat(2.0f);      // 시작 시 2개(시작점, 끝점) 버스트
+	LODLevel->Modules.Add(SpawnModule);
+
+	// 라이프타임 모듈 생성 (빔의 전체 수명)
+	UParticleModuleLifetime* LifetimeModule = NewObject<UParticleModuleLifetime>();
+	LifetimeModule->Lifetime = FDistributionFloat(0.0f, 0.0f);
+	LODLevel->Modules.Add(LifetimeModule);
+
+	// 위치 모듈 생성
+	UParticleModuleLocation* LocationModule = NewObject<UParticleModuleLocation>();
+	LODLevel->Modules.Add(LocationModule);
+
+	// 속도 모듈 생성
+	UParticleModuleVelocity* VelocityModule = NewObject<UParticleModuleVelocity>();
+	VelocityModule->StartVelocity = FDistributionVector(FVector(0.0f, 0.0f, 0.0f), FVector(0.0f, 0.0f, 0.0f));
+	LODLevel->Modules.Add(VelocityModule);
+
+	// 모듈 캐싱
+	LODLevel->CacheModuleInfo();
+
+	// LOD 레벨을 이미터에 추가
+	Emitter->LODLevels.Add(LODLevel);
+	Emitter->CacheEmitterModuleInfo();
+
+	// 이미터를 시스템에 추가
 	TestTemplate->Emitters.Add(Emitter);
 	// Note: ResourceManager에 등록하지 않음 - TestTemplate은 이 Component가 소유
 }
@@ -368,6 +443,21 @@ void UParticleSystemComponent::OnUnregister()
 		MeshInstanceBuffer = nullptr;
 	}
 	AllocatedMeshInstanceCount = 0;
+
+	// 다이나믹 버퍼 정리
+	if (BeamVertexBuffer)
+	{
+		BeamVertexBuffer->Release();
+		BeamVertexBuffer = nullptr;
+	}
+	AllocatedBeamVertexCount = 0;
+
+	if (BeamIndexBuffer)
+	{
+		BeamIndexBuffer->Release();
+		BeamIndexBuffer = nullptr;
+	}
+	AllocatedBeamIndexCount = 0;
 
 	Super::OnUnregister();
 }
@@ -611,6 +701,10 @@ void UParticleSystemComponent::DuplicateSubObjects()
 	AllocatedMeshInstanceCount = 0;
 	SpriteInstanceBuffer = nullptr;
 	AllocatedSpriteInstanceCount = 0;
+
+	// 테스트용 리소스 포인터 초기화 (원본 소유, 복사본에서 삭제하면 안됨)
+	TestTemplate = nullptr;
+	TestMaterials.Empty();
 }
 
 void UParticleSystemComponent::CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View)
@@ -668,6 +762,33 @@ void UParticleSystemComponent::CollectMeshBatches(TArray<FMeshBatchElement>& Out
 	{
 		FillMeshInstanceBuffer(TotalMeshInstances);
 		CreateMeshParticleBatch(OutMeshBatchElements);
+	}
+
+	// 5. 빔 파티클 처리 (동적 메시 생성)
+	uint32 TotalBeamVertices = 0;
+	uint32 TotalBeamIndices = 0;
+	for (FDynamicEmitterDataBase* EmitterData : EmitterRenderData)
+	{
+		if (!EmitterData)
+			continue;
+
+		const FDynamicEmitterReplayDataBase& Source = EmitterData->GetSource();
+		if (Source.eEmitterType == EDynamicEmitterType::Beam)
+		{
+			const auto& BeamSource = static_cast<const FDynamicBeamEmitterReplayDataBase&>(Source);
+			if (BeamSource.BeamPoints.Num() > 1)
+			{
+				const int32 SegmentCount = BeamSource.BeamPoints.Num() - 1;
+				TotalBeamVertices += SegmentCount * 4;      // 각 세그먼트마다 4개의 정점
+				TotalBeamIndices += SegmentCount * 6;      // 각 세그먼트마다 2개의 삼각형 (6개의 인덱스)
+			}
+		}
+	}
+
+	if (TotalBeamVertices > 0 && TotalBeamIndices > 0)
+	{
+		FillBeamBuffers(View);
+		CreateBeamParticleBatch(OutMeshBatchElements);
 	}
 }
 
@@ -1047,4 +1168,216 @@ void UParticleSystemComponent::CreateSpriteParticleBatch(TArray<FMeshBatchElemen
 	BatchElement.PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	OutMeshBatchElements.Add(BatchElement);
+}
+
+void UParticleSystemComponent::FillBeamBuffers(const FSceneView* View)
+{
+	if (!View)
+	{
+		return;
+	}
+
+	// 1. 필요한 총 정점 및 인덱스 수 계산
+	uint32 TotalVertices = 0;
+	uint32 TotalIndices = 0;
+	for (FDynamicEmitterDataBase* EmitterData : EmitterRenderData)
+	{
+		if (EmitterData && EmitterData->GetSource().eEmitterType == EDynamicEmitterType::Beam)
+		{
+			const auto& BeamSource = static_cast<const FDynamicBeamEmitterReplayDataBase&>(EmitterData->GetSource());
+			if (BeamSource.BeamPoints.Num() > 1)
+			{
+				const int32 SegmentCount = BeamSource.BeamPoints.Num() - 1;
+				TotalVertices += (SegmentCount + 1) * 2;
+				TotalIndices += SegmentCount * 6;
+			}
+		}
+	}
+
+	if (TotalVertices == 0 || TotalIndices == 0)
+	{
+		return;
+	}
+
+	ID3D11Device* Device = GEngine.GetRHIDevice()->GetDevice();
+	ID3D11DeviceContext* Context = GEngine.GetRHIDevice()->GetDeviceContext();
+
+	// 2. 버퍼 생성/리사이즈
+	if (TotalVertices > AllocatedBeamVertexCount)
+	{
+		if (BeamVertexBuffer) BeamVertexBuffer->Release();
+		uint32 NewCount = FMath::Max(TotalVertices * 2, 64u);
+		D3D11_BUFFER_DESC Desc = {};
+		Desc.ByteWidth = NewCount * sizeof(FParticleBeamVertex);
+		Desc.Usage = D3D11_USAGE_DYNAMIC;
+		Desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		if (SUCCEEDED(Device->CreateBuffer(&Desc, nullptr, &BeamVertexBuffer)))
+		{
+			AllocatedBeamVertexCount = NewCount;
+		}
+	}
+
+	if (TotalIndices > AllocatedBeamIndexCount)
+	{
+		if (BeamIndexBuffer) BeamIndexBuffer->Release();
+		uint32 NewCount = FMath::Max(TotalIndices * 2, 128u);
+		D3D11_BUFFER_DESC Desc = {};
+		Desc.ByteWidth = NewCount * sizeof(uint32);
+		Desc.Usage = D3D11_USAGE_DYNAMIC;
+		Desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		Desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+		if (SUCCEEDED(Device->CreateBuffer(&Desc, nullptr, &BeamIndexBuffer)))
+		{
+			AllocatedBeamIndexCount = NewCount;
+		}
+	}
+
+	if (!BeamVertexBuffer || !BeamIndexBuffer)
+	{
+		return;
+	}
+
+	// 3. 버퍼 매핑
+	D3D11_MAPPED_SUBRESOURCE VBMappedData, IBMappedData;
+	if (FAILED(Context->Map(BeamVertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &VBMappedData)) ||
+		FAILED(Context->Map(BeamIndexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &IBMappedData)))
+	{
+		if (VBMappedData.pData) Context->Unmap(BeamVertexBuffer, 0);
+		return;
+	}
+
+	auto* Vertices = static_cast<FParticleBeamVertex*>(VBMappedData.pData);
+	auto* Indices = static_cast<uint32*>(IBMappedData.pData);
+
+	uint32 VertexOffset = 0;
+	uint32 IndexOffset = 0;
+
+	FVector ViewDirection = View->ViewRotation.RotateVector(FVector(1.f, 0.f, 0.f));
+	FVector ViewOrigin = View->ViewLocation;
+
+	// 4. 이미터 순회하며 버퍼 채우기
+	for (FDynamicEmitterDataBase* EmitterData : EmitterRenderData)
+	{
+		if (!EmitterData || EmitterData->GetSource().eEmitterType != EDynamicEmitterType::Beam)
+			continue;
+
+		const auto& BeamSource = static_cast<const FDynamicBeamEmitterReplayDataBase&>(EmitterData->GetSource());
+		const TArray<FVector>& BeamPoints = BeamSource.BeamPoints;
+		const float BeamWidth = BeamSource.Width;
+
+		if (BeamPoints.Num() < 2)
+			continue;
+
+		uint32 EmitterBaseVertexIndex = VertexOffset;
+
+		// 1. 모든 정점을 먼저 생성 (Triangle Strip 방식)
+		for (int32 i = 0; i < BeamPoints.Num(); ++i)
+		{
+			const FVector& P = BeamPoints[i];
+			FVector SegmentDir = (i < BeamPoints.Num() - 1) ? (BeamPoints[i + 1] - P) : (P - BeamPoints[i - 1]);
+			SegmentDir.Normalize();
+
+			FVector Up = FVector::Cross(SegmentDir, ViewDirection);
+			Up.Normalize();
+			
+			float HalfWidth = BeamWidth * 0.5f;
+
+			// UV의 V좌표는 빔의 길이에 따라 0에서 1까지 변함
+			float V = (float)i / (float)(BeamPoints.Num() - 1);
+			
+			// 각 포인트마다 2개의 정점(좌, 우) 생성
+			Vertices[VertexOffset++] = { P - Up * HalfWidth, FVector2D(0.0f, V), FLinearColor(1.0f, 1.0f, 1.0f, 1.0f), BeamWidth };
+			Vertices[VertexOffset++] = { P + Up * HalfWidth, FVector2D(1.0f, V), FLinearColor(1.0f, 1.0f, 1.0f, 1.0f), BeamWidth };
+		}
+
+		// 2. 정점들을 연결하여 인덱스 생성
+		for (int32 i = 0; i < BeamPoints.Num() - 1; ++i)
+		{
+			uint32 V0 = EmitterBaseVertexIndex + i * 2;     // 현재 세그먼트의 좌측 정점
+			uint32 V1 = EmitterBaseVertexIndex + i * 2 + 1; // 현재 세그먼트의 우측 정점
+			uint32 V2 = EmitterBaseVertexIndex + (i + 1) * 2;     // 다음 세그먼트의 좌측 정점
+			uint32 V3 = EmitterBaseVertexIndex + (i + 1) * 2 + 1; // 다음 세그먼트의 우측 정점
+
+			// 첫 번째 삼각형 (V0, V2, V1)
+			Indices[IndexOffset++] = V0;
+			Indices[IndexOffset++] = V2;
+			Indices[IndexOffset++] = V1;
+
+			// 두 번째 삼각형 (V1, V2, V3)
+			Indices[IndexOffset++] = V1;
+			Indices[IndexOffset++] = V2;
+			Indices[IndexOffset++] = V3;
+		}
+	}
+
+	Context->Unmap(BeamVertexBuffer, 0);
+	Context->Unmap(BeamIndexBuffer, 0);
+}
+
+void UParticleSystemComponent::CreateBeamParticleBatch(TArray<FMeshBatchElement>& OutMeshBatchElements)
+{
+	if (!BeamVertexBuffer || !BeamIndexBuffer)
+	{
+		return;
+	}
+
+	uint32 VertexOffset = 0;
+	uint32 IndexOffset = 0;
+
+	for (FDynamicEmitterDataBase* EmitterData : EmitterRenderData)
+	{
+		if (!EmitterData || EmitterData->GetSource().eEmitterType != EDynamicEmitterType::Beam)
+			continue;
+
+		const auto& BeamSource = static_cast<const FDynamicBeamEmitterReplayDataBase&>(EmitterData->GetSource());
+		if (BeamSource.BeamPoints.Num() < 2)
+			continue;
+
+		UMaterialInterface* Material = BeamSource.Material;
+		if (!Material)
+		{
+			Material = UResourceManager::GetInstance().Load<UMaterial>("Shaders/Particle/ParticleBeam.hlsl");
+		}
+
+		if (!Material || !Material->GetShader())
+		{
+			continue;
+		}
+
+		UShader* Shader = Material->GetShader();
+		FShaderVariant* ShaderVariant = Shader->GetOrCompileShaderVariant(Material->GetShaderMacros());
+
+		const int32 SegmentCount = BeamSource.BeamPoints.Num() - 1;
+		const uint32 NumVertices = SegmentCount * 4;
+		const uint32 NumIndices = SegmentCount * 6;
+
+		FMeshBatchElement BatchElement;
+		BatchElement.VertexShader = ShaderVariant->VertexShader;
+		BatchElement.PixelShader = ShaderVariant->PixelShader;
+		BatchElement.InputLayout = ShaderVariant->InputLayout;
+		BatchElement.Material = Material;
+
+		BatchElement.VertexBuffer = BeamVertexBuffer;
+		BatchElement.IndexBuffer = BeamIndexBuffer;
+		BatchElement.VertexStride = sizeof(FParticleBeamVertex);
+
+		BatchElement.NumInstances = 1; // Not instanced
+		BatchElement.InstanceBuffer = nullptr;
+		BatchElement.InstanceStride = 0;
+
+		BatchElement.IndexCount = NumIndices;
+		BatchElement.StartIndex = IndexOffset;
+		BatchElement.BaseVertexIndex = VertexOffset;
+
+		BatchElement.WorldMatrix = FMatrix::Identity();
+		BatchElement.ObjectID = InternalIndex;
+		BatchElement.PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+		OutMeshBatchElements.Add(BatchElement);
+
+		// Update offsets for the next beam
+		VertexOffset += NumVertices;
+		IndexOffset += NumIndices;
+	}
 }

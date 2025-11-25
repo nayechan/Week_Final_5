@@ -20,7 +20,11 @@ public:
 
     // 빔 너비
     UPROPERTY(EditAnywhere, Category = "Beam")
-    float BeamWidth = 10.0f;
+    float BeamWidth = 5.0f;
+
+    // 빔 흔들림 강도
+    UPROPERTY(EditAnywhere, Category = "Beam")
+    float NoiseStrength = 0.0f;
 
     // 목표 위치가 고정인지, 타겟 파티클 또는 Actor가 있는지 여부
     UPROPERTY(EditAnywhere, Category = "Beam")

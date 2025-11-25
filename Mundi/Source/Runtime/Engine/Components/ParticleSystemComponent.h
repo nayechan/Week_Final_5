@@ -54,6 +54,12 @@ public:
 	ID3D11Buffer* SpriteInstanceBuffer = nullptr;
 	uint32 AllocatedSpriteInstanceCount = 0;
 
+	// Dynamic Vertex / Index Buffer (빔 파티클용)
+	ID3D11Buffer* BeamVertexBuffer = nullptr;
+	ID3D11Buffer* BeamIndexBuffer = nullptr;
+	uint32 AllocatedBeamVertexCount = 0;
+	uint32 AllocatedBeamIndexCount = 0;
+
 	// Shared Quad Mesh (스프라이트 인스턴싱용)
 	// ComPtr + static inline: 프로그램 종료 시 자동 해제, cpp 정의 불필요
 	static inline Microsoft::WRL::ComPtr<ID3D11Buffer> SpriteQuadVertexBuffer;
@@ -104,6 +110,10 @@ public:
 	void FillSpriteInstanceBuffer(uint32 TotalInstances);
 	void CreateSpriteParticleBatch(TArray<FMeshBatchElement>& OutMeshBatchElements);
 
+	// 빔 파티클 렌더링
+	void FillBeamBuffers(const FSceneView* View);
+	void CreateBeamParticleBatch(TArray<FMeshBatchElement>& OutMeshBatchElements);
+
 private:
 	void InitializeEmitterInstances();
 	void ClearEmitterInstances();
@@ -115,6 +125,7 @@ private:
 	void CleanupTestResources();
 
 	// 테스트용 디버그 파티클 시스템 생성
-	void CreateDebugParticleSystem();        // 메시 파티클 테스트
-	void CreateDebugSpriteParticleSystem();  // 스프라이트 파티클 테스트
+	void CreateDebugMeshParticleSystem();	// 메시 파티클 테스트
+	void CreateDebugSpriteParticleSystem();	// 스프라이트 파티클 테스트
+	void CreateDebugBeamParticleSystem();	// 빔 파티클 테스트
 };

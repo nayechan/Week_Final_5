@@ -186,15 +186,19 @@ UParticleSystem* ParticleEditorBootstrap::CreateDefaultParticleTemplate()
 	UParticleLODLevel* LOD = NewObject<UParticleLODLevel>();
 	LOD->bEnabled = true;
 
-	// 1. Required 모듈 (필수)
-	LOD->RequiredModule = NewObject<UParticleModuleRequired>();
+	// 1. Required 모듈 (필수) - Modules 배열에 추가
+	UParticleModuleRequired* RequiredModule = NewObject<UParticleModuleRequired>();
+	LOD->Modules.Add(RequiredModule);
 
-	// 2. Spawn 모듈 (필수)
+	// 2. Spawn 모듈 (필수) - Modules 배열에 추가
 	UParticleModuleSpawn* SpawnModule = NewObject<UParticleModuleSpawn>();
 	SpawnModule->SpawnRate = FDistributionFloat(20.0f);
 	SpawnModule->BurstCount = FDistributionFloat(0.0f);
-	LOD->SpawnModule = SpawnModule;
-	LOD->Modules.Add(SpawnModule);  // Modules 배열에도 추가 (직렬화를 위해 필수)
+	LOD->Modules.Add(SpawnModule);
+
+	// 3. 스프라이트 타입 데이터 모듈 - Modules 배열에 추가
+	UParticleModuleTypeDataSprite* SpriteTypeData = NewObject<UParticleModuleTypeDataSprite>();
+	LOD->Modules.Add(SpriteTypeData);
 
 	// 스프라이트용 Material 설정
 	UMaterial* SpriteMaterial = NewObject<UMaterial>();
@@ -207,28 +211,24 @@ UParticleSystem* ParticleEditorBootstrap::CreateDefaultParticleTemplate()
 	SpriteMaterial->SetMaterialInfo(MatInfo);
 	SpriteMaterial->ResolveTextures();
 
-	LOD->RequiredModule->Material = SpriteMaterial;
+	RequiredModule->Material = SpriteMaterial;
 
-	// 스프라이트 타입 데이터 모듈 (TypeDataModule이 nullptr이면 기본적으로 스프라이트)
-	UParticleModuleTypeDataSprite* SpriteTypeData = NewObject<UParticleModuleTypeDataSprite>();
-	LOD->TypeDataModule = SpriteTypeData;
-
-	// 3. Lifetime 모듈
+	// 4. Lifetime 모듈
 	UParticleModuleLifetime* LifetimeModule = NewObject<UParticleModuleLifetime>();
 	LifetimeModule->Lifetime = FDistributionFloat(1.0f);  // 1초 고정
 	LOD->Modules.Add(LifetimeModule);
 
-	// 4. Initial Size 모듈
+	// 5. Initial Size 모듈
 	UParticleModuleSize* SizeModule = NewObject<UParticleModuleSize>();
 	SizeModule->StartSize = FDistributionVector(FVector(0.0f, 0.0f, 0.0f), FVector(2.0f, 2.0f, 2.0f));  // 0~2 랜덤
 	LOD->Modules.Add(SizeModule);
 
-	// 5. Initial Velocity 모듈
+	// 6. Initial Velocity 모듈
 	UParticleModuleVelocity* VelocityModule = NewObject<UParticleModuleVelocity>();
 	VelocityModule->StartVelocity = FDistributionVector(FVector(0.0f, 0.0f, 0.0f), FVector(2.0f, 2.0f, 21.0f));  // 랜덤 범위
 	LOD->Modules.Add(VelocityModule);
 
-	// 6. Color Over Life 모듈
+	// 7. Color Over Life 모듈
 	UParticleModuleColor* ColorModule = NewObject<UParticleModuleColor>();
 	ColorModule->StartColor = FDistributionColor(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));
 	ColorModule->EndColor = FDistributionColor(FLinearColor(1.0f, 1.0f, 1.0f, 1.0f));

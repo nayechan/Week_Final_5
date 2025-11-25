@@ -20,23 +20,17 @@ public:
 	UPROPERTY(EditAnywhere, Category="LOD")
 	bool bEnabled = true;
 
-	// 언리얼 엔진 호환: 필수 모듈 (항상 존재)
-	UPROPERTY(EditAnywhere, Category="Modules")
-	UParticleModuleRequired* RequiredModule = nullptr;
-
-	// 언리얼 엔진 호환: 파티클 동작을 수정하는 선택적 모듈
+	// ===== 소유 데이터: 모든 모듈의 단일 소유자 =====
 	UPROPERTY(EditAnywhere, Category="Modules")
 	TArray<UParticleModule*> Modules;
 
-	// 언리얼 엔진 호환: 선택적 타입 데이터 모듈 (스프라이트 vs 메시 결정)
-	UPROPERTY(EditAnywhere, Category="Modules")
-	UParticleModuleTypeDataBase* TypeDataModule = nullptr;
+	// ===== 캐시 포인터: Modules 배열 내 객체 참조 (직접 삭제 금지) =====
+	// CacheModuleInfo()에서 Modules 배열을 순회하여 설정됨
+	UParticleModuleRequired* RequiredModule = nullptr;       // 필수 모듈 (항상 존재)
+	UParticleModuleTypeDataBase* TypeDataModule = nullptr;   // 타입 데이터 모듈 (스프라이트/메시)
+	UParticleModuleSpawn* SpawnModule = nullptr;             // 스폰 모듈
 
-	// 언리얼 엔진 호환: SpawnRate/Burst 모듈 - 모든 이미터에 필수
-	UPROPERTY(EditAnywhere, Category="Modules")
-	UParticleModuleSpawn* SpawnModule = nullptr;
-
-	// 언리얼 엔진 호환: 빠른 접근을 위한 캐시된 모듈 배열 (직렬화하면 안 됨)
+	// 캐시된 모듈 배열 (직렬화하면 안 됨)
 	TArray<UParticleModule*> SpawnModules;
 	TArray<UParticleModule*> UpdateModules;
 

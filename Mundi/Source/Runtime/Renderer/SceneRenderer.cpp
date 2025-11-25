@@ -1165,6 +1165,10 @@ void FSceneRenderer::RenderParticleSystemPass()
 	if (Proxies.ParticleSystems.empty())
 		return;
 
+	// Show flag 체크 - 파티클 시스템 숨김 시 스킵
+	if (!World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Particles))
+		return;
+
 	// WorldNormal 모드에서는 파티클 렌더링 스킵
 	if (View->RenderSettings->GetViewMode() == EViewMode::VMI_WorldNormal)
 		return;

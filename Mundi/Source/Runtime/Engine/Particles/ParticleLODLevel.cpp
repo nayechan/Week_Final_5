@@ -7,21 +7,7 @@
 
 UParticleLODLevel::~UParticleLODLevel()
 {
-	// RequiredModule 삭제 (Modules 배열에 포함되지 않음)
-	if (RequiredModule)
-	{
-		DeleteObject(RequiredModule);
-		RequiredModule = nullptr;
-	}
-
-	// TypeDataModule 삭제 (Modules 배열에 포함되지 않음)
-	if (TypeDataModule)
-	{
-		DeleteObject(TypeDataModule);
-		TypeDataModule = nullptr;
-	}
-
-	// Modules 배열의 모든 모듈 삭제 (SpawnModule 포함)
+	// Modules 배열의 모든 모듈 삭제 (단일 소유권)
 	for (UParticleModule* Module : Modules)
 	{
 		if (Module)
@@ -31,42 +17,85 @@ UParticleLODLevel::~UParticleLODLevel()
 	}
 	Modules.Empty();
 
-	// SpawnModule은 Modules에 포함되어 있으므로 포인터만 정리
+	// 캐시 포인터 정리 (소유권 없음)
+	RequiredModule = nullptr;
+	TypeDataModule = nullptr;
 	SpawnModule = nullptr;
-
-	// 캐시 배열 정리 (소유권 없음, 포인터만 정리)
 	SpawnModules.Empty();
 	UpdateModules.Empty();
 }
 
 void UParticleLODLevel::CacheModuleInfo()
 {
-	// RequiredModule 보장
-	if (RequiredModule == nullptr)
-	{
-		RequiredModule = ObjectFactory::NewObject<UParticleModuleRequired>();
-	}
-
+	// 캐시 초기화
+	RequiredModule = nullptr;
+	TypeDataModule = nullptr;
+	SpawnModule = nullptr;
 	SpawnModules.clear();
 	UpdateModules.clear();
 
-	// 언리얼 엔진 방식: 모듈 타입 플래그에 따라 분류
+	// Modules 배열에서 특수 모듈 찾기
 	for (UParticleModule* Module : Modules)
 	{
-		if (Module && Module->bEnabled)
+		if (!Module) continue;
+
+		// RequiredModule 캐시
+		if (UParticleModuleRequired* Required = Cast<UParticleModuleRequired>(Module))
 		{
-			// 스폰 모듈인 경우 SpawnModules에 추가
+			if (RequiredModule != nullptr)
+			{
+				UE_LOG("[ParticleLODLevel] WARNING: 중복 RequiredModule 발견! 첫 번째 모듈 사용");
+			}
+			else
+			{
+				RequiredModule = Required;
+			}
+		}
+		// TypeDataModule 캐시 (단일 인스턴스 제한)
+		else if (UParticleModuleTypeDataBase* TypeData = Cast<UParticleModuleTypeDataBase>(Module))
+		{
+			if (TypeDataModule != nullptr)
+			{
+				UE_LOG("[ParticleLODLevel] WARNING: 중복 TypeDataModule 발견! LOD당 1개만 허용됩니다. 첫 번째 모듈 사용");
+			}
+			else
+			{
+				TypeDataModule = TypeData;
+			}
+		}
+		// SpawnModule 캐시
+		else if (UParticleModuleSpawn* Spawn = Cast<UParticleModuleSpawn>(Module))
+		{
+			if (SpawnModule != nullptr)
+			{
+				UE_LOG("[ParticleLODLevel] WARNING: 중복 SpawnModule 발견! 첫 번째 모듈 사용");
+			}
+			else
+			{
+				SpawnModule = Spawn;
+			}
+		}
+
+		// Spawn/Update 모듈 리스트 구성
+		if (Module->bEnabled)
+		{
 			if (Module->bSpawnModule)
 			{
 				SpawnModules.Add(Module);
 			}
-
-			// 업데이트 모듈인 경우 UpdateModules에 추가
 			if (Module->bUpdateModule)
 			{
 				UpdateModules.Add(Module);
 			}
 		}
+	}
+
+	// RequiredModule이 없으면 생성 후 Modules에 추가
+	if (RequiredModule == nullptr)
+	{
+		UE_LOG("[ParticleLODLevel] RequiredModule 없음, 기본 모듈 생성");
+		RequiredModule = ObjectFactory::NewObject<UParticleModuleRequired>();
+		Modules.Insert(RequiredModule, 0);
 	}
 }
 
@@ -77,35 +106,7 @@ void UParticleLODLevel::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 
 	if (bInIsLoading)
 	{
-		// === RequiredModule 로드 ===
-		JSON RequiredJson;
-		if (FJsonSerializer::ReadObject(InOutHandle, "RequiredModule", RequiredJson))
-		{
-			RequiredModule = NewObject<UParticleModuleRequired>();
-			RequiredModule->Serialize(true, RequiredJson);
-		}
-
-		// NOTE: SpawnModule은 Modules 배열에서 로드 후 찾아서 할당 (아래 참조)
-
-		// === TypeDataModule 로드 (다형성 처리) ===
-		JSON TypeDataJson;
-		if (FJsonSerializer::ReadObject(InOutHandle, "TypeDataModule", TypeDataJson))
-		{
-			FString TypeString;
-			FJsonSerializer::ReadString(TypeDataJson, "Type", TypeString);
-			UClass* TypeDataClass = UClass::FindClass(TypeString);
-			if (TypeDataClass)
-			{
-				TypeDataModule = Cast<UParticleModuleTypeDataBase>(
-					ObjectFactory::NewObject(TypeDataClass));
-				if (TypeDataModule)
-				{
-					TypeDataModule->Serialize(true, TypeDataJson);
-				}
-			}
-		}
-
-		// === Modules 배열 로드 (다형성 처리) ===
+		// === Modules 배열 로드 (모든 모듈 포함) ===
 		JSON ModulesJson;
 		if (FJsonSerializer::ReadArray(InOutHandle, "Modules", ModulesJson))
 		{
@@ -129,44 +130,23 @@ void UParticleLODLevel::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			}
 		}
 
-		// Modules 배열에서 SpawnModule 찾아서 포인터 할당
-		// SpawnModule은 Modules 배열에 소유권이 있으며, 편의를 위한 참조 포인터
-		SpawnModule = nullptr;
-		for (UParticleModule* Module : Modules)
-		{
-			if (UParticleModuleSpawn* Spawn = Cast<UParticleModuleSpawn>(Module))
-			{
-				SpawnModule = Spawn;
-				break;
-			}
-		}
-
-		// 로딩 후 캐싱
+		// 캐시 포인터 설정 (RequiredModule, TypeDataModule, SpawnModule)
 		CacheModuleInfo();
 	}
 	else
 	{
-		// === RequiredModule 저장 ===
-		if (RequiredModule)
+		// 저장 전 RequiredModule/TypeDataModule이 Modules에 있는지 확인
+		bool bHasRequired = false;
+		bool bHasTypeData = false;
+		for (UParticleModule* Module : Modules)
 		{
-			JSON RequiredJson = JSON::Make(JSON::Class::Object);
-			RequiredModule->Serialize(false, RequiredJson);
-			InOutHandle["RequiredModule"] = RequiredJson;
+			if (Cast<UParticleModuleRequired>(Module)) bHasRequired = true;
+			if (Cast<UParticleModuleTypeDataBase>(Module)) bHasTypeData = true;
 		}
+		if (!bHasRequired && RequiredModule) Modules.Insert(RequiredModule, 0);
+		if (!bHasTypeData && TypeDataModule) Modules.Add(TypeDataModule);
 
-		// NOTE: SpawnModule은 Modules 배열에 포함되어 있으므로 별도 저장하지 않음
-		// 로드 시 Modules에서 UParticleModuleSpawn 타입을 찾아 SpawnModule 포인터에 할당
-
-		// === TypeDataModule 저장 (타입 정보 포함) ===
-		if (TypeDataModule)
-		{
-			JSON TypeDataJson = JSON::Make(JSON::Class::Object);
-			TypeDataJson["Type"] = TypeDataModule->GetClass()->Name;
-			TypeDataModule->Serialize(false, TypeDataJson);
-			InOutHandle["TypeDataModule"] = TypeDataJson;
-		}
-
-		// === Modules 배열 저장 (타입 정보 포함) ===
+		// === Modules 배열 저장 (Type 필드 포함) ===
 		JSON ModulesJson = JSON::Make(JSON::Class::Array);
 		for (UParticleModule* Module : Modules)
 		{
@@ -186,14 +166,7 @@ void UParticleLODLevel::DuplicateSubObjects()
 {
 	UObject::DuplicateSubObjects();
 
-	// RequiredModule 복제
-	if (RequiredModule)
-	{
-		UParticleModuleRequired* NewRequired = ObjectFactory::DuplicateObject<UParticleModuleRequired>(RequiredModule);
-		RequiredModule = NewRequired;
-	}
-
-	// 모든 모듈 복제
+	// Modules 배열만 복제 (단일 소유권)
 	TArray<UParticleModule*> NewModules;
 	for (UParticleModule* Module : Modules)
 	{
@@ -205,24 +178,6 @@ void UParticleLODLevel::DuplicateSubObjects()
 	}
 	Modules = NewModules;
 
-	// TypeDataModule 복제
-	if (TypeDataModule)
-	{
-		UParticleModuleTypeDataBase* NewTypeData = ObjectFactory::DuplicateObject<UParticleModuleTypeDataBase>(TypeDataModule);
-		TypeDataModule = NewTypeData;
-	}
-
-	// SpawnModule은 Modules 배열에서 찾아서 할당 (별도 복제 X, 이미 Modules에서 복제됨)
-	SpawnModule = nullptr;
-	for (UParticleModule* Module : Modules)
-	{
-		if (UParticleModuleSpawn* Spawn = Cast<UParticleModuleSpawn>(Module))
-		{
-			SpawnModule = Spawn;
-			break;
-		}
-	}
-
-	// 모듈 정보 재캐싱
+	// 캐시 포인터 재설정 (RequiredModule, TypeDataModule, SpawnModule)
 	CacheModuleInfo();
 }

@@ -445,6 +445,9 @@ void SViewportWindow::LoadToolbarIcons(ID3D11Device* Device)
 	IconGPUSkinning = NewObject<UTexture>();
 	IconGPUSkinning->Load(GDataDir + "/Icon/Viewport_SkinningGPU.png", Device);
 
+	IconParticles = NewObject<UTexture>();
+	IconParticles->Load(GDataDir + "/Icon/ParticleSystemIcon.png", Device);
+
 	// 뷰포트 레이아웃 전환 아이콘 로드
 	IconSingleToMultiViewport = NewObject<UTexture>();
 	IconSingleToMultiViewport->Load(GDataDir + "/Icon/Viewport_SingleToMultiViewport.png", Device);
@@ -1618,6 +1621,24 @@ void SViewportWindow::RenderShowFlagDropdownMenu()
 		if (ImGui::IsItemHovered())
 		{
 			ImGui::SetTooltip("스텔레탈 메시 렌더링을 표시합니다.");
+		}
+
+		// Particle System
+		bool bParticles = RenderSettings.IsShowFlagEnabled(EEngineShowFlags::SF_Particles);
+		if (ImGui::Checkbox("##Particles", &bParticles))
+		{
+			RenderSettings.ToggleShowFlag(EEngineShowFlags::SF_Particles);
+		}
+		ImGui::SameLine();
+		if (IconParticles && IconParticles->GetShaderResourceView())
+		{
+			ImGui::Image((void*)IconParticles->GetShaderResourceView(), IconSize);
+			ImGui::SameLine(0, 4);
+		}
+		ImGui::Text(" 파티클 시스템");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("파티클 시스템 렌더링을 표시합니다.");
 		}
 
 		// Billboard
