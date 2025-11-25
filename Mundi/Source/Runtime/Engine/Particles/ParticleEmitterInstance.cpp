@@ -831,17 +831,19 @@ bool FParticleEmitterInstance::BuildBeamDynamicData(FDynamicBeamEmitterData* Dat
 		return false;
 
 	// Source 설정
-	Data->Source.Width = BeamType->BeamWidth;
-	Data->Source.Material = CurrentLODLevel->RequiredModule
+	FDynamicBeamEmitterReplayDataBase& Source = Data->Source;
+	Source.Width = BeamType->BeamWidth;
+	Source.TileU = BeamType->TileU;
+	Source.Color = FLinearColor(1.f, 0.f, 1.f, 1.f);
+	Source.Material = (CurrentLODLevel && CurrentLODLevel->RequiredModule)
 		? CurrentLODLevel->RequiredModule->Material
 		: nullptr;
 
 	// -----------------------------
 	// 1) BeamPoints 채우기
 	// -----------------------------
-
-	Data->Source.BeamPoints.Empty();
-	Data->Source.BeamPoints.Reserve(SegmentCount + 1);
+	Source.BeamPoints.Empty();
+	Source.BeamPoints.Reserve(SegmentCount + 1);
 
 	// Start / End를 파티클 데이터에서 얻는다.
 	// 첫 번째 활성 파티클 → Start
@@ -854,9 +856,21 @@ bool FParticleEmitterInstance::BuildBeamDynamicData(FDynamicBeamEmitterData* Dat
 
 	// NOTE: 파티클 위치를 사용하는 대신, 컴포넌트 로컬 공간에 정적인 빔을 직접 정의합니다.
 	// 이렇게 하면 기즈모 조작에 따라 움직이는, 길이가 고정된 빔을 안정적으로 테스트할 수 있습니다.
-	const FMatrix& ComponentToWorld = Component->GetWorldTransform().ToMatrix();
-	FVector StartPos = ComponentToWorld.TransformPosition(FVector::Zero());
-	FVector EndPos = ComponentToWorld.TransformPosition(FVector(50.f, 0.f, 0.f));
+
+	const FTransform& ComponentTransform = Component->GetWorldTransform();
+	FVector StartPos = ComponentTransform.Translation;  // 컴포넌트 월드 위치
+	FVector EndPos;
+
+	if (!BeamType->bUseTarget)
+	{
+		// bUseTarget = false) 고정된 목표점 (TargetPoint) 사용
+		EndPos = ComponentTransform.TransformPosition(BeamType->TargetPoint);
+	}
+	else
+	{
+		// bUseTarget = true) 동적 타겟 사용 (파티클 / 액터 추적)
+		EndPos = StartPos + ComponentTransform.ToMatrix().GetUnitAxisX() * 50.f;	// tmp
+	}
 
 	FVector BeamDir = EndPos - StartPos;
 	float BeamLen = BeamDir.Size();
@@ -888,25 +902,21 @@ bool FParticleEmitterInstance::BuildBeamDynamicData(FDynamicBeamEmitterData* Dat
 
 			FVector DisplacementDir = RandomDir - (BeamDir * FVector::Dot(RandomDir, BeamDir));
 
-			if (DisplacementDir.SizeSquared() > KINDA_SMALL_NUMBER)
-			{
-				DisplacementDir.Normalize();
-			}
-			else
+			if (DisplacementDir.SizeSquared() <= KINDA_SMALL_NUMBER)
 			{
 				DisplacementDir = FVector::Cross(BeamDir, FVector(0.0f, 1.0f, 0.0f));
 				if (DisplacementDir.SizeSquared() < KINDA_SMALL_NUMBER)
 				{
 					DisplacementDir = FVector::Cross(BeamDir, FVector(1.0f, 0.0f, 0.0f));
 				}
-				DisplacementDir.Normalize();
 			}
+			DisplacementDir.Normalize();
 
 			float DisplacementMagnitude = RandomStream.GetRangeFloat(0.0f, NoiseStrength);
 			P += DisplacementDir * DisplacementMagnitude;
 		}
 
-		Data->Source.BeamPoints.Add(P);
+		Source.BeamPoints.Add(P);
 	}
 
 	return true;

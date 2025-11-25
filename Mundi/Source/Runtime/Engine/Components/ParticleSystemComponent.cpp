@@ -175,8 +175,8 @@ void UParticleSystemComponent::OnRegister(UWorld* InWorld)
 	{
 		//CreateDebugMeshParticleSystem();        // 메시 파티클 테스트
 		//CreateDebugSpriteParticleSystem();  // 스프라이트 파티클 테스트
-		//CreateDebugBeamParticleSystem();		// 빔 파티클 테스트
-		CreateDebugRibbonParticleSystem(); // 리본 파티클 테스트
+		CreateDebugBeamParticleSystem();		// 빔 파티클 테스트
+		//CreateDebugRibbonParticleSystem(); // 리본 파티클 테스트
 	}
 
 	// 에디터에서도 파티클 미리보기를 위해 자동 활성화
@@ -1326,9 +1326,10 @@ void UParticleSystemComponent::FillBeamBuffers(const FSceneView* View)
 		if (EmitterData && EmitterData->GetSource().eEmitterType == EDynamicEmitterType::Beam)
 		{
 			const auto& BeamSource = static_cast<const FDynamicBeamEmitterReplayDataBase&>(EmitterData->GetSource());
-			if (BeamSource.BeamPoints.Num() > 1)
+			const int32 NumPoints = BeamSource.BeamPoints.Num();
+			if (NumPoints > 1)
 			{
-				const int32 SegmentCount = BeamSource.BeamPoints.Num() - 1;
+				const int32 SegmentCount = NumPoints - 1;
 				TotalVertices += (SegmentCount + 1) * 2;
 				TotalIndices += SegmentCount * 6;
 			}
@@ -1394,7 +1395,7 @@ void UParticleSystemComponent::FillBeamBuffers(const FSceneView* View)
 	uint32 VertexOffset = 0;
 	uint32 IndexOffset = 0;
 
-	FVector ViewDirection = View->ViewRotation.RotateVector(FVector(1.f, 0.f, 0.f));
+	FVector ViewDirection = View->ViewRotation.GetForwardVector();
 	FVector ViewOrigin = View->ViewLocation;
 
 	// 4. 이미터 순회하며 버퍼 채우기
@@ -1406,6 +1407,8 @@ void UParticleSystemComponent::FillBeamBuffers(const FSceneView* View)
 		const auto& BeamSource = static_cast<const FDynamicBeamEmitterReplayDataBase&>(EmitterData->GetSource());
 		const TArray<FVector>& BeamPoints = BeamSource.BeamPoints;
 		const float BeamWidth = BeamSource.Width;
+		const float TileU = BeamSource.TileU;
+		const FLinearColor BeamColor = BeamSource.Color;
 
 		if (BeamPoints.Num() < 2)
 			continue;
@@ -1428,8 +1431,8 @@ void UParticleSystemComponent::FillBeamBuffers(const FSceneView* View)
 			float V = (float)i / (float)(BeamPoints.Num() - 1);
 			
 			// 각 포인트마다 2개의 정점(좌, 우) 생성
-			Vertices[VertexOffset++] = { P - Up * HalfWidth, FVector2D(0.0f, V), FLinearColor(1.0f, 1.0f, 1.0f, 1.0f), BeamWidth };
-			Vertices[VertexOffset++] = { P + Up * HalfWidth, FVector2D(1.0f, V), FLinearColor(1.0f, 1.0f, 1.0f, 1.0f), BeamWidth };
+			Vertices[VertexOffset++] = { P - Up * HalfWidth, FVector2D(0.0f, V), BeamColor, BeamWidth };
+			Vertices[VertexOffset++] = { P + Up * HalfWidth, FVector2D(1.0f, V), BeamColor, BeamWidth };
 		}
 
 		// 2. 정점들을 연결하여 인덱스 생성
@@ -1490,7 +1493,7 @@ void UParticleSystemComponent::CreateBeamParticleBatch(TArray<FMeshBatchElement>
 		FShaderVariant* ShaderVariant = Shader->GetOrCompileShaderVariant(Material->GetShaderMacros());
 
 		const int32 SegmentCount = BeamSource.BeamPoints.Num() - 1;
-		const uint32 NumVertices = SegmentCount * 4;
+		const uint32 NumVertices = (SegmentCount + 1) * 2;
 		const uint32 NumIndices = SegmentCount * 6;
 
 		FMeshBatchElement BatchElement;

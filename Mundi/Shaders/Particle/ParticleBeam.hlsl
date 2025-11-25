@@ -53,7 +53,7 @@ PS_INPUT mainVS(VS_INPUT input)
 float4 mainPS(PS_INPUT input) : SV_Target
 {
     // 1. Settings
-    float4 beamColor = float4(1.0, 0.0, 1.0, 1.0); // Magenta color
+    float4 beamColor = input.Color; // Should be Magenta color
 
     // 2. Use the horizontal UV coordinate (UV.x)
     float u_coord = input.UV.x;

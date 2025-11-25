@@ -32,7 +32,7 @@ public:
 
     // 타겟 월드 위치 (bUseTarget=false 시 사용)
     UPROPERTY(EditAnywhere, Category = "Beam", meta = (EditCondition = "!bUseTarget"))
-    FVector TargetPoint = FVector(0, 0, 0);
+    FVector TargetPoint = FVector(20.f, 0, 0);
 
 public:
     UParticleModuleTypeDataBeam() = default;

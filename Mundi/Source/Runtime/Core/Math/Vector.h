@@ -996,6 +996,27 @@ struct alignas(16) FMatrix
 		return InverseMatrix;
 	}
 
+	FVector GetUnitAxisX() const
+	{
+		FVector X(M[0][0], M[0][1], M[0][2]);
+		X.Normalize();
+		return X;
+	}
+
+	FVector GetUnitAxisY() const
+	{
+		FVector Y(M[1][0], M[1][1], M[1][2]);
+		Y.Normalize();
+		return Y;
+	}
+
+	FVector GetUnitAxisZ() const
+	{
+		FVector Z(M[2][0], M[2][1], M[2][2]);
+		Z.Normalize();
+		return Z;
+	}
+
 	// 비교 연산자
 	bool operator==(const FMatrix& Other) const
 	{

@@ -253,11 +253,15 @@ struct FDynamicBeamEmitterReplayDataBase : public FDynamicEmitterReplayDataBase
 {
 	TArray<FVector> BeamPoints;
 	float Width;
+	float TileU;
+	FLinearColor Color;
 	UMaterialInterface* Material;
 
 	FDynamicBeamEmitterReplayDataBase()
 		: BeamPoints()
-		, Width(0)
+		, Width(1.f)
+		, TileU(1.f)
+		, Color(FLinearColor(1.f, 0.f, 1.f, 1.f))  // 마젠타, 알파 포함
 		, Material(nullptr)
 	{
 		eEmitterType = EDynamicEmitterType::Beam;
