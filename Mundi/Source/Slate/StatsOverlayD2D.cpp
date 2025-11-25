@@ -488,6 +488,7 @@ void UStatsOverlayD2D::Draw()
 	if (bShowParticles)
 	{
 		const FParticleStats& Stats = FParticleStatManager::GetInstance().GetStats();
+		const FParticleStatManager& Mgr = FParticleStatManager::GetInstance();
 
 		// 메모리를 KB 또는 MB로 표시
 		wchar_t MemoryStr[64];
@@ -500,22 +501,35 @@ void UStatsOverlayD2D::Draw()
 			swprintf_s(MemoryStr, L"%.2f KB", Stats.MemoryBytes / 1024.0);
 		}
 
-		wchar_t ParticleBuf[512];
+		wchar_t ParticleBuf[768];
 		swprintf_s(ParticleBuf,
 			L"[Particles]\n"
 			L"Systems: %d\n"
 			L"Emitters: %d\n"
-			L"Particles: %d\n"
-			L"Spawned: %d / Killed: %d\n"
+			L"Sprite: %d\n"
+			L"Mesh: %d\n"
+			L"Beam: %d\n"
+			L"Ribbon: %d\n"
+			L"Total: %d\n"
+			L"Max/Min: (%d/%d)\n"
+			L"Avg: %.1f\n"
+			L"Spawned/Killed: %d/%d\n"
 			L"Memory: %s",
 			Stats.ParticleSystemCount,
 			Stats.EmitterCount,
-			Stats.ParticleCount,
+			Stats.SpriteParticleCount,
+			Stats.MeshParticleCount,
+			Stats.BeamParticleCount,
+			Stats.RibbonParticleCount,
+			Stats.TotalParticleCount(),
+			Mgr.GetMaxParticles(),
+			Mgr.GetMinParticles(),
+			Mgr.GetAvgParticles(),
 			Stats.SpawnedThisFrame,
 			Stats.KilledThisFrame,
 			MemoryStr);
 
-		const float particlePanelHeight = 140.0f;
+		const float particlePanelHeight = 260.0f;
 		D2D1_RECT_F particleRc = D2D1::RectF(Margin, NextY, Margin + PanelWidth, NextY + particlePanelHeight);
 
 		DrawTextBlock(

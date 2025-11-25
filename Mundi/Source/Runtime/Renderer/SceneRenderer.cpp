@@ -52,6 +52,10 @@
 #include "ParticleSystemComponent.h"
 #include "ParticleStats.h"
 #include "ParticleEmitterInstance.h"
+#include "ParticleLODLevel.h"
+#include "Modules/ParticleModuleTypeDataMesh.h"
+#include "Modules/ParticleModuleTypeDataBeam.h"
+#include "Modules/ParticleModuleTypeDataRibbon.h"
 
 FSceneRenderer::FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* InOwnerRenderer)
 	: World(InWorld)
@@ -1114,9 +1118,38 @@ void FSceneRenderer::RenderParticleSystemPass()
 				if (EmitterInst)
 				{
 					Stats.EmitterCount++;
-					Stats.ParticleCount += EmitterInst->ActiveParticles;
 					Stats.SpawnedThisFrame += EmitterInst->FrameSpawnedCount;
 					Stats.KilledThisFrame += EmitterInst->FrameKilledCount;
+
+					// 타입별 파티클 카운트
+					UParticleModuleTypeDataBase* TypeData = nullptr;
+					if (EmitterInst->CurrentLODLevel)
+					{
+						TypeData = EmitterInst->CurrentLODLevel->TypeDataModule;
+					}
+
+					if (!TypeData)
+					{
+						// TypeData가 없으면 Sprite (기본 타입)
+						Stats.SpriteParticleCount += EmitterInst->ActiveParticles;
+					}
+					else if (Cast<UParticleModuleTypeDataMesh>(TypeData))
+					{
+						Stats.MeshParticleCount += EmitterInst->ActiveParticles;
+					}
+					else if (Cast<UParticleModuleTypeDataBeam>(TypeData))
+					{
+						Stats.BeamParticleCount += EmitterInst->ActiveParticles;
+					}
+					else if (Cast<UParticleModuleTypeDataRibbon>(TypeData))
+					{
+						Stats.RibbonParticleCount += EmitterInst->ActiveParticles;
+					}
+					else
+					{
+						// 알 수 없는 타입은 Sprite로 처리
+						Stats.SpriteParticleCount += EmitterInst->ActiveParticles;
+					}
 
 					// 메모리 계산: ParticleData + ParticleIndices + InstanceData
 					Stats.MemoryBytes += EmitterInst->MaxActiveParticles * EmitterInst->ParticleStride;
