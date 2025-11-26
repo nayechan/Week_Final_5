@@ -197,7 +197,7 @@ void UParticleSystemComponent::OnRegister(UWorld* InWorld)
 		//CreateDebugMeshParticleSystem();        // 메시 파티클 테스트
 		//CreateDebugSpriteParticleSystem();  // 스프라이트 파티클 테스트
 		//CreateDebugBeamParticleSystem();		// 빔 파티클 테스트
-		CreateDebugRibbonParticleSystem(); // 리본 파티클 테스트
+		//CreateDebugRibbonParticleSystem(); // 리본 파티클 테스트
 	}
 
 	// 에디터에서도 파티클 미리보기를 위해 자동 활성화

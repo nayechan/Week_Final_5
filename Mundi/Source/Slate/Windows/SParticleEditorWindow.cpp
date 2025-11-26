@@ -47,6 +47,9 @@ struct FModuleDragPayload
 	UParticleModule* Module;
 };
 
+// static 변수 정의
+bool SParticleEditorWindow::bIsAnyParticleEditorFocused = false;
+
 SParticleEditorWindow::SParticleEditorWindow()
 {
 	CenterRect = FRect(0, 0, 0, 0);
@@ -233,6 +236,9 @@ void SParticleEditorWindow::OnRender()
 		// hover/focus 상태 캡처
 		bIsWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 		bIsWindowFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
+
+		// 다른 위젯에서 참조할 수 있도록 static 변수에도 저장
+		bIsAnyParticleEditorFocused = bIsWindowFocused;
 
 		// 탭바 및 툴바 렌더링
 		RenderTabsAndToolbar(EViewerType::Particle);
@@ -1488,7 +1494,6 @@ void SParticleEditorWindow::RenderDetailsPanel(float PanelWidth)
 		UClass* ModuleClass = State->SelectedModule->GetClass();
 		const char* DisplayName = ModuleClass->DisplayName;
 		ImGui::Text("모듈: %s", DisplayName ? DisplayName : ModuleClass->Name);
-		ImGui::Separator();
 
 		// 프로퍼티 렌더링
 		ImGui::PushItemWidth(PanelWidth * 0.55f);

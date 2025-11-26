@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Object.h"
 #include "ParticleHelper.h"
@@ -13,14 +13,14 @@ public:
 	GENERATED_REFLECTION_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, Category="Particle Module")
+	UPROPERTY()
 	bool bEnabled = true;
 
 	// 언리얼 엔진 호환: 모듈 타입 플래그
-	UPROPERTY(EditAnywhere, Category="Particle Module")
+	UPROPERTY()
 	bool bSpawnModule = false;  // 스폰 시 호출되는 모듈
 
-	UPROPERTY(EditAnywhere, Category="Particle Module")
+	UPROPERTY()
 	bool bUpdateModule = false;  // 매 프레임 업데이트 시 호출되는 모듈
 
 	// 언리얼 엔진 호환: 페이로드 시스템

@@ -90,6 +90,9 @@ public:
 	virtual void OnUpdate(float DeltaSeconds) override;
 	virtual void PreRenderViewportUpdate() override;
 
+	// 파티클 에디터 윈도우가 포커스되어 있는지 (다른 위젯에서 Delete 키 중복 처리 방지용)
+	static bool bIsAnyParticleEditorFocused;
+
 	// 파일 경로 기반 탭 검색 오버라이드
 	void OpenOrFocusTab(UEditorAssetPreviewContext* Context) override;
 

@@ -26,15 +26,15 @@ public:
 	FString EventName;
 
 	// 스폰 이벤트: 첫 스폰 시에만 발생할지 여부
-	UPROPERTY(EditAnywhere, Category="Spawn", Tooltip="첫 스폰 시에만 이벤트 발생")
+	UPROPERTY(EditAnywhere, Category="Spawn", Tooltip="[Spawn 전용] 첫 파티클 생성 시에만 이벤트 발생")
 	bool bFirstSpawnOnly = false;
 
 	// 사망 이벤트: 라이프타임 종료 시에만 발생할지 (Kill에 의한 사망 제외)
-	UPROPERTY(EditAnywhere, Category="Death", Tooltip="자연 사망 시에만 이벤트 발생")
+	UPROPERTY(EditAnywhere, Category="Death", Tooltip="[Death 전용] 수명 만료로 죽은 파티클만 이벤트 발생 (충돌 Kill 제외)")
 	bool bNaturalDeathOnly = false;
 
 	// 충돌 이벤트: 첫 충돌 시에만 발생할지 여부
-	UPROPERTY(EditAnywhere, Category="Collision", Tooltip="첫 충돌 시에만 이벤트 발생")
+	UPROPERTY(EditAnywhere, Category="Collision", Tooltip="[Collision 전용] 각 파티클의 첫 충돌에서만 이벤트 발생")
 	bool bFirstCollisionOnly = true;
 
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle);
