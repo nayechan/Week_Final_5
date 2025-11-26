@@ -134,6 +134,14 @@ ViewerState* ParticleEditorBootstrap::CreateViewerState(const char* Name, UWorld
 			CreateOriginAxisLines(OriginLineComp);
 			OriginLineComp->SetLineVisible(false); // 기본값: 숨김
 			State->OriginAxisLineComponent = OriginLineComp;
+
+			// Bounds 와이어프레임 LineComponent 생성 및 연결
+			ULineComponent* BoundsLineComp = NewObject<ULineComponent>();
+			BoundsLineComp->SetAlwaysOnTop(true);
+			PreviewActor->AddOwnedComponent(BoundsLineComp);
+			BoundsLineComp->RegisterComponent(State->World);
+			BoundsLineComp->SetLineVisible(false); // 기본값: 숨김
+			State->BoundsLineComponent = BoundsLineComp;
 		}
 	}
 

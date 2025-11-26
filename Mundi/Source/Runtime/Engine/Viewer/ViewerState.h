@@ -108,6 +108,22 @@ struct ParticleEditorState : public ViewerState
     // 원점축 라인 컴포넌트 (탭별로 소유)
     class ULineComponent* OriginAxisLineComponent = nullptr;
 
+    // Bounds 와이어프레임 라인 컴포넌트
+    class ULineComponent* BoundsLineComponent = nullptr;
+
+    // Bounds 캐시 (최대 크기 추적용 - 언리얼 방식)
+    FVector CachedBoundsMin = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+    FVector CachedBoundsMax = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+    bool bBoundsNeedRebuild = true;  // 라인 재생성 필요 플래그
+
+    // Bounds 리셋 (파티클 시스템 재시작 시 호출)
+    void ResetBounds()
+    {
+        CachedBoundsMin = FVector(FLT_MAX, FLT_MAX, FLT_MAX);
+        CachedBoundsMax = FVector(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+        bBoundsNeedRebuild = true;
+    }
+
     // 선택 상태
     int32 SelectedEmitterIndex = -1;
     int32 SelectedModuleIndex = -1;

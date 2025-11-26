@@ -1089,6 +1089,15 @@
     <ClCompile Include="Generated\UParticleModuleTrailSource.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleTrailSource.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Collision\CollisionBVH.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Collision\CollisionManager.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\RibbonActor.cpp">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\ARibbonActor.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Generated\UParticleModuleSizeScaleBySpeed.generated.h">
@@ -2270,6 +2279,25 @@
       <Filter>Generated</Filter>
     </ClInclude>
     <ClInclude Include="Generated\UParticleModuleTrailSource.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Object\ObjectMacros.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleEventGeneratorInfo.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventReceiverBase.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventReceiverKill.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventReceiverSpawn.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleTrailSource.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particles\ParticleBurstTypes.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particles\ParticleEventGeneratorTypes.h" />
+    <ClInclude Include="Source\Runtime\Engine\Particles\ParticleEventTypes.h" />
+    <ClInclude Include="Source\Runtime\Engine\Collision\CollisionBVH.h" />
+    <ClInclude Include="Source\Runtime\Engine\Collision\CollisionManager.h" />
+    <ClInclude Include="Source\Runtime\Engine\Collision\Sphere.h" />
+    <ClInclude Include="Source\Runtime\Engine\Collision\BoxSphereBounds.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\RibbonActor.h">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ARibbonActor.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
   </ItemGroup>

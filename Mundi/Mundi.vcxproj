@@ -305,6 +305,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)BuildTools\SymbolServ
     <ClCompile Include="Source\Runtime\Engine\GameFramework\GameStateBase.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Pawn.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\PlayerController.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\RibbonActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\SkeletalMeshActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\BoneAnchorComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Fade.cpp" />
@@ -668,6 +669,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)BuildTools\SymbolServ
     <ClCompile Include="Generated\FParticleEventGeneratorInfo.generated.cpp" />
     <ClCompile Include="Generated\FParticleBurst.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleTrailSource.generated.cpp" />
+    <ClCompile Include="Generated\ARibbonActor.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Common\LightingBuffers.hlsl">
@@ -888,6 +890,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)BuildTools\SymbolServ
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Info.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\PlayerController.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\PointLightActor.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\RibbonActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\SkeletalMeshActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\SpotLightActor.h" />
     <ClInclude Include="Source\Runtime\Engine\Particles\Distribution.h" />
@@ -1185,6 +1188,7 @@ powershell.exe -ExecutionPolicy Bypass -File "$(ProjectDir)BuildTools\SymbolServ
     <ClInclude Include="Generated\FParticleEventGeneratorInfo.generated.h" />
     <ClInclude Include="Generated\FParticleBurst.generated.h" />
     <ClInclude Include="Generated\UParticleModuleTrailSource.generated.h" />
+    <ClInclude Include="Generated\ARibbonActor.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BuildTools\CodeGenerator\generate.py" />

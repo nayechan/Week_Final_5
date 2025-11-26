@@ -462,6 +462,113 @@ void SParticleEditorWindow::OnUpdate(float DeltaSeconds)
 	SViewerWindow::OnUpdate(DeltaSeconds);
 }
 
+// AABB 기반 와이어프레임 박스 라인 생성 (12개 라인)
+static void CreateBoundsBoxLines(ULineComponent* LineComp, const FVector& Min, const FVector& Max, const FVector4& Color)
+{
+	// 8개 꼭짓점
+	FVector Corners[8] = {
+		FVector(Min.X, Min.Y, Min.Z),  // 0: ---
+		FVector(Max.X, Min.Y, Min.Z),  // 1: +--
+		FVector(Max.X, Max.Y, Min.Z),  // 2: ++-
+		FVector(Min.X, Max.Y, Min.Z),  // 3: -+-
+		FVector(Min.X, Min.Y, Max.Z),  // 4: --+
+		FVector(Max.X, Min.Y, Max.Z),  // 5: +-+
+		FVector(Max.X, Max.Y, Max.Z),  // 6: +++
+		FVector(Min.X, Max.Y, Max.Z),  // 7: -++
+	};
+
+	// 아래 면 (4개 라인)
+	LineComp->AddLine(Corners[0], Corners[1], Color);
+	LineComp->AddLine(Corners[1], Corners[2], Color);
+	LineComp->AddLine(Corners[2], Corners[3], Color);
+	LineComp->AddLine(Corners[3], Corners[0], Color);
+
+	// 위 면 (4개 라인)
+	LineComp->AddLine(Corners[4], Corners[5], Color);
+	LineComp->AddLine(Corners[5], Corners[6], Color);
+	LineComp->AddLine(Corners[6], Corners[7], Color);
+	LineComp->AddLine(Corners[7], Corners[4], Color);
+
+	// 수직 연결 (4개 라인)
+	LineComp->AddLine(Corners[0], Corners[4], Color);
+	LineComp->AddLine(Corners[1], Corners[5], Color);
+	LineComp->AddLine(Corners[2], Corners[6], Color);
+	LineComp->AddLine(Corners[3], Corners[7], Color);
+}
+
+// 구 와이어프레임 라인 생성 (3개 원: XY, XZ, YZ 평면)
+static void CreateBoundsSphereLines(ULineComponent* LineComp, const FVector& Center, float Radius, const FVector4& Color)
+{
+	const int32 NumSegments = 32;
+	const float PI_CONST = 3.14159265358979323846f;
+
+	// XY 평면 원
+	for (int32 i = 0; i < NumSegments; ++i)
+	{
+		float Angle1 = (float(i) / NumSegments) * 2.0f * PI_CONST;
+		float Angle2 = (float((i + 1) % NumSegments) / NumSegments) * 2.0f * PI_CONST;
+
+		FVector P1 = Center + FVector(cos(Angle1) * Radius, sin(Angle1) * Radius, 0.0f);
+		FVector P2 = Center + FVector(cos(Angle2) * Radius, sin(Angle2) * Radius, 0.0f);
+		LineComp->AddLine(P1, P2, Color);
+	}
+
+	// XZ 평면 원
+	for (int32 i = 0; i < NumSegments; ++i)
+	{
+		float Angle1 = (float(i) / NumSegments) * 2.0f * PI_CONST;
+		float Angle2 = (float((i + 1) % NumSegments) / NumSegments) * 2.0f * PI_CONST;
+
+		FVector P1 = Center + FVector(cos(Angle1) * Radius, 0.0f, sin(Angle1) * Radius);
+		FVector P2 = Center + FVector(cos(Angle2) * Radius, 0.0f, sin(Angle2) * Radius);
+		LineComp->AddLine(P1, P2, Color);
+	}
+
+	// YZ 평면 원
+	for (int32 i = 0; i < NumSegments; ++i)
+	{
+		float Angle1 = (float(i) / NumSegments) * 2.0f * PI_CONST;
+		float Angle2 = (float((i + 1) % NumSegments) / NumSegments) * 2.0f * PI_CONST;
+
+		FVector P1 = Center + FVector(0.0f, cos(Angle1) * Radius, sin(Angle1) * Radius);
+		FVector P2 = Center + FVector(0.0f, cos(Angle2) * Radius, sin(Angle2) * Radius);
+		LineComp->AddLine(P1, P2, Color);
+	}
+}
+
+// 현재 활성 파티클들의 Bounds 확장 (최대 크기 추적 - 언리얼 방식)
+// 반환값: bounds가 확장되었으면 true
+static bool ExpandParticleBounds(UParticleSystemComponent* PSC, FVector& InOutMin, FVector& InOutMax)
+{
+	bool bExpanded = false;
+
+	for (FParticleEmitterInstance* Emitter : PSC->EmitterInstances)
+	{
+		if (!Emitter || Emitter->ActiveParticles == 0)
+			continue;
+
+		for (int32 i = 0; i < Emitter->ActiveParticles; ++i)
+		{
+			FBaseParticle* Particle = GetParticleAtIndex(Emitter, i);
+			if (!Particle) continue;
+
+			const FVector& Pos = Particle->Location;
+
+			// Min 확장 (더 작은 값으로)
+			if (Pos.X < InOutMin.X) { InOutMin.X = Pos.X; bExpanded = true; }
+			if (Pos.Y < InOutMin.Y) { InOutMin.Y = Pos.Y; bExpanded = true; }
+			if (Pos.Z < InOutMin.Z) { InOutMin.Z = Pos.Z; bExpanded = true; }
+
+			// Max 확장 (더 큰 값으로)
+			if (Pos.X > InOutMax.X) { InOutMax.X = Pos.X; bExpanded = true; }
+			if (Pos.Y > InOutMax.Y) { InOutMax.Y = Pos.Y; bExpanded = true; }
+			if (Pos.Z > InOutMax.Z) { InOutMax.Z = Pos.Z; bExpanded = true; }
+		}
+	}
+
+	return bExpanded;
+}
+
 void SParticleEditorWindow::PreRenderViewportUpdate()
 {
 	ParticleEditorState* State = GetActiveParticleState();
@@ -477,6 +584,44 @@ void SParticleEditorWindow::PreRenderViewportUpdate()
 		if (State->OriginAxisLineComponent)
 		{
 			State->OriginAxisLineComponent->SetLineVisible(State->bShowOriginAxis);
+		}
+
+		// Bounds 와이어프레임 표시 (최대 크기 추적 - 언리얼 방식)
+		if (State->BoundsLineComponent)
+		{
+			if (State->bShowBounds && State->PreviewComponent)
+			{
+				// bounds 확장 체크 (확장되었을 때만 true 반환)
+				bool bExpanded = ExpandParticleBounds(State->PreviewComponent, State->CachedBoundsMin, State->CachedBoundsMax);
+
+				// bounds가 확장되었거나 재빌드 필요 시에만 라인 재생성
+				if (bExpanded || State->bBoundsNeedRebuild)
+				{
+					State->BoundsLineComponent->ClearLines();
+
+					// 유효한 bounds인지 확인
+					if (State->CachedBoundsMin.X <= State->CachedBoundsMax.X)
+					{
+						// 중심과 반경 계산
+						FVector Center = (State->CachedBoundsMin + State->CachedBoundsMax) * 0.5f;
+						float Radius = FVector::Distance(Center, State->CachedBoundsMax);
+
+						// 박스 (흰색)
+						CreateBoundsBoxLines(State->BoundsLineComponent, State->CachedBoundsMin, State->CachedBoundsMax, FVector4(1.0f, 1.0f, 1.0f, 1.0f));
+
+						// 구 (연한 파랑)
+						CreateBoundsSphereLines(State->BoundsLineComponent, Center, Radius, FVector4(0.5f, 0.7f, 1.0f, 1.0f));
+					}
+
+					State->bBoundsNeedRebuild = false;
+				}
+
+				State->BoundsLineComponent->SetLineVisible(true);
+			}
+			else
+			{
+				State->BoundsLineComponent->SetLineVisible(false);
+			}
 		}
 	}
 }
@@ -1400,6 +1545,7 @@ void SParticleEditorWindow::RenderToolbar()
 			{
 				State->PreviewComponent->ResetParticles();
 				FParticleStatManager::GetInstance().ResetStats();
+				State->ResetBounds();  // Bounds도 리셋
 			}
 		}
 		if (ImGui::IsItemHovered())

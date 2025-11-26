@@ -610,7 +610,8 @@ void UParticleSystemComponent::TickComponent(float DeltaTime)
 	USceneComponent::TickComponent(DeltaTime);
 
 	// === 테스트: 디버그 파티클 자동 이동 ===
-	if (TestTemplate)  // 디버그 파티클일 때만
+	// PIE에서도 동작하도록 Template과 EmitterInstances로 체크
+	if (Template && EmitterInstances.Num() > 0)
 	{
 		static float TestTime = 0.0f;
 		TestTime += DeltaTime;
@@ -636,9 +637,9 @@ void UParticleSystemComponent::TickComponent(float DeltaTime)
 		else if (DebugParticleType == EDebugParticleType::Ribbon)
 		{
 			// Ribbon: 컴포넌트 자체를 원형으로 이동 (Trail 생성)
-			float Radius = 20.0f;   // 반지름
+			float Radius = 10.0f;   // 반지름
 			float Speed = 1.0f;     // 회전 속도
-			float Height = 15.0f;   // 상하 진폭
+			float Height = 6.0f;   // 상하 진폭
 
 			FVector NewPosition(
 				cos(TestTime * Speed) * Radius,
@@ -1154,6 +1155,18 @@ void UParticleSystemComponent::DuplicateSubObjects()
 	AllocatedMeshInstanceCount = 0;
 	SpriteInstanceBuffer = nullptr;
 	AllocatedSpriteInstanceCount = 0;
+
+	// 빔 버퍼도 원본 소유이므로 nullptr로 초기화
+	BeamVertexBuffer = nullptr;
+	BeamIndexBuffer = nullptr;
+	AllocatedBeamVertexCount = 0;
+	AllocatedBeamIndexCount = 0;
+
+	// 리본 버퍼도 원본 소유이므로 nullptr로 초기화
+	RibbonVertexBuffer = nullptr;
+	RibbonIndexBuffer = nullptr;
+	AllocatedRibbonVertexCount = 0;
+	AllocatedRibbonIndexCount = 0;
 
 	// 테스트용 리소스 포인터 초기화 (원본 소유, 복사본에서 삭제하면 안됨)
 	TestTemplate = nullptr;
