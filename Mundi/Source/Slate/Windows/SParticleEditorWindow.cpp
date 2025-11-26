@@ -39,6 +39,9 @@
 #include "Distribution.h"
 #include "Shader.h"
 #include "Widgets/PropertyRenderer.h"
+#include "ParticleStats.h"
+#include "ParticleEmitterInstance.h"
+#include "RenderSettings.h"
 
 // 모듈 드래그 앤 드롭 페이로드 구조체
 struct FModuleDragPayload
@@ -1396,6 +1399,7 @@ void SParticleEditorWindow::RenderToolbar()
 			if (State->PreviewComponent)
 			{
 				State->PreviewComponent->ResetParticles();
+				FParticleStatManager::GetInstance().ResetStats();
 			}
 		}
 		if (ImGui::IsItemHovered())
@@ -2887,9 +2891,259 @@ void SParticleEditorWindow::RenderViewportArea(float width, float height)
 
 		ImGui::Image((void*)ViewportSRV, ViewportSize, uv0, uv1);
 
-		// Hover 상태 업데이트
-		bool bHovered = ImGui::IsItemHovered();
-		State->Viewport->SetViewportHovered(bHovered);
+		// 뷰포트 hover 상태 저장 (다른 UI 추가 전에 체크해야 함)
+		bool bViewportHovered = ImGui::IsItemHovered();
+
+		// === 좌상단: 뷰 옵션 버튼 ===
+		ImVec2 ViewButtonPos(Pos.x + 10.0f, Pos.y + 10.0f);
+		ImGui::SetCursorScreenPos(ViewButtonPos);
+
+		// 작고 둥근 버튼 스타일
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.15f, 0.15f, 0.15f, 0.8f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.25f, 0.25f, 0.9f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.35f, 0.35f, 0.35f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(6.0f, 3.0f));
+
+		if (ImGui::Button("뷰"))
+		{
+			ImGui::OpenPopup("ViewOptionsPopup");
+		}
+
+		ImGui::PopStyleVar(2);
+		ImGui::PopStyleColor(4);
+
+		// 팝업 메뉴 스타일링
+		if (ImGui::BeginPopup("ViewOptionsPopup"))
+		{
+			URenderSettings& Settings = State->World->GetRenderSettings();
+
+			// 언리얼 스타일 팝업 색상
+			ImGui::PushStyleColor(ImGuiCol_PopupBg, ImVec4(0.12f, 0.12f, 0.12f, 0.95f));
+			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.26f, 0.59f, 0.98f, 0.35f));
+			ImGui::PushStyleColor(ImGuiCol_HeaderHovered, ImVec4(0.26f, 0.59f, 0.98f, 0.50f));
+			ImGui::PushStyleColor(ImGuiCol_HeaderActive, ImVec4(0.26f, 0.59f, 0.98f, 0.70f));
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8.0f, 4.0f));
+
+			// 뷰 오버레이 서브메뉴
+			if (ImGui::BeginMenu("뷰 오버레이"))
+			{
+				// 개별 통계 항목 토글
+				if (ImGui::MenuItem("파티클 수", nullptr, bShowParticleCount))
+				{
+					bShowParticleCount = !bShowParticleCount;
+				}
+				if (ImGui::MenuItem("이벤트 수", nullptr, bShowEventCount))
+				{
+					bShowEventCount = !bShowEventCount;
+				}
+				if (ImGui::MenuItem("시간", nullptr, bShowTime))
+				{
+					bShowTime = !bShowTime;
+				}
+				if (ImGui::MenuItem("메모리", nullptr, bShowMemory))
+				{
+					bShowMemory = !bShowMemory;
+				}
+
+				ImGui::Separator();
+
+				// 전체 토글
+				if (ImGui::MenuItem("모두 표시"))
+				{
+					bShowParticleCount = true;
+					bShowEventCount = true;
+					bShowTime = true;
+					bShowMemory = true;
+				}
+				if (ImGui::MenuItem("모두 숨기기"))
+				{
+					bShowParticleCount = false;
+					bShowEventCount = false;
+					bShowTime = false;
+					bShowMemory = false;
+				}
+
+				ImGui::EndMenu();
+			}
+
+			// 뷰 모드 서브메뉴
+			if (ImGui::BeginMenu("뷰 모드"))
+			{
+				EViewMode CurrentMode = State->Client->GetViewMode();
+
+				if (ImGui::MenuItem("Unlit", nullptr, CurrentMode == EViewMode::VMI_Unlit))
+					State->Client->SetViewMode(EViewMode::VMI_Unlit);
+				if (ImGui::MenuItem("Wireframe", nullptr, CurrentMode == EViewMode::VMI_Wireframe))
+					State->Client->SetViewMode(EViewMode::VMI_Wireframe);
+				if (ImGui::MenuItem("Lit", nullptr, CurrentMode == EViewMode::VMI_Lit_Phong))
+					State->Client->SetViewMode(EViewMode::VMI_Lit_Phong);
+
+				ImGui::EndMenu();
+			}
+
+			// 그리드 토글
+			bool bGrid = Settings.IsShowFlagEnabled(EEngineShowFlags::SF_Grid);
+			if (ImGui::MenuItem("그리드", nullptr, bGrid))
+			{
+				Settings.ToggleShowFlag(EEngineShowFlags::SF_Grid);
+			}
+
+			ImGui::PopStyleVar(1);
+			ImGui::PopStyleColor(4);
+			ImGui::EndPopup();
+		}
+
+		// === 우하단: 통계 오버레이 ===
+		// 하나라도 토글이 켜져 있으면 표시
+		bool bAnyStatEnabled = bShowParticleCount || bShowEventCount || bShowTime || bShowMemory;
+		if (bAnyStatEnabled && State->PreviewComponent)
+		{
+			ImDrawList* DrawList = ImGui::GetWindowDrawList();
+
+			// 통계 수집
+			int32 TotalParticles = 0;
+			int32 EventCount = 0;
+			float MaxEmitterTime = 0.0f;
+
+			for (FParticleEmitterInstance* Instance : State->PreviewComponent->EmitterInstances)
+			{
+				if (Instance)
+				{
+					TotalParticles += Instance->ActiveParticles;
+					MaxEmitterTime = FMath::Max(MaxEmitterTime, Instance->EmitterTime);
+				}
+			}
+
+			EventCount = State->PreviewComponent->CollisionEvents.Num()
+				+ State->PreviewComponent->SpawnEvents.Num()
+				+ State->PreviewComponent->DeathEvents.Num();
+
+			uint64 MemoryBytes = FParticleStatManager::GetInstance().GetStats().MemoryBytes;
+
+			// 개별 토글에 따라 텍스트 생성
+			char StatsText[512] = "";
+			char TempBuffer[128];
+
+			if (bShowParticleCount)
+			{
+				sprintf_s(TempBuffer, "파티클 수: %d\n", TotalParticles);
+				strcat_s(StatsText, TempBuffer);
+			}
+			if (bShowEventCount)
+			{
+				sprintf_s(TempBuffer, "이벤트 수: %d\n", EventCount);
+				strcat_s(StatsText, TempBuffer);
+			}
+			if (bShowTime)
+			{
+				sprintf_s(TempBuffer, "시간: %.2fs\n", MaxEmitterTime);
+				strcat_s(StatsText, TempBuffer);
+			}
+			if (bShowMemory)
+			{
+				sprintf_s(TempBuffer, "메모리: %.2f KB\n", MemoryBytes / 1024.0f);
+				strcat_s(StatsText, TempBuffer);
+			}
+
+			// 마지막 개행 제거
+			size_t Len = strlen(StatsText);
+			if (Len > 0 && StatsText[Len - 1] == '\n')
+			{
+				StatsText[Len - 1] = '\0';
+			}
+
+			// 우하단 위치
+			ImVec2 TextSize = ImGui::CalcTextSize(StatsText);
+			ImVec2 TextPos(Pos.x + width - TextSize.x - 10.0f, Pos.y + height - TextSize.y - 10.0f);
+
+			// 텍스트만 표시 (밝은 회색)
+			DrawList->AddText(TextPos, IM_COL32(220, 220, 220, 255), StatsText);
+		}
+
+		// 3D 축 위젯 (뷰포트 좌측 하단)
+		if (State->Client)
+		{
+			ImDrawList* DrawList = ImGui::GetWindowDrawList();
+
+			// 축 위젯 설정
+			const float AxisSize = 40.0f;
+			const float Margin = 15.0f;
+			ImVec2 AxisCenter(Pos.x + Margin + AxisSize, Pos.y + height - Margin - AxisSize);
+
+			// 카메라 뷰 행렬에서 회전 부분으로 축 방향 변환
+			FMatrix ViewMatrix = State->Client->GetViewMatrix();
+
+			// 3D 축 벡터를 뷰 공간으로 변환 (위치 무시, 방향만)
+			FVector AxisX = ViewMatrix.TransformVector(FVector(1, 0, 0));
+			FVector AxisY = ViewMatrix.TransformVector(FVector(0, 1, 0));
+			FVector AxisZ = ViewMatrix.TransformVector(FVector(0, 0, 1));
+
+			// 축 정보를 배열로 정리 (깊이 정렬용)
+			struct AxisInfo
+			{
+				FVector Dir;
+				ImU32 Color;
+				const char* Label;
+				float Depth;
+			};
+
+			// 뷰 공간: X=오른쪽, Y=위쪽, Z=깊이(카메라 방향)
+			AxisInfo Axes[3] = {
+				{AxisX, IM_COL32(204, 57, 57, 255), "X", AxisX.Z},  // 빨강
+				{AxisY, IM_COL32(57, 204, 57, 255), "Y", AxisY.Z},  // 초록
+				{AxisZ, IM_COL32(57, 127, 204, 255), "Z", AxisZ.Z}  // 파랑
+			};
+
+			// 깊이순 정렬 (뒤→앞, 뒤에 있는 것 먼저 그리기)
+			for (int i = 0; i < 2; i++)
+			{
+				for (int j = i + 1; j < 3; j++)
+				{
+					if (Axes[i].Depth > Axes[j].Depth)
+					{
+						AxisInfo Temp = Axes[i];
+						Axes[i] = Axes[j];
+						Axes[j] = Temp;
+					}
+				}
+			}
+
+			// 정렬된 순서로 그리기
+			for (int i = 0; i < 3; i++)
+			{
+				const AxisInfo& Axis = Axes[i];
+
+				// 2D 화면 좌표로 변환 (X=오른쪽, Y=위쪽)
+				// ImGui 화면 Y는 아래가 양수이므로 Y축 반전
+				ImVec2 EndPoint(
+					AxisCenter.x + Axis.Dir.X * AxisSize,
+					AxisCenter.y - Axis.Dir.Y * AxisSize
+				);
+
+				// 축 선 그리기
+				DrawList->AddLine(AxisCenter, EndPoint, Axis.Color, 2.0f);
+
+				// 라벨 위치 (끝점 방향으로 일정하게 오프셋)
+				float DirX = EndPoint.x - AxisCenter.x;
+				float DirY = EndPoint.y - AxisCenter.y;
+				float Len = sqrtf(DirX * DirX + DirY * DirY);
+				if (Len > 0.1f)
+				{
+					DirX /= Len;
+					DirY /= Len;
+				}
+				ImVec2 LabelPos(EndPoint.x + DirX * 4.0f - 3.0f, EndPoint.y + DirY * 4.0f - 5.0f);
+				DrawList->AddText(LabelPos, Axis.Color, Axis.Label);
+			}
+
+			// 중심점 원
+			DrawList->AddCircleFilled(AxisCenter, 3.0f, IM_COL32(200, 200, 200, 255));
+		}
+
+		// Hover 상태 업데이트 (ImGui::Image() 직후에 저장한 값 사용)
+		State->Viewport->SetViewportHovered(bViewportHovered);
 	}
 }
 

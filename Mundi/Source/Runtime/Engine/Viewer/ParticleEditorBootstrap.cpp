@@ -27,7 +27,7 @@ static void CreateOriginAxisLines(ULineComponent* LineComp)
 
 	LineComp->ClearLines();
 
-	const float AxisLength = 10.0f;
+	const float AxisLength = 5.0f;
 	const FVector Origin = FVector(0.0f, 0.0f, 0.0f);
 
 	// X축 - 빨강

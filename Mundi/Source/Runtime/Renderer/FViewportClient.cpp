@@ -351,6 +351,15 @@ void FViewportClient::MouseButtonUp(FViewport* Viewport, int32 X, int32 Y, int32
 	}
 }
 
+FMatrix FViewportClient::GetViewMatrix() const
+{
+	if (Camera)
+	{
+		return Camera->GetViewMatrix();
+	}
+	return FMatrix::Identity();
+}
+
 void FViewportClient::MouseWheel(float DeltaSeconds)
 {
 	if (!Camera) return;

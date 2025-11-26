@@ -183,6 +183,12 @@ private:
 	// 타입데이터 중복 팝업 상태
 	bool bShowTypeDataExistsPopup = false;
 
+	// 뷰 오버레이 개별 통계 토글
+	bool bShowParticleCount = true;   // 파티클 수 표시
+	bool bShowEventCount = true;      // 이벤트 수 표시
+	bool bShowTime = true;            // 시간 표시
+	bool bShowMemory = true;          // 메모리 표시
+
 	// 헬퍼 함수
 	ParticleEditorState* GetActiveParticleState() const
 	{
