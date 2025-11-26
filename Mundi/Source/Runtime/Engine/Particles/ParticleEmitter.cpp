@@ -18,11 +18,11 @@ UParticleEmitter::~UParticleEmitter()
 
 void UParticleEmitter::CacheEmitterModuleInfo()
 {
-	// 파티클 크기 계산
+	// 기본 파티클 크기 (페이로드 제외)
 	ParticleSize = sizeof(FBaseParticle);
 
-	// 모듈별 추가 크기 계산을 여기에 추가 가능
-	// 예를 들어, 모듈이 파티클에 페이로드 데이터를 추가할 수 있음
+	// 페이로드 크기는 FParticleEmitterInstance::InitializeParticles()에서
+	// 현재 LOD의 모듈에 따라 런타임에 계산됨 (언리얼 방식)
 
 	// 모든 LOD 레벨의 모듈 정보 캐싱
 	for (UParticleLODLevel* LODLevel : LODLevels)
