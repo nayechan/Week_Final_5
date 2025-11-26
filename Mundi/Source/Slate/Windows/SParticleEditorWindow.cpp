@@ -3374,43 +3374,66 @@ void SParticleEditorWindow::RenderCurveKeys(ImDrawList* DrawList, ImVec2 CanvasP
 			return;
 		}
 
-		FInterpCurveFloat& Curve = SelectedTrack->FloatCurve->ConstantCurve;
-
-		for (int32 i = 0; i < Curve.Points.Num(); ++i)
+		// 람다: 단일 커브의 키 렌더링
+		auto RenderFloatCurveKeys = [&](FInterpCurveFloat& Curve, ImU32 BaseColor, int32 CurveIndex)
 		{
-			FInterpCurvePointFloat& Point = Curve.Points[i];
-
-			// 화면 좌표
-			float x = CanvasPos.x +
-				((Point.InVal - CurveEditorState.ViewMinTime) /
-				 (CurveEditorState.ViewMaxTime - CurveEditorState.ViewMinTime)) * CanvasSize.x;
-			float y = CanvasPos.y + CanvasSize.y -
-				((Point.OutVal - CurveEditorState.ViewMinValue) /
-				 (CurveEditorState.ViewMaxValue - CurveEditorState.ViewMinValue)) * CanvasSize.y;
-
-			// 클램핑
-			x = FMath::Clamp(x, CanvasPos.x, CanvasPos.x + CanvasSize.x);
-			y = FMath::Clamp(y, CanvasPos.y, CanvasPos.y + CanvasSize.y);
-
-			// 키 사각형
-			float KeySize = 8.0f;
-			ImU32 KeyColor = (i == CurveEditorState.SelectedKeyIndex)
-				? IM_COL32(255, 255, 0, 255)   // 선택: 노랑
-				: IM_COL32(255, 255, 255, 255); // 기본: 흰색
-
-			DrawList->AddRectFilled(
-				ImVec2(x - KeySize / 2, y - KeySize / 2),
-				ImVec2(x + KeySize / 2, y + KeySize / 2),
-				KeyColor);
-			DrawList->AddRect(
-				ImVec2(x - KeySize / 2, y - KeySize / 2),
-				ImVec2(x + KeySize / 2, y + KeySize / 2),
-				IM_COL32(0, 0, 0, 255));
-
-			// 탄젠트 핸들 (선택된 키만)
-			if (i == CurveEditorState.SelectedKeyIndex)
+			for (int32 i = 0; i < Curve.Points.Num(); ++i)
 			{
-				RenderTangentHandles(DrawList, Point, x, y, CanvasSize);
+				FInterpCurvePointFloat& Point = Curve.Points[i];
+
+				// 화면 좌표
+				float x = CanvasPos.x +
+					((Point.InVal - CurveEditorState.ViewMinTime) /
+					 (CurveEditorState.ViewMaxTime - CurveEditorState.ViewMinTime)) * CanvasSize.x;
+				float y = CanvasPos.y + CanvasSize.y -
+					((Point.OutVal - CurveEditorState.ViewMinValue) /
+					 (CurveEditorState.ViewMaxValue - CurveEditorState.ViewMinValue)) * CanvasSize.y;
+
+				// 클램핑
+				x = FMath::Clamp(x, CanvasPos.x, CanvasPos.x + CanvasSize.x);
+				y = FMath::Clamp(y, CanvasPos.y, CanvasPos.y + CanvasSize.y);
+
+				// 키 사각형
+				float KeySize = 8.0f;
+				// 선택 상태: 선택된 커브의 선택된 키면 노랑
+				bool bIsSelected = (CurveEditorState.SelectedAxis == CurveIndex && i == CurveEditorState.SelectedKeyIndex);
+				ImU32 KeyColor = bIsSelected ? IM_COL32(255, 255, 0, 255) : BaseColor;
+
+				DrawList->AddRectFilled(
+					ImVec2(x - KeySize / 2, y - KeySize / 2),
+					ImVec2(x + KeySize / 2, y + KeySize / 2),
+					KeyColor);
+				DrawList->AddRect(
+					ImVec2(x - KeySize / 2, y - KeySize / 2),
+					ImVec2(x + KeySize / 2, y + KeySize / 2),
+					IM_COL32(0, 0, 0, 255));
+
+				// 탄젠트 핸들 (선택된 키만)
+				if (bIsSelected)
+				{
+					RenderTangentHandles(DrawList, Point, x, y, CanvasSize);
+				}
+			}
+		};
+
+		if (SelectedTrack->FloatCurve->Type == EDistributionType::ConstantCurve)
+		{
+			// ConstantCurve: 단일 커브 (흰색)
+			if (SelectedTrack->bShowX)
+			{
+				RenderFloatCurveKeys(SelectedTrack->FloatCurve->ConstantCurve, IM_COL32(255, 255, 255, 255), 0);
+			}
+		}
+		else // UniformCurve
+		{
+			// UniformCurve: MinCurve(빨강), MaxCurve(초록)
+			if (SelectedTrack->bShowX)
+			{
+				RenderFloatCurveKeys(SelectedTrack->FloatCurve->MinCurve, IM_COL32(255, 100, 100, 255), 0);
+			}
+			if (SelectedTrack->bShowY)
+			{
+				RenderFloatCurveKeys(SelectedTrack->FloatCurve->MaxCurve, IM_COL32(100, 255, 100, 255), 1);
 			}
 		}
 	}
@@ -3423,42 +3446,66 @@ void SParticleEditorWindow::RenderCurveKeys(ImDrawList* DrawList, ImVec2 CanvasP
 			return;
 		}
 
-		FInterpCurveVector& Curve = SelectedTrack->VectorCurve->ConstantCurve;
-
 		// 색상: X=빨강, Y=초록, Z=파랑
 		ImU32 Colors[3] = {
 			IM_COL32(255, 80, 80, 255),
 			IM_COL32(80, 255, 80, 255),
 			IM_COL32(80, 80, 255, 255)
 		};
+		// UniformCurve용 어두운 색상 (Min 커브)
+		ImU32 DarkColors[3] = {
+			IM_COL32(180, 50, 50, 255),
+			IM_COL32(50, 180, 50, 255),
+			IM_COL32(50, 50, 180, 255)
+		};
 		bool ShowChannel[3] = { SelectedTrack->bShowX, SelectedTrack->bShowY, SelectedTrack->bShowZ };
 
-		for (int32 i = 0; i < Curve.Points.Num(); ++i)
+		// 람다: 단일 VectorCurve의 키 렌더링
+		auto RenderVectorCurveKeys = [&](FInterpCurveVector& Curve, ImU32* ChannelColors, bool bIsMinCurve)
 		{
-			FInterpCurvePointVector& Point = Curve.Points[i];
-
-			float x = CanvasPos.x +
-				((Point.InVal - CurveEditorState.ViewMinTime) /
-				 (CurveEditorState.ViewMaxTime - CurveEditorState.ViewMinTime)) * CanvasSize.x;
-
-			// 각 축별로 키 렌더링 (활성화된 채널만)
-			for (int axis = 0; axis < 3; ++axis)
+			for (int32 i = 0; i < Curve.Points.Num(); ++i)
 			{
-				if (!ShowChannel[axis]) continue;
+				FInterpCurvePointVector& Point = Curve.Points[i];
 
-				float AxisValue = (axis == 0) ? Point.OutVal.X : (axis == 1) ? Point.OutVal.Y : Point.OutVal.Z;
-				float y = CanvasPos.y + CanvasSize.y -
-					((AxisValue - CurveEditorState.ViewMinValue) /
-					 (CurveEditorState.ViewMaxValue - CurveEditorState.ViewMinValue)) * CanvasSize.y;
+				float x = CanvasPos.x +
+					((Point.InVal - CurveEditorState.ViewMinTime) /
+					 (CurveEditorState.ViewMaxTime - CurveEditorState.ViewMinTime)) * CanvasSize.x;
 
-				y = FMath::Clamp(y, CanvasPos.y, CanvasPos.y + CanvasSize.y);
+				// 각 축별로 키 렌더링 (활성화된 채널만)
+				for (int axis = 0; axis < 3; ++axis)
+				{
+					if (!ShowChannel[axis]) continue;
 
-				float KeySize = 6.0f;
-				DrawList->AddRectFilled(
-					ImVec2(x - KeySize / 2, y - KeySize / 2),
-					ImVec2(x + KeySize / 2, y + KeySize / 2),
-					Colors[axis]);
+					float AxisValue = (axis == 0) ? Point.OutVal.X : (axis == 1) ? Point.OutVal.Y : Point.OutVal.Z;
+					float y = CanvasPos.y + CanvasSize.y -
+						((AxisValue - CurveEditorState.ViewMinValue) /
+						 (CurveEditorState.ViewMaxValue - CurveEditorState.ViewMinValue)) * CanvasSize.y;
+
+					y = FMath::Clamp(y, CanvasPos.y, CanvasPos.y + CanvasSize.y);
+
+					float KeySize = 6.0f;
+					DrawList->AddRectFilled(
+						ImVec2(x - KeySize / 2, y - KeySize / 2),
+						ImVec2(x + KeySize / 2, y + KeySize / 2),
+						ChannelColors[axis]);
+					DrawList->AddRect(
+						ImVec2(x - KeySize / 2, y - KeySize / 2),
+						ImVec2(x + KeySize / 2, y + KeySize / 2),
+						IM_COL32(0, 0, 0, 255));
+				}
 			}
+		};
+
+		if (SelectedTrack->VectorCurve->Type == EDistributionType::ConstantCurve)
+		{
+			// ConstantCurve: 단일 커브
+			RenderVectorCurveKeys(SelectedTrack->VectorCurve->ConstantCurve, Colors, false);
+		}
+		else // UniformCurve
+		{
+			// UniformCurve: MinCurve(어두운색), MaxCurve(밝은색)
+			RenderVectorCurveKeys(SelectedTrack->VectorCurve->MinCurve, DarkColors, true);
+			RenderVectorCurveKeys(SelectedTrack->VectorCurve->MaxCurve, Colors, false);
 		}
 	}
 }
