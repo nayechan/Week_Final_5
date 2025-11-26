@@ -21,7 +21,7 @@ DECLARE_DELEGATE_TYPE(FOnParticleDeath, UParticleSystemComponent*, const FPartic
  * 2. OnParticleCollision/OnParticleSpawn/OnParticleDeath 델리게이트에 핸들러를 등록합니다.
  * 3. 파티클 시스템에서 이벤트가 발생하면 자동으로 브로드캐스트됩니다.
  */
-UCLASS(DisplayName="파티클 이벤트 매니저", Description="파티클 이벤트를 중앙에서 관리하는 매니저 액터입니다")
+UCLASS(NotSpawnable, DisplayName="파티클 이벤트 매니저", Description="파티클 이벤트를 중앙에서 관리하는 매니저 액터입니다")
 class AParticleEventManager : public AActor
 {
 public:

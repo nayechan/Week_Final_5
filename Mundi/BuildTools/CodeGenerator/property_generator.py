@@ -66,13 +66,16 @@ class PropertyGenerator:
 
         # mark_type 결정:
         # 1. Abstract 클래스는 MARK 없음 (에디터 목록에서 제외)
-        # 2. AActor, UActorComponent 베이스 클래스는 MARK 없음
-        # 3. AActor를 상속받은 클래스는 MARK_AS_SPAWNABLE
-        # 4. UActorComponent를 상속받은 클래스는 MARK_AS_COMPONENT
-        # 5. 그 외 (순수 UObject 등)는 MARK 없음
+        # 2. NotSpawnable 클래스는 MARK 없음 (시스템 액터 등)
+        # 3. AActor, UActorComponent 베이스 클래스는 MARK 없음
+        # 4. AActor를 상속받은 클래스는 MARK_AS_SPAWNABLE
+        # 5. UActorComponent를 상속받은 클래스는 MARK_AS_COMPONENT
+        # 6. 그 외 (순수 UObject 등)는 MARK 없음
         mark_type = None
         if class_info.is_abstract:
             mark_type = None  # Abstract 클래스는 MARK 없음
+        elif getattr(class_info, 'not_spawnable', False):
+            mark_type = None  # NotSpawnable 클래스는 MARK 없음 (시스템 액터)
         elif class_info.name in ['AActor', 'UActorComponent']:
             mark_type = None  # 베이스 클래스는 MARK 없음
         elif self._is_derived_from(class_info.name, 'AActor'):

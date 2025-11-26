@@ -6,6 +6,7 @@ AParticleEventManager::AParticleEventManager()
 {
 	bCanEverTick = true;
 	bTickInEditor = false;  // 에디터에서는 틱 불필요
+	bHiddenInOutliner = true;  // 시스템 액터이므로 아웃라이너에서 숨김
 }
 
 void AParticleEventManager::BroadcastCollisionEvent(UParticleSystemComponent* PSC, const FParticleEventCollideData& Event)

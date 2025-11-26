@@ -152,6 +152,7 @@ public:
     // 가시성
     void SetActorHiddenInEditor(bool bNewHidden);
     bool GetActorHiddenInEditor() const { return bHiddenInEditor; }
+    bool IsHiddenInOutliner() const { return bHiddenInOutliner; }  // 아웃라이너에서 숨김 여부
     // Visible false인 경우 게임, 에디터 모두 안 보임
     void SetActorHiddenInGame(bool bNewHidden) { bActorHiddenInGame = bNewHidden; }
     bool GetActorHiddenInGame() { return bActorHiddenInGame; }
@@ -201,6 +202,7 @@ protected:
 
     // Actor의 Visibility는 루트 컴포넌트로 설정
     bool bHiddenInEditor = false;
+    bool bHiddenInOutliner = false;  // 아웃라이너에서 숨김 (시스템 액터용)
 
     bool bPendingDestroy = false;
 

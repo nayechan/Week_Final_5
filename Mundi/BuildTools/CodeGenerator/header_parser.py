@@ -231,6 +231,7 @@ class ClassInfo:
     is_component: bool = False
     is_spawnable: bool = False
     is_abstract: bool = False  # UCLASS(Abstract) 플래그
+    not_spawnable: bool = False  # UCLASS(NotSpawnable) 플래그 - 시스템 액터용
     display_name: str = ""
     description: str = ""
     uclass_metadata: Dict[str, str] = field(default_factory=dict)
@@ -475,6 +476,10 @@ class HeaderParser:
             # Abstract 플래그 확인
             if 'Abstract' in class_info.uclass_metadata:
                 class_info.is_abstract = True
+
+            # NotSpawnable 플래그 확인 (시스템 액터용)
+            if 'NotSpawnable' in class_info.uclass_metadata:
+                class_info.not_spawnable = True
 
         # UPROPERTY 파싱 (주석 제거된 버전에서)
         uproperty_decls = self._parse_uproperty_declarations(content_no_comments)

@@ -383,6 +383,10 @@ bool USceneManagerWidget::ShouldShowActor(AActor* Actor) const
 	if (!Actor)
 		return false;
 
+	// 시스템 액터는 아웃라이너에서 숨김
+	if (Actor->IsHiddenInOutliner())
+		return false;
+
 	// Filter by selection
 	if (bShowOnlySelectedObjects && !SelectionManager->IsActorSelected(Actor))
 		return false;
