@@ -66,6 +66,23 @@ public:
 	UPROPERTY(EditAnywhere, Category="Delay")
 	bool bDelayFirstLoopOnly = false;
 
+	// ────────────────────────────────────────────
+	// Sub-UV (스프라이트 시트 애니메이션)
+	// ────────────────────────────────────────────
+
+	// 스프라이트 시트 가로 분할 수 (열 개수)
+	UPROPERTY(EditAnywhere, Category="SubUV")
+	int32 SubImages_Horizontal = 1;
+
+	// 스프라이트 시트 세로 분할 수 (행 개수)
+	UPROPERTY(EditAnywhere, Category="SubUV")
+	int32 SubImages_Vertical = 1;
+
+	// 실제 사용할 프레임 수 (0 = SubImages_Horizontal * SubImages_Vertical 전체 사용)
+	// 스프라이트 시트가 완전히 채워지지 않은 경우 사용 (예: 4x4=16칸이지만 14프레임만 있는 경우)
+	UPROPERTY(EditAnywhere, Category="SubUV")
+	int32 SubUV_MaxElements = 0;
+
 	UParticleModuleRequired() = default;
 	virtual ~UParticleModuleRequired();
 

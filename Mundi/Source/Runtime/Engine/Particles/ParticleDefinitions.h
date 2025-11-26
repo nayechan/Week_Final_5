@@ -15,11 +15,19 @@ struct FParticleRequiredModule
 	int32 ScreenAlignment;              // 화면 정렬 방식 (Billboard, Velocity aligned 등)
 	bool bOrientZAxisTowardCamera;      // Z축을 카메라 방향으로 정렬할지 여부
 
+	// Sub-UV 설정 (스프라이트 시트 애니메이션)
+	int32 SubImages_Horizontal;         // 가로 타일 수
+	int32 SubImages_Vertical;           // 세로 타일 수
+	int32 SubUV_MaxElements;            // 실제 프레임 수 (0 = 전체 사용)
+
 	FParticleRequiredModule()
 		: Material(nullptr)
 		, EmitterName("Emitter")
 		, ScreenAlignment(0)
 		, bOrientZAxisTowardCamera(false)
+		, SubImages_Horizontal(1)
+		, SubImages_Vertical(1)
+		, SubUV_MaxElements(0)
 	{
 	}
 };
@@ -138,7 +146,7 @@ struct FSpriteParticleInstanceVertex
 	FVector2D Size;           // 파티클 크기 (8바이트)
 	FLinearColor Color;       // 파티클 색상 (16바이트)
 	float RelativeTime;       // 상대 시간 (4바이트)
-	float Padding[1];         // 16바이트 정렬 (4바이트)
+	float SubImageIndex;      // Sub-UV 프레임 인덱스 (4바이트) - 정수부: 프레임, 소수부: 블렌드(향후)
 	// 총 48바이트
 };
 

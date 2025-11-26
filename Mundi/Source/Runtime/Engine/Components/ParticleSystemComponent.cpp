@@ -1520,6 +1520,20 @@ void UParticleSystemComponent::FillSpriteInstanceBuffer(uint32 TotalInstances)
 		if (!ParticleData || ParticleCount == 0)
 			continue;
 
+		// Sub-UV 설정 가져오기
+		const FDynamicSpriteEmitterData* SpriteEmitterData = static_cast<const FDynamicSpriteEmitterData*>(EmitterData);
+		int32 SubImages_H = 1;
+		int32 SubImages_V = 1;
+		int32 TotalFrames = 1;
+
+		if (SpriteEmitterData->Source.RequiredModule)
+		{
+			SubImages_H = SpriteEmitterData->Source.RequiredModule->SubImages_Horizontal;
+			SubImages_V = SpriteEmitterData->Source.RequiredModule->SubImages_Vertical;
+			int32 MaxElements = SpriteEmitterData->Source.RequiredModule->SubUV_MaxElements;
+			TotalFrames = (MaxElements > 0) ? MaxElements : (SubImages_H * SubImages_V);
+		}
+
 		// 각 파티클의 인스턴스 데이터 생성
 		for (int32 ParticleIdx = 0; ParticleIdx < ParticleCount; ParticleIdx++)
 		{
@@ -1544,6 +1558,10 @@ void UParticleSystemComponent::FillSpriteInstanceBuffer(uint32 TotalInstances)
 
 			// RelativeTime
 			Instance.RelativeTime = Particle->RelativeTime;
+
+			// Sub-UV 프레임 인덱스 계산
+			// RelativeTime (0~1)을 프레임 인덱스 (0~TotalFrames-1)로 변환
+			Instance.SubImageIndex = Particle->RelativeTime * (float)(TotalFrames - 1);
 
 			InstanceOffset++;
 		}
@@ -1633,6 +1651,15 @@ void UParticleSystemComponent::CreateSpriteParticleBatch(TArray<FMeshBatchElemen
 
 		// 스프라이트 파티클: 반투명 렌더링 (no culling, depth read-only, alpha blend)
 		BatchElement.RenderMode = EBatchRenderMode::Translucent;
+
+		// Sub-UV 설정 (스프라이트 시트 정보)
+		if (SpriteSource.RequiredModule)
+		{
+			float SubH = (float)SpriteSource.RequiredModule->SubImages_Horizontal;
+			float SubV = (float)SpriteSource.RequiredModule->SubImages_Vertical;
+			// xy = 타일 수, zw = 1/타일 수 (프레임 크기)
+			BatchElement.SubImageSize = FVector4(SubH, SubV, 1.0f / SubH, 1.0f / SubV);
+		}
 
 		OutMeshBatchElements.Add(BatchElement);
 

@@ -44,6 +44,12 @@ FParticleRequiredModule UParticleModuleRequired::ToRenderThreadData() const
 	RenderData.EmitterName = EmitterName;
 	RenderData.ScreenAlignment = ScreenAlignment;
 	RenderData.bOrientZAxisTowardCamera = bOrientZAxisTowardCamera;
+
+	// Sub-UV 설정 복사
+	RenderData.SubImages_Horizontal = SubImages_Horizontal;
+	RenderData.SubImages_Vertical = SubImages_Vertical;
+	RenderData.SubUV_MaxElements = SubUV_MaxElements;
+
 	return RenderData;
 }
 

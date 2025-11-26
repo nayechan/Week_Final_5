@@ -1716,6 +1716,15 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 		RHIDevice->SetAndUpdateConstantBuffer(ModelBufferType(Batch.WorldMatrix, Batch.WorldMatrix.InverseAffine().Transpose()));
 		RHIDevice->SetAndUpdateConstantBuffer(ColorBufferType(Batch.InstanceColor, Batch.ObjectID));
 
+		// Sub-UV 상수 버퍼 설정 (파티클 스프라이트 시트 애니메이션용)
+		// 셰이더에서 항상 SubImageSize를 읽으므로 반드시 바인딩해야 함
+		// (바인딩하지 않으면 쓰레기 값을 읽어 잘못된 UV 계산 발생)
+		{
+			FSubUVBufferType SubUVBuffer;
+			SubUVBuffer.SubImageSize = Batch.SubImageSize;
+			RHIDevice->SetAndUpdateConstantBuffer(SubUVBuffer);
+		}
+
 		// GPU 스키닝: 본 행렬 상수 버퍼 바인딩 (b6)
 		// nullptr를 전달하면 해당 슬롯을 언바인드합니다
 		ID3D11Buffer* BoneBuffer = Batch.BoneMatricesBuffer;

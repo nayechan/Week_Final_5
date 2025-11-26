@@ -93,6 +93,11 @@ struct FMeshBatchElement
 	// GPU 스키닝용 본 행렬 상수 버퍼 (register b6)
 	ID3D11Buffer* BoneMatricesBuffer = nullptr;
 
+	// Sub-UV 데이터 (스프라이트 파티클용)
+	// xy = 타일 수 (SubImages_Horizontal, SubImages_Vertical)
+	// zw = 1/타일 수 (프레임 크기)
+	FVector4 SubImageSize = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
+
 
 	// --- 5. 렌더 상태 힌트 (Render State Hints) ---
 	// 렌더러가 이 배치에 적절한 렌더 상태를 설정하는 데 사용됩니다.

@@ -11,6 +11,12 @@ cbuffer ViewProjBuffer : register(b1)
     row_major float4x4 InverseProjectionMatrix;
 };
 
+// b2: SubUVBuffer (VS) - 스프라이트 시트 정보
+cbuffer SubUVBuffer : register(b2)
+{
+    float4 SubImageSize;    // xy = 타일 수 (예: 4, 4), zw = 1/타일 수 (예: 0.25, 0.25)
+};
+
 // 슬롯 0: 쿼드 버텍스 (4개 코너)
 struct VS_QUAD_INPUT
 {
@@ -25,6 +31,7 @@ struct VS_INSTANCE_INPUT
     float2 Size : TEXCOORD3;            // 파티클 크기
     float4 Color : COLOR1;              // 파티클 색상
     float RelativeTime : TEXCOORD4;     // 상대 시간
+    float SubImageIndex : TEXCOORD5;    // Sub-UV 프레임 인덱스
 };
 
 struct PS_INPUT
@@ -48,7 +55,8 @@ PS_INPUT mainVS(VS_QUAD_INPUT quad, VS_INSTANCE_INPUT inst)
     PS_INPUT output;
 
     // 로컬 오프셋 계산 (UV 0.5 중심 기준)
-    float2 localOffset = (quad.UV - 0.5f) * inst.Size;
+    // Y 반전: View Space에서 Y는 위로 향하지만, UV의 V는 아래로 향함
+    float2 localOffset = float2(quad.UV.x - 0.5f, 0.5f - quad.UV.y) * inst.Size;
 
     // Z축 회전 적용 (카메라 Forward 축 기준 회전)
     float cosR = cos(inst.Rotation);
@@ -66,7 +74,16 @@ PS_INPUT mainVS(VS_QUAD_INPUT quad, VS_INSTANCE_INPUT inst)
 
     // View-Projection 변환
     output.Position = mul(float4(worldPos, 1.0f), mul(ViewMatrix, ProjectionMatrix));
-    output.UV = quad.UV;
+
+    // Sub-UV 계산: 프레임 인덱스에서 UV 오프셋 계산
+    // SubImageSize = (1,1,1,1)이면 결과는 quad.UV와 동일 (분기 없이 항상 계산)
+    uint frameIndex = (uint)inst.SubImageIndex;
+    uint column = frameIndex % (uint)SubImageSize.x;
+    uint row = frameIndex / (uint)SubImageSize.x;
+    float2 frameSize = SubImageSize.zw;
+    float2 frameOffset = float2((float)column, (float)row) * frameSize;
+    output.UV = quad.UV * frameSize + frameOffset;
+
     output.Color = inst.Color;
     output.RelativeTime = inst.RelativeTime;
 

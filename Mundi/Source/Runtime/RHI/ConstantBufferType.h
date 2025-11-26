@@ -64,6 +64,12 @@ struct FogBufferType // b2
     float Padding[2]; // 16바이트 정렬을 위한 패딩
 };
 
+// Sub-UV 파티클용 상수 버퍼 (b2 - VS only)
+struct FSubUVBufferType
+{
+    FVector4 SubImageSize;  // xy = 타일 수, zw = 1/타일 수 (프레임 크기)
+};
+
 struct alignas(16) FFadeInOutBufferType // b2
 {
     FLinearColor FadeColor = FLinearColor(0, 0, 0, 1);  //보통 (0, 0, 0, 1)
@@ -222,6 +228,7 @@ MACRO(DecalBufferType)              \
 MACRO(FireballBufferType)           \
 MACRO(PostProcessBufferType)        \
 MACRO(FogBufferType)                \
+MACRO(FSubUVBufferType)             \
 MACRO(FFadeInOutBufferType)         \
 MACRO(FGammaCorrectionBufferType)   \
 MACRO(FVinetteBufferType)           \
@@ -246,6 +253,7 @@ CONSTANT_BUFFER_INFO(ModelBufferType, 0, true, false)
 CONSTANT_BUFFER_INFO(PostProcessBufferType, 0, false, true)
 CONSTANT_BUFFER_INFO(ViewProjBufferType, 1, true, true) // b1 카메라 행렬 고정
 CONSTANT_BUFFER_INFO(FogBufferType, 2, false, true)
+CONSTANT_BUFFER_INFO(FSubUVBufferType, 2, true, false) // b2 VS only - Sub-UV 파티클
 CONSTANT_BUFFER_INFO(FFadeInOutBufferType, 2, false, true)
 CONSTANT_BUFFER_INFO(FGammaCorrectionBufferType, 2, false, true)
 CONSTANT_BUFFER_INFO(FVinetteBufferType, 2, false, true)
