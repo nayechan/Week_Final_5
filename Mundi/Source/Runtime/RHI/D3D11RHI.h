@@ -45,11 +45,8 @@ enum class EComparisonFunc
 class D3D11RHI
 {
 public:
-	D3D11RHI() {};
-	~D3D11RHI()
-	{
-		Release();
-	}
+	D3D11RHI() = default;
+	~D3D11RHI() = default;  // Release()는 명시적 Shutdown()에서만 호출 (정적 소멸 순서 문제 방지)
 
 
 public:

@@ -298,6 +298,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Runtime\Engine\GameFramework\DancingCharacter.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\GameModeBase.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\GameStateBase.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\HudExampleGameMode.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Pawn.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\PlayerController.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\RibbonActor.cpp" />
@@ -586,6 +587,13 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     </ClCompile>
     <ClCompile Include="Source\Slate\ImGui\ImGuiHelper.cpp" />
     <ClCompile Include="Source\Slate\StatsOverlayD2D.cpp" />
+    <ClCompile Include="Source\Slate\GameUI\FD2DRenderer.cpp" />
+    <ClCompile Include="Source\Slate\GameUI\SWidget.cpp" />
+    <ClCompile Include="Source\Slate\GameUI\STextBlock.cpp" />
+    <ClCompile Include="Source\Slate\GameUI\SButton.cpp" />
+    <ClCompile Include="Source\Slate\GameUI\SPanel.cpp" />
+    <ClCompile Include="Source\Slate\GameUI\SCanvas.cpp" />
+    <ClCompile Include="Source\Slate\GameUI\SGameHUD.cpp" />
     <ClCompile Include="Source\Slate\UIManager.cpp" />
     <ClCompile Include="Source\Slate\SlateManager.cpp" />
     <ClCompile Include="Source\Slate\Widgets\ConsoleWidget.cpp" />
@@ -667,6 +675,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Generated\FParticleBurst.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleTrailSource.generated.cpp" />
     <ClCompile Include="Generated\ARibbonActor.generated.cpp" />
+    <ClCompile Include="Generated\AHudExampleGameMode.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Common\LightingBuffers.hlsl">
@@ -879,6 +888,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Runtime\Engine\GameFramework\GameEngine.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\GameModeBase.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\GameStateBase.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\HudExampleGameMode.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Pawn.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\PlayerCameraManager.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\DirectionalLightActor.h" />
@@ -1100,6 +1110,17 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     </ClInclude>
     <ClInclude Include="Source\Slate\ImGui\ImGuiHelper.h" />
     <ClInclude Include="Source\Slate\StatsOverlayD2D.h" />
+    <ClInclude Include="Source\Slate\GameUI\PointerTypes.h" />
+    <ClInclude Include="Source\Slate\GameUI\SlateTypes.h" />
+    <ClInclude Include="Source\Slate\GameUI\Geometry.h" />
+    <ClInclude Include="Source\Slate\GameUI\Slot.h" />
+    <ClInclude Include="Source\Slate\GameUI\FD2DRenderer.h" />
+    <ClInclude Include="Source\Slate\GameUI\SWidget.h" />
+    <ClInclude Include="Source\Slate\GameUI\STextBlock.h" />
+    <ClInclude Include="Source\Slate\GameUI\SButton.h" />
+    <ClInclude Include="Source\Slate\GameUI\SPanel.h" />
+    <ClInclude Include="Source\Slate\GameUI\SCanvas.h" />
+    <ClInclude Include="Source\Slate\GameUI\SGameHUD.h" />
     <ClInclude Include="Source\Slate\UIManager.h" />
     <ClInclude Include="Source\Slate\SlateManager.h" />
     <ClInclude Include="Source\Slate\Widgets\ConsoleWidget.h" />
@@ -1188,6 +1209,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Generated\FParticleBurst.generated.h" />
     <ClInclude Include="Generated\UParticleModuleTrailSource.generated.h" />
     <ClInclude Include="Generated\ARibbonActor.generated.h" />
+    <ClInclude Include="Generated\AHudExampleGameMode.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BuildTools\CodeGenerator\generate.py" />

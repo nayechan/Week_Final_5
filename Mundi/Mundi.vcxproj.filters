@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
     <FxCompile Include="Shaders\Materials\Fireball.hlsl">
@@ -644,6 +644,27 @@
     <ClCompile Include="Source\Slate\StatsOverlayD2D.cpp">
       <Filter>Source\Slate</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\FD2DRenderer.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\SWidget.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\STextBlock.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\SButton.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\SPanel.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\SCanvas.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\SGameHUD.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Slate\UIManager.cpp">
       <Filter>Source\Slate</Filter>
     </ClCompile>
@@ -1099,6 +1120,9 @@
       <Filter>Source\Runtime\Engine\GameFramework</Filter>
     </ClCompile>
     <ClCompile Include="Generated\ARibbonActor.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\AHudExampleGameMode.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1746,6 +1770,39 @@
     <ClInclude Include="Source\Slate\StatsOverlayD2D.h">
       <Filter>Source\Slate</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\PointerTypes.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\SlateTypes.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\Geometry.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\Slot.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\FD2DRenderer.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\SWidget.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\STextBlock.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\SButton.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\SPanel.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\SCanvas.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\SGameHUD.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Slate\UIManager.h">
       <Filter>Source\Slate</Filter>
     </ClInclude>
@@ -2306,6 +2363,9 @@
     <ClInclude Include="Generated\ARibbonActor.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
+    <ClInclude Include="Generated\AHudExampleGameMode.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="BuildTools\CodeGenerator\generate.py">
@@ -2405,6 +2465,9 @@
     </Filter>
     <Filter Include="Source\Slate\Widgets">
       <UniqueIdentifier>{039089c9-ca8c-47a6-9afb-dd89fef1042f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Slate\GameUI">
+      <UniqueIdentifier>{a1b2c3d4-5678-90ab-cdef-1234567890ab}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Slate\Factory">
       <UniqueIdentifier>{162aa53a-8209-4e71-8d82-a0f6390a28a9}</UniqueIdentifier>

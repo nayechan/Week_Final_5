@@ -9,6 +9,9 @@ class UTexture;
 class SViewportWindow : public SWindow
 {
 public:
+    /** 뷰포트 툴바 높이 (픽셀) */
+    static constexpr float ToolbarHeight = 35.0f;
+
     SViewportWindow();
     virtual ~SViewportWindow();
 
@@ -50,6 +53,7 @@ private:
 
     bool bIsActive;
     bool bIsMouseDown;
+    FVector2D LastMousePos;  // Game HUD용 마우스 위치
 
     // ViewMode 관련 상태 저장
     int CurrentLitSubMode = 0; // 0=default(Phong) 1=Gouraud, 2=Lambert, 3=Phong [기본값: default(Phong)]

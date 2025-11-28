@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "StatsOverlayD2D.h"
+#include "GameUI/SGameHUD.h"
 #include "Color.h"
 
 void D3D11RHI::Initialize(HWND hWindow)
@@ -18,6 +19,9 @@ void D3D11RHI::Initialize(HWND hWindow)
 
     // Initialize Direct2D overlay after device/swapchain ready
     UStatsOverlayD2D::Get().Initialize(Device, DeviceContext, SwapChain);
+
+    // Initialize Game HUD
+    SGameHUD::Get().Initialize(Device, DeviceContext, SwapChain);
 }
 
 void D3D11RHI::Release()
@@ -25,6 +29,9 @@ void D3D11RHI::Release()
     // Prevent double Release() calls
     if (bReleased) return;
     bReleased = true;
+
+    // Game HUD 정리
+    SGameHUD::Get().Shutdown();
 
     // Direct2D 오버레이를 먼저 정리하여 D3D 리소스에 대한 참조를 제거
     UStatsOverlayD2D::Get().Shutdown();
@@ -530,6 +537,9 @@ void D3D11RHI::DrawFullScreenQuad()
 
 void D3D11RHI::Present()
 {
+    // Game HUD 렌더링 (Update는 SViewportWindow에서 처리)
+    SGameHUD::Get().Render();
+
     // Draw any Direct2D overlays before present
     UStatsOverlayD2D::Get().Draw();
     SwapChain->Present(0, 0); // vsync on

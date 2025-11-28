@@ -16,6 +16,7 @@
 #include "StaticMeshActor.h"
 #include "ResourceManager.h"
 #include "SViewerWindow.h"
+#include "GameUI/SGameHUD.h"
 #include <filesystem>
 
 extern float CLIENTWIDTH;
@@ -154,12 +155,32 @@ void SViewportWindow::OnUpdate(float DeltaSeconds)
 	uint32 NewHeight = static_cast<uint32>(Rect.Bottom - Rect.Top);
 
 	Viewport->Resize(NewStartX, NewStartY, NewWidth, NewHeight);
+
+	// Game HUD 뷰포트 영역 설정 및 업데이트 (PIE 뷰포트에서만, 툴바 영역 제외)
+	UWorld* World = ViewportClient ? ViewportClient->GetWorld() : nullptr;
+	if (SGameHUD::Get().IsInitialized() && World && World->bPie)
+	{
+		float HUDStartY = static_cast<float>(NewStartY) + ToolbarHeight;
+		float HUDHeight = static_cast<float>(NewHeight) - ToolbarHeight;
+
+		SGameHUD::Get().SetViewport(
+			FVector2D(static_cast<float>(NewStartX), HUDStartY),
+			FVector2D(static_cast<float>(NewWidth), HUDHeight)
+		);
+
+		// Game HUD 입력 업데이트
+		SGameHUD::Get().Update(LastMousePos.X, LastMousePos.Y, bIsMouseDown);
+	}
+
 	ViewportClient->Tick(DeltaSeconds);
 }
 
 void SViewportWindow::OnMouseMove(FVector2D MousePos)
 {
 	if (!Viewport) return;
+
+	// Game HUD용 마우스 위치 저장
+	LastMousePos = MousePos;
 
 	// 툴바 영역 아래에서만 마우스 이벤트 처리
 	FVector2D LocalPos = MousePos - FVector2D(Rect.Left, Rect.Top);
@@ -170,7 +191,7 @@ void SViewportWindow::OnMouseDown(FVector2D MousePos, uint32 Button)
 {
 	if (!Viewport) return;
 
-	// 툴바 영역 아래에서만 마우스 이벤트 처리s
+	// 툴바 영역 아래에서만 마우스 이벤트 처리
 	bIsMouseDown = true;
 	FVector2D LocalPos = MousePos - FVector2D(Rect.Left, Rect.Top);
 	Viewport->ProcessMouseButtonDown((int32)LocalPos.X, (int32)LocalPos.Y, Button);
@@ -199,7 +220,6 @@ void SViewportWindow::RenderToolbar()
 	if (!Viewport) return;
 
 	// 툴바 영역 크기
-	float ToolbarHeight = 35.0f;
 	ImVec2 ToolbarPosition(Rect.Left, Rect.Top);
 	ImVec2 ToolbarSize(Rect.Right - Rect.Left, ToolbarHeight);
 

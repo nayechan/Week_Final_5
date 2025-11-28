@@ -6,6 +6,7 @@
 #include "PlayerCameraManager.h"
 #include <ObjManager.h>
 #include "FAudioDevice.h"
+#include "GameUI/SGameHUD.h"
 #include <sol/sol.hpp>
 
 float UGameEngine::ClientWidth = 1024.0f;
@@ -206,19 +207,21 @@ bool UGameEngine::Startup(HINSTANCE hInstance)
     GWorld->bPie = true;
     ///////////////////////////////////
 
-    // 시작 scene(level)을 직접 로드 
+    // 시작 scene(level)을 직접 로드
     const FString StartupScenePath = GDataDir + "/Scenes/PlayScene.scene";
     if (!GWorld->LoadLevelFromFile(UTF8ToWide(StartupScenePath)))
     {
-        UE_LOG("Failed to load startup scene: %s", StartupScenePath.c_str());
-        return false;
+        // 씬 로드 실패 시 경고만 표시하고 빈 월드로 계속 진행
+        UE_LOG("Warning: Failed to load startup scene: %s (continuing with empty world)", StartupScenePath.c_str());
     }
-
-    // 로드된 월드의 모든 액터에 대해 BeginPlay() 호출
-    TArray<AActor*> LevelActors = GWorld->GetLevel()->GetActors();
-    for (AActor* Actor : LevelActors)
+    else
     {
-        Actor->BeginPlay();
+        // 로드된 월드의 모든 액터에 대해 BeginPlay() 호출
+        TArray<AActor*> LevelActors = GWorld->GetLevel()->GetActors();
+        for (AActor* Actor : LevelActors)
+        {
+            Actor->BeginPlay();
+        }
     }
 
     bPlayActive = true;
@@ -235,6 +238,22 @@ void UGameEngine::Tick(float DeltaSeconds)
     {
         WorldContext.World->Tick(DeltaSeconds);
     }
+
+    // Game HUD 입력 처리 (Standalone 모드)
+    if (SGameHUD::Get().IsInitialized())
+    {
+        // 뷰포트를 전체 화면으로 설정
+        SGameHUD::Get().SetViewport(
+            FVector2D(0.f, 0.f),
+            FVector2D(ClientWidth, ClientHeight)
+        );
+
+        // 마우스 입력 전달
+        FVector2D MousePos = INPUT.GetMousePosition();
+        bool bLeftDown = INPUT.IsMouseButtonDown(LeftButton);
+        SGameHUD::Get().Update(MousePos.X, MousePos.Y, bLeftDown);
+    }
+
     INPUT.Update();
 }
 

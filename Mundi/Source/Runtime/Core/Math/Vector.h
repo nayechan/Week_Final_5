@@ -154,6 +154,11 @@ struct FVector2D
 		return FVector2D(X * Scalar, Y * Scalar);
 	}
 
+	FVector2D operator/(float Scalar) const
+	{
+		return FVector2D(X / Scalar, Y / Scalar);
+	}
+
 	float Length() const
 	{
 		return std::sqrt(X * X + Y * Y);
