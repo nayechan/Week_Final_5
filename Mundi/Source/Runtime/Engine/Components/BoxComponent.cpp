@@ -274,3 +274,12 @@ bool UBoxComponent::ContainsPoint(const FVector& Point) const
 
 	return bInsideX && bInsideY && bInsideZ;
 }
+
+PxGeometry* UBoxComponent::GetPhysicsGeometry()
+{
+	FVector WorldScale = GetWorldScale(); 
+	float X = BoxExtent.X * std::abs(WorldScale.X);
+	float Y = BoxExtent.Y * std::abs(WorldScale.Y);
+	float Z = BoxExtent.Z * std::abs(WorldScale.Z);
+	return new physx::PxBoxGeometry(X, Y, Z);
+}

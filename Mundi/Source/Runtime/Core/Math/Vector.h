@@ -84,43 +84,23 @@ struct FQuat;
 struct FMatrix;
 struct FTransform;
 struct FAABB;
+namespace physx
+{
+	class PxVec2;
+	class PxVec3;
+	class PxQuat;
+	class PxTransform;
+}
 
 // ─────────────────────────────
 // FVector (2D Vector)
 // ─────────────────────────────
 
-//// Add this global operator== for FVector2D and FVector4 to fix E0349 errors
-//inline bool operator==(const FVector2D& A, const FVector2D& B)
-//{
-//    return std::fabs(A.X - B.X) < KINDA_SMALL_NUMBER &&
-//        std::fabs(A.Y - B.Y) < KINDA_SMALL_NUMBER;
-//}
-//
-//inline bool operator!=(const FVector2D& A, const FVector2D& B)
-//{
-//    return !(A == B);
-//}
-//
-//inline bool operator==(const FVector4& A, const FVector4& B)
-//{
-//    return std::fabs(A.X - B.X) < KINDA_SMALL_NUMBER &&
-//        std::fabs(A.Y - B.Y) < KINDA_SMALL_NUMBER &&
-//        std::fabs(A.Z - B.Z) < KINDA_SMALL_NUMBER &&
-//        std::fabs(A.W - B.W) < KINDA_SMALL_NUMBER;
-//}
-//
-//inline bool operator!=(const FVector4& A, const FVector4& B)
-//{
-//    return !(A == B);
-//}
-
 struct FVector2D
 {
 	float X, Y;
 
-	FVector2D(float InX = 0.0f, float InY = 0.0f) : X(InX), Y(InY)
-	{
-	}
+	FVector2D(float InX = 0.0f, float InY = 0.0f) : X(InX), Y(InY) {}
 
 	static FVector2D Zero()
 	{
@@ -184,6 +164,9 @@ struct FVector2D
 		Ar.Serialize(&V.Y, sizeof(float));
 		return Ar;
 	}
+	
+	FVector2D(const physx::PxVec2& P);
+	operator physx::PxVec2() const;
 };
 
 
@@ -369,6 +352,9 @@ struct FVector
 		Ar.Serialize(&V.Z, sizeof(float));
 		return Ar;
 	}
+
+	FVector(const physx::PxVec3& P);
+	operator physx::PxVec3() const;
 };
 
 // ─────────────────────────────
@@ -694,7 +680,10 @@ struct FQuat
 
 	// 선언: 행렬 변환
 	FMatrix ToMatrix() const;
-
+	
+	FQuat(const physx::PxQuat& p);
+	operator physx::PxQuat() const;
+	
 private:
 	// 보조 연산 (내부용)
 	FQuat operator+(const FQuat& Quat) const { return FQuat(X + Quat.X, Y + Quat.Y, Z + Quat.Z, W + Quat.W); }
@@ -1359,6 +1348,9 @@ struct FTransform
 	{
 		return GetWorldTransform(Other);
 	}
+
+	FTransform(const physx::PxTransform& InPxTransform);
+	operator physx::PxTransform() const;
 };
 
 // ─────────────────────────────

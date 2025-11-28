@@ -54,7 +54,7 @@ void FPhysicsSystem::Initialize()
     // Physics 메인 객체 생성
     mPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *mFoundation, PxTolerancesScale(), true, mPvd);
 
-    // 4. Scene(물리 월드) 설정
+    // Scene(물리 월드) 설정
     PxSceneDesc sceneDesc(mPhysics->getTolerancesScale());
     sceneDesc.gravity = PxVec3(0.0f, -9.81f, 0.0f); // 중력: Y축 아래로
     

@@ -8,6 +8,22 @@ UPrimitiveComponent::UPrimitiveComponent() : bGenerateOverlapEvents(true)
 {
 }
 
+void UPrimitiveComponent::BeginPlay()
+{
+    Super::BeginPlay();
+    CreatePhysicsState();
+}
+
+void UPrimitiveComponent::EndPlay()
+{
+    if (BodyInstance)
+    {
+        delete BodyInstance;
+        BodyInstance = nullptr;
+    }
+    Super::EndPlay();
+}
+
 void UPrimitiveComponent::OnRegister(UWorld* InWorld)
 {
     Super::OnRegister(InWorld);
@@ -72,4 +88,20 @@ bool UPrimitiveComponent::IsOverlappingActor(const AActor* Other) const
         }
     }
     return false;
+}
+
+void UPrimitiveComponent::CreatePhysicsState()
+{
+    if (!BodyInstance) { BodyInstance = new FBodyInstance(this); }
+
+    BodyInstance->bSimulatePhysics = bSimulatePhysics;
+    BodyInstance->MassInKg = Mass;
+    physx::PxGeometry* Geom = GetPhysicsGeometry();
+    
+    if (Geom)
+    {
+        // 재질은 일단 기본값으로
+        BodyInstance->InitBody(GetWorldTransform(), *Geom, nullptr);
+        delete Geom; 
+    }
 }

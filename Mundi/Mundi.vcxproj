@@ -424,7 +424,10 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Runtime\Engine\Viewer\ParticleEditorBootstrap.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Viewer\SkeletalViewerBootstrap.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Viewer\ViewerState.cpp" />
+    <ClCompile Include="Source\Runtime\Physics\BodyInstance.cpp" />
+    <ClCompile Include="Source\Runtime\Physics\PhysicalMaterial.cpp" />
     <ClCompile Include="Source\Runtime\Physics\PhysicsSystem.cpp" />
+    <ClCompile Include="Source\Runtime\Physics\PxUtils.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\AnimationViewerViewportClient.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\BlendSpaceEditorViewportClient.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\SkeletalViewerViewportClient.cpp" />
@@ -930,7 +933,11 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Runtime\Engine\Viewer\ParticleEditorBootstrap.h" />
     <ClInclude Include="Source\Runtime\Engine\Viewer\SkeletalViewerBootstrap.h" />
     <ClInclude Include="Source\Runtime\Engine\Viewer\ViewerState.h" />
+    <ClInclude Include="Source\Runtime\Physics\BodyInstance.h" />
+    <ClInclude Include="Source\Runtime\Physics\HitResult.h" />
+    <ClInclude Include="Source\Runtime\Physics\PhysicalMaterial.h" />
     <ClInclude Include="Source\Runtime\Physics\PhysicsSystem.h" />
+    <ClInclude Include="Source\Runtime\Physics\PxUtils.h" />
     <ClInclude Include="Source\Runtime\Renderer\AnimationViewerViewportClient.h" />
     <ClInclude Include="Source\Runtime\Renderer\BlendSpaceEditorViewportClient.h" />
     <ClInclude Include="Source\Runtime\Renderer\SkeletalViewerViewportClient.h" />

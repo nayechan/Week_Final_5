@@ -109,6 +109,8 @@ public:
 	 */
 	bool ContainsPoint(const FVector& Point) const;
 
+	physx::PxGeometry* GetPhysicsGeometry() override;
+
 private:
 	/** 현재 Bounds (캐시됨) */
 	FBoxSphereBounds CachedBounds;

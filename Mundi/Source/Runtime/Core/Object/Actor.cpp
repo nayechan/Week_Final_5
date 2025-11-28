@@ -174,15 +174,10 @@ UActorComponent* AActor::AddNewComponent(UClass* ComponentClass, USceneComponent
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		// 5-1. 등록 (OnRegister 호출)
+		// 등록 (OnRegister 호출)
 		NewComp->RegisterComponent(World);
-
-		// 5-2. 월드가 PIE/게임 상태라면, 즉시 초기화/시작
-		if (World->bPie)
-		{
-			NewComp->InitializeComponent();
-			NewComp->BeginPlay();
-		}
+		NewComp->InitializeComponent();
+		NewComp->BeginPlay();
 	}
 
 	return NewComp;

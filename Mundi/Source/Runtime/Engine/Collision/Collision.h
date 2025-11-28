@@ -41,5 +41,5 @@ namespace Collision
     
     
     bool CheckOverlap(const UShapeComponent* A, const UShapeComponent* B);
-
 }
+
