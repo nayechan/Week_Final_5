@@ -108,6 +108,8 @@ enum class ERTVMode : uint32
     SceneColorTarget,
     SceneColorTargetWithoutDepth,
     SceneColorTargetWithId, //모델 그릴때만 사용, 후처리는 별도
+    DofCoCTarget,
+    DofBlurTarget
 };
 
 // RHI가 사용하는 텍스쳐들의 SRV
@@ -115,6 +117,8 @@ enum class RHI_SRV_Index : uint32
 {
 	SceneDepth,  // 장면 깊이
     SceneColorSource,
+    DofCocMap,
+    DofBlurMap,
 };
 
 enum class RHI_Sampler_Index : uint32

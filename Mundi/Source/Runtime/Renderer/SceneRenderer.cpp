@@ -46,7 +46,6 @@
 #include "LightStats.h"
 #include "ShadowStats.h"
 #include "PlatformTime.h"
-#include "PostProcessing/VignettePass.h"
 #include "FbxLoader.h"
 #include "CollisionManager.h"
 #include "ShapeComponent.h"
@@ -1293,6 +1292,8 @@ void FSceneRenderer::RenderPostProcessingPasses()
 		case EPostProcessEffectType::Gamma:
 			GammaPass.Execute(Modifier, View, RHIDevice);
 			break;
+		case EPostProcessEffectType::DOF:
+			DepthOfFieldPass.Execute(Modifier, View, RHIDevice);
 		}
 	}
 }

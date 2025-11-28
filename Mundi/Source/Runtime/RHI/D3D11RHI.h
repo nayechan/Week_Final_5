@@ -266,6 +266,15 @@ private:
 	ID3D11RenderTargetView* SceneColorRTVs[NUM_SCENE_BUFFERS];
 	ID3D11ShaderResourceView* SceneColorSRVs[NUM_SCENE_BUFFERS];
 
+	// Depth Of Field의 중간 처리 과정에서 필요한 리소스
+	ID3D11Texture2D* DofCoCTexture = nullptr;
+	ID3D11RenderTargetView* DofCoCRTV = nullptr;
+	ID3D11ShaderResourceView* DofCoCMapSRV = nullptr;
+	
+	ID3D11Texture2D* DofBlurTexture = nullptr;
+	ID3D11RenderTargetView* DofBlurRTV = nullptr;
+	ID3D11ShaderResourceView* DofBlurMapSRV = nullptr;
+
 	// 현재 소스(읽기)와 타겟(쓰기)을 가리키는 인덱스
 	int32 SourceIndex = 0;
 	int32 TargetIndex = 1;

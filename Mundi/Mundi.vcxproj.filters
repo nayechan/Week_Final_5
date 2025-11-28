@@ -1101,6 +1101,10 @@
     <ClCompile Include="Generated\ARibbonActor.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Physics\PhysicsSystem.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\PostProcessing\DepthOfFieldPass.cpp">
+      <Filter>Source\Runtime\Renderer\PostProcessing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Generated\UParticleModuleSizeScaleBySpeed.generated.h">
@@ -2305,6 +2309,10 @@
     </ClInclude>
     <ClInclude Include="Generated\ARibbonActor.generated.h">
       <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Physics\PhysicsSystem.h" />
+    <ClInclude Include="Source\Runtime\Renderer\PostProcessing\DepthOfFieldPass.h">
+      <Filter>Source\Runtime\Renderer\PostProcessing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

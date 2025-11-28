@@ -421,6 +421,12 @@ ID3D11ShaderResourceView* D3D11RHI::GetSRV(RHI_SRV_Index SRVIndex) const
     case RHI_SRV_Index::SceneDepth:
         TempSRV = DepthSRV;
         break;
+    case RHI_SRV_Index::DofCocMap:
+        TempSRV = DofCoCMapSRV;
+        break;
+    case RHI_SRV_Index::DofBlurMap:
+        TempSRV = DofBlurMapSRV;
+        break;
     default:
         TempSRV = nullptr;
         break;
