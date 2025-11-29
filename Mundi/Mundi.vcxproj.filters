@@ -1152,6 +1152,12 @@
     <ClCompile Include="Generated\USkeletalBodySetup.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
+    <ClCompile Include="Generated\UPhysicsConstraintTemplate.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\FConstraintInstance.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Generated\UParticleModuleSizeScaleBySpeed.generated.h">
@@ -2418,6 +2424,12 @@
       <Filter>Generated</Filter>
     </ClInclude>
     <ClInclude Include="Generated\USkeletalBodySetup.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UPhysicsConstraintTemplate.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\FConstraintInstance.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
   </ItemGroup>

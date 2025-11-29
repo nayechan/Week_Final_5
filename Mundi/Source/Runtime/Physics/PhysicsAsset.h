@@ -1,10 +1,46 @@
 ﻿#pragma once
 #include "Object.h"
 #include "SkeletalBodySetup.h"
+#include "PhysicsConstraintTemplate.h"
 #include "UPhysicsAsset.generated.h"
 
 // 전방 선언
 class USkeletalMesh;
+
+/**
+ * FRigidBodyIndexPair
+ *
+ * 두 바디의 인덱스 쌍. CollisionDisableTable의 키로 사용.
+ */
+struct FRigidBodyIndexPair
+{
+    int32 BodyIndex1;
+    int32 BodyIndex2;
+
+    FRigidBodyIndexPair(int32 InIndex1, int32 InIndex2)
+        : BodyIndex1(FMath::Min(InIndex1, InIndex2))
+        , BodyIndex2(FMath::Max(InIndex1, InIndex2))
+    {
+    }
+
+    bool operator==(const FRigidBodyIndexPair& Other) const
+    {
+        return BodyIndex1 == Other.BodyIndex1 && BodyIndex2 == Other.BodyIndex2;
+    }
+};
+
+// FRigidBodyIndexPair용 해시 함수
+namespace std
+{
+    template<>
+    struct hash<FRigidBodyIndexPair>
+    {
+        size_t operator()(const FRigidBodyIndexPair& Pair) const
+        {
+            return hash<int32>()(Pair.BodyIndex1) ^ (hash<int32>()(Pair.BodyIndex2) << 16);
+        }
+    };
+}
 
 /**
  * UPhysicsAsset
@@ -29,6 +65,12 @@ public:
     UPROPERTY(EditAnywhere, Category="Physics")
     TArray<USkeletalBodySetup*> SkeletalBodySetups;
 
+    // --- Constraint 컬렉션 ---
+
+    // 모든 PhysicsConstraintTemplate 배열 (본 사이의 조인트)
+    UPROPERTY(EditAnywhere, Category="Constraints")
+    TArray<UPhysicsConstraintTemplate*> ConstraintSetup;
+
     // --- 기본 물리 설정 ---
 
     // 기본 물리 재질 (개별 BodySetup에서 오버라이드 가능)
@@ -38,6 +80,14 @@ public:
     // 전체 시뮬레이션 활성화 여부
     UPROPERTY(EditAnywhere, Category="Physics")
     bool bEnablePhysicsSimulation = true;
+
+    // --- 캐시/최적화 ---
+
+    // BodySetup 이름으로 인덱스 빠른 검색용 맵
+    TMap<FName, int32> BodySetupIndexMap;
+
+    // 두 바디 간 충돌 비활성화 테이블
+    std::unordered_map<FRigidBodyIndexPair, bool> CollisionDisableTable;
 
     // --- 생성자/소멸자 ---
     UPhysicsAsset();
@@ -66,6 +116,41 @@ public:
 
     // 모든 BodySetup 제거
     void ClearAllBodySetups();
+
+    // --- Constraint 관리 ---
+
+    // Constraint 추가
+    int32 AddConstraint(UPhysicsConstraintTemplate* InConstraint);
+
+    // Constraint 검색
+    UPhysicsConstraintTemplate* FindConstraint(const FName& JointName) const;
+    int32 FindConstraintIndex(const FName& JointName) const;
+    int32 FindConstraintIndex(const FName& Bone1Name, const FName& Bone2Name) const;
+
+    // Constraint 개수
+    int32 GetConstraintCount() const { return ConstraintSetup.Num(); }
+
+    // Constraint 제거
+    void RemoveConstraint(int32 Index);
+
+    // 모든 Constraint 제거
+    void ClearAllConstraints();
+
+    // --- 충돌 관리 ---
+
+    // 두 바디 간 충돌 비활성화
+    void DisableCollision(int32 BodyIndexA, int32 BodyIndexB);
+
+    // 두 바디 간 충돌 활성화
+    void EnableCollision(int32 BodyIndexA, int32 BodyIndexB);
+
+    // 두 바디 간 충돌 활성화 여부 확인
+    bool IsCollisionEnabled(int32 BodyIndexA, int32 BodyIndexB) const;
+
+    // --- 캐시 관리 ---
+
+    // BodySetupIndexMap 갱신
+    void UpdateBodySetupIndexMap();
 
     // --- 유틸리티 ---
 

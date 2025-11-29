@@ -428,6 +428,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Runtime\Physics\BodySetup.cpp" />
     <ClCompile Include="Source\Runtime\Physics\PhysicalMaterial.cpp" />
     <ClCompile Include="Source\Runtime\Physics\PhysicsAsset.cpp" />
+    <ClCompile Include="Source\Runtime\Physics\PhysicsConstraintTemplate.cpp" />
     <ClCompile Include="Source\Runtime\Physics\PhysicsSystem.cpp" />
     <ClCompile Include="Source\Runtime\Physics\PxUtils.cpp" />
     <ClCompile Include="Source\Runtime\Physics\SkeletalBodySetup.cpp" />
@@ -691,6 +692,8 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Generated\FKSphylElem.generated.cpp" />
     <ClCompile Include="Generated\UPhysicsAsset.generated.cpp" />
     <ClCompile Include="Generated\USkeletalBodySetup.generated.cpp" />
+    <ClCompile Include="Generated\UPhysicsConstraintTemplate.generated.cpp" />
+    <ClCompile Include="Generated\FConstraintInstance.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Common\LightingBuffers.hlsl">
@@ -949,9 +952,11 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Runtime\Physics\BodyInstance.h" />
     <ClInclude Include="Source\Runtime\Physics\BodySetup.h" />
     <ClInclude Include="Source\Runtime\Physics\BoxElem.h" />
+    <ClInclude Include="Source\Runtime\Physics\ConstraintInstance.h" />
     <ClInclude Include="Source\Runtime\Physics\HitResult.h" />
     <ClInclude Include="Source\Runtime\Physics\PhysicalMaterial.h" />
     <ClInclude Include="Source\Runtime\Physics\PhysicsAsset.h" />
+    <ClInclude Include="Source\Runtime\Physics\PhysicsConstraintTemplate.h" />
     <ClInclude Include="Source\Runtime\Physics\PhysicsSystem.h" />
     <ClInclude Include="Source\Runtime\Physics\PhysXConversion.h" />
     <ClInclude Include="Source\Runtime\Physics\PxUtils.h" />
@@ -1247,6 +1252,8 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Generated\FKSphylElem.generated.h" />
     <ClInclude Include="Generated\UPhysicsAsset.generated.h" />
     <ClInclude Include="Generated\USkeletalBodySetup.generated.h" />
+    <ClInclude Include="Generated\UPhysicsConstraintTemplate.generated.h" />
+    <ClInclude Include="Generated\FConstraintInstance.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BuildTools\CodeGenerator\generate.py" />
