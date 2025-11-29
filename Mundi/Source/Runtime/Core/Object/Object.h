@@ -197,6 +197,7 @@ struct UStruct
 	void (*ArrayDuplicateAt)(void* ArrayPtr, int32 Index) = nullptr;  // 특정 인덱스 요소 복제
 	int32 (*ArrayNum)(void* ArrayPtr) = nullptr;          // 배열 크기 반환
 	void* (*ArrayGetData)(void* ArrayPtr) = nullptr;      // 데이터 포인터 반환
+	void (*ArrayClear)(void* ArrayPtr) = nullptr;         // 배열 전체 비우기 (O(1) or O(n))
 
 	constexpr UStruct() = default;
 	constexpr UStruct(const char* n, SIZE_T z) : Name(n), Size(z) {}

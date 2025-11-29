@@ -116,6 +116,9 @@ public: \\
             Str.ArrayGetData = [](void* ArrayPtr) -> void* {{ \\
                 return static_cast<TArray<{struct_name}>*>(ArrayPtr)->GetData(); \\
             }}; \\
+            Str.ArrayClear = [](void* ArrayPtr) {{ \\
+                static_cast<TArray<{struct_name}>*>(ArrayPtr)->Empty(); \\
+            }}; \\
             UStruct::SignUpStruct(&Str); \\
             return true; \\
         }}(); \\

@@ -658,6 +658,12 @@ void UMainToolbarWidget::OnSaveScene()
         {
             UE_LOG("MainToolbar: Scene saved: %s", SelectedPath.generic_u8string().c_str());
             EditorINI["LastUsedLevel"] = WideToUTF8(fs::relative(SelectedPath));
+#ifdef _EDITOR
+            {
+                extern UEditorEngine GEngine;
+                GEngine.SaveIniFile();
+            }
+#endif
         }
         else
         {
@@ -701,6 +707,12 @@ void UMainToolbarWidget::OnLoadScene()
         {
             NewLevel->Serialize(true, LevelJsonData);
             EditorINI["LastUsedLevel"] = WideToUTF8(fs::relative(SelectedPath));
+#ifdef _EDITOR
+            {
+                extern UEditorEngine GEngine;
+                GEngine.SaveIniFile();
+            }
+#endif
         }
         else
         {

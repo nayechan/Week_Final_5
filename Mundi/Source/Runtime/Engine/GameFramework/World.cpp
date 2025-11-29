@@ -148,22 +148,7 @@ bool UWorld::TryLoadLastUsedLevel()
 	UUIManager::GetInstance().ClearTransformWidgetSelection();
 	GWorld->GetSelectionManager()->ClearSelection();
 
-	std::unique_ptr<ULevel> NewLevel = ULevelService::CreateDefaultLevel();
-	JSON LevelJsonData;
-	if (FJsonSerializer::LoadJsonFromFile(LevelJsonData, LastUsedLevelPath))
-	{
-		//NewLevel->Serialize(true, LevelJsonData);
-	}
-	else
-	{
-		UE_LOG("[error] MainToolbar: Failed To Load Level From: %s", LastUsedLevelPath.c_str());
-		return false;
-	}
-
-	SetLevel(std::move(NewLevel));
-
-	UE_LOG("MainToolbar: Scene loaded successfully: %s", LastUsedLevelPath.c_str());
-	return true;
+	return LoadLevelFromFile(LastUsedLevelPath);
 }
 
 bool UWorld::LoadLevelFromFile(const FWideString& Path)
@@ -177,13 +162,13 @@ bool UWorld::LoadLevelFromFile(const FWideString& Path)
 	}
 	else
 	{
-		UE_LOG("[error] MainToolbar: Failed To Load Level From: %s", Path.c_str());
+		UE_LOG("[error] MainToolbar: Failed To Load Level From: %s", WideToUTF8(Path).c_str());
 		return false;
 	}
 
 	SetLevel(std::move(NewLevel));
 
-	UE_LOG("UWorld: Scene loaded successfully: %s", Path.c_str());
+	UE_LOG("UWorld: Scene loaded successfully: %s", WideToUTF8(Path).c_str());
 	return true;
 }
 

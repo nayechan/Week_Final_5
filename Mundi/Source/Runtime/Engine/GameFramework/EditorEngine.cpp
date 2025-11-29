@@ -38,11 +38,11 @@ static void LoadIniFile()
     }
 }
 
-static void SaveIniFile()
+void UEditorEngine::SaveIniFile()
 {
-    std::ofstream outfile("editor.ini");
-    for (const auto& pair : EditorINI)
-        outfile << pair.first << " = " << pair.second << std::endl;
+    std::ofstream Outfile("editor.ini");
+    for (const auto& Pair : EditorINI)
+        Outfile << Pair.first << " = " << Pair.second << std::endl;
 }
 
 UEditorEngine::UEditorEngine()
@@ -212,6 +212,9 @@ bool UEditorEngine::Startup(HINSTANCE hInstance)
     // 슬레이트 매니저 (singleton)
     FRect ScreenRect(0, 0, ClientWidth, ClientHeight);
     SLATE.Initialize(RHIDevice.GetDevice(), GWorld, ScreenRect);
+
+    // 최근에 사용한 레벨 불러오기를 시도합니다.
+    GWorld->TryLoadLastUsedLevel();
 
     bRunning = true;
     return true;
