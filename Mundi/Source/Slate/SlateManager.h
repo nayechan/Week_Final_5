@@ -7,6 +7,7 @@
 #include "Windows/SSkeletalMeshViewerWindow.h"
 #include "Windows/SAnimationViewerWindow.h"
 #include "Windows/SParticleEditorWindow.h"
+#include "Windows/SPhysicsAssetEditorWindow.h"
 
 class SSceneIOWindow; // 새로 추가할 UI
 class SDetailsWindow;

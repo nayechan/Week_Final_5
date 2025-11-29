@@ -2,6 +2,7 @@
 
 class UWorld; class FViewport; class FViewportClient; class ASkeletalMeshActor; class USkeletalMesh; class UAnimSequence;
 class UParticleSystem; class UParticleSystemComponent; class AActor; class UParticleModule;
+class UPhysicsAsset;
 
 struct FAnimNotifyEvent
 {
@@ -157,3 +158,6 @@ struct ParticleEditorState : public ViewerState
         }
     }
 };
+
+// PhysicsAssetEditorState는 별도 헤더로 분리됨
+#include "PhysicsAssetEditorState.h"

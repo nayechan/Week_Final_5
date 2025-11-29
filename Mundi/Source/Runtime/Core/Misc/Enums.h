@@ -267,6 +267,7 @@ enum class EViewerType : uint8
     Animation,
     BlendSpace,
     Particle,
+    PhysicsAsset,
 
     End,
 };
