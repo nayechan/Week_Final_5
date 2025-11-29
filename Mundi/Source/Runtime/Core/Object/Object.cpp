@@ -10,6 +10,158 @@ FString UObject::GetComparisonName()
     return FString();
 }
 
+// 구조체 단일 요소 직렬화 헬퍼 함수
+// StructInstance: 구조체 인스턴스 포인터 (void*)
+// StructType: 구조체 타입 정보 (UStruct*)
+// bIsLoading: true=로드, false=저장
+// StructJson: JSON 객체
+static void SerializeStructInstance(void* StructInstance, UStruct* StructType, bool bIsLoading, JSON& StructJson)
+{
+    for (const FProperty& StructProp : StructType->GetAllProperties())
+    {
+        switch (StructProp.Type)
+        {
+        case EPropertyType::Bool:
+        {
+            bool* Val = StructProp.GetValuePtr<bool>(StructInstance);
+            if (bIsLoading)
+            {
+                bool ReadVal;
+                if (FJsonSerializer::ReadBool(StructJson, StructProp.Name, ReadVal))
+                    *Val = ReadVal;
+            }
+            else
+            {
+                StructJson[StructProp.Name] = *Val;
+            }
+            break;
+        }
+        case EPropertyType::Int32:
+        {
+            int32* Val = StructProp.GetValuePtr<int32>(StructInstance);
+            if (bIsLoading)
+            {
+                int32 ReadVal;
+                if (FJsonSerializer::ReadInt32(StructJson, StructProp.Name, ReadVal))
+                    *Val = ReadVal;
+            }
+            else
+            {
+                StructJson[StructProp.Name] = *Val;
+            }
+            break;
+        }
+        case EPropertyType::Float:
+        {
+            float* Val = StructProp.GetValuePtr<float>(StructInstance);
+            if (bIsLoading)
+            {
+                float ReadVal;
+                if (FJsonSerializer::ReadFloat(StructJson, StructProp.Name, ReadVal))
+                    *Val = ReadVal;
+            }
+            else
+            {
+                StructJson[StructProp.Name] = *Val;
+            }
+            break;
+        }
+        case EPropertyType::FString:
+        {
+            FString* Val = StructProp.GetValuePtr<FString>(StructInstance);
+            if (bIsLoading)
+            {
+                FString ReadVal;
+                if (FJsonSerializer::ReadString(StructJson, StructProp.Name, ReadVal))
+                    *Val = ReadVal;
+            }
+            else
+            {
+                StructJson[StructProp.Name] = Val->c_str();
+            }
+            break;
+        }
+        case EPropertyType::FVector:
+        {
+            FVector* Val = StructProp.GetValuePtr<FVector>(StructInstance);
+            if (bIsLoading)
+            {
+                FVector ReadVal;
+                if (FJsonSerializer::ReadVector(StructJson, StructProp.Name, ReadVal))
+                    *Val = ReadVal;
+            }
+            else
+            {
+                StructJson[StructProp.Name] = FJsonSerializer::VectorToJson(*Val);
+            }
+            break;
+        }
+        case EPropertyType::FVector2D:
+        {
+            FVector2D* Val = StructProp.GetValuePtr<FVector2D>(StructInstance);
+            if (bIsLoading)
+            {
+                FVector2D ReadVal;
+                if (FJsonSerializer::ReadVector2D(StructJson, StructProp.Name, ReadVal))
+                    *Val = ReadVal;
+            }
+            else
+            {
+                StructJson[StructProp.Name] = FJsonSerializer::Vector2DToJson(*Val);
+            }
+            break;
+        }
+        case EPropertyType::FLinearColor:
+        {
+            FLinearColor* Val = StructProp.GetValuePtr<FLinearColor>(StructInstance);
+            if (bIsLoading)
+            {
+                FVector4 ReadVal;
+                if (FJsonSerializer::ReadVector4(StructJson, StructProp.Name, ReadVal))
+                    *Val = FLinearColor(ReadVal);
+            }
+            else
+            {
+                StructJson[StructProp.Name] = FJsonSerializer::Vector4ToJson(Val->ToFVector4());
+            }
+            break;
+        }
+        case EPropertyType::FName:
+        {
+            FName* Val = StructProp.GetValuePtr<FName>(StructInstance);
+            if (bIsLoading)
+            {
+                FString ReadVal;
+                if (FJsonSerializer::ReadString(StructJson, StructProp.Name, ReadVal))
+                    *Val = FName(ReadVal);
+            }
+            else
+            {
+                StructJson[StructProp.Name] = Val->ToString().c_str();
+            }
+            break;
+        }
+        case EPropertyType::Enum:
+        {
+            int32* Val = StructProp.GetValuePtr<int32>(StructInstance);
+            if (bIsLoading)
+            {
+                int32 ReadVal;
+                if (FJsonSerializer::ReadInt32(StructJson, StructProp.Name, ReadVal))
+                    *Val = ReadVal;
+            }
+            else
+            {
+                StructJson[StructProp.Name] = *Val;
+            }
+            break;
+        }
+        default:
+            break;
+        }
+    }
+}
+
 // 리플렉션 기반 자동 직렬화 (현재 클래스의 프로퍼티만 처리)
 void UObject::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 {
@@ -391,6 +543,65 @@ void UObject::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 					}
 				}
 
+				break;
+			}
+			case EPropertyType::Struct:
+			{
+				// TArray<Struct> 직렬화 - UStruct의 함수 포인터 사용
+				UStruct* StructType = UStruct::FindStruct(Prop.TypeName);
+				if (!StructType)
+				{
+					UE_LOG("[AutoSerialize] Array<Struct> property '%s' has unknown struct type: %s", Prop.Name, Prop.TypeName);
+					break;
+				}
+
+				// 배열 조작 함수 포인터 확인
+				if (!StructType->ArrayNum || !StructType->ArrayGetData || !StructType->ArrayAdd || !StructType->ArrayClear)
+				{
+					UE_LOG("[AutoSerialize] Array<Struct> property '%s': Struct '%s' missing array manipulation functions", Prop.Name, Prop.TypeName);
+					break;
+				}
+
+				void* ArrayPtr = (char*)this + Prop.Offset;
+				SIZE_T ElementSize = StructType->Size;
+
+				if (bInIsLoading)
+				{
+					// 기존 배열 비우기
+					StructType->ArrayClear(ArrayPtr);
+
+					// JSON 배열에서 요소 로드
+					for (size_t i = 0; i < ArrayJson.size(); ++i)
+					{
+						JSON& ElemJson = ArrayJson.at(i);
+						if (ElemJson.JSONType() != JSON::Class::Object)
+							continue;
+
+						// 새 요소 추가
+						StructType->ArrayAdd(ArrayPtr);
+						int32 NewIndex = StructType->ArrayNum(ArrayPtr) - 1;
+
+						// 새로 추가된 요소의 포인터 얻기
+						void* ArrayData = StructType->ArrayGetData(ArrayPtr);
+						void* ElementPtr = (char*)ArrayData + (NewIndex * ElementSize);
+
+						// 요소 직렬화
+						SerializeStructInstance(ElementPtr, StructType, true, ElemJson);
+					}
+				}
+				else // Saving
+				{
+					int32 ArrayNum = StructType->ArrayNum(ArrayPtr);
+					void* ArrayData = StructType->ArrayGetData(ArrayPtr);
+
+					for (int32 i = 0; i < ArrayNum; ++i)
+					{
+						void* ElementPtr = (char*)ArrayData + (i * ElementSize);
+						JSON ElemJson = JSON::Make(JSON::Class::Object);
+						SerializeStructInstance(ElementPtr, StructType, false, ElemJson);
+						ArrayJson.append(ElemJson);
+					}
+				}
 				break;
 			}
 			default:
