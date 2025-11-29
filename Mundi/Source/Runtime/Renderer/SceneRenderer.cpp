@@ -35,6 +35,7 @@
 #include "AmbientLightComponent.h"
 #include "PointLightComponent.h"
 #include "SpotLightComponent.h"
+#include "DepthOfFieldComponent.h"
 #include "SwapGuard.h"
 #include "MeshBatchElement.h"
 #include "SceneView.h"
@@ -1276,13 +1277,17 @@ void FSceneRenderer::RenderPostProcessingPasses()
 	{
 		if (DofComponent && DofComponent->IsDepthOfFieldEnabled())
 		{
-			FPostProcessModifier DofPostProc;
-			DofPostProc.Type = EPostProcessEffectType::DOF;
-			DofPostProc.bEnabled = true;
-			DofPostProc.SourceObject = DofComponent;
-			DofPostProc.Priority = DofComponent->GetDofPriority();
-			DofPostProc.Weight = DofComponent->GetBlendWeight();
-			PostProcessModifiers.Add(DofPostProc);
+			// 카메라가 볼륨 안에 있는지 체크
+			if (DofComponent->IsInsideVolume(View->ViewLocation))
+			{
+				FPostProcessModifier DofPostProc;
+				DofPostProc.Type = EPostProcessEffectType::DOF;
+				DofPostProc.bEnabled = true;
+				DofPostProc.SourceObject = DofComponent;
+				DofPostProc.Priority = DofComponent->GetDofPriority();
+				DofPostProc.Weight = DofComponent->GetBlendWeight();
+				PostProcessModifiers.Add(DofPostProc);
+			}
 		}
 	}
 

@@ -119,6 +119,9 @@ public:
     float GetBlendWeight() const;
     FDepthOfFieldSettings GetDepthOfFieldSettings() const;
 
+    // Volume check
+    bool IsInsideVolume(const FVector& TestLocation) const;
+
     // Debug Rendering
     void RenderDebugVolume(class URenderer* Renderer) const;
 

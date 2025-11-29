@@ -148,6 +148,20 @@ void UDepthOfFieldComponent::RenderDebugVolume(URenderer* Renderer) const
     Renderer->EndLineBatch(IdentityMatrix);
 }
 
+bool UDepthOfFieldComponent::IsInsideVolume(const FVector& TestLocation) const
+{
+    // bUnbounded가 true면 항상 적용
+    if (bUnbounded) { return true; }
+
+    // AABB 체크: 테스트 위치가 박스 볼륨 안에 있는지 확인
+    FVector ComponentLocation = GetWorldLocation();
+    FVector Delta = TestLocation - ComponentLocation;
+
+    return (abs(Delta.X) <= VolumeExtent.X) &&
+           (abs(Delta.Y) <= VolumeExtent.Y) &&
+           (abs(Delta.Z) <= VolumeExtent.Z);
+}
+
 float UDepthOfFieldComponent::ClampPositive(float Value, float DefaultValue) const
 {
     return (Value > 0.0f) ? Value : DefaultValue;
