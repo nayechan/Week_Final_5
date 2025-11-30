@@ -32,14 +32,18 @@ void FBodyInstance::InitBody(UBodySetup* Setup, const FTransform& Transform, UPr
     ApplyBodySetupSettings(Setup);
 
     // 나중에는 InRBScene을 Finalize 함수에 넘겨줘야 함
-    FinalizeInternalActor(/*InRBScene*/);
+    FinalizeInternalActor(InRBScene);
 }
 
 void FBodyInstance::TermBody()
 {
     if (RigidActor)
     {
-        FPhysicsSystem::Get().GetScene()->removeActor(*RigidActor);
+        PxScene* PScene = RigidActor->getScene();
+        if (PScene)
+        {
+            PScene->removeActor(*RigidActor);
+        }
         RigidActor->release();
         RigidActor = nullptr;
     }
@@ -60,8 +64,8 @@ physx::PxRigidDynamic* FBodyInstance::CreateInternalActor(const FTransform& Tran
 {
     TermBody();
 
-    FPhysicsSystem& System = FPhysicsSystem::Get();
-    PxPhysics* Physics = System.GetPhysics();
+    FPhysicsSystem* System = GEngine.GetPhysicsSystem();
+    PxPhysics* Physics = System->GetPhysics();
     
     PxTransform PTransform = PhysXConvert::ToPx(Transform); // 좌표 변환
     PxRigidDynamic* NewActor = Physics->createRigidDynamic(PTransform); // 일단 무조건 Movable 가정
@@ -87,17 +91,14 @@ physx::PxRigidDynamic* FBodyInstance::CreateInternalActor(const FTransform& Tran
     return NewActor;
 }
 
-void FBodyInstance::FinalizeInternalActor()
+void FBodyInstance::FinalizeInternalActor(FPhysicsScene* InRBScene)
 {
     if (!RigidActor) { return; }
-
-    FPhysicsSystem& System = FPhysicsSystem::Get();
-    PxScene* Scene = System.GetScene();
 
     UpdateMassProperties();
     UpdateDOFLock();
     RigidActor->userData = static_cast<void*>(this);
-    Scene->addActor(*RigidActor);
+    InRBScene->AddActor(this);
 }
 
 

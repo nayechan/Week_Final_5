@@ -196,6 +196,12 @@ private:
     bool bIsTearingDown = false;    // 월드가 파괴 중임을 알리는 플래그
 
     EWorldType WorldType = EWorldType::Editor;  // Default to editor world
+
+public:
+    FPhysicsScene* GetPhysicsScene() const { return PhysicsScene; }
+
+private:
+    FPhysicsScene* PhysicsScene = nullptr;
 };
 template<class T>
 inline T* UWorld::SpawnActor()

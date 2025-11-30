@@ -184,7 +184,8 @@ bool UGameEngine::Startup(HINSTANCE hInstance)
     Renderer = std::make_unique<URenderer>(&RHIDevice);
 
     // Physics 초기화
-    FPhysicsSystem::Get().Initialize();
+    PhysicsSystem = new FPhysicsSystem();
+    PhysicsSystem->Initialize();
 
     // Initialize audio device for game runtime
     FAudioDevice::Initialize();
@@ -375,7 +376,12 @@ void UGameEngine::Shutdown()
     // Shutdown audio device
     FAudioDevice::Shutdown();
 
-    FPhysicsSystem::Get().Shutdown();
+    if (PhysicsSystem)
+    {
+        PhysicsSystem->Shutdown();
+        delete PhysicsSystem;
+        PhysicsSystem = nullptr;
+    }
 
     // Explicitly release D3D11RHI resources before global destruction
     RHIDevice.Release();

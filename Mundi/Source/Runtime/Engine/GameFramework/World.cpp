@@ -33,6 +33,7 @@
 #include "PlayerCameraManager.h"
 #include "Hash.h"
 #include "ParticleEventManager.h"
+#include "PhysicsScene.h"
 
 IMPLEMENT_CLASS(UWorld)
 
@@ -54,6 +55,9 @@ UWorld::UWorld() : Partition(nullptr)  // Will be created in Initialize() based 
 	
 	TimeStopDuration = 0;
 	TimeDuration = 0;
+
+	PhysicsScene = new FPhysicsScene();
+	PhysicsScene->Initialize(GEngine.GetPhysicsSystem());
 }
 
 UWorld::~UWorld()
@@ -88,6 +92,13 @@ UWorld::~UWorld()
 
 	GridActor = nullptr;
 	GizmoActor = nullptr;
+
+	if (PhysicsScene)
+	{
+		PhysicsScene->Shutdown();
+		delete PhysicsScene;
+		PhysicsScene = nullptr;
+	}
 }
 
 void UWorld::Initialize()
@@ -302,6 +313,12 @@ void UWorld::Tick(float DeltaSeconds)
 	if (CollisionManager)
 	{
 		CollisionManager->UpdateCollisions(GetDeltaTime(EDeltaTime::Game));
+	}
+
+	// 물리 업데이트 (위치 다시 고민해보기)
+	if (PhysicsScene)
+	{
+		PhysicsScene->Tick(DeltaSeconds);
 	}
 }
 

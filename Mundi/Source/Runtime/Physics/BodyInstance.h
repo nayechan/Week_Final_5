@@ -29,7 +29,7 @@ public:
 private:
     physx::PxRigidDynamic* GetDynamicActor() const;
     physx::PxRigidDynamic* CreateInternalActor(const FTransform& Transform);
-    void FinalizeInternalActor();
+    void FinalizeInternalActor(FPhysicsScene* InRBScene);
 
 public:
     bool IsValidBodyInstance() const { return RigidActor != nullptr; }

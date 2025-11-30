@@ -100,7 +100,6 @@ void UPrimitiveComponent::SyncComponentToPhysics()
 
 void UPrimitiveComponent::CreatePhysicsState()
 {
-    // FPhysicsScene* PhysScene = GetWorld() ? GetWorld()->GetPhysicsScene() : nullptr;
-    FPhysicsScene* PhysScene = nullptr;
+    FPhysicsScene* PhysScene = GetWorld() ? GetWorld()->GetPhysicsScene() : nullptr;
     BodyInstance.InitBody(GetBodySetup(), GetWorldTransform(), this, PhysScene);
 }
