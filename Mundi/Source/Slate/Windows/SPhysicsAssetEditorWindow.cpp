@@ -1020,13 +1020,18 @@ void SPhysicsAssetEditorWindow::RenderTabsAndToolbar(EViewerType CurrentViewerTy
 
 		if (ImGui::BeginTabItem(TabDisplayName.c_str(), &open))
 		{
-			ActiveTabIndex = i;
-			ActiveState = State;
+			if (ActiveState != State)
+			{
+				ActiveTabIndex = i;
+				ActiveState = State;
+				UpdateSubWidgetEditorState();  // 탭 전환 시 sub widget 상태 즉시 갱신
+			}
 			ImGui::EndTabItem();
 		}
 		if (!open)
 		{
 			CloseTab(i);
+			UpdateSubWidgetEditorState();  // 탭 닫힌 직후 sub widget 상태 갱신 (dangling pointer 방지)
 			ImGui::EndTabBar();
 			return;
 		}
