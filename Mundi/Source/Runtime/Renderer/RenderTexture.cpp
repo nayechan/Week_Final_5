@@ -14,15 +14,18 @@ void URenderTexture::InitResolution(ID3D11Device* Device, const float InResoluti
 	if (InResolution <= 0)
 	{
 		return;
-	}
-	if (Resolution != InResolution)
+	}		
+	D3D11_TEXTURE2D_DESC TexDesc;
+	FrameBufferTex->GetDesc(&TexDesc);
+	uint32 ResizeWidth = TexDesc.Width;
+	uint32 ResizeHeight = TexDesc.Height;
+	if (Resolution != InResolution || TexWidth != ResizeWidth || TexHeight != ResizeHeight)
 	{
 		Resolution = InResolution;
 		RenderTexSizeType = ERenderTexSizeType::Resolution;
-		D3D11_TEXTURE2D_DESC TexDesc;
-		FrameBufferTex->GetDesc(&TexDesc);
-		TexWidth = static_cast<uint32>(std::round(TexDesc.Width * InResolution));
-		TexHeight = static_cast<uint32>(std::round(TexDesc.Height * InResolution));
+
+		TexWidth = ResizeWidth;
+		TexHeight = ResizeHeight;
 		CreateResources(Device, TexWidth, TexHeight);
 	}
 }

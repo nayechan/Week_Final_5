@@ -1094,7 +1094,6 @@ void D3D11RHI::OnResize(UINT NewWidth, UINT NewHeight)
     // 기존 리소스 해제
     ReleaseFrameBuffer();
     ReleaseIdBuffer();
-    ResizeRenderTextures();
 
     // 스왑체인 버퍼 리사이즈
     HRESULT hr = SwapChain->ResizeBuffers(
@@ -1113,6 +1112,7 @@ void D3D11RHI::OnResize(UINT NewWidth, UINT NewHeight)
     // 새 프레임버퍼/RTV/DSV 생성
     CreateFrameBuffer();
     CreateIdBuffer();
+    ResizeRenderTextures();
 
     // 뷰포트 갱신
     ViewportInfo.TopLeftX = 0.0f;

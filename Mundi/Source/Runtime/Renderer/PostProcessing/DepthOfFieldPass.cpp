@@ -124,6 +124,9 @@ void FDepthOfFieldPass::Execute(const FPostProcessModifier& M, FSceneView* View,
 
     // 8) 확정
     Swap.Commit();
+
+    ID3D11ShaderResourceView* nulls[4] = {};
+    RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 4, nulls);
 }
 
 void FDepthOfFieldPass::Pass(D3D11RHI* RHIDevice, TArray<ID3D11ShaderResourceView*> SRVs, ID3D11RenderTargetView* RTV, const char* PSPath)
