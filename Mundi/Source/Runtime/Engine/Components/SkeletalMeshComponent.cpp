@@ -24,10 +24,10 @@ USkeletalMeshComponent::USkeletalMeshComponent()
     // Load a simple default test mesh if available; viewer UI can override.
     SetSkeletalMesh(GDataDir + "/DancingRacer.fbx");
     // TODO - 애니메이션 나중에 써먹으세요
-    /*
+    
 	UAnimationAsset* AnimationAsset = UResourceManager::GetInstance().Get<UAnimSequence>("Data/DancingRacer_mixamo.com");
     PlayAnimation(AnimationAsset, true, 1.f);
-    */
+    
 }
 
 
@@ -63,7 +63,7 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
             {
                 if (Body)
                 {
-                    Body->AddImpulse(FVector(0, 0, 500.0f));  // 위쪽 임펄스
+                    Body->AddImpulse(FVector(0, 0, 5.0f));  // 위쪽 임펄스
                 }
             }
         }
@@ -790,46 +790,81 @@ void USkeletalMeshComponent::SyncAnimationToRagdoll()
     const FTransform ComponentWorldTM = GetWorldTransform();
     const FTransform InvComponentTM = ComponentWorldTM.Inverse();
 
+    // 본 인덱스 → Body 인스턴스 매핑 구축
+    TMap<int32, FBodyInstance*> BoneToBody;
     for (FBodyInstance* Body : RagdollBodies)
     {
-        if (!Body || Body->BoneIndex < 0)
+        if (Body && Body->BoneIndex >= 0)
         {
-            continue;
-        }
-
-        if (Body->BoneIndex >= CurrentLocalSpacePose.Num())
-        {
-            continue;
-        }
-
-        // 1. Body의 월드 트랜스폼 획득
-        FTransform BodyWorldTM = Body->GetWorldTransform();
-
-        // 2. 컴포넌트 공간으로 변환
-        FTransform BodyComponentTM = InvComponentTM.GetWorldTransform(BodyWorldTM);
-
-        // 3. 로컬 공간으로 변환 (부모 본 기준)
-        int32 ParentIndex = Skeleton->Bones[Body->BoneIndex].ParentIndex;
-        if (ParentIndex >= 0 && ParentIndex < CurrentComponentSpacePose.Num())
-        {
-            const FTransform& ParentComponentTM = CurrentComponentSpacePose[ParentIndex];
-            CurrentLocalSpacePose[Body->BoneIndex] = ParentComponentTM.GetRelativeTransform(BodyComponentTM);
-        }
-        else
-        {
-            // 루트 본인 경우
-            CurrentLocalSpacePose[Body->BoneIndex] = BodyComponentTM;
-        }
-
-        // 4. RagdollPose에도 저장 (블렌딩용)
-        if (Body->BoneIndex < RagdollPose.Num())
-        {
-            RagdollPose[Body->BoneIndex] = CurrentLocalSpacePose[Body->BoneIndex];
+            BoneToBody.Add(Body->BoneIndex, Body);
         }
     }
 
-    // 5. 포즈 재계산
-    ForceRecomputePose();
+    // 루트부터 순회하며 ComponentSpace 트랜스폼 계산
+    // (Body가 있는 본은 물리에서, 없는 본은 부모 기준 로컬 포즈 유지)
+    for (int32 BoneIdx = 0; BoneIdx < Skeleton->Bones.Num(); ++BoneIdx)
+    {
+        if (BoneIdx >= CurrentLocalSpacePose.Num() || BoneIdx >= CurrentComponentSpacePose.Num())
+        {
+            continue;
+        }
+
+        FBodyInstance** BodyPtr = BoneToBody.Find(BoneIdx);
+
+        if (BodyPtr && *BodyPtr)
+        {
+            // Body가 있는 본: 물리 시뮬레이션에서 트랜스폼 획득
+            FBodyInstance* Body = *BodyPtr;
+            FTransform BodyWorldTM = Body->GetWorldTransform();
+            FTransform BodyComponentTM = InvComponentTM.GetWorldTransform(BodyWorldTM);
+
+            // ComponentSpace 직접 설정
+            CurrentComponentSpacePose[BoneIdx] = BodyComponentTM;
+
+            // LocalSpace 역계산 (부모 기준)
+            int32 ParentIndex = Skeleton->Bones[BoneIdx].ParentIndex;
+            if (ParentIndex >= 0 && ParentIndex < CurrentComponentSpacePose.Num())
+            {
+                const FTransform& ParentComponentTM = CurrentComponentSpacePose[ParentIndex];
+                CurrentLocalSpacePose[BoneIdx] = ParentComponentTM.GetRelativeTransform(BodyComponentTM);
+            }
+            else
+            {
+                // 루트 본인 경우
+                CurrentLocalSpacePose[BoneIdx] = BodyComponentTM;
+            }
+
+            // RagdollPose에도 저장 (블렌딩용)
+            if (BoneIdx < RagdollPose.Num())
+            {
+                RagdollPose[BoneIdx] = CurrentLocalSpacePose[BoneIdx];
+            }
+        }
+        else
+        {
+            // Body가 없는 본: 원래 애니메이션 로컬 포즈 유지, ComponentSpace만 재계산
+            int32 ParentIndex = Skeleton->Bones[BoneIdx].ParentIndex;
+            if (ParentIndex >= 0 && ParentIndex < CurrentComponentSpacePose.Num())
+            {
+                // 부모의 ComponentSpace에 로컬 트랜스폼 적용
+                CurrentComponentSpacePose[BoneIdx] = CurrentComponentSpacePose[ParentIndex].GetWorldTransform(CurrentLocalSpacePose[BoneIdx]);
+            }
+            else
+            {
+                // 루트 본인 경우
+                CurrentComponentSpacePose[BoneIdx] = CurrentLocalSpacePose[BoneIdx];
+            }
+
+            // RagdollPose에도 저장 (블렌딩용)
+            if (BoneIdx < RagdollPose.Num())
+            {
+                RagdollPose[BoneIdx] = CurrentLocalSpacePose[BoneIdx];
+            }
+        }
+    }
+
+    // 최종 스키닝 행렬 업데이트
+    UpdateFinalSkinningMatrices();
 }
 
 void USkeletalMeshComponent::UpdateRagdollState(float DeltaTime)
@@ -949,6 +984,43 @@ void USkeletalMeshComponent::AddForceToBody(const FName& BoneName, const FVector
     }
 }
 
+// 헬퍼: 래그돌에서 제외할 본인지 확인
+static bool ShouldExcludeFromRagdoll(const FString& BoneName)
+{
+    FString BoneNameLower = BoneName;
+    std::transform(BoneNameLower.begin(), BoneNameLower.end(), BoneNameLower.begin(), ::tolower);
+
+    // 손가락 관련 본 제외
+    if (BoneNameLower.find("finger") != FString::npos) return true;
+    if (BoneNameLower.find("thumb") != FString::npos) return true;
+    if (BoneNameLower.find("index") != FString::npos) return true;
+    if (BoneNameLower.find("middle") != FString::npos) return true;
+    if (BoneNameLower.find("ring") != FString::npos) return true;
+    if (BoneNameLower.find("pinky") != FString::npos) return true;
+
+    // 발가락 관련 본 제외
+    if (BoneNameLower.find("toe") != FString::npos) return true;
+
+    // 얼굴 본 제외 (눈, 턱 등)
+    if (BoneNameLower.find("eye") != FString::npos) return true;
+    if (BoneNameLower.find("jaw") != FString::npos) return true;
+    if (BoneNameLower.find("tongue") != FString::npos) return true;
+    if (BoneNameLower.find("lip") != FString::npos) return true;
+    if (BoneNameLower.find("brow") != FString::npos) return true;
+    if (BoneNameLower.find("eyelid") != FString::npos) return true;
+    if (BoneNameLower.find("cheek") != FString::npos) return true;
+    if (BoneNameLower.find("nose") != FString::npos) return true;
+
+    // 기타 작은 본 제외
+    if (BoneNameLower.find("twist") != FString::npos) return true;   // 트위스트 본
+    if (BoneNameLower.find("roll") != FString::npos) return true;    // 롤 본
+    if (BoneNameLower.find("helper") != FString::npos) return true;  // 헬퍼 본
+    if (BoneNameLower.find("ik_") != FString::npos) return true;     // IK 본
+    if (BoneNameLower.find("_ik") != FString::npos) return true;
+
+    return false;
+}
+
 void USkeletalMeshComponent::CreateDefaultPhysicsAsset()
 {
     if (!SkeletalMesh)
@@ -976,10 +1048,19 @@ void USkeletalMeshComponent::CreateDefaultPhysicsAsset()
     // PhysicsAsset 생성
     UPhysicsAsset* PhysAsset = NewObject<UPhysicsAsset>();
 
-    // 각 본에 대해 BodySetup 생성
+    // Body를 생성할 본 인덱스 목록
+    TArray<int32> BodyBoneIndices;
+
+    // 각 본에 대해 BodySetup 생성 (주요 본만)
     for (int32 BoneIdx = 0; BoneIdx < Skeleton->Bones.Num(); ++BoneIdx)
     {
         const FBone& Bone = Skeleton->Bones[BoneIdx];
+
+        // 래그돌에서 제외할 본인지 확인
+        if (ShouldExcludeFromRagdoll(Bone.Name))
+        {
+            continue;
+        }
 
         // BodySetup 생성
         USkeletalBodySetup* BodySetup = NewObject<USkeletalBodySetup>();
@@ -1025,10 +1106,17 @@ void USkeletalMeshComponent::CreateDefaultPhysicsAsset()
         }
         else if (BoneNameLower.find("arm") != FString::npos || BoneNameLower.find("leg") != FString::npos ||
                  BoneNameLower.find("thigh") != FString::npos || BoneNameLower.find("calf") != FString::npos ||
-                 BoneNameLower.find("forearm") != FString::npos || BoneNameLower.find("upperarm") != FString::npos)
+                 BoneNameLower.find("forearm") != FString::npos || BoneNameLower.find("upperarm") != FString::npos ||
+                 BoneNameLower.find("shin") != FString::npos || BoneNameLower.find("clavicle") != FString::npos ||
+                 BoneNameLower.find("shoulder") != FString::npos)
         {
             // 팔/다리: 중간 캡슐
             BodySetup->AddCapsuleElem(4.0f, BoneLength * 0.4f);
+        }
+        else if (BoneNameLower.find("neck") != FString::npos)
+        {
+            // 목: 작은 캡슐
+            BodySetup->AddCapsuleElem(3.0f, BoneLength * 0.3f);
         }
         else
         {
@@ -1040,17 +1128,40 @@ void USkeletalMeshComponent::CreateDefaultPhysicsAsset()
         BodySetup->PhysicsType = EPhysicsType::Kinematic;
 
         PhysAsset->AddBodySetup(BodySetup);
+        BodyBoneIndices.Add(BoneIdx);
     }
 
-    // 부모-자식 본 사이에 Constraint 생성
-    for (int32 BoneIdx = 0; BoneIdx < Skeleton->Bones.Num(); ++BoneIdx)
+    // Body가 있는 본들 사이에만 Constraint 생성
+    for (int32 i = 0; i < BodyBoneIndices.Num(); ++i)
     {
+        int32 BoneIdx = BodyBoneIndices[i];
         const FBone& Bone = Skeleton->Bones[BoneIdx];
-        int32 ParentIdx = Bone.ParentIndex;
 
-        if (ParentIdx < 0) continue;  // 루트 본은 건너뛰기
+        // 부모 Body 찾기 (직접 부모가 아닐 수 있음 - 부모가 제외된 경우)
+        int32 ParentBoneIdx = Bone.ParentIndex;
+        FName ParentBodyName = "None";
 
-        const FBone& ParentBone = Skeleton->Bones[ParentIdx];
+        // 부모 체인을 따라가며 Body가 있는 본 찾기
+        while (ParentBoneIdx >= 0)
+        {
+            const FBone& ParentBone = Skeleton->Bones[ParentBoneIdx];
+
+            // 이 본에 Body가 있는지 확인
+            if (PhysAsset->FindBodySetupIndex(FName(ParentBone.Name)) >= 0)
+            {
+                ParentBodyName = FName(ParentBone.Name);
+                break;
+            }
+
+            // 부모의 부모로 이동
+            ParentBoneIdx = ParentBone.ParentIndex;
+        }
+
+        // 부모 Body가 없으면 Constraint 생성 안함 (루트)
+        if (ParentBodyName == "None")
+        {
+            continue;
+        }
 
         // Constraint 템플릿 생성
         UPhysicsConstraintTemplate* ConstraintTemplate = NewObject<UPhysicsConstraintTemplate>();
@@ -1058,8 +1169,8 @@ void USkeletalMeshComponent::CreateDefaultPhysicsAsset()
         // 조인트 설정
         FConstraintInstance& CI = ConstraintTemplate->DefaultInstance;
         CI.JointName = FName(Bone.Name + "_Joint");
-        CI.ConstraintBone1 = FName(ParentBone.Name);  // 부모 본
-        CI.ConstraintBone2 = FName(Bone.Name);        // 자식 본
+        CI.ConstraintBone1 = ParentBodyName;      // 부모 Body 본
+        CI.ConstraintBone2 = FName(Bone.Name);    // 자식 본
 
         // 선형 제한: 모두 잠금 (관절은 늘어나지 않음)
         CI.LinearXMotion = ELinearConstraintMotion::Locked;
@@ -1082,7 +1193,7 @@ void USkeletalMeshComponent::CreateDefaultPhysicsAsset()
         PhysAsset->AddConstraint(ConstraintTemplate);
 
         // 인접 바디 충돌 비활성화
-        int32 ParentBodyIdx = PhysAsset->FindBodySetupIndex(FName(ParentBone.Name));
+        int32 ParentBodyIdx = PhysAsset->FindBodySetupIndex(ParentBodyName);
         int32 ChildBodyIdx = PhysAsset->FindBodySetupIndex(FName(Bone.Name));
         if (ParentBodyIdx >= 0 && ChildBodyIdx >= 0)
         {
@@ -1093,6 +1204,7 @@ void USkeletalMeshComponent::CreateDefaultPhysicsAsset()
     // SkeletalMesh에 PhysicsAsset 설정
     SkeletalMesh->SetPhysicsAsset(PhysAsset);
 
-    UE_LOG("[Ragdoll] Default PhysicsAsset created: %d bodies, %d constraints",
-        PhysAsset->GetBodySetupCount(), PhysAsset->GetConstraintCount());
+    UE_LOG("[Ragdoll] Default PhysicsAsset created: %d bodies, %d constraints (excluded %d bones)",
+        PhysAsset->GetBodySetupCount(), PhysAsset->GetConstraintCount(),
+        Skeleton->Bones.Num() - BodyBoneIndices.Num());
 }
