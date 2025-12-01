@@ -2,6 +2,7 @@
 #include "PhysicsScene.h"
 #include "BodyInstance.h"
 #include "PhysicsSystem.h"
+#include "PlatformTime.h"
 #include "PrimitiveComponent.h"
 
 #define SCOPED_READ_LOCK(Scene) PxSceneReadLock ScopedReadLock(Scene);
@@ -77,8 +78,11 @@ void FPhysicsScene::Simulation(float DeltaTime)
 
 void FPhysicsScene::FetchAndSync()
 {
-    // 시뮬레이션 완료될 때까지 기다림
-    mScene->fetchResults(true);
+    {
+        TIME_PROFILE(PhysicsSyncTime)
+        // 시뮬레이션 완료될 때까지 기다림
+        mScene->fetchResults(true);
+    }
 
     {
         // 멀티스레드 렌더링 환경 등을 고려하여 락을 거는 것이 안전

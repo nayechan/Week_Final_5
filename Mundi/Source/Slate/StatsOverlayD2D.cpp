@@ -635,7 +635,17 @@ void UStatsOverlayD2D::SetShowParticles(bool b)
 	bShowParticles = b;
 }
 
+void UStatsOverlayD2D::SetShowPhysics(bool b)
+{
+	bShowPhysics = b;
+}
+
 void UStatsOverlayD2D::ToggleParticles()
 {
 	bShowParticles = !bShowParticles;
+}
+
+void UStatsOverlayD2D::TogglePhysics()
+{
+	bShowPhysics = !bShowPhysics;
 }

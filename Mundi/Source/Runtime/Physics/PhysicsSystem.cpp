@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
-#include "PhysicsSystem.h" // 헤더 파일명 확인 필요
+#include "PhysicsSystem.h"
+#include <thread>
 
 FPhysicsSystem::FPhysicsSystem() = default;
 FPhysicsSystem::~FPhysicsSystem() = default;
@@ -42,8 +43,31 @@ void FPhysicsSystem::Initialize()
         return;
     }
 
-    // 2개의 워커 스레드를 생성하여 모든 씬이 공유함
-    mDispatcher = PxDefaultCpuDispatcherCreate(2);
+    // 전체 논리 프로세서 개수
+    uint32 TotalThreads = std::thread::hardware_concurrency();
+    
+    // 인식 실패 시 안전하게 4코어로 가정 (구형)
+    if (TotalThreads == 0) { TotalThreads = 4; }
+
+    // 다른 작업을 위해 비워둘 스레드 개수
+    constexpr uint32 ReservedThreads = 4; 
+    uint32 WorkerCount;
+    if (TotalThreads > ReservedThreads)
+    {
+        WorkerCount = TotalThreads - ReservedThreads;
+    }
+    else
+    {
+        WorkerCount = 1;
+    }
+
+    // 스레드가 너무 많으면 스케줄링 및 동기화 비용이 더 큼
+    // 우리정도 엔진에서는 4개만 사용
+    constexpr uint32 MaxWorkerThreads = 4;
+    WorkerCount = std::min(WorkerCount, MaxWorkerThreads);
+
+    mDispatcher = PxDefaultCpuDispatcherCreate(WorkerCount);
+    UE_LOG("[FPhysicsSystem] CPU Logic Cores: %d, PhysX Workers Created: %d", TotalThreads, WorkerCount);
 
     // 기본 재질 생성 (마찰력 0.5, 반발력 0.6)
     mMaterial = mPhysics->createMaterial(0.5f, 0.5f, 0.6f);
