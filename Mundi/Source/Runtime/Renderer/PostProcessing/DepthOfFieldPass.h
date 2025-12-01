@@ -10,6 +10,7 @@ public:
     static const char* DOF_McIntoshPSPath;
     static const char* DOF_GaussianBlurPSPath;
     static const char* DOF_CalcCOC_PSPath;
+    static const char* DOF_COCGaussianBlurPSPath;
 public:
     virtual void Execute(const FPostProcessModifier& M, FSceneView* View, D3D11RHI* RHIDevice) override;
 

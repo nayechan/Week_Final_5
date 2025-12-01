@@ -62,6 +62,7 @@ float4 mainPS(PS_INPUT input) : SV_Target
      
     float COC = (ViewDepth - FocusDistance) / FocusRange;
     
+
     //float COC = (ViewDepth - FocusDistance);
     //COC = smoothstep(0.0f, FocusRange, abs(COC)) * sign(COC);
     

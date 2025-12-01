@@ -8,6 +8,7 @@ const char* FDepthOfFieldPass::DOF_CompositePSPath = "Shaders/PostProcess/DOF_Co
 const char* FDepthOfFieldPass::DOF_McIntoshPSPath = "Shaders/PostProcess/DOF_McIntosh_PS.hlsl";
 const char* FDepthOfFieldPass::DOF_GaussianBlurPSPath = "Shaders/PostProcess/DOF_GaussianBlur_PS.hlsl";
 const char* FDepthOfFieldPass::DOF_CalcCOC_PSPath = "Shaders/PostProcess/DOF_CalcCOC_PS.hlsl";
+const char* FDepthOfFieldPass::DOF_COCGaussianBlurPSPath = "Shaders/PostProcess/DOF_COCGaussianBlur_PS.hlsl";
 
 void FDepthOfFieldPass::Execute(const FPostProcessModifier& M, FSceneView* View, D3D11RHI* RHIDevice)
 {
@@ -30,14 +31,6 @@ void FDepthOfFieldPass::Execute(const FPostProcessModifier& M, FSceneView* View,
     RHIDevice->GetDeviceContext()->PSSetSamplers(0, 2, Smps);
     ECameraProjectionMode ProjectionMode = View->ProjectionMode;
     RHIDevice->SetAndUpdateConstantBuffer(PostProcessBufferType(View->NearClip, View->FarClip, ProjectionMode == ECameraProjectionMode::Orthographic));
-    
-    // 3) 셰이더
-    UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>(UResourceManager::FullScreenVSPath);
-    UShader* BlitPS = UResourceManager::GetInstance().Load<UShader>(UResourceManager::BlitPSPath);
-    UShader* COCPS = UResourceManager::GetInstance().Load<UShader>(DOF_CalcCOC_PSPath);
-    UShader* GaussianPS = UResourceManager::GetInstance().Load<UShader>(DOF_GaussianBlurPSPath);
-    UShader* CompositePS = UResourceManager::GetInstance().Load<UShader>(DOF_CompositePSPath);
-    UShader* McIntoshPS = UResourceManager::GetInstance().Load<UShader>(DOF_McIntoshPSPath);
 
     //CB
     FDepthOfFieldCB DOFCB = FDepthOfFieldCB(Comp->FocusDistance, Comp->FocusRange, Comp->COCSize);
@@ -46,6 +39,7 @@ void FDepthOfFieldPass::Execute(const FPostProcessModifier& M, FSceneView* View,
 
     //RT
     URenderTexture* COCRT = RHIDevice->GetRenderTexture("DOF_COC");
+    URenderTexture* BluredCOCRT = RHIDevice->GetRenderTexture("DOF_BluredCOC");
     URenderTexture* NearPing = RHIDevice->GetRenderTexture("DOF_NearPing");
     URenderTexture* NearPong = RHIDevice->GetRenderTexture("DOF_NearPong");
     URenderTexture* FarPing = RHIDevice->GetRenderTexture("DOF_FarPing");
@@ -54,6 +48,7 @@ void FDepthOfFieldPass::Execute(const FPostProcessModifier& M, FSceneView* View,
     URenderTexture* HorizontalTempRT = RHIDevice->GetRenderTexture("HorizontalTemp");
     HorizontalTempRT->InitResolution(RHIDevice, 1.0f);
     COCRT->InitResolution(RHIDevice, 1.0f);
+    BluredCOCRT->InitResolution(RHIDevice, 1.0f);
     NearPing->InitResolution(RHIDevice, 1.0f);
     NearPong->InitResolution(RHIDevice, 1.0f);
     FarPing->InitResolution(RHIDevice, 1.0f);
@@ -66,6 +61,15 @@ void FDepthOfFieldPass::Execute(const FPostProcessModifier& M, FSceneView* View,
     SRVs.push_back(RHIDevice->GetSRV(RHI_SRV_Index::SceneColorSource));
     Pass(RHIDevice, SRVs, COCRT->GetRTV(), DOF_CalcCOC_PSPath);
     
+    //COCBlur
+    SRVs.clear();
+    SRVs.push_back(COCRT->GetSRV());
+    RHIDevice->SetAndUpdateConstantBuffer(FDOFGaussianCB(Comp->GaussianBlurWeight, true, true));
+    Pass(RHIDevice, SRVs, BluredCOCRT->GetRTV(), DOF_COCGaussianBlurPSPath);
+    SRVs[0] = BluredCOCRT->GetSRV();
+    RHIDevice->SetAndUpdateConstantBuffer(FDOFGaussianCB(Comp->GaussianBlurWeight, false, true));
+    Pass(RHIDevice, SRVs, COCRT->GetRTV(), DOF_COCGaussianBlurPSPath);
+
     //Gaussian
     //Horizontal Near
     SRVs.clear();
@@ -112,6 +116,8 @@ void FDepthOfFieldPass::Execute(const FPostProcessModifier& M, FSceneView* View,
     }
 
     //Composite
+    UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>(UResourceManager::FullScreenVSPath);
+    UShader* CompositePS = UResourceManager::GetInstance().Load<UShader>(DOF_CompositePSPath);
     RHIDevice->PrepareShader(FullScreenTriangleVS, CompositePS);
     RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTargetWithoutDepth);
     SRVs.clear();

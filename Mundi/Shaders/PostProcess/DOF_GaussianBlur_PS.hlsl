@@ -81,9 +81,9 @@ float4 mainPS(PS_INPUT input) : SV_Target
     {
         for (int i = -halfRange; i <= halfRange; ++i)
         {
-            float CurGaussian = GetGaussian(i);
+            float CurGaussian = GetGaussian(i * COC.r);
             float2 CurUV = uv + UVDir * i * COC.r;
-            float2 CurCOC = g_COCTex.Sample(g_PointClampSample, CurUV).rg;
+            float2 CurCOC = g_COCTex.Sample(g_LinearClampSample, CurUV).rg;
             if (CurCOC.r > 0)
             {
                 float3 SampleColor = g_SceneColorTex.Sample(g_LinearClampSample, CurUV).rgb;
@@ -96,9 +96,9 @@ float4 mainPS(PS_INPUT input) : SV_Target
     {
         for (int i = -halfRange; i <= halfRange; ++i)
         {
-            float CurGaussian = GetGaussian(i);
+            float CurGaussian = GetGaussian(i * COC.g);
             float2 CurUV = uv + UVDir * i * COC.g;
-            float2 CurCOC = g_COCTex.Sample(g_PointClampSample, CurUV).rg;
+            float2 CurCOC = g_COCTex.Sample(g_LinearClampSample, CurUV).rg;
             if (CurCOC.g > 0)
             {
                 float3 SampleColor = g_SceneColorTex.Sample(g_LinearClampSample, CurUV).rgb;

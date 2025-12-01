@@ -18,7 +18,7 @@ float4 mainPS(PS_INPUT input) : SV_Target
     g_SceneColorTex.GetDimensions(TexWidth, TexHeight);
     float2 uv = float2(input.position.x / TexWidth, input.position.y / TexHeight);
     
-    float2 COC = g_COCTex.Sample(g_PointClampSample, uv).rg;
+    float2 COC = g_COCTex.Sample(g_LinearClampSample, uv).rg;
 
     float Origin = 1 - COC.r - COC.g;
     float3 SceneColor = g_SceneColorTex.Sample(g_LinearClampSample, uv);

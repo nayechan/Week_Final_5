@@ -95,10 +95,10 @@ float4 mainPS(PS_INPUT input) : SV_Target
         }
     }
     //return float4(SceneColor, 1);
-    if (absCOC < 0.1f)
-    {
-        return float4(SceneColor, 1);
-    }
+    //if (absCOC < 0.1f)
+    //{
+    //    return float4(SceneColor, 1);
+    //}
     
     return float4(MaxColor, 1);
 }
