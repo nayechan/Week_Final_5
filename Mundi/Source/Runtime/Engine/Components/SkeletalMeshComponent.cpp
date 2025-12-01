@@ -35,6 +35,14 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
     Super::TickComponent(DeltaTime);
 
     if (!SkeletalMesh) { return; }
+
+    // Ragdoll이 활성화된 경우 물리 시뮬레이션 처리
+    if (RagdollState != ERagdollState::Disabled)
+    {
+        UpdateRagdollState(DeltaTime);
+        return; // Ragdoll 중에는 애니메이션 처리 건너뛰기
+    }
+
     // Drive animation instance if present
     if (bUseAnimation && AnimInstance && SkeletalMesh && SkeletalMesh->GetSkeleton())
     {
@@ -489,7 +497,43 @@ void USkeletalMeshComponent::InitRagdoll()
 
 void USkeletalMeshComponent::TermRagdoll()
 {
+    // 상태 초기화
+    RagdollState = ERagdollState::Disabled;
+    RagdollBlendAlpha = 0.0f;
 
+    // Constraints 해제 (Joint 먼저 해제해야 Body 해제 시 오류 방지)
+    for (FConstraintInstance* Constraint : RagdollConstraints)
+    {
+        if (Constraint)
+        {
+            Constraint->TermConstraint();
+            delete Constraint;
+        }
+    }
+    RagdollConstraints.Empty();
+
+    // Bodies 해제
+    for (FBodyInstance* Body : RagdollBodies)
+    {
+        if (Body)
+        {
+            Body->TermBody();
+            delete Body;
+        }
+    }
+    RagdollBodies.Empty();
+
+    // 인덱스 맵 초기화
+    BoneNameToBodyIndex.Empty();
+
+    // 블렌딩 포즈 초기화
+    PreRagdollPose.Empty();
+    RagdollPose.Empty();
+
+    // 애니메이션 재활성화
+    bUseAnimation = true;
+
+    UE_LOG("[Ragdoll] TermRagdoll: All bodies and constraints released");
 }
 
 void USkeletalMeshComponent::CreateRagdollConstraints()
@@ -693,5 +737,182 @@ void USkeletalMeshComponent::SyncRagdollToAnimation()
 
         FTransform BoneWorldTM = GetBoneWorldTransform(Body->BoneIndex);
         Body->SetWorldTransform(BoneWorldTM, true);  // bTeleport = true
+    }
+}
+
+void USkeletalMeshComponent::SyncAnimationToRagdoll()
+{
+    // 물리 Body 위치를 본 트랜스폼으로 동기화
+    if (!SkeletalMesh)
+    {
+        return;
+    }
+
+    const FSkeleton* Skeleton = SkeletalMesh->GetSkeleton();
+    if (!Skeleton)
+    {
+        return;
+    }
+
+    // 컴포넌트 월드 트랜스폼의 역행렬 (월드 → 컴포넌트 로컬 변환용)
+    const FTransform ComponentWorldTM = GetWorldTransform();
+    const FTransform InvComponentTM = ComponentWorldTM.Inverse();
+
+    for (FBodyInstance* Body : RagdollBodies)
+    {
+        if (!Body || Body->BoneIndex < 0)
+        {
+            continue;
+        }
+
+        if (Body->BoneIndex >= CurrentLocalSpacePose.Num())
+        {
+            continue;
+        }
+
+        // 1. Body의 월드 트랜스폼 획득
+        FTransform BodyWorldTM = Body->GetWorldTransform();
+
+        // 2. 컴포넌트 공간으로 변환
+        FTransform BodyComponentTM = InvComponentTM.GetWorldTransform(BodyWorldTM);
+
+        // 3. 로컬 공간으로 변환 (부모 본 기준)
+        int32 ParentIndex = Skeleton->Bones[Body->BoneIndex].ParentIndex;
+        if (ParentIndex >= 0 && ParentIndex < CurrentComponentSpacePose.Num())
+        {
+            const FTransform& ParentComponentTM = CurrentComponentSpacePose[ParentIndex];
+            CurrentLocalSpacePose[Body->BoneIndex] = ParentComponentTM.GetRelativeTransform(BodyComponentTM);
+        }
+        else
+        {
+            // 루트 본인 경우
+            CurrentLocalSpacePose[Body->BoneIndex] = BodyComponentTM;
+        }
+
+        // 4. RagdollPose에도 저장 (블렌딩용)
+        if (Body->BoneIndex < RagdollPose.Num())
+        {
+            RagdollPose[Body->BoneIndex] = CurrentLocalSpacePose[Body->BoneIndex];
+        }
+    }
+
+    // 5. 포즈 재계산
+    ForceRecomputePose();
+}
+
+void USkeletalMeshComponent::UpdateRagdollState(float DeltaTime)
+{
+    switch (RagdollState)
+    {
+    case ERagdollState::BlendingIn:
+        // 블렌드 알파 증가
+        RagdollBlendAlpha += DeltaTime / RagdollBlendDuration;
+        if (RagdollBlendAlpha >= 1.0f)
+        {
+            RagdollBlendAlpha = 1.0f;
+            RagdollState = ERagdollState::Active;
+        }
+        // 물리 → 본 동기화 후 블렌딩
+        SyncAnimationToRagdoll();
+        BlendPoses(RagdollBlendAlpha);
+        break;
+
+    case ERagdollState::BlendingOut:
+        // 블렌드 알파 감소
+        RagdollBlendAlpha -= DeltaTime / RagdollBlendDuration;
+        if (RagdollBlendAlpha <= 0.0f)
+        {
+            RagdollBlendAlpha = 0.0f;
+            RagdollState = ERagdollState::Disabled;
+        }
+        BlendPoses(RagdollBlendAlpha);
+        break;
+
+    case ERagdollState::Active:
+        // 물리 → 본 동기화만 수행
+        SyncAnimationToRagdoll();
+        break;
+
+    case ERagdollState::Disabled:
+        // 애니메이션 시스템이 처리 (TickComponent에서)
+        break;
+    }
+}
+
+void USkeletalMeshComponent::BlendPoses(float Alpha)
+{
+    if (PreRagdollPose.Num() != CurrentLocalSpacePose.Num())
+    {
+        return;
+    }
+
+    for (int32 i = 0; i < CurrentLocalSpacePose.Num(); ++i)
+    {
+        FTransform& Current = CurrentLocalSpacePose[i];
+        const FTransform& AnimPose = PreRagdollPose[i];
+
+        // RagdollPose가 유효한 경우에만 블렌딩
+        if (i < RagdollPose.Num())
+        {
+            const FTransform& PhysPose = RagdollPose[i];
+
+            // 위치 선형 보간 (Lerp)
+            Current.Translation = FVector::Lerp(AnimPose.Translation, PhysPose.Translation, Alpha);
+
+            // 회전 구면 선형 보간 (Slerp)
+            Current.Rotation = FQuat::Slerp(AnimPose.Rotation, PhysPose.Rotation, Alpha);
+
+            // 스케일은 애니메이션 값 유지
+            Current.Scale3D = AnimPose.Scale3D;
+        }
+    }
+
+    // 포즈 재계산
+    ForceRecomputePose();
+}
+
+void USkeletalMeshComponent::AddImpulseToBody(const FName& BoneName, const FVector& Impulse)
+{
+    // 본 이름으로 Body 인덱스 찾기
+    const int32* BodyIndexPtr = BoneNameToBodyIndex.Find(BoneName);
+    if (!BodyIndexPtr)
+    {
+        UE_LOG("[Ragdoll] AddImpulseToBody: Body not found for bone %s", BoneName.ToString().c_str());
+        return;
+    }
+
+    int32 BodyIndex = *BodyIndexPtr;
+    if (BodyIndex < 0 || BodyIndex >= RagdollBodies.Num())
+    {
+        return;
+    }
+
+    FBodyInstance* Body = RagdollBodies[BodyIndex];
+    if (Body)
+    {
+        Body->AddImpulse(Impulse);
+    }
+}
+
+void USkeletalMeshComponent::AddForceToBody(const FName& BoneName, const FVector& Force)
+{
+    // 본 이름으로 Body 인덱스 찾기
+    const int32* BodyIndexPtr = BoneNameToBodyIndex.Find(BoneName);
+    if (!BodyIndexPtr)
+    {
+        UE_LOG("[Ragdoll] AddForceToBody: Body not found for bone %s", BoneName.ToString().c_str());
+        return;
+    }
+
+    int32 BodyIndex = *BodyIndexPtr;
+    if (BodyIndex < 0 || BodyIndex >= RagdollBodies.Num())
+    {
+        return;
+    }
+
+    FBodyInstance* Body = RagdollBodies[BodyIndex];
+    if (Body)
+    {
+        Body->AddForce(Force);
     }
 }
