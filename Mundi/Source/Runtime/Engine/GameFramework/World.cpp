@@ -190,7 +190,6 @@ void UWorld::Tick(float DeltaSeconds)
 	// 물리 시뮬레이션 시작 (비동기)
 	if (PhysicsScene && bPie)
 	{
-		PhysicsScene->ProcessCommandQueue();
 		PhysicsScene->Simulation(DeltaSeconds);
 	}
 	
@@ -293,9 +292,6 @@ void UWorld::Tick(float DeltaSeconds)
 	{
 		LuaManager->Tick(GetDeltaTime(EDeltaTime::Game));
 	}
-	
-	// 지연 삭제 처리
-	ProcessPendingKillActors();
 
 	// 충돌 BVH 업데이트 (에디터/PIE 모두에서 호출 - Partition과 동일)
 	if (CollisionManager)
@@ -307,7 +303,10 @@ void UWorld::Tick(float DeltaSeconds)
 	if (PhysicsScene && bPie)
 	{
 		PhysicsScene->FetchAndSync();
+		PhysicsScene->ProcessCommandQueue();
 	}
+	
+	ProcessPendingKillActors();
 }
 
 UWorld* UWorld::DuplicateWorldForPIE(UWorld* InEditorWorld)

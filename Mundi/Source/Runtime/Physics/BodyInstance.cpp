@@ -468,6 +468,7 @@ void FBodyInstance::AddForce(const FVector& Force, bool bAccelChange)
     {
         if (PxRigidDynamic* DynamicActor = GetDynamicActor())
         {
+            if (DynamicActor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC) { return; }
             PxVec3 PForce = PhysXConvert::ToPx(Force);
             PxForceMode::Enum Mode = bAccelChange ? PxForceMode::eACCELERATION : PxForceMode::eFORCE;
             DynamicActor->addForce(PForce, Mode);
@@ -483,6 +484,7 @@ void FBodyInstance::AddForceAtLocation(const FVector& Force, const FVector& Loca
     {
         if (PxRigidDynamic* DynamicActor = GetDynamicActor())
         {
+            if (DynamicActor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC) { return; }
             PxVec3 PForce = PhysXConvert::ToPx(Force);
             PxVec3 PLocation = PhysXConvert::ToPx(Location);
             PxRigidBodyExt::addForceAtPos(*DynamicActor, PForce, PLocation);
@@ -498,6 +500,7 @@ void FBodyInstance::AddTorque(const FVector& Torque, bool bAccelChange)
     {
         if (PxRigidDynamic* DynamicActor = GetDynamicActor())
         {
+            if (DynamicActor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC) { return; }
             PxVec3 PTorque = PhysXConvert::AngularToPx(Torque);
             PxForceMode::Enum Mode = bAccelChange ? PxForceMode::eACCELERATION : PxForceMode::eFORCE;
             DynamicActor->addTorque(PTorque, Mode);
@@ -513,6 +516,7 @@ void FBodyInstance::AddImpulse(const FVector& Impulse, bool bVelChange)
     {
         if (PxRigidDynamic* DynamicActor = GetDynamicActor())
         {
+            if (DynamicActor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC) { return; }
             PxVec3 PImpulse = PhysXConvert::ToPx(Impulse);
             PxForceMode::Enum Mode = bVelChange ? PxForceMode::eVELOCITY_CHANGE : PxForceMode::eIMPULSE;
             DynamicActor->addForce(PImpulse, Mode);
@@ -528,6 +532,7 @@ void FBodyInstance::AddImpulseAtLocation(const FVector& Impulse, const FVector& 
     {
         if (PxRigidDynamic* DynamicActor = GetDynamicActor())
         {
+            if (DynamicActor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC) { return; }
             PxVec3 PImpulse = PhysXConvert::ToPx(Impulse);
             PxVec3 PLocation = PhysXConvert::ToPx(Location);
             PxRigidBodyExt::addForceAtPos(*DynamicActor, PImpulse, PLocation, PxForceMode::eIMPULSE);
@@ -543,6 +548,7 @@ void FBodyInstance::AddAngularImpulse(const FVector& AngularImpulse, bool bVelCh
     {
         if (PxRigidDynamic* DynamicActor = GetDynamicActor())
         {
+            if (DynamicActor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC) { return; }
             PxVec3 PImpulse = PhysXConvert::AngularToPx(AngularImpulse);
             PxForceMode::Enum Mode = bVelChange ? PxForceMode::eVELOCITY_CHANGE : PxForceMode::eIMPULSE;
             DynamicActor->addTorque(PImpulse, Mode);
@@ -567,7 +573,7 @@ void FBodyInstance::SetLinearVelocity(const FVector& Velocity, bool bAddToCurren
     {
         if (PxRigidDynamic* DynamicActor = GetDynamicActor())
         {
-            if (DynamicActor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC) return; 
+            if (DynamicActor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC) { return; }
 
             PxVec3 PVel = PhysXConvert::ToPx(Velocity);
             if (bAddToCurrent)
@@ -596,7 +602,7 @@ void FBodyInstance::SetAngularVelocity(const FVector& AngularVelocity, bool bAdd
     {
         if (PxRigidDynamic* DynamicActor = GetDynamicActor())
         {
-            if (DynamicActor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC) return; 
+            if (DynamicActor->getRigidBodyFlags() & PxRigidBodyFlag::eKINEMATIC) { return; }
 
             PxVec3 PVel = PhysXConvert::AngularToPx(AngularVelocity);
             if (bAddToCurrent)
@@ -607,6 +613,7 @@ void FBodyInstance::SetAngularVelocity(const FVector& AngularVelocity, bool bAdd
             }
     });
 }
+
 // --- UBodySetupCore 설정 적용 ---
 
 void FBodyInstance::ApplyBodySetupSettings(const UBodySetupCore* BodySetupCore)
