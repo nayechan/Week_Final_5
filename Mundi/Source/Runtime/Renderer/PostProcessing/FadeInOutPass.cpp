@@ -19,7 +19,7 @@ void FFadeInOutPass::Execute(const FPostProcessModifier& M, FSceneView* View, D3
     RHIDevice->OMSetBlendState(false); // 전화면 덮어쓰기. 필요 시 true + 알파 블렌딩도 가능
 
     // 3) 셰이더
-    UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>("Shaders/Utility/FullScreenTriangle_VS.hlsl");
+    UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>(UResourceManager::FullScreenVSPath);
     UShader* FadeInoutPS = UResourceManager::GetInstance().Load<UShader>("Shaders/PostProcess/FadeInOut_PS.hlsl");
     if (!FullScreenTriangleVS || !FullScreenTriangleVS->GetVertexShader()|| !FadeInoutPS || !FadeInoutPS->GetPixelShader())
     {

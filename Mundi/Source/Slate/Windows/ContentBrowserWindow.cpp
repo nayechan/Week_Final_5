@@ -466,6 +466,22 @@ void UContentBrowserWindow::HandleDoubleClick(FFileEntry& Entry)
 		USlateManager::GetInstance().OpenAssetViewer(Context);
 		UE_LOG("Opening ParticleEditor for: %s", Entry.FileName.c_str());
 	}
+	else if (ext == ".phxmtl")
+	{
+		// @note 에디터 등에서는 UResourceManager::Load()를 상대경로로 사용한다.
+		// 따라서, 일관된 방식을 사용하지 않는다면 캐싱된 객체가 아닌 새로 생성된 객체를 참조하게 되는 문제가 발생한다.
+		std::filesystem::path relativePath = std::filesystem::relative(Entry.Path, std::filesystem::current_path());
+		std::string pathStr = WideToUTF8(relativePath.wstring());
+        
+		std::replace(pathStr.begin(), pathStr.end(), '\\', '/');
+
+		UEditorAssetPreviewContext* Context = NewObject<UEditorAssetPreviewContext>();
+		Context->ViewerType = EViewerType::PhysicalMaterial;
+		Context->AssetPath = pathStr; 
+        
+		USlateManager::GetInstance().OpenAssetViewer(Context);
+		UE_LOG("Opening PhysicalMaterialEditor for: %s", pathStr.c_str());
+	}
 	else
 	{
 		UE_LOG("Unsupported file type: %s", ext.c_str());

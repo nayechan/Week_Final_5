@@ -58,6 +58,7 @@
 #include "Modules/ParticleModuleTypeDataMesh.h"
 #include "Modules/ParticleModuleTypeDataBeam.h"
 #include "Modules/ParticleModuleTypeDataRibbon.h"
+#include "DOFComponent.h"
 
 FSceneRenderer::FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* InOwnerRenderer)
 	: World(InWorld)
@@ -721,6 +722,7 @@ void FSceneRenderer::GatherVisibleProxies()
 	const bool bDrawSkeletalMeshes = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_SkeletalMeshes);
 	const bool bDrawDecals = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Decals);
 	const bool bDrawFog = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Fog);
+	const bool bDrawDOF = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_DOF);
 	const bool bDrawLight = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Lighting);
 	const bool bUseAntiAliasing = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_FXAA);
 	const bool bUseBillboard = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Billboard);
@@ -810,6 +812,11 @@ void FSceneRenderer::GatherVisibleProxies()
 					if (UHeightFogComponent* FogComponent = Cast<UHeightFogComponent>(Component); FogComponent && bDrawFog)
 					{
 						SceneGlobals.Fogs.Add(FogComponent);
+					}
+
+					else if (UDOFComponent* DOFComp = Cast<UDOFComponent>(Component); DOFComp && bDrawDOF)
+					{
+						SceneGlobals.DOFs.Add(DOFComp);
 					}
 
 					else if (UDirectionalLightComponent* LightComponent = Cast<UDirectionalLightComponent>(Component); LightComponent && bDrawLight)
@@ -1267,6 +1274,19 @@ void FSceneRenderer::RenderPostProcessingPasses()
 			PostProcessModifiers.Add(FogPostProc);
 		}
 	}
+	if (0 < SceneGlobals.DOFs.Num())
+	{
+		UDOFComponent* DOFComp = SceneGlobals.DOFs[0];
+		if (DOFComp)
+		{
+			FPostProcessModifier DOFPostProc;
+			DOFPostProc.Type = EPostProcessEffectType::DOF;
+			DOFPostProc.bEnabled = DOFComp->IsActive() && DOFComp->IsVisible();
+			DOFPostProc.SourceObject = DOFComp;
+			DOFPostProc.Priority = -1;
+			PostProcessModifiers.Add(DOFPostProc);
+		}
+	}
 	
 	PostProcessModifiers.Sort([](const FPostProcessModifier& LHS, const FPostProcessModifier& RHS)
 	{
@@ -1292,6 +1312,9 @@ void FSceneRenderer::RenderPostProcessingPasses()
 			break;
 		case EPostProcessEffectType::Gamma:
 			GammaPass.Execute(Modifier, View, RHIDevice);
+			break;
+		case EPostProcessEffectType::DOF:
+			DOFPass.Execute(Modifier, View, RHIDevice);
 			break;
 		}
 	}
@@ -1321,7 +1344,7 @@ void FSceneRenderer::RenderSceneDepthPostProcess()
 	RHIDevice->OMSetBlendState(false);
 
 	// 쉐이더 설정
-	UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>("Shaders/Utility/FullScreenTriangle_VS.hlsl");
+	UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>(UResourceManager::FullScreenVSPath);
 	UShader* SceneDepthPS = UResourceManager::GetInstance().Load<UShader>("Shaders/Utility/SceneDepth_PS.hlsl");
 	if (!FullScreenTriangleVS || !FullScreenTriangleVS->GetVertexShader() || !SceneDepthPS || !SceneDepthPS->GetPixelShader())
 	{
@@ -1382,7 +1405,7 @@ void FSceneRenderer::RenderTileCullingDebug()
 	RHIDevice->OMSetBlendState(false);
 
 	// 셰이더 설정
-	UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>("Shaders/Utility/FullScreenTriangle_VS.hlsl");
+	UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>(UResourceManager::FullScreenVSPath);
 	UShader* TileDebugPS = UResourceManager::GetInstance().Load<UShader>("Shaders/PostProcess/TileDebugVisualization_PS.hlsl");
 	if (!FullScreenTriangleVS || !FullScreenTriangleVS->GetVertexShader() || !TileDebugPS || !TileDebugPS->GetPixelShader())
 	{
@@ -1811,7 +1834,7 @@ void FSceneRenderer::ApplyScreenEffectsPass()
 	RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &SourceSRV);
 	RHIDevice->GetDeviceContext()->PSSetSamplers(0, 1, &SamplerState);
 
-	UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>("Shaders/Utility/FullScreenTriangle_VS.hlsl");
+	UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>(UResourceManager::FullScreenVSPath);
 	UShader* CopyTexturePS = UResourceManager::GetInstance().Load<UShader>("Shaders/PostProcess/FXAA_PS.hlsl");
 	if (!FullScreenTriangleVS || !FullScreenTriangleVS->GetVertexShader() || !CopyTexturePS || !CopyTexturePS->GetPixelShader())
 	{
@@ -1871,8 +1894,8 @@ void FSceneRenderer::CompositeToBackBuffer()
 	RHIDevice->GetDeviceContext()->PSSetSamplers(0, 1, &SamplerState);
 
 	// 5. 셰이더 준비
-	UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>("Shaders/Utility/FullScreenTriangle_VS.hlsl");
-	UShader* BlitPS = UResourceManager::GetInstance().Load<UShader>("Shaders/Utility/Blit_PS.hlsl");
+	UShader* FullScreenTriangleVS = UResourceManager::GetInstance().Load<UShader>(UResourceManager::FullScreenVSPath);
+	UShader* BlitPS = UResourceManager::GetInstance().Load<UShader>(UResourceManager::BlitPSPath);
 	if (!FullScreenTriangleVS || !FullScreenTriangleVS->GetVertexShader() || !BlitPS || !BlitPS->GetPixelShader())
 	{
 		UE_LOG("Blit용 셰이더 없음!\n");

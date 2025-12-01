@@ -51,6 +51,7 @@ enum class EResourceType : uint8
     Shader,
     Texture,
     Material,
+    PhysicalMaterial,
     Sound,
     Animation,
     ParticleSystem,
@@ -178,9 +179,11 @@ enum class EEngineShowFlags : uint64
     SF_Collision = 1ull << 21,    // Show/hide collision component debug shapes
     SF_CollisionBVH = 1ull << 22, // Show/hide collision BVH debug visualization
 
+    SF_DOF = 1ull << 23,
+
     // Default enabled flags
     SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_SkeletalMeshes | SF_Grid | SF_Lighting | SF_Decals |
-        SF_Fog | SF_FXAA | SF_Billboard | SF_EditorIcon | SF_Shadows | SF_ShadowAntiAliasing | SF_GPUSkinning | SF_Particles,
+    SF_DOF | SF_Fog | SF_FXAA | SF_Billboard | SF_EditorIcon | SF_Shadows | SF_ShadowAntiAliasing | SF_GPUSkinning | SF_Particles,
 
     // All flags (for initialization/reset)
     SF_All = 0xFFFFFFFFFFFFFFFFull
@@ -269,6 +272,7 @@ enum class EViewerType : uint8
     BlendSpace,
     Particle,
     PhysicsAsset,
+    PhysicalMaterial,
 
     End,
 };

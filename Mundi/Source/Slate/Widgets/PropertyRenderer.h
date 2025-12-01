@@ -50,6 +50,7 @@ private:
 	static bool RenderMaterialProperty(const FProperty& Prop, void* Instance);
 	static bool RenderMaterialArrayProperty(const FProperty& Prop, void* Instance);
 	static bool RenderSingleMaterialSlot(const char* Label, UMaterialInterface** MaterialPtr, UObject* OwningObject, uint32 MaterialIndex);	// 단일 UMaterial* 슬롯을 렌더링하는 헬퍼 함수.
+	static bool RenderPhysicalMaterialProperty(const FProperty& Prop, void* Instance);
 	static bool RenderStructArrayProperty(const FProperty& Prop, void* Instance);	// TArray<Struct> 렌더링
 	static bool RenderParticleSystemProperty(const FProperty& Prop, void* Instance);
 	static bool RenderPhysicsAssetProperty(const FProperty& Prop, void* Instance);
@@ -85,6 +86,8 @@ private:
 	static TArray<FString> CachedStaticMeshItems;
 	static TArray<FString> CachedMaterialPaths;
 	static TArray<const char*> CachedMaterialItems;
+	static TArray<FString> CachedPhysicalMaterialPaths;
+	static TArray<FString> CachedPhysicalMaterialItems;
 	static TArray<FString> CachedShaderPaths;
 	static TArray<const char*> CachedShaderItems;
 	static TArray<FString> CachedTexturePaths;

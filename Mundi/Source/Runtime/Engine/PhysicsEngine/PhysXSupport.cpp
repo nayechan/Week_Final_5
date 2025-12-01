@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "PhysXSupport.h"
+#include "PhysicalMaterial.h"
 
 #include <thread>
 
@@ -11,6 +12,7 @@ PxFoundation*            GPhysXFoundation = nullptr;
 PxPhysics*               GPhysXSDK = nullptr;
 PxCooking*               GPhysXCooking = nullptr;
 PxDefaultCpuDispatcher*  GPhysXDispatcher = nullptr;
+UPhysicalMaterial*       GPhysicalMaterial = nullptr;
 PxPvd*                   GPhysXVisualDebugger = nullptr;
 PxPvdTransport*          GPhysXPvdTransport = nullptr;
 FPhysXAllocator*         GPhysXAllocator= nullptr;
@@ -31,6 +33,11 @@ bool InitGamePhys()
     {
         UE_LOG("[PhysX Error] PxCreateFoundation() 실행이 실패했습니다.");
         return false;
+    }
+
+    if (!GPhysicalMaterial)
+    {
+        GPhysicalMaterial = NewObject<UPhysicalMaterial>();
     }
 
     GPhysXVisualDebugger = PxCreatePvd(*GPhysXFoundation);
@@ -95,6 +102,7 @@ void TermGamePhys()
     if (GPhysXCooking)        { GPhysXCooking->release(); GPhysXCooking = nullptr; }
     if (GPhysXSDK)            { PxCloseExtensions(); }
     if (GPhysXSDK)            { GPhysXSDK->release(); GPhysXSDK = nullptr; }
+    if (GPhysicalMaterial)    { DeleteObject(GPhysicalMaterial); GPhysicalMaterial = nullptr; }
 
     // PVD 연결 해제 후 transport 해제 (순서 중요)
     if (GPhysXVisualDebugger)

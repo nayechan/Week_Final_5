@@ -15,6 +15,7 @@ struct FConstraintSetup;
 class USkeletonTreeWidget;
 class UBodyPropertiesWidget;
 class UConstraintPropertiesWidget;
+class UToolsWidget;
 
 /**
  * SPhysicsAssetEditorWindow
@@ -90,6 +91,7 @@ private:
 	void CheckUnsavedChangesAndExecute(std::function<void()> Action);
 	std::function<void()> PendingAction;  // 다이얼로그 후 실행할 액션
 
+public:
 	// ────────────────────────────────────────────────
 	// 바디/제약 조건 작업
 	// ────────────────────────────────────────────────
@@ -98,7 +100,10 @@ private:
 	void RemoveSelectedBody();
 	void AddConstraintBetweenBodies(int32 ParentBodyIndex, int32 ChildBodyIndex);
 	void RemoveSelectedConstraint();
+	void RegenerateSelectedBody();
+	void AddPrimitiveToBody(int32 BodyIndex, int32 PrimitiveType);  // 0=Box, 1=Sphere, 2=Capsule
 
+private:
 	// ────────────────────────────────────────────────
 	// 레이아웃
 	// ────────────────────────────────────────────────
@@ -111,6 +116,7 @@ private:
 	USkeletonTreeWidget* SkeletonTreeWidget = nullptr;
 	UBodyPropertiesWidget* BodyPropertiesWidget = nullptr;
 	UConstraintPropertiesWidget* ConstraintPropertiesWidget = nullptr;
+	UToolsWidget* ToolsWidget = nullptr;
 
 	void CreateSubWidgets();
 	void DestroySubWidgets();

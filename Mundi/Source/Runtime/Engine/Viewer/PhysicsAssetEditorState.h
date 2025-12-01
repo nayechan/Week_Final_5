@@ -50,6 +50,9 @@ struct PhysicsAssetEditorState : public ViewerState
 	/** 제약 조건 그래프 표시 여부 */
 	bool bShowConstraintGraph = false;
 
+	/** 그래프의 기준 바디 인덱스 (더블클릭으로만 변경됨) */
+	int32 GraphPivotBodyIndex = -1;
+
 	/** 디버그 시각화 옵션 */
 	bool bShowBodies = true;
 	bool bShowConstraints = true;

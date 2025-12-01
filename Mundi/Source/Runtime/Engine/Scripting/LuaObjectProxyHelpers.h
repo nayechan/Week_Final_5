@@ -16,12 +16,13 @@ extern TArray<UObject*> GUObjectArray;
 inline const TMap<EPropertyType, UClass*>& GetObjectPointerTypeMap()
 {
     static const TMap<EPropertyType, UClass*> ObjectPointerTypeMap = {
-        {EPropertyType::ObjectPtr,     UObject::StaticClass()},
-        {EPropertyType::Texture,       UTexture::StaticClass()},
-        {EPropertyType::StaticMesh,    UStaticMesh::StaticClass()},
-        {EPropertyType::SkeletalMesh,  USkeletalMesh::StaticClass()},
-        {EPropertyType::Material,      UMaterialInterface::StaticClass()},
-        {EPropertyType::Sound,         USound::StaticClass()}
+        {EPropertyType::ObjectPtr,             UObject::StaticClass()},
+        {EPropertyType::Texture,               UTexture::StaticClass()},
+        {EPropertyType::StaticMesh,            UStaticMesh::StaticClass()},
+        {EPropertyType::SkeletalMesh,          USkeletalMesh::StaticClass()},
+        {EPropertyType::Material,              UMaterialInterface::StaticClass()},
+        {EPropertyType::PhysicalMaterial,      UPhysicalMaterial::StaticClass()},
+        {EPropertyType::Sound,                 USound::StaticClass()}
     };
     return ObjectPointerTypeMap;
 }

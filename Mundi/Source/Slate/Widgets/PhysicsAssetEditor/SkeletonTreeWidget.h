@@ -1,10 +1,18 @@
 #pragma once
 
 #include "Source/Slate/Widgets/Widget.h"
+#include "Delegates.h"
 #include <unordered_map>
 #include <vector>
 
 struct PhysicsAssetEditorState;
+
+// 델리게이트 타입 정의
+DECLARE_DELEGATE_TYPE(FOnAddBody, int32);                    // void(int32 BoneIndex)
+DECLARE_DELEGATE_TYPE(FOnRemoveBody, int32);                 // void(int32 BodyIndex)
+DECLARE_DELEGATE_TYPE(FOnAddPrimitive, int32, int32);        // void(int32 BodyIndex, int32 PrimitiveType)
+DECLARE_DELEGATE_TYPE(FOnAddConstraint, int32, int32);       // void(int32 BodyIndex1, int32 BodyIndex2)
+DECLARE_DELEGATE_TYPE(FOnRemoveConstraint, int32);           // void(int32 ConstraintIndex)
 
 /**
  * USkeletonTreeWidget
@@ -72,4 +80,17 @@ private:
 	void RenderBoneNode(int32 BoneIndex, int32 Depth);
 	void RenderBodyNode(int32 BodyIndex);
 	void RenderConstraintNode(int32 ConstraintIndex);
+
+	// Constraint 생성 시 타겟 Body 선택 메뉴
+	void RenderConstraintTargetMenu(int32 SourceBodyIndex);
+
+public:
+	// ────────────────────────────────────────────────
+	// 델리게이트 (컨텍스트 메뉴 액션)
+	// ────────────────────────────────────────────────
+	FOnAddBody OnAddBody;              // 본에 바디 추가
+	FOnRemoveBody OnRemoveBody;        // 바디 삭제
+	FOnAddPrimitive OnAddPrimitive;    // 바디에 프리미티브 추가 (0=Box, 1=Sphere, 2=Capsule)
+	FOnAddConstraint OnAddConstraint;  // 두 바디 간 제약조건 추가
+	FOnRemoveConstraint OnRemoveConstraint;  // 제약조건 삭제
 };

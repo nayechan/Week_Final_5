@@ -24,6 +24,7 @@ private:
     void RenderLoadPrefabButton();
     void RenderParticleEditorButton();
     void RenderPhysicsAssetEditorButton();
+    void RenderPhysicalMaterialEditorButton();
     void RenderPIEButtons();
 
     // UI 헬퍼 메서드
@@ -105,6 +106,7 @@ private:
     UTexture* IconPrefab = nullptr;
     UTexture* IconParticle = nullptr;
     UTexture* IconPhysicsAsset = nullptr;
+    UTexture* IconPhysicalMaterial = nullptr;
     UTexture* LogoTexture = nullptr;
 
     // 아이콘 설정

@@ -20,7 +20,7 @@ void UPrimitiveComponent::OnPropertyChanged(const FProperty& Prop)
 {
     USceneComponent::OnPropertyChanged(Prop);
 
-    if (Prop.Name == "bSimulatePhysics")
+    if (Prop.Name == "bSimulatePhysics" || Prop.Name == "PhysicalMaterial")
     {
         if (BodyInstance.IsValidBodyInstance())
         {
@@ -106,6 +106,7 @@ void UPrimitiveComponent::OnCreatePhysicsState()
         return;
     }
 
+    BodyInstance.PhysicalMaterialOverride = PhysicalMaterial;
     BodyInstance.bSimulatePhysics = bSimulatePhysics;
     BodyInstance.Scale3D = GetRelativeScale();
 

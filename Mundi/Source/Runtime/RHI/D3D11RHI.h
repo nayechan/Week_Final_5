@@ -3,6 +3,7 @@
 #include "ResourceManager.h"
 #include "VertexData.h"
 #include "ConstantBufferType.h"
+#include "RenderTexture.h"
 
 
 #define DECLARE_CONSTANT_BUFFER(TYPE)\
@@ -41,6 +42,8 @@ enum class EComparisonFunc
 	LessEqualReadOnly,
 	// 필요시 추가 후 OMSetDepthStencilState 함수 수정
 };
+
+
 
 class D3D11RHI
 {
@@ -138,6 +141,8 @@ public:
 
 	void CreateShader(ID3D11InputLayout** OutSimpleInputLayout, ID3D11VertexShader** OutSimpleVertexShader, ID3D11PixelShader** OutSimplePixelShader);
 
+	URenderTexture* GetRenderTexture(FName Name);
+	void ResizeRenderTextures();
 	void OnResize(UINT NewWidth, UINT NewHeight);
 
 	void CreateBackBufferAndDepthStencil(UINT width, UINT height);
@@ -179,7 +184,8 @@ public:
 	// [Enum 으로 SRV, RTV 를 다루는 함수]
 	ID3D11SamplerState* GetSamplerState(RHI_Sampler_Index SamplerIndex) const;
 	void OMSetRenderTargets(ERTVMode RTVMode);
-
+	void OMSetRenderTargets(URenderTexture* RenderTexture);
+	ID3D11Texture2D* GetFrameBufferTex() { return FrameBuffer; }
 public:
 	// getter
 	inline ID3D11Device* GetDevice()
@@ -256,6 +262,8 @@ private:
 	ID3D11RenderTargetView* IdBufferRTV{};
 	ID3D11RenderTargetView* BackBufferRTV{};
 	ID3D11DepthStencilView* DepthStencilView{};
+
+	TMap<FName, std::unique_ptr<URenderTexture>> RenderTextures;
 
 	static const int NUM_SCENE_BUFFERS = 2;
 	// 씬 컬러 렌더링을 위한 핑퐁 버퍼 리소스

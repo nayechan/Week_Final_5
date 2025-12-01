@@ -6,6 +6,7 @@
 #include "PostProcessing/VignettePass.h"
 #include "PostProcessing/HeightFogPass.h"
 #include "PostProcessing/GammaPass.h"
+#include "PostProcessing/DepthOfFieldPass.h"
 
 // 전방 선언 (헤더 파일 의존성 최소화)
 class UWorld;
@@ -14,6 +15,7 @@ class FViewport;
 class URenderer;
 class D3D11RHI;
 class UPrimitiveComponent;
+class UDOFComponent;
 class UDecalComponent;
 class UHeightFogComponent;
 class UAmbientLightComponent;
@@ -63,6 +65,7 @@ struct FSceneGlobals
 	TArray<UDirectionalLightComponent*> DirectionalLights;
 	TArray<UAmbientLightComponent*> AmbientLights;
 	TArray<UHeightFogComponent*> Fogs;	// 첫 번째로 찾은 Fog를 사용함
+	TArray<UDOFComponent*> DOFs;
 };
 
 /**
@@ -161,4 +164,5 @@ private:
 	FFadeInOutPass FadeInOutPass;
 	FVignettePass VignettePass;
 	FGammaPass GammaPass;
+	FDepthOfFieldPass DOFPass;
 };

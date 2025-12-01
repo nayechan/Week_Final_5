@@ -18,6 +18,7 @@ enum class EPropertyType : uint8
 	SkeletalMesh,
 	StaticMesh,     // UStaticMesh* 타입 (리소스 선택 UI)
 	Material,		// UMaterial* 타입 (리소스 선택 UI)
+	PhysicalMaterial,
 	Array,			// TArray<T> - InnerType으로 T 지정
 	Map,			// TMap<K, V> - KeyType으로 K, InnerType으로 V 지정
 	SRV,

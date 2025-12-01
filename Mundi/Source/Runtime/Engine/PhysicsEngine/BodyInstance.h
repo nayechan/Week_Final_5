@@ -31,6 +31,9 @@ struct FBodyInstance
     /** 물리 바디로부터 현재 월드 공간 트랜스폼을 가져온다. */
     FTransform GetUnrealWorldTransform() const;
 
+    /** 바디 인스턴스에서 사용되는 물리 머티리얼을 가져온다. */
+    UPhysicalMaterial* GetSimplePhysicalMaterial() const;
+
     /**
      * 물리 바디의 위치를 강제로 설정 (텔레포트)
      * @note 현재는 커맨드 큐가 없기 때문에 SCOPED_SCENE_WRITE_LOCK을 통해서 비동기 연산을 처리한다.
@@ -71,6 +74,9 @@ public:
 
     /** 충돌체 정보를 가지고있는 바디 설정 */
     UBodySetup* BodySetup;
+
+    /** 바디의 물리 머티리얼 대신에 사용할 머티리얼 */
+    UPhysicalMaterial* PhysicalMaterialOverride;
 
     /** 바디를 소유하고 있는 물리 씬 */
     FPhysScene* PhysScene;

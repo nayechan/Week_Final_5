@@ -507,7 +507,10 @@ void D3D11RHI::OMSetRenderTargets(ERTVMode RTVMode)
         break;
     }
 }
-
+void D3D11RHI::OMSetRenderTargets(URenderTexture* RenderTexture)
+{
+    DeviceContext->OMSetRenderTargets(1, RenderTexture->RTV.GetAddressOf(), nullptr);
+}
 void D3D11RHI::OMSetBlendState(bool bIsBlendMode)
 {
     if (bIsBlendMode == true)
@@ -1050,6 +1053,29 @@ void D3D11RHI::CreateShader(ID3D11InputLayout** SimpleInputLayout, ID3D11VertexS
     vertexshaderCSO->Release();
     pixelshaderCSO->Release();
 }
+URenderTexture* D3D11RHI::GetRenderTexture(FName Name)
+{
+    if (RenderTextures.Contains(Name) == false)
+    {
+        std::unique_ptr<URenderTexture> TempRenderTexture = std::make_unique<URenderTexture>();
+        RenderTextures[Name] = std::move(TempRenderTexture);
+    }
+    return RenderTextures[Name].get();
+}
+
+void D3D11RHI::ResizeRenderTextures()
+{
+    const TArray<FName>& Keys = RenderTextures.GetKeys();
+    for (const FName& Key : Keys)
+    {
+        URenderTexture* CurRenderTexture = RenderTextures[Key].get();
+        if (ERenderTexSizeType::Resolution == CurRenderTexture->GetType())
+        {
+            CurRenderTexture->InitResolution(GetDevice(), CurRenderTexture->GetResolution(), FrameBuffer);
+        }
+    }
+}
+
 void D3D11RHI::OnResize(UINT NewWidth, UINT NewHeight)
 {
     if (!Device || !DeviceContext || !SwapChain)
@@ -1089,6 +1115,7 @@ void D3D11RHI::OnResize(UINT NewWidth, UINT NewHeight)
     // 새 프레임버퍼/RTV/DSV 생성
     CreateFrameBuffer();
     CreateIdBuffer();
+    ResizeRenderTextures();
 
     // 뷰포트 갱신
     ViewportInfo.TopLeftX = 0.0f;

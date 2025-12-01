@@ -38,7 +38,8 @@ public:
     UPROPERTY(EditAnywhere, Category="Physics")
     bool bSimulatePhysics;
 
-    FBodyInstance BodyInstance;
+    UPROPERTY(EditAnywhere, Category="Physics")
+    UPhysicalMaterial* PhysicalMaterial;
 
     UPrimitiveComponent();
     virtual ~UPrimitiveComponent();
@@ -105,5 +106,6 @@ protected:
     bool bIsCulled = false;
      
     // ───── 충돌 관련 ────────────────────────────
+    FBodyInstance BodyInstance;
 
 };

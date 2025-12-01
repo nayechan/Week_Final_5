@@ -67,6 +67,8 @@ class Property:
         elif '*' in type_str:
             if 'umaterial' in type_lower:
                 return 'EPropertyType::Material'
+            elif 'uphysicalmaterial' in type_lower:
+                return 'EPropertyType::PhysicalMaterial'
             elif 'utexture' in type_lower:
                 return 'EPropertyType::Texture'
             elif 'usound' in type_lower:
@@ -137,11 +139,6 @@ class Property:
 
         # 포인터 타입 체크 - MacroParser 사용 (자동 감지)
         if '*' in self.type:
-            if self._macro_parser:
-                macro_name = self._macro_parser.get_macro_for_type(self.type)
-                if macro_name:
-                    return macro_name
-
             # Fallback: 정확한 타입 매칭 방식
             # 'class ' 접두사와 '*' 접미사 제거 후 정확히 비교
             base_type = type_lower.replace('class ', '').replace('*', '').strip()
@@ -156,12 +153,17 @@ class Property:
                 return 'ADD_PROPERTY_SKELETALMESH'
             elif base_type == 'umaterial':
                 return 'ADD_PROPERTY_MATERIAL'
+            elif base_type == 'uphysicalmaterial':
+                return 'ADD_PROPERTY_PHYSICALMATERIAL'
             elif base_type in ['usound', 'usoundbase']:
                 return 'ADD_PROPERTY_AUDIO'
             elif base_type == 'uparticlesystem':
                 return 'ADD_PROPERTY_PARTICLESYSTEM'
-            else:
-                return 'ADD_PROPERTY'
+
+            if self._macro_parser:
+                macro_name = self._macro_parser.get_macro_for_type(self.type)
+                if macro_name:
+                    return macro_name
 
         # 스크립트 파일 타입 체크
         # 옵션 1: ScriptFile 메타데이터가 명시된 경우 (우선순위)

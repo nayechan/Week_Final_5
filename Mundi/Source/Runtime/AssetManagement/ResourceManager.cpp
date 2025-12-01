@@ -10,7 +10,8 @@
 
 #include <filesystem>
 #include <cwctype>
-
+const char* UResourceManager::FullScreenVSPath = "Shaders/Utility/FullScreenTriangle_VS.hlsl";
+const char* UResourceManager::BlitPSPath = "Shaders/Utility/Blit_PS.hlsl";
 IMPLEMENT_CLASS(UResourceManager)
 
 #define GRIDNUM 100
@@ -517,7 +518,7 @@ void UResourceManager::InitShaderILMap()
     ShaderToInputLayoutMap["Shaders/Utility/SceneDepth_PS.hlsl"] = layout;
     layout.clear();
     
-    ShaderToInputLayoutMap["Shaders/Utility/FullScreenTriangle_VS.hlsl"] = {};  // FullScreenTriangle 는 InputLayout을 사용하지 않는다
+    ShaderToInputLayoutMap[UResourceManager::FullScreenVSPath] = {};  // FullScreenTriangle 는 InputLayout을 사용하지 않는다
 
     // ────────────────────────────────
     // 파티클 스프라이트 인스턴싱

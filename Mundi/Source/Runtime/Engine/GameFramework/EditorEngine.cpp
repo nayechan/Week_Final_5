@@ -8,6 +8,7 @@
 #include "GameUI/SGameHUD.h"
 #include <ObjManager.h>
 
+#include "PhysicalMaterialLoader.h"
 #include "Source/Runtime/Engine/PhysicsEngine/PhysXSupport.h"
 
 float UEditorEngine::ClientWidth = 1024.0f;
@@ -199,6 +200,8 @@ bool UEditorEngine::Startup(HINSTANCE hInstance)
     UFbxLoader::PreLoad();
 
     FAudioDevice::Preload();
+
+    FPhysicalMaterialLoader::Preload();
 
     //FPhysX 초기화
     InitGamePhys();

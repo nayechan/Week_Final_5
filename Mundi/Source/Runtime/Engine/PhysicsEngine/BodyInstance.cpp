@@ -99,7 +99,8 @@ void FBodyInstance::InitBody(UBodySetup* Setup, const FTransform& Transform, UPr
 
     RigidActor->userData = this;
 
-    Setup->AddShapesToRigidActor_AssumesLocked(this, Scale3D, RigidActor);
+    UPhysicalMaterial* PhysicalMaterial = GetSimplePhysicalMaterial();
+    Setup->AddShapesToRigidActor_AssumesLocked(this, Scale3D, RigidActor, PhysicalMaterial);
 
     if (IsDynamic())
     {
@@ -182,6 +183,21 @@ FTransform FBodyInstance::GetUnrealWorldTransform() const
         return Result;
     }
     return FTransform();
+}
+
+UPhysicalMaterial* FBodyInstance::GetSimplePhysicalMaterial() const
+{
+    if (PhysicalMaterialOverride)
+    {
+        return PhysicalMaterialOverride;
+    }
+
+    if (BodySetup && BodySetup->PhysicalMaterial)
+    {
+        return BodySetup->PhysicalMaterial;
+    }
+
+    return nullptr;
 }
 
 void FBodyInstance::SetBodyTransform(const FTransform& NewTransform, bool bTeleport)

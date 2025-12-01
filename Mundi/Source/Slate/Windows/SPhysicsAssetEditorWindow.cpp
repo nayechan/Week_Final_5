@@ -2,6 +2,7 @@
 #include "SPhysicsAssetEditorWindow.h"
 #include "SlateManager.h"
 #include "ImGui/imgui.h"
+#include "ImGui/imnodes.h"
 #include "FViewport.h"
 #include "FViewportClient.h"
 #include <filesystem>
@@ -27,6 +28,7 @@
 #include "Source/Slate/Widgets/PhysicsAssetEditor/SkeletonTreeWidget.h"
 #include "Source/Slate/Widgets/PhysicsAssetEditor/BodyPropertiesWidget.h"
 #include "Source/Slate/Widgets/PhysicsAssetEditor/ConstraintPropertiesWidget.h"
+#include "Source/Slate/Widgets/PhysicsAssetEditor/ToolsWidget.h"
 
 // Gizmo
 #include "Source/Editor/Gizmo/GizmoActor.h"
@@ -891,9 +893,23 @@ void SPhysicsAssetEditorWindow::OnUpdate(float DeltaSeconds)
 	if (SkeletonTreeWidget) SkeletonTreeWidget->Update();
 	if (BodyPropertiesWidget) BodyPropertiesWidget->Update();
 	if (ConstraintPropertiesWidget) ConstraintPropertiesWidget->Update();
+	if (ToolsWidget) ToolsWidget->Update();
+
+	// Delete 키로 선택 항목 삭제
+	PhysicsAssetEditorState* State = GetActivePhysicsState();
+	if (State && ImGui::IsKeyPressed(ImGuiKey_Delete) && !ImGui::GetIO().WantTextInput)
+	{
+		if (State->bBodySelectionMode && State->SelectedBodyIndex >= 0)
+		{
+			RemoveSelectedBody();
+		}
+		else if (!State->bBodySelectionMode && State->SelectedConstraintIndex >= 0)
+		{
+			RemoveSelectedConstraint();
+		}
+	}
 
 	// Shape 프리뷰 업데이트
-	PhysicsAssetEditorState* State = GetActivePhysicsState();
 	if (State)
 	{
 		// ─────────────────────────────────────────────────
@@ -1132,41 +1148,6 @@ void SPhysicsAssetEditorWindow::RenderLeftPanel(float PanelWidth)
 	ImGui::Dummy(ImVec2(0, 8));
 
 	// ─────────────────────────────────────────────────
-	// DISPLAY OPTIONS 섹션
-	// ─────────────────────────────────────────────────
-	ImGui::Text("DISPLAY OPTIONS");
-	ImGui::Dummy(ImVec2(0, 4));
-
-	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1.5f, 1.5f));
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.23f, 0.25f, 0.27f, 0.80f));
-	ImGui::PushStyleColor(ImGuiCol_CheckMark, ImVec4(0.75f, 0.80f, 0.90f, 1.00f));
-
-	if (ImGui::Checkbox("Show Mesh", &State->bShowMesh))
-	{
-		if (auto* comp = State->PreviewActor->GetSkeletalMeshComponent())
-			comp->SetVisibility(State->bShowMesh);
-	}
-	ImGui::SameLine(0.0f, 12.0f);
-	if (ImGui::Checkbox("Show Bodies", &State->bShowBodies))
-	{
-		if (State->BodyPreviewLineComponent)
-			State->BodyPreviewLineComponent->SetLineVisible(State->bShowBodies);
-	}
-	ImGui::SameLine(0.0f, 12.0f);
-	if (ImGui::Checkbox("Show Constraints", &State->bShowConstraints))
-	{
-		if (State->ConstraintPreviewLineComponent)
-			State->ConstraintPreviewLineComponent->SetLineVisible(State->bShowConstraints);
-	}
-
-	ImGui::PopStyleColor(2);
-	ImGui::PopStyleVar();
-
-	ImGui::Dummy(ImVec2(0, 8));
-	ImGui::Separator();
-	ImGui::Dummy(ImVec2(0, 8));
-
-	// ─────────────────────────────────────────────────
 	// 남은 높이 계산 (Skeleton 60%, Graph 40%)
 	// ─────────────────────────────────────────────────
 	float remainingHeight = ImGui::GetContentRegionAvail().y;
@@ -1193,95 +1174,258 @@ void SPhysicsAssetEditorWindow::RenderLeftPanel(float PanelWidth)
 	ImGui::Dummy(ImVec2(0, 4));
 
 	// ─────────────────────────────────────────────────
-	// GRAPH 섹션 (Bodies & Constraints 그래프)
+	// GRAPH 섹션 (GraphPivotBodyIndex 기준 그래프)
+	// 더블클릭으로만 그래프 기준 변경, 일반 클릭은 선택만 변경
 	// ─────────────────────────────────────────────────
-	ImGui::Text("GRAPH (%d Bodies, %d Constraints)",
-		State->EditingAsset ? (int)State->EditingAsset->BodySetups.size() : 0,
-		State->EditingAsset ? (int)State->EditingAsset->ConstraintSetups.size() : 0);
+	ImGui::Text("GRAPH");
 	ImGui::Dummy(ImVec2(0, 4));
 	ImGui::Separator();
 	ImGui::Dummy(ImVec2(0, 4));
 
 	float graphHeight = ImGui::GetContentRegionAvail().y;
-	ImGui::BeginChild("GraphScroll", ImVec2(0, graphHeight), false);
 
+	// 그래프의 기준 바디 (State에 저장된 값 사용)
+	int32 pivotBodyIdx = State->GraphPivotBodyIndex;
+
+	if (pivotBodyIdx < 0 || pivotBodyIdx >= static_cast<int32>(State->EditingAsset->BodySetups.size()))
 	{
-		// Bodies 리스트
-		if (ImGui::TreeNodeEx("Bodies", ImGuiTreeNodeFlags_DefaultOpen))
+		ImGui::TextDisabled("Double-click a body to view graph");
+	}
+	else
+	{
+		UBodySetup* pivotBody = State->EditingAsset->BodySetups[pivotBodyIdx];
+		if (!pivotBody) return;
+
+		// 연결된 컨스트레인트 수집 (항상 pivot -> constraint -> other 방향으로)
+		struct FConstraintLink
 		{
-			for (int32 i = 0; i < static_cast<int32>(State->EditingAsset->BodySetups.size()); ++i)
+			int32 ConstraintIndex;
+			int32 OtherBodyIndex;
+		};
+		std::vector<FConstraintLink> connectedConstraints;
+
+		for (int32 i = 0; i < static_cast<int32>(State->EditingAsset->ConstraintSetups.size()); ++i)
+		{
+			const FConstraintSetup& Constraint = State->EditingAsset->ConstraintSetups[i];
+			if (Constraint.ParentBodyIndex == pivotBodyIdx)
 			{
-				UBodySetup* Body = State->EditingAsset->BodySetups[i];
-				if (!Body) continue;
-
-				bool bSelected = (State->bBodySelectionMode && State->SelectedBodyIndex == i);
-
-				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_SpanAvailWidth;
-				if (bSelected) flags |= ImGuiTreeNodeFlags_Selected;
-
-				// Shape 개수 표시
-				int32 ShapeCount = Body->AggGeom.GetElementCount();
-
-				ImGui::PushStyleColor(ImGuiCol_Text, bSelected ? ImVec4(0.4f, 1.0f, 0.4f, 1.0f) : ImVec4(0.6f, 0.8f, 1.0f, 1.0f));
-				bool bOpen = ImGui::TreeNodeEx((void*)(intptr_t)(100 + i), flags, "[%d] %s", ShapeCount, Body->BoneName.ToString().c_str());
-				ImGui::PopStyleColor();
-
-				if (ImGui::IsItemClicked())
-				{
-					State->SelectBody(i);
-				}
-				if (bOpen) ImGui::TreePop();
+				connectedConstraints.push_back({ i, Constraint.ChildBodyIndex });
 			}
-			ImGui::TreePop();
+			else if (Constraint.ChildBodyIndex == pivotBodyIdx)
+			{
+				connectedConstraints.push_back({ i, Constraint.ParentBodyIndex });
+			}
 		}
 
-		ImGui::Spacing();
+		// ImNodes 그래프 에디터
+		ImNodes::BeginNodeEditor();
 
-		// Constraints 리스트
-		if (ImGui::TreeNodeEx("Constraints", ImGuiTreeNodeFlags_DefaultOpen))
+		// 레이아웃 상수
+		const float ColumnSpacing = 200.0f;
+		const float RowSpacing = 100.0f;
+		const float TextWrapWidth = 140.0f;  // 텍스트 줄바꿈 너비
+
+		float col1X = 50.0f;
+		float col2X = col1X + ColumnSpacing;
+		float col3X = col2X + ColumnSpacing;
+		float centerY = (connectedConstraints.size() * RowSpacing) / 2.0f;
+
+		// ─────────────────────────────────────────────────
+		// 열 1: 기준 바디 노드
+		// ─────────────────────────────────────────────────
+		ImNodes::SetNodeGridSpacePos(pivotBodyIdx, ImVec2(col1X, centerY));
+
+		bool bPivotSelected = (State->bBodySelectionMode && State->SelectedBodyIndex == pivotBodyIdx);
+		if (bPivotSelected)
 		{
-			for (int32 i = 0; i < static_cast<int32>(State->EditingAsset->ConstraintSetups.size()); ++i)
-			{
-				const FConstraintSetup& Constraint = State->EditingAsset->ConstraintSetups[i];
-				bool bSelected = (!State->bBodySelectionMode && State->SelectedConstraintIndex == i);
-
-				ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_SpanAvailWidth;
-				if (bSelected) flags |= ImGuiTreeNodeFlags_Selected;
-
-				FString ParentName = "?";
-				FString ChildName = "?";
-				if (Constraint.ParentBodyIndex >= 0 && Constraint.ParentBodyIndex < static_cast<int32>(State->EditingAsset->BodySetups.size()))
-				{
-					UBodySetup* ParentBody = State->EditingAsset->BodySetups[Constraint.ParentBodyIndex];
-					if (ParentBody) ParentName = ParentBody->BoneName.ToString();
-				}
-				if (Constraint.ChildBodyIndex >= 0 && Constraint.ChildBodyIndex < static_cast<int32>(State->EditingAsset->BodySetups.size()))
-				{
-					UBodySetup* ChildBody = State->EditingAsset->BodySetups[Constraint.ChildBodyIndex];
-					if (ChildBody) ChildName = ChildBody->BoneName.ToString();
-				}
-
-				ImGui::PushStyleColor(ImGuiCol_Text, bSelected ? ImVec4(1.0f, 1.0f, 0.4f, 1.0f) : ImVec4(1.0f, 0.7f, 0.4f, 1.0f));
-				bool bOpen = ImGui::TreeNodeEx((void*)(intptr_t)(200 + i), flags, "%s -> %s", ParentName.c_str(), ChildName.c_str());
-				ImGui::PopStyleColor();
-
-				if (ImGui::IsItemClicked())
-				{
-					State->SelectConstraint(i);
-				}
-				if (bOpen) ImGui::TreePop();
-			}
-			ImGui::TreePop();
+			ImNodes::PushColorStyle(ImNodesCol_NodeBackground, IM_COL32(60, 100, 60, 255));
+			ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(40, 80, 40, 255));
+		}
+		else
+		{
+			ImNodes::PushColorStyle(ImNodesCol_NodeBackground, IM_COL32(50, 80, 50, 255));
+			ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(35, 60, 35, 255));
 		}
 
-		if (State->EditingAsset->BodySetups.empty() && State->EditingAsset->ConstraintSetups.empty())
+		ImNodes::BeginNode(pivotBodyIdx);
+		ImNodes::BeginNodeTitleBar();
+		ImGui::Text("Body");
+		ImNodes::EndNodeTitleBar();
+
+		// 바디 이름과 Shape 개수 + 오른쪽 핀
+		ImNodes::BeginOutputAttribute(pivotBodyIdx * 2);
+		ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + TextWrapWidth);
+		ImGui::TextWrapped("%s", pivotBody->BoneName.ToString().c_str());
+		int32 shapeCount = pivotBody->AggGeom.GetElementCount();
+		ImGui::Text("%d shape(s)", shapeCount);
+		ImGui::PopTextWrapPos();
+		ImNodes::EndOutputAttribute();
+
+		ImNodes::EndNode();
+		ImNodes::PopColorStyle();
+		ImNodes::PopColorStyle();
+
+		// ─────────────────────────────────────────────────
+		// 열 2: 컨스트레인트 노드들 + 열 3: 연결된 바디들
+		// ─────────────────────────────────────────────────
+		for (size_t i = 0; i < connectedConstraints.size(); ++i)
 		{
-			ImGui::TextDisabled("No bodies or constraints");
-			ImGui::TextDisabled("Use 'Auto Generate' to create");
+			const FConstraintLink& link = connectedConstraints[i];
+			float rowY = i * RowSpacing;
+
+			int32 constraintNodeId = 10000 + link.ConstraintIndex;
+			int32 constraintInputAttr = 20000 + link.ConstraintIndex * 2;
+			int32 constraintOutputAttr = 20000 + link.ConstraintIndex * 2 + 1;
+
+			// 컨스트레인트 노드 (열 2)
+			ImNodes::SetNodeGridSpacePos(constraintNodeId, ImVec2(col2X, rowY));
+
+			bool bConstraintSelected = (!State->bBodySelectionMode && State->SelectedConstraintIndex == link.ConstraintIndex);
+			if (bConstraintSelected)
+			{
+				ImNodes::PushColorStyle(ImNodesCol_NodeBackground, IM_COL32(120, 100, 40, 255));
+				ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(100, 80, 30, 255));
+			}
+			else
+			{
+				ImNodes::PushColorStyle(ImNodesCol_NodeBackground, IM_COL32(80, 70, 50, 255));
+				ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(60, 50, 35, 255));
+			}
+
+			ImNodes::BeginNode(constraintNodeId);
+			ImNodes::BeginNodeTitleBar();
+			ImGui::Text("Constraint");
+			ImNodes::EndNodeTitleBar();
+
+			// From : To 표시 (ParentBody : ChildBody)
+			const FConstraintSetup& constraint = State->EditingAsset->ConstraintSetups[link.ConstraintIndex];
+			FString parentName = "?";
+			FString childName = "?";
+			if (constraint.ParentBodyIndex >= 0 && constraint.ParentBodyIndex < static_cast<int32>(State->EditingAsset->BodySetups.size()))
+			{
+				parentName = State->EditingAsset->BodySetups[constraint.ParentBodyIndex]->BoneName.ToString();
+			}
+			if (constraint.ChildBodyIndex >= 0 && constraint.ChildBodyIndex < static_cast<int32>(State->EditingAsset->BodySetups.size()))
+			{
+				childName = State->EditingAsset->BodySetups[constraint.ChildBodyIndex]->BoneName.ToString();
+			}
+			// 핀과 내용을 같은 줄에 배치 (긴 이름은 줄바꿈)
+			ImNodes::BeginInputAttribute(constraintInputAttr);
+			ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + TextWrapWidth);
+			ImGui::TextWrapped("%s : %s", parentName.c_str(), childName.c_str());
+			ImGui::PopTextWrapPos();
+			ImNodes::EndInputAttribute();
+			ImGui::SameLine();
+			ImNodes::BeginOutputAttribute(constraintOutputAttr);
+			ImNodes::EndOutputAttribute();
+
+			ImNodes::EndNode();
+			ImNodes::PopColorStyle();
+			ImNodes::PopColorStyle();
+
+			// 연결된 바디 노드 (열 3)
+			if (link.OtherBodyIndex >= 0 && link.OtherBodyIndex < static_cast<int32>(State->EditingAsset->BodySetups.size()))
+			{
+				UBodySetup* otherBody = State->EditingAsset->BodySetups[link.OtherBodyIndex];
+				if (otherBody)
+				{
+					int32 otherNodeId = 30000 + static_cast<int32>(i);
+
+					ImNodes::SetNodeGridSpacePos(otherNodeId, ImVec2(col3X, rowY));
+
+					bool bOtherSelected = (State->bBodySelectionMode && State->SelectedBodyIndex == link.OtherBodyIndex);
+					if (bOtherSelected)
+					{
+						ImNodes::PushColorStyle(ImNodesCol_NodeBackground, IM_COL32(60, 90, 120, 255));
+						ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(50, 75, 100, 255));
+					}
+					else
+					{
+						ImNodes::PushColorStyle(ImNodesCol_NodeBackground, IM_COL32(50, 70, 90, 255));
+						ImNodes::PushColorStyle(ImNodesCol_TitleBar, IM_COL32(40, 55, 70, 255));
+					}
+
+					ImNodes::BeginNode(otherNodeId);
+					ImNodes::BeginNodeTitleBar();
+					ImGui::Text("Body");
+					ImNodes::EndNodeTitleBar();
+
+					// 바디 이름과 Shape 개수 + 왼쪽 핀
+					ImNodes::BeginInputAttribute(40000 + static_cast<int32>(i) * 2 + 1);
+					ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + TextWrapWidth);
+					ImGui::TextWrapped("%s", otherBody->BoneName.ToString().c_str());
+					int32 otherShapeCount = otherBody->AggGeom.GetElementCount();
+					ImGui::Text("%d shape(s)", otherShapeCount);
+					ImGui::PopTextWrapPos();
+					ImNodes::EndInputAttribute();
+
+					ImNodes::EndNode();
+					ImNodes::PopColorStyle();
+					ImNodes::PopColorStyle();
+
+					// 링크: 항상 왼쪽→오른쪽 (기준바디.Out -> Constraint.In, Constraint.Out -> 상대바디.In)
+					ImNodes::Link(static_cast<int>(i) * 2, pivotBodyIdx * 2, constraintInputAttr);
+					ImNodes::Link(static_cast<int>(i) * 2 + 1, constraintOutputAttr, 40000 + static_cast<int32>(i) * 2 + 1);
+				}
+			}
+		}
+
+		ImNodes::MiniMap(0.15f, ImNodesMiniMapLocation_BottomRight);
+		ImNodes::EndNodeEditor();
+
+		// ─────────────────────────────────────────────────
+		// 상호작용 처리
+		// - 일반 클릭: 선택만 변경
+		// - 더블클릭: 바디 노드만 그래프 기준 변경
+		// ─────────────────────────────────────────────────
+		int hoveredNode = -1;
+		if (ImNodes::IsNodeHovered(&hoveredNode))
+		{
+			// 더블클릭 처리 (바디 노드만)
+			if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+			{
+				if (hoveredNode >= 30000)
+				{
+					// 연결된 바디 노드 더블클릭 -> 그래프 기준 변경
+					int32 linkIndex = hoveredNode - 30000;
+					if (linkIndex >= 0 && linkIndex < static_cast<int32>(connectedConstraints.size()))
+					{
+						State->GraphPivotBodyIndex = connectedConstraints[linkIndex].OtherBodyIndex;
+						State->SelectBody(connectedConstraints[linkIndex].OtherBodyIndex);
+					}
+				}
+				else if (hoveredNode >= 0 && hoveredNode < 10000)
+				{
+					// 기준 바디 노드 더블클릭 (이미 기준이므로 선택만)
+					State->SelectBody(hoveredNode);
+				}
+				// 컨스트레인트 노드 더블클릭 -> 아무것도 안 함
+			}
+			// 일반 클릭 처리 (선택만 변경, 그래프 기준은 유지)
+			else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				if (hoveredNode >= 10000 && hoveredNode < 20000)
+				{
+					// 컨스트레인트 노드 클릭 -> 선택만 변경
+					State->SelectConstraint(hoveredNode - 10000);
+				}
+				else if (hoveredNode >= 30000)
+				{
+					// 연결된 바디 노드 클릭 -> 선택만 변경
+					int32 linkIndex = hoveredNode - 30000;
+					if (linkIndex >= 0 && linkIndex < static_cast<int32>(connectedConstraints.size()))
+					{
+						State->SelectBody(connectedConstraints[linkIndex].OtherBodyIndex);
+					}
+				}
+				else if (hoveredNode >= 0 && hoveredNode < 10000)
+				{
+					// 기준 바디 노드 클릭 -> 선택만 변경
+					State->SelectBody(hoveredNode);
+				}
+			}
 		}
 	}
-
-	ImGui::EndChild();
 }
 
 void SPhysicsAssetEditorWindow::RenderRightPanel()
@@ -1289,28 +1433,57 @@ void SPhysicsAssetEditorWindow::RenderRightPanel()
 	PhysicsAssetEditorState* State = GetActivePhysicsState();
 	if (!State || !State->EditingAsset) return;
 
-	// 패널 헤더
+	float totalHeight = ImGui::GetContentRegionAvail().y;
+	float splitterHeight = 4.0f;
+
+	// === DETAILS 섹션 (상단 60%) ===
+	float detailsHeight = totalHeight * 0.6f - splitterHeight * 0.5f;
+
 	ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
-	ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.30f, 0.30f, 0.30f, 0.8f));
-	ImGui::Text("PROPERTIES");
-	ImGui::PopStyleColor();
+	ImGui::Text("DETAILS");
 	ImGui::Spacing();
 	ImGui::Separator();
 	ImGui::Spacing();
 
-	// 선택된 바디 또는 제약 조건의 속성 표시 (Sub Widget 인스턴스 사용)
-	if (State->bBodySelectionMode && State->SelectedBodyIndex >= 0)
+	ImGui::BeginChild("DetailsPanel", ImVec2(0, detailsHeight - 40), false);
 	{
-		if (BodyPropertiesWidget) BodyPropertiesWidget->RenderWidget();
+		// 선택된 바디 또는 제약 조건의 속성 표시
+		if (State->bBodySelectionMode && State->SelectedBodyIndex >= 0)
+		{
+			if (BodyPropertiesWidget) BodyPropertiesWidget->RenderWidget();
+		}
+		else if (!State->bBodySelectionMode && State->SelectedConstraintIndex >= 0)
+		{
+			if (ConstraintPropertiesWidget) ConstraintPropertiesWidget->RenderWidget();
+		}
+		else
+		{
+			ImGui::TextDisabled("Select a body or constraint to view details");
+		}
 	}
-	else if (!State->bBodySelectionMode && State->SelectedConstraintIndex >= 0)
+	ImGui::EndChild();
+
+	// === 수평 분할선 ===
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 0.5f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.4f, 0.4f, 0.8f));
+	ImGui::Button("##Splitter", ImVec2(-1, splitterHeight));
+	ImGui::PopStyleColor(2);
+
+	// === TOOLS 섹션 (하단 40%) ===
+	ImGui::Spacing();
+	ImGui::Text("TOOLS");
+	ImGui::Spacing();
+	ImGui::Separator();
+	ImGui::Spacing();
+
+	ImGui::BeginChild("ToolsPanel", ImVec2(0, 0), false);
 	{
-		if (ConstraintPropertiesWidget) ConstraintPropertiesWidget->RenderWidget();
+		if (ToolsWidget)
+		{
+			ToolsWidget->RenderWidget();
+		}
 	}
-	else
-	{
-		ImGui::TextDisabled("Select a body or constraint to edit properties");
-	}
+	ImGui::EndChild();
 }
 
 void SPhysicsAssetEditorWindow::RenderBottomPanel()
@@ -1339,7 +1512,7 @@ void SPhysicsAssetEditorWindow::RenderToolbar()
 	PhysicsAssetEditorState* State = GetActivePhysicsState();
 	if (!State) return;
 
-	// 저장 버튼
+	// 파일 관련 버튼
 	if (ImGui::Button("Save"))
 	{
 		SavePhysicsAsset();
@@ -1361,52 +1534,26 @@ void SPhysicsAssetEditorWindow::RenderToolbar()
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 	ImGui::SameLine();
 
-	// 자동 생성 버튼
-	bool bCanAutoGenerate = State->CurrentMesh != nullptr;
-	if (!bCanAutoGenerate) ImGui::BeginDisabled();
-	if (ImGui::Button("Auto-Generate"))
+	// Simulate 버튼 (placeholder)
+	if (ImGui::Button("Simulate"))
 	{
-		AutoGenerateBodies();
+		// TODO: 시뮬레이션 기능 구현
 	}
-	if (!bCanAutoGenerate) ImGui::EndDisabled();
-	ImGui::SameLine();
-
-	// 바디 추가/제거 버튼
-	bool bCanAddBody = State->SelectedBoneIndex >= 0;
-	if (!bCanAddBody) ImGui::BeginDisabled();
-	if (ImGui::Button("Add Body"))
-	{
-		AddBodyToBone(State->SelectedBoneIndex);
-	}
-	if (!bCanAddBody) ImGui::EndDisabled();
-	ImGui::SameLine();
-
-	bool bCanRemoveBody = State->bBodySelectionMode && State->SelectedBodyIndex >= 0;
-	if (!bCanRemoveBody) ImGui::BeginDisabled();
-	if (ImGui::Button("Remove Body"))
-	{
-		RemoveSelectedBody();
-	}
-	if (!bCanRemoveBody) ImGui::EndDisabled();
-	ImGui::SameLine();
-
-	ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-	ImGui::SameLine();
-
-	// 제약 조건 제거 버튼
-	bool bCanRemoveConstraint = !State->bBodySelectionMode && State->SelectedConstraintIndex >= 0;
-	if (!bCanRemoveConstraint) ImGui::BeginDisabled();
-	if (ImGui::Button("Remove Constraint"))
-	{
-		RemoveSelectedConstraint();
-	}
-	if (!bCanRemoveConstraint) ImGui::EndDisabled();
 	ImGui::SameLine();
 
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 	ImGui::SameLine();
 
 	// 표시 옵션
+	if (ImGui::Checkbox("Meshes", &State->bShowMesh))
+	{
+		// 메시 가시성 토글
+		if (auto* comp = State->PreviewActor->GetSkeletalMeshComponent())
+		{
+			comp->SetVisibility(State->bShowMesh);
+		}
+	}
+	ImGui::SameLine();
 	if (ImGui::Checkbox("Bodies", &State->bShowBodies))
 	{
 		if (State->BodyPreviewLineComponent)
@@ -2049,6 +2196,101 @@ void SPhysicsAssetEditorWindow::RemoveSelectedConstraint()
 	}
 }
 
+void SPhysicsAssetEditorWindow::RegenerateSelectedBody()
+{
+	PhysicsAssetEditorState* State = GetActivePhysicsState();
+	if (!State || State->SelectedBodyIndex < 0) return;
+	if (!State->EditingAsset || !State->CurrentMesh) return;
+
+	UBodySetup* Body = State->EditingAsset->BodySetups[State->SelectedBodyIndex];
+	if (!Body) return;
+
+	int32 BoneIndex = Body->BoneIndex;
+
+	// 기존 Shape 모두 삭제
+	Body->AggGeom.SphereElems.Empty();
+	Body->AggGeom.BoxElems.Empty();
+	Body->AggGeom.SphylElems.Empty();
+
+	// 본 길이 기반으로 새 캡슐 생성
+	const FSkeleton* Skeleton = State->CurrentMesh->GetSkeleton();
+	if (!Skeleton || BoneIndex < 0 || BoneIndex >= static_cast<int32>(Skeleton->Bones.size())) return;
+
+	const FBone& Bone = Skeleton->Bones[BoneIndex];
+	FVector BonePos(Bone.BindPose.M[3][0], Bone.BindPose.M[3][1], Bone.BindPose.M[3][2]);
+
+	// 본 길이 계산 (자식 본까지의 거리)
+	float BoneLength = 0.05f;  // 기본값
+	for (size_t i = 0; i < Skeleton->Bones.size(); ++i)
+	{
+		if (Skeleton->Bones[i].ParentIndex == BoneIndex)
+		{
+			const FBone& ChildBone = Skeleton->Bones[i];
+			FVector ChildPos(ChildBone.BindPose.M[3][0], ChildBone.BindPose.M[3][1], ChildBone.BindPose.M[3][2]);
+			BoneLength = (ChildPos - BonePos).Size();
+			break;
+		}
+	}
+
+	// 최소/최대 크기 제한
+	BoneLength = std::max(0.02f, std::min(BoneLength, 0.5f));
+
+	// 캡슐 생성
+	FKSphylElem NewCapsule;
+	NewCapsule.Radius = BoneLength * 0.1f;
+	NewCapsule.Length = BoneLength * 0.7f;
+	Body->AggGeom.SphylElems.Add(NewCapsule);
+
+	State->bIsDirty = true;
+	State->RequestLinesRebuild();
+}
+
+void SPhysicsAssetEditorWindow::AddPrimitiveToBody(int32 BodyIndex, int32 PrimitiveType)
+{
+	PhysicsAssetEditorState* State = GetActivePhysicsState();
+	if (!State || !State->EditingAsset) return;
+	if (BodyIndex < 0 || BodyIndex >= static_cast<int32>(State->EditingAsset->BodySetups.size())) return;
+
+	UBodySetup* Body = State->EditingAsset->BodySetups[BodyIndex];
+	if (!Body) return;
+
+	switch (PrimitiveType)
+	{
+	case 0:  // Box
+	{
+		FKBoxElem NewBox;
+		NewBox.X = 10.0f;
+		NewBox.Y = 10.0f;
+		NewBox.Z = 10.0f;
+		NewBox.Center = FVector(0, 0, 0);
+		NewBox.Rotation = FQuat::Identity();
+		Body->AggGeom.BoxElems.Add(NewBox);
+		break;
+	}
+	case 1:  // Sphere
+	{
+		FKSphereElem NewSphere;
+		NewSphere.Radius = 5.0f;
+		NewSphere.Center = FVector(0, 0, 0);
+		Body->AggGeom.SphereElems.Add(NewSphere);
+		break;
+	}
+	case 2:  // Capsule
+	{
+		FKSphylElem NewCapsule;
+		NewCapsule.Radius = 3.0f;
+		NewCapsule.Length = 10.0f;
+		NewCapsule.Center = FVector(0, 0, 0);
+		NewCapsule.Rotation = FQuat::Identity();
+		Body->AggGeom.SphylElems.Add(NewCapsule);
+		break;
+	}
+	}
+
+	State->bIsDirty = true;
+	State->RequestLinesRebuild();
+}
+
 // ────────────────────────────────────────────────────────────────
 // 마우스 입력 (베이스 클래스의 bone picking 제거)
 // ────────────────────────────────────────────────────────────────
@@ -2225,17 +2467,59 @@ void SPhysicsAssetEditorWindow::CreateSubWidgets()
 	SkeletonTreeWidget = NewObject<USkeletonTreeWidget>();
 	SkeletonTreeWidget->Initialize();
 
+	// SkeletonTreeWidget 콜백 연결
+	SkeletonTreeWidget->OnAddBody.Add([this](int32 BoneIndex) {
+		AddBodyToBone(BoneIndex);
+	});
+
+	SkeletonTreeWidget->OnRemoveBody.Add([this](int32 BodyIndex) {
+		PhysicsAssetEditorState* State = GetActivePhysicsState();
+		if (State)
+		{
+			State->SelectBody(BodyIndex);
+			RemoveSelectedBody();
+		}
+	});
+
+	SkeletonTreeWidget->OnAddPrimitive.Add([this](int32 BodyIndex, int32 PrimitiveType) {
+		AddPrimitiveToBody(BodyIndex, PrimitiveType);
+	});
+
+	SkeletonTreeWidget->OnAddConstraint.Add([this](int32 BodyIndex1, int32 BodyIndex2) {
+		AddConstraintBetweenBodies(BodyIndex1, BodyIndex2);
+	});
+
+	SkeletonTreeWidget->OnRemoveConstraint.Add([this](int32 ConstraintIndex) {
+		PhysicsAssetEditorState* State = GetActivePhysicsState();
+		if (State)
+		{
+			State->SelectConstraint(ConstraintIndex);
+			RemoveSelectedConstraint();
+		}
+	});
+
 	BodyPropertiesWidget = NewObject<UBodyPropertiesWidget>();
 	BodyPropertiesWidget->Initialize();
 
 	ConstraintPropertiesWidget = NewObject<UConstraintPropertiesWidget>();
 	ConstraintPropertiesWidget->Initialize();
+
+	ToolsWidget = NewObject<UToolsWidget>();
+	ToolsWidget->Initialize();
+	ToolsWidget->SetEditorWindow(this);
 }
 
 void SPhysicsAssetEditorWindow::DestroySubWidgets()
 {
 	if (SkeletonTreeWidget)
 	{
+		// 콜백 정리
+		SkeletonTreeWidget->OnAddBody.Clear();
+		SkeletonTreeWidget->OnRemoveBody.Clear();
+		SkeletonTreeWidget->OnAddPrimitive.Clear();
+		SkeletonTreeWidget->OnAddConstraint.Clear();
+		SkeletonTreeWidget->OnRemoveConstraint.Clear();
+
 		DeleteObject(SkeletonTreeWidget);
 		SkeletonTreeWidget = nullptr;
 	}
@@ -2248,6 +2532,11 @@ void SPhysicsAssetEditorWindow::DestroySubWidgets()
 	{
 		DeleteObject(ConstraintPropertiesWidget);
 		ConstraintPropertiesWidget = nullptr;
+	}
+	if (ToolsWidget)
+	{
+		DeleteObject(ToolsWidget);
+		ToolsWidget = nullptr;
 	}
 }
 
@@ -2265,6 +2554,10 @@ void SPhysicsAssetEditorWindow::UpdateSubWidgetEditorState()
 	if (ConstraintPropertiesWidget)
 	{
 		ConstraintPropertiesWidget->SetEditorState(State);
+	}
+	if (ToolsWidget)
+	{
+		ToolsWidget->SetEditorState(State);
 	}
 }
 

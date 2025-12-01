@@ -21,6 +21,7 @@
 #include "GlobalConsole.h"
 #include "ThumbnailManager.h"
 #include "Source/Runtime/Engine/Viewer/EditorAssetPreviewContext.h"
+#include "Windows/PhysicalMaterialEditorWindow.h"
 
 IMPLEMENT_CLASS(USlateManager)
 
@@ -217,6 +218,11 @@ void USlateManager::OpenAssetViewer(UEditorAssetPreviewContext* Context)
             TargetWindow = static_cast<SViewerWindow*>(Window);
             break;
         }
+        if (ViewerType == EViewerType::PhysicalMaterial && dynamic_cast<SPhysicalMaterialEditorWindow*>(Window))
+        {
+            TargetWindow = static_cast<SViewerWindow*>(Window);
+            break;
+        }
     }
 
     // 2. If a window of the target type already exists, tell it to open or focus a tab.
@@ -246,6 +252,9 @@ void USlateManager::OpenAssetViewer(UEditorAssetPreviewContext* Context)
             break;
         case EViewerType::PhysicsAsset:
             NewViewer = new SPhysicsAssetEditorWindow();
+            break;
+        case EViewerType::PhysicalMaterial:
+            NewViewer = new SPhysicalMaterialEditorWindow();
             break;
         default:
             UE_LOG("ERROR: Unsupported asset type for viewer.");

@@ -26,6 +26,7 @@
 #include "ParticleSystemComponent.h"
 #include "ParticleSystem.h"
 #include "PhysicsAsset.h"
+#include "PhysicalMaterial.h"
 
 // 정적 멤버 변수 초기화
 TArray<FString> UPropertyRenderer::CachedSkeletalMeshPaths;
@@ -34,6 +35,8 @@ TArray<FString> UPropertyRenderer::CachedStaticMeshPaths;
 TArray<FString> UPropertyRenderer::CachedStaticMeshItems;
 TArray<FString> UPropertyRenderer::CachedMaterialPaths;
 TArray<const char*> UPropertyRenderer::CachedMaterialItems;
+TArray<FString> UPropertyRenderer::CachedPhysicalMaterialPaths;
+TArray<FString> UPropertyRenderer::CachedPhysicalMaterialItems;
 TArray<FString> UPropertyRenderer::CachedShaderPaths;
 TArray<const char*> UPropertyRenderer::CachedShaderItems;
 TArray<FString> UPropertyRenderer::CachedTexturePaths;
@@ -131,6 +134,10 @@ bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectIn
 
 	case EPropertyType::Material:
 		bChanged = RenderMaterialProperty(Property, ObjectInstance);
+		break;
+
+	case EPropertyType::PhysicalMaterial:
+		bChanged = RenderPhysicalMaterialProperty(Property, ObjectInstance);
 		break;
 
 	case EPropertyType::SRV:
@@ -335,6 +342,8 @@ bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectIn
 				ParticleComponent->RefreshDebugParticleSystem();
 			}
 		}
+
+		Obj->OnPropertyChanged(Property);
 	}
 
 	return bChanged;
@@ -516,6 +525,19 @@ void UPropertyRenderer::CacheResources()
 		}
 	}
 
+	// 2-1. 물리 머티리얼
+	if (CachedPhysicalMaterialPaths.IsEmpty() && CachedPhysicalMaterialItems.IsEmpty())
+	{
+		CachedPhysicalMaterialPaths = ResMgr.GetAllFilePaths<UPhysicalMaterial>();
+		for (const FString& path : CachedPhysicalMaterialPaths)
+		{
+			std::filesystem::path fsPath(UTF8ToWide(path));
+			CachedPhysicalMaterialItems.push_back(WideToUTF8(fsPath.filename().wstring()));
+		}
+		CachedPhysicalMaterialPaths.Insert("", 0);
+		CachedPhysicalMaterialItems.Insert("None", 0);
+	}
+
 	// 3. 셰이더
 	if (CachedShaderPaths.IsEmpty() && CachedShaderItems.IsEmpty())
 	{
@@ -663,76 +685,64 @@ void UPropertyRenderer::ClearResourcesCache()
 bool UPropertyRenderer::RenderBoolProperty(const FProperty& Prop, void* Instance)
 {
 	bool* Value = Prop.GetValuePtr<bool>(Instance);
-	
-	if (ImGui::Checkbox(Prop.Name, Value))
-	{
-		if (UObject* Obj = Cast<UObject>((UObject*)Instance))
-		{
-			Obj->OnPropertyChanged(Prop);
-		}
-		return true;
-	}
-	
-	return false;
+	return ImGui::Checkbox(Prop.Name, Value);
 }
 
 bool UPropertyRenderer::RenderInt32Property(const FProperty& Prop, void* Instance)
 {
 	int32* Value = Prop.GetValuePtr<int32>(Instance);
 	
+	// 드래그 속도를 계산합니다.
 	const float TotalRange = (float)Prop.MaxValue - (float)Prop.MinValue;
 	const float ProportionalSpeed = TotalRange * 0.0005f;
-	const float DragSpeed = FMath::Max(ProportionalSpeed, 0.01f);
+	const float DragSpeed = FMath::Max(ProportionalSpeed, 0.01f);	// 최소 속도
 
-	if (ImGui::DragInt(Prop.Name, Value, DragSpeed, (int)Prop.MinValue, (int)Prop.MaxValue))
-	{
-		if (UObject* Obj = Cast<UObject>((UObject*)Instance))
-		{
-			Obj->OnPropertyChanged(Prop);
-		}
-		return true;
-	}
-
-	return false;
+	return ImGui::DragInt(Prop.Name, Value, DragSpeed, (int)Prop.MinValue, (int)Prop.MaxValue);
 }
 
 bool UPropertyRenderer::RenderFloatProperty(const FProperty& Prop, void* Instance)
 {
 	float* Value = Prop.GetValuePtr<float>(Instance);
-	char DisplayFormat[16];
-	bool bChanged = false;
+	char DisplayFormat[16]; // 포맷 문자열을 저장할 버퍼 (예: "%.5f")
 
+	// Min과 Max가 둘 다 0이면 범위 제한 없음
 	if (Prop.MinValue == 0.0f && Prop.MaxValue == 0.0f)
 	{
-		snprintf(DisplayFormat, 16, "%%.3f");
-		bChanged = ImGui::DragFloat(Prop.Name, Value, 1.0f, 0.0f, 0.0f, DisplayFormat);
+		// 범위가 없으므로 기본값 (소수점 3자리) 사용
+		snprintf(DisplayFormat, 16, "%%.3f"); // "%.3f"
+		return ImGui::DragFloat(Prop.Name, Value, 1.0f, 0.0f, 0.0f, DisplayFormat);
 	}
 	else
 	{
+		// 1. 드래그 속도 계산
+		// (안전하게 절대값을 사용)
 		const float TotalRange = std::fabsf((float)Prop.MaxValue - (float)Prop.MinValue);
 		const float ProportionalSpeed = TotalRange * 0.0005f;
 		const float DragSpeed = FMath::Max(ProportionalSpeed, 0.00001f);
 
-		int DecimalPlaces = 3;
-		if (TotalRange > 0.0f)
+		// 2. TotalRange에 비례하는 소수점 자리수 계산
+		int DecimalPlaces = 3; // 기본 3자리
+
+		if (TotalRange > 0.0f) // log10(0) 방지
 		{
+			// 범위 1.0을 기준으로 3자리를 설정합니다.
+			// 범위가 10배 커지면 (10.0) -> 2자리가 됩니다. (3 - 1)
+			// 범위가 10배 작아지면 (0.1) -> 4자리가 됩니다. (3 - (-1))
 			DecimalPlaces = static_cast<int>(3.0 - std::floor(std::log10(TotalRange)));
 		}
+
+		// 3. 자리수를 0~5 사이로 제한 (사용자 요청)
+		// (FMath::Clamp가 C++17의 std::clamp와 동일하다고 가정)
 		DecimalPlaces = FMath::Clamp(DecimalPlaces, 0, 5);
 
+		// 4. 포맷 문자열 동적 생성
+		// "%%"는 리터럴 '%' 문자를 의미합니다.
+		// (예: DecimalPlaces가 5이면 "%.5f" 문자열이 생성됨)
 		snprintf(DisplayFormat, 16, "%%.%df", DecimalPlaces);
-		bChanged = ImGui::DragFloat(Prop.Name, Value, DragSpeed, Prop.MinValue, Prop.MaxValue, DisplayFormat);
-	}
 
-	if (bChanged)
-	{
-		if (UObject* Obj = Cast<UObject>((UObject*)Instance))
-		{
-			Obj->OnPropertyChanged(Prop);
-		}
+		// 5. ImGui 호출
+		return ImGui::DragFloat(Prop.Name, Value, DragSpeed, Prop.MinValue, Prop.MaxValue, DisplayFormat);
 	}
-
-	return bChanged;
 }
 
 bool UPropertyRenderer::RenderVectorProperty(const FProperty& Prop, void* Instance)
@@ -2588,6 +2598,83 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 	}
 
 	return bElementChanged;
+}
+
+bool UPropertyRenderer::RenderPhysicalMaterialProperty(const FProperty& Prop, void* Instance)
+{
+	UPhysicalMaterial** PhysMatPtr = Prop.GetValuePtr<UPhysicalMaterial*>(Instance);
+	
+	// 현재 설정된 경로 가져오기
+	FString CurrentPath;
+	if (*PhysMatPtr)
+	{
+		CurrentPath = (*PhysMatPtr)->GetFilePath();
+	}
+
+	// 캐시 데이터 확인
+	if (CachedPhysicalMaterialPaths.empty())
+	{
+		ImGui::Text("%s: <No Phys Mats>", Prop.Name);
+		return false;
+	}
+
+	// 현재 선택된 인덱스 찾기
+	int SelectedIdx = 0; // Default to "None"
+	for (int i = 0; i < static_cast<int>(CachedPhysicalMaterialPaths.size()); ++i)
+	{
+		if (CachedPhysicalMaterialPaths[i] == CurrentPath)
+		{
+			SelectedIdx = i;
+			break;
+		}
+	}
+
+	// TArray<FString>을 const char* 배열로 변환 (ImGui용)
+	TArray<const char*> ItemsPtr;
+	ItemsPtr.reserve(CachedPhysicalMaterialItems.size());
+	for (const FString& item : CachedPhysicalMaterialItems)
+	{
+		ItemsPtr.push_back(item.c_str());
+	}
+
+	bool bChanged = false;
+
+	// 콤보박스 렌더링
+	ImGui::SetNextItemWidth(240);
+	if (ImGui::Combo(Prop.Name, &SelectedIdx, ItemsPtr.data(), static_cast<int>(ItemsPtr.size())))
+	{
+		if (SelectedIdx >= 0 && SelectedIdx < static_cast<int>(CachedPhysicalMaterialPaths.size()))
+		{
+			// 0번은 "None" (빈 경로)
+			if (CachedPhysicalMaterialPaths[SelectedIdx].empty())
+			{
+				*PhysMatPtr = nullptr;
+			}
+			else
+			{
+				// 리소스 매니저를 통해 로드
+				*PhysMatPtr = UResourceManager::GetInstance().Load<UPhysicalMaterial>(CachedPhysicalMaterialPaths[SelectedIdx]);
+			}
+			bChanged = true;
+		}
+	}
+
+	// 툴팁: 전체 경로 표시
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		if (CurrentPath.empty())
+		{
+			ImGui::Text("None");
+		}
+		else
+		{
+			ImGui::TextUnformatted(CurrentPath.c_str());
+		}
+		ImGui::EndTooltip();
+	}
+
+	return bChanged;	
 }
 
 // ===== 텍스처 선택 헬퍼 함수 =====

@@ -50,6 +50,7 @@ void UMainToolbarWidget::LoadToolbarIcons()
     IconPrefab = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Toolbar_Prefab.png");
     IconParticle = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Toolbar_Particle.png");
     IconPhysicsAsset = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Toolbar_PhysicsAsset.png");
+    IconPhysicalMaterial = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/PhysicalMaterial_64.png");
     LogoTexture = UResourceManager::GetInstance().Load<UTexture>("Data/Icon/Mundi_Logo.png");
 }
 
@@ -115,6 +116,9 @@ void UMainToolbarWidget::RenderToolbar()
 
         ImGui::SameLine(0, 12.0f);
         RenderPhysicsAssetEditorButton();
+
+        ImGui::SameLine(0, 12.0f);
+        RenderPhysicalMaterialEditorButton();
 
         // 구분선
         ImGui::SameLine(0, 12.0f);
@@ -599,6 +603,68 @@ void UMainToolbarWidget::RenderPhysicsAssetEditorButton()
         // Physics Asset 에디터 열기
         UEditorAssetPreviewContext* Context = NewObject<UEditorAssetPreviewContext>();
         Context->ViewerType = EViewerType::PhysicsAsset;
+        USlateManager::GetInstance().OpenAssetViewer(Context);
+    }
+
+    ImGui::PopStyleColor(3);
+    ImGui::PopStyleVar(2);
+}
+
+void UMainToolbarWidget::RenderPhysicalMaterialEditorButton()
+{
+    const ImVec2 IconSizeVec(IconSize, IconSize);
+
+    // 버튼 스타일
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 4));
+    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.2f, 0.2f, 0.5f));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.3f, 0.3f, 0.3f, 0.7f));
+
+    ImGui::BeginGroup();
+
+    bool bButtonClicked = false;
+
+    if (IconPhysicalMaterial && IconPhysicalMaterial->GetShaderResourceView())
+    {
+        if (ImGui::ImageButton("##PhysicalMaterialEditorBtn", (void*)IconPhysicalMaterial->GetShaderResourceView(), IconSizeVec))
+        {
+            bButtonClicked = true;
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("물리 재질(Physical Material) 에디터를 엽니다");
+    }
+    else
+    {
+        // 아이콘이 없으면 텍스트 버튼 (PMAT)
+        if (ImGui::Button("PMAT", ImVec2(IconSize + 8, IconSize + 8)))
+        {
+            bButtonClicked = true;
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("물리 재질(Physical Material) 에디터를 엽니다");
+    }
+
+    // 테두리 그리기
+    ImVec2 GroupMin = ImGui::GetItemRectMin();
+    ImVec2 GroupMax = ImGui::GetItemRectMax();
+    ImDrawList* DrawList = ImGui::GetWindowDrawList();
+    DrawList->AddRect(
+        GroupMin,
+        GroupMax,
+        ImGui::GetColorU32(ImVec4(0.4f, 0.45f, 0.5f, 0.8f)),
+        4.0f,
+        0,
+        1.3f
+    );
+
+    ImGui::EndGroup();
+
+    if (bButtonClicked)
+    {
+        // Physical Material 에디터 열기 요청
+        UEditorAssetPreviewContext* Context = NewObject<UEditorAssetPreviewContext>();
+        Context->ViewerType = EViewerType::PhysicalMaterial; // SlateManager에서 처리
         USlateManager::GetInstance().OpenAssetViewer(Context);
     }
 
