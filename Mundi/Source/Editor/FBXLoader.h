@@ -65,5 +65,5 @@ private:
 	// bin파일 저장용
 	TArray<FMaterialInfo> MaterialInfos;
 	FbxManager* SdkManager = nullptr;
-	
+
 };

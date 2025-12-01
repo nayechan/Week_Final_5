@@ -364,7 +364,7 @@ FSkeletalMeshData* UFbxLoader::LoadFbxMeshAsset(const FString& FilePath)
 	FbxAxisSystem SourceSetup = Scene->GetGlobalSettings().GetAxisSystem();
 
 	FbxSystemUnit::m.ConvertScene(Scene);
-	
+
 	if (SourceSetup != UnrealImportAxis)
 	{
 		UE_LOG("Fbx 축 변환 완료!\n");
