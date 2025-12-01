@@ -66,6 +66,9 @@ private:
 	static bool RenderDistributionVectorProperty(const FProperty& Prop, void* Instance);
 	static bool RenderDistributionColorProperty(const FProperty& Prop, void* Instance);
 
+	// BodyInstance 렌더링 함수
+	static bool RenderBodyInstanceProperty(const FProperty& Prop, void* Instance);
+
 	// Distribution 헬퍼 함수
 	static bool RenderDistributionFloatModeCombo(const char* Label, enum class EDistributionType& Type);
 	static bool RenderDistributionVectorModeCombo(const char* Label, enum class EDistributionType& Type);

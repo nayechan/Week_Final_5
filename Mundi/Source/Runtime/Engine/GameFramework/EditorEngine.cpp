@@ -189,8 +189,9 @@ bool UEditorEngine::Startup(HINSTANCE hInstance)
     Renderer = std::make_unique<URenderer>(&RHIDevice);
 
     // Physics 초기화
-    FPhysicsSystem::Get().Initialize();
-
+    PhysicsSystem = new FPhysicsSystem();
+    PhysicsSystem->Initialize();
+    
     // Audio Device 초기화
     FAudioDevice::Initialize();
           
@@ -240,9 +241,6 @@ void UEditorEngine::Tick(float DeltaSeconds)
         //}
     }
 
-    // 물리 업데이트 (위치 다시 고민해보기)
-    FPhysicsSystem::Get().UpdateSimulation(DeltaSeconds);
-    
     SLATE.Update(DeltaSeconds);
     UI.Update(DeltaSeconds);
     INPUT.Update();
@@ -372,7 +370,12 @@ void UEditorEngine::Shutdown()
     // AudioDevice 종료
     FAudioDevice::Shutdown();
     
-    FPhysicsSystem::Get().Shutdown();
+    if (PhysicsSystem)
+    {
+        PhysicsSystem->Shutdown();
+        delete PhysicsSystem;
+        PhysicsSystem = nullptr;
+    }
     // IMPORTANT: Explicitly release Renderer before RHIDevice destructor runs
     // Renderer may hold references to D3D resources
     Renderer.reset();

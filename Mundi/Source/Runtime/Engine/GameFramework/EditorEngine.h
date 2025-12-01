@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "pch.h"
 
+class FPhysicsSystem;
 class URenderer;
 class D3D11RHI;
 class UWorld;
@@ -67,8 +68,7 @@ private:
     
     //월드 핸들
     TArray<FWorldContext> WorldContexts;
-     
-
+    
     //틱 상태
     bool bRunning = false;
     bool bUVScrollPaused = true;
@@ -79,4 +79,9 @@ private:
     // 클라이언트 사이즈
     static float ClientWidth;
     static float ClientHeight;
+
+public:
+    FPhysicsSystem* GetPhysicsSystem() const { return PhysicsSystem; }
+private:
+    FPhysicsSystem* PhysicsSystem;
 };

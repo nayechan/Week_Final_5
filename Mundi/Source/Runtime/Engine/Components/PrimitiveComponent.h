@@ -24,7 +24,7 @@ public:
     GENERATED_REFLECTION_BODY()
     
     UPrimitiveComponent();
-    virtual ~UPrimitiveComponent() = default;
+    ~UPrimitiveComponent() override = default;
 
     void BeginPlay() override;
     void EndPlay() override;
@@ -32,7 +32,9 @@ public:
     void OnRegister(UWorld* InWorld) override;
     void OnUnregister() override;
 
-    virtual FAABB GetWorldAABB() const { return FAABB(); }
+    void OnTransformUpdated() override;
+
+    virtual FAABB GetWorldAABB() const { return {}; }
 
     // 이 프리미티브를 렌더링하는 데 필요한 FMeshBatchElement를 수집합니다.
     virtual void CollectMeshBatches(TArray<FMeshBatchElement>& OutMeshBatchElements, const FSceneView* View) {}
@@ -55,7 +57,7 @@ public:
 
     bool IsSimulatingPhysics() const
     {
-        return bSimulatePhysics;
+        return BodyInstance.IsSimulatePhysics();
     }
 
     // ───── 물리 관련 ──────────────────────────── 
@@ -70,16 +72,20 @@ public:
 
     UPROPERTY(EditAnywhere, Category="Shape")
     bool bBlockComponent;
-    
-    UPROPERTY(EditAnywhere, Category="Physics")
-    bool bSimulatePhysics = false;
-    UPROPERTY(EditAnywhere, Category="Physics")
-    float Mass = 10.0f;
 
 protected:
     void CreatePhysicsState();
-    virtual physx::PxGeometry* GetPhysicsGeometry() { return nullptr; }
-    FBodyInstance* BodyInstance = nullptr;
+    
+public:
+    void RecreatePhysicsState();
+    virtual class UBodySetup* GetBodySetup() { return nullptr; }
+
+public:
+    UPROPERTY(EditAnywhere, Category="Physics")
+    FBodyInstance BodyInstance;
+
+protected:
+    bool bIsSyncingPhysicsToComponent = false;
 
 public:
     // ───── 복사 관련 ────────────────────────────

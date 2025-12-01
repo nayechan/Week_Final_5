@@ -435,6 +435,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Runtime\Physics\PhysicalMaterial.cpp" />
     <ClCompile Include="Source\Runtime\Physics\PhysicsAsset.cpp" />
     <ClCompile Include="Source\Runtime\Physics\PhysicsConstraintTemplate.cpp" />
+    <ClCompile Include="Source\Runtime\Physics\PhysicsScene.cpp" />
     <ClCompile Include="Source\Runtime\Physics\PhysicsSystem.cpp" />
     <ClCompile Include="Source\Runtime\Physics\PxUtils.cpp" />
     <ClCompile Include="Source\Runtime\Physics\SkeletalBodySetup.cpp" />
@@ -965,6 +966,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Runtime\Physics\PhysicalMaterial.h" />
     <ClInclude Include="Source\Runtime\Physics\PhysicsAsset.h" />
     <ClInclude Include="Source\Runtime\Physics\PhysicsConstraintTemplate.h" />
+    <ClInclude Include="Source\Runtime\Physics\PhysicsScene.h" />
     <ClInclude Include="Source\Runtime\Physics\PhysicsSystem.h" />
     <ClInclude Include="Source\Runtime\Physics\PhysXConversion.h" />
     <ClInclude Include="Source\Runtime\Physics\PxUtils.h" />

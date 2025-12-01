@@ -8,7 +8,7 @@ void UPhysicalMaterial::CreateMaterial()
     if (MatHandle) { return; }
 
     // PhysX 재질 생성
-    MatHandle = FPhysicsSystem::Get().GetPhysics()->createMaterial(
+    MatHandle = GEngine.GetPhysicsSystem()->GetPhysics()->createMaterial(
         StaticFriction,
         DynamicFriction,
         Restitution

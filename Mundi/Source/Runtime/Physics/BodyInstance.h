@@ -7,53 +7,143 @@ class UPrimitiveComponent;
 class UPhysicalMaterial;
 class UBodySetup;
 
-// DOF(Degree of Freedom) 잠금 플래그
-UENUM()
-enum class EDOFMode : uint8
-{
-    None,           // 잠금 없음
-    SixDOF,         // 6DOF 모드 (개별 축 잠금 가능)
-    YZPlane,        // X축 고정 (YZ 평면에서만 이동)
-    XZPlane,        // Y축 고정 (XZ 평면에서만 이동)
-    XYPlane,        // Z축 고정 (XY 평면에서만 이동)
-    CustomPlane     // 커스텀 평면
-};
-
 // NOTE: FBodyInstance는 PhysX 리소스를 직접 관리하며 복사/이동이 금지된 런타임 객체임
 // USTRUCT 리플렉션을 적용하지 않는다. (TArray 조작 불가)
 
 struct FBodyInstance
 {
 public:
-    // --- 소유자 정보 ---
+    // --- 생성자/소멸자 ---
+    FBodyInstance();
+    ~FBodyInstance();
+
+    // 복사/이동 방지 (PhysX 리소스 관리)
+    // FBodyInstance(const FBodyInstance&) = delete;
+    // FBodyInstance& operator=(const FBodyInstance&) = delete;
+
+    // 다른 바디 인스턴스의 설정값만 복사 (PhysX 리소스는 건드리지 않음)
+    FBodyInstance DuplicateBodyInstance() const;
+    
+// --- 초기화/해제 ---
+public:
+    void InitBody(UBodySetup* Setup, const FTransform& Transform, UPrimitiveComponent* PrimComp, class FPhysicsScene* InRBScene);
+    void TermBody();
+
+private:
+    physx::PxRigidDynamic* GetDynamicActor() const;
+    physx::PxRigidDynamic* CreateInternalActor(const FTransform& Transform);
+    void FinalizeInternalActor(FPhysicsScene* InRBScene);
+
+public:
+    bool IsValidBodyInstance() const { return RigidActor != nullptr; }
+    bool IsDynamic() const { return RigidActor && RigidActor->is<PxRigidDynamic>() != nullptr; }
+
+// --- 소유자 정보 ---
     UPrimitiveComponent* OwnerComponent = nullptr;
     FName BoneName = "None"; // 랙돌용 뼈 이름
     int32 BoneIndex = -1;
-
-    // --- PhysX 객체 ---
+// --- PhysX 객체 ---
     physx::PxRigidActor* RigidActor = nullptr;
     TArray<physx::PxShape*> Shapes; // 다중 Shape 지원
+// --- 물리 재질 ---
+    UPhysicalMaterial* PhysMaterialOverride = nullptr;
+// --- 스케일 ---
+    FVector Scale3D = FVector::One();
 
-    // --- 기본 설정값 ---
-    bool bSimulatePhysics = false;  // true=Dynamic, false=Static/Kinematic
-    bool bUseGravity = true;
-    bool bStartAwake = true;        // 시작 시 활성 상태
+    
+// --- Transform ---
+public:
+    FTransform GetWorldTransform() const;
+    void SetWorldTransform(const FTransform& NewTransform, bool bTeleport = false);
+    FVector GetWorldLocation() const;
+    FQuat GetWorldRotation() const;
+
+// --- Simulate Physics ---
+public:
+    bool IsSimulatePhysics() const { return bSimulatePhysics; }
+    void SetSimulatePhysics(bool bInSimulatePhysics);
+private:
+    bool bSimulatePhysics = true;  // true=Dynamic, false=Static/Kinematic
+    
+// --- Gravity ---
+public:
+    bool IsEnabledGravity() const { return bEnableGravity; }
+    void SetEnableGravity(bool bInEnableGravity);
+private:
     bool bEnableGravity = true;
 
-    // --- 질량 설정 ---
+// --- Start Awake ---
+public:
+    bool IsStartAwake() const { return bStartAwake; }
+    void SetStartAwake(bool bInStartAwake);
+private:
+    bool bStartAwake = true;        // 시작 시 활성 상태
+    
+// --- Mass ---
+public:
+    bool IsOverrideMass() const { return bOverrideMass; }
+    void SetOverrideMass(bool bInOverrideMass);
+private:
     bool bOverrideMass = false;
+
+public:
+    float GetMassInKg() const { return MassInKg; }
+    void SetMassInKg(float InMassInKg);
+private:
     float MassInKg = 10.0f;
+
+public:
+    float GetBodyMass() const;
+    FVector GetBodyInertiaTensor() const;
+private:
+    void UpdateMassProperties();
+
+// --- Damping ---
+public:
+    float GetLinearDamping() const { return LinearDamping; }
+    void SetLinearDamping(float InLinearDamping);
+private:
     float LinearDamping = 0.01f;
+
+public:
+    float GetAngularDamping() const { return AngularDamping; }
+    void SetAngularDamping(float InAngularDamping);
+private:
     float AngularDamping = 0.05f;
 
-    // --- 충돌 설정 ---
+// --- Collision ---
+public:
+    bool GetCollisionEnabled() const { return bCollisionEnabled; }
+    void SetCollisionEnabled(bool bEnabled);
+private:
+    bool bCollisionEnabled = true;
+    
+public:
+    bool IsTrigger() const { return bIsTrigger; }
+    void SetTrigger(bool bInIsTrigger);
+private:
     bool bIsTrigger = false;
-    bool bNotifyRigidBodyCollision = true;  // 충돌 이벤트 발생 여부
-    bool bUseCCD = false;                    // Continuous Collision Detection
-    ECollisionTraceFlag CollisionTraceFlag = ECollisionTraceFlag::UseDefault;
 
-    // --- DOF 잠금 ---
-    EDOFMode DOFMode = EDOFMode::None;
+public:
+    bool GetNotifyRigidBodyCollision() const { return bNotifyRigidBodyCollision; }
+    void SetNotifyRigidBodyCollision(bool bInNotifyRigidBodyCollision);
+private:
+    bool bNotifyRigidBodyCollision = true;  // 충돌 이벤트 발생 여부
+
+public:
+    bool GetUseCCD() const { return bUseCCD; }
+    void SetUseCCD(bool bInUseCCD);
+private:
+    bool bUseCCD = false;                   // Continuous Collision Detection
+    
+// --- DOF Lock ---
+public:
+    void UpdateDOFLock();
+    void GetLinearLock(bool& bX, bool& bY, bool& bZ) const { bX = bLockXLinear; bY = bLockYLinear; bZ = bLockZLinear; }
+    void SetLinearLock(bool bX, bool bY, bool bZ);
+    void GetAngularLock(bool& bX, bool& bY, bool& bZ) const { bX = bLockXAngular; bY = bLockYAngular; bZ = bLockZAngular; }
+    void SetAngularLock(bool bX, bool bY, bool bZ);
+private:
     bool bLockXLinear = false;
     bool bLockYLinear = false;
     bool bLockZLinear = false;
@@ -61,52 +151,20 @@ public:
     bool bLockYAngular = false;
     bool bLockZAngular = false;
 
-    // --- 속도 제한 ---
-    float MaxLinearVelocity = 0.0f;     // 0 = 무제한
-    float MaxAngularVelocity = 0.0f;    // 0 = 무제한 (deg/s)
-
-    // --- 슬립 설정 ---
+// --- 슬립 설정 ---
+public:
+    float GetSleepThresholdMultiplier() const { return SleepThresholdMultiplier; }
+    void SetSleepThresholdMultiplier(float InSleepThresholdMultiplier);
+private:
     float SleepThresholdMultiplier = 1.0f;
 
-    // --- 물리 재질 ---
-    UPhysicalMaterial* PhysMaterialOverride = nullptr;
-
-    // --- 스케일 ---
-    FVector Scale3D = FVector::One();
-
-    // --- 생성자/소멸자 ---
-    FBodyInstance();
-    explicit FBodyInstance(UPrimitiveComponent* Owner);
-    ~FBodyInstance();
-
-    // 복사/이동 방지 (PhysX 리소스 관리)
-    FBodyInstance(const FBodyInstance&) = delete;
-    FBodyInstance& operator=(const FBodyInstance&) = delete;
-
-    // --- 초기화/해제 ---
-    // 단일 Geometry로 초기화 (기존 호환)
-    void InitBody(const FTransform& Transform, const physx::PxGeometry& Geometry, UPhysicalMaterial* PhysMat = nullptr);
-
-    // UBodySetup으로 초기화 (다중 Shape 지원)
-    void InitBodyFromSetup(const FTransform& Transform, class UBodySetup* InBodySetup,
-                           UPhysicalMaterial* PhysMat = nullptr, const FVector& Scale3D = FVector::One());
-
-    void TermBody();
-    bool IsValidBodyInstance() const { return RigidActor != nullptr; }
-
-    // --- Transform ---
-    FTransform GetWorldTransform() const;
-    void SetWorldTransform(const FTransform& NewTransform, bool bTeleport = false);
-    FVector GetWorldLocation() const;
-    FQuat GetWorldRotation() const;
-
-    // --- 물리 상태 ---
-    bool IsDynamic() const;
+public:
     bool IsAwake() const;
     void WakeUp();
     void PutToSleep();
 
-    // --- 힘/토크/속도 ---
+// --- 힘/토크/속도 ---
+public:
     void AddForce(const FVector& Force, bool bAccelChange = false);
     void AddForceAtLocation(const FVector& Force, const FVector& Location);
     void AddTorque(const FVector& Torque, bool bAccelChange = false);
@@ -119,28 +177,9 @@ public:
     FVector GetAngularVelocity() const;
     void SetAngularVelocity(const FVector& AngularVelocity, bool bAddToCurrent = false);
 
-    // --- 질량 ---
-    float GetBodyMass() const;
-    void SetMassOverride(float InMassInKg, bool bNewOverrideMass = true);
-    FVector GetBodyInertiaTensor() const;
-
-    // --- 충돌 설정 ---
-    void SetCollisionEnabled(bool bEnabled);
-    void SetSimulatePhysics(bool bNewSimulate);
-    void SetEnableGravity(bool bNewEnableGravity);
-
-    // --- UBodySetupCore 설정 적용 ---
+// --- UBodySetupCore 설정 적용 ---
+public:
     void ApplyBodySetupSettings(const UBodySetupCore* BodySetupCore);
     void ApplyPhysicsType(EPhysicsType PhysicsType);
     void ApplyCollisionResponse(EBodyCollisionResponse::Type Response);
-
-    // --- DOF 잠금 적용 ---
-    // init 전에 설정해주면 설정된 잠금 축 이외의 모든 움직임을 강제로 막음
-    void ApplyDOFLock();
-
-private:
-    // 내부 헬퍼 함수
-    void UpdateMassProperties();
-    void ApplyPhysicsSettings();
-    physx::PxRigidDynamic* GetDynamicActor() const;
 };

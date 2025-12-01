@@ -1,5 +1,7 @@
 ﻿#include "pch.h"
 
+#include "BodyInstance.h"
+
 FString UObject::GetName()
 {
     return ObjectName.ToString();
@@ -157,16 +159,17 @@ static void SerializeProperty(void* Instance, const FProperty& Prop, bool bIsLoa
     }
     case EPropertyType::Enum:
     {
-        int32* Value = Prop.GetValuePtr<int32>(Instance);
+        // Enum은 uint8로 처리 (PropertyRenderer와 일관성 유지)
+        uint8* Value = Prop.GetValuePtr<uint8>(Instance);
         if (bIsLoading)
         {
             int32 ReadValue;
             if (FJsonSerializer::ReadInt32(InOutJson, Prop.Name, ReadValue))
-                *Value = ReadValue;
+                *Value = static_cast<uint8>(ReadValue);
         }
         else
         {
-            InOutJson[Prop.Name] = *Value;
+            InOutJson[Prop.Name] = static_cast<int32>(*Value);
         }
         break;
     }
@@ -627,6 +630,146 @@ static void SerializeProperty(void* Instance, const FProperty& Prop, bool bIsLoa
         if (!bIsLoading)
         {
             InOutJson[Prop.Name] = MapJson;
+        }
+        break;
+    }
+    case EPropertyType::BodyInstance:
+    {
+        FBodyInstance* BodyInstance = Prop.GetValuePtr<FBodyInstance>(Instance);
+        if (bIsLoading)
+        {
+            if (!InOutJson.hasKey(Prop.Name)) break;
+            
+            auto& BodyJson = InOutJson[Prop.Name];
+            
+            // Simulate Physics
+            bool bSimulatePhysics = true;
+            if (FJsonSerializer::ReadBool(BodyJson, "bSimulatePhysics", bSimulatePhysics))
+                BodyInstance->SetSimulatePhysics(bSimulatePhysics);
+            
+            // Enable Gravity
+            bool bEnableGravity = true;
+            if (FJsonSerializer::ReadBool(BodyJson, "bEnableGravity", bEnableGravity))
+                BodyInstance->SetEnableGravity(bEnableGravity);
+            
+            // Start Awake
+            bool bStartAwake = true;
+            if (FJsonSerializer::ReadBool(BodyJson, "bStartAwake", bStartAwake))
+                BodyInstance->SetStartAwake(bStartAwake);
+            
+            // Collision Enabled
+            bool bCollisionEnabled = true;
+            if (FJsonSerializer::ReadBool(BodyJson, "bCollisionEnabled", bCollisionEnabled))
+                BodyInstance->SetCollisionEnabled(bCollisionEnabled);
+            
+            // Override Mass
+            bool bOverrideMass = false;
+            if (FJsonSerializer::ReadBool(BodyJson, "bOverrideMass", bOverrideMass))
+                BodyInstance->SetOverrideMass(bOverrideMass);
+            
+            // Mass In Kg
+            float MassInKg = 10.0f;
+            if (FJsonSerializer::ReadFloat(BodyJson, "MassInKg", MassInKg))
+                BodyInstance->SetMassInKg(MassInKg);
+            
+            // Linear Damping
+            float LinearDamping = 0.01f;
+            if (FJsonSerializer::ReadFloat(BodyJson, "LinearDamping", LinearDamping))
+                BodyInstance->SetLinearDamping(LinearDamping);
+            
+            // Angular Damping
+            float AngularDamping = 0.05f;
+            if (FJsonSerializer::ReadFloat(BodyJson, "AngularDamping", AngularDamping))
+                BodyInstance->SetAngularDamping(AngularDamping);
+            
+            // Is Trigger
+            bool bIsTrigger = false;
+            if (FJsonSerializer::ReadBool(BodyJson, "bIsTrigger", bIsTrigger))
+                BodyInstance->SetTrigger(bIsTrigger);
+            
+            // Notify Rigid Body Collision
+            bool bNotifyRigidBodyCollision = true;
+            if (FJsonSerializer::ReadBool(BodyJson, "bNotifyRigidBodyCollision", bNotifyRigidBodyCollision))
+                BodyInstance->SetNotifyRigidBodyCollision(bNotifyRigidBodyCollision);
+            
+            // Use CCD
+            bool bUseCCD = false;
+            if (FJsonSerializer::ReadBool(BodyJson, "bUseCCD", bUseCCD))
+                BodyInstance->SetUseCCD(bUseCCD);
+            
+            // Linear Lock
+            bool bLockXLinear = false, bLockYLinear = false, bLockZLinear = false;
+            FJsonSerializer::ReadBool(BodyJson, "bLockXLinear", bLockXLinear);
+            FJsonSerializer::ReadBool(BodyJson, "bLockYLinear", bLockYLinear);
+            FJsonSerializer::ReadBool(BodyJson, "bLockZLinear", bLockZLinear);
+            BodyInstance->SetLinearLock(bLockXLinear, bLockYLinear, bLockZLinear);
+            
+            // Angular Lock
+            bool bLockXAngular = false, bLockYAngular = false, bLockZAngular = false;
+            FJsonSerializer::ReadBool(BodyJson, "bLockXAngular", bLockXAngular);
+            FJsonSerializer::ReadBool(BodyJson, "bLockYAngular", bLockYAngular);
+            FJsonSerializer::ReadBool(BodyJson, "bLockZAngular", bLockZAngular);
+            BodyInstance->SetAngularLock(bLockXAngular, bLockYAngular, bLockZAngular);
+            
+            // Sleep Threshold Multiplier
+            float SleepThresholdMultiplier = 1.0f;
+            if (FJsonSerializer::ReadFloat(BodyJson, "SleepThresholdMultiplier", SleepThresholdMultiplier))
+                BodyInstance->SetSleepThresholdMultiplier(SleepThresholdMultiplier);
+        }
+        else
+        {
+            JSON BodyJson;
+            
+            // Simulate Physics
+            BodyJson["bSimulatePhysics"] = BodyInstance->IsSimulatePhysics();
+            
+            // Enable Gravity
+            BodyJson["bEnableGravity"] = BodyInstance->IsEnabledGravity();
+            
+            // Start Awake
+            BodyJson["bStartAwake"] = BodyInstance->IsStartAwake();
+            
+            // Collision Enabled
+            BodyJson["bCollisionEnabled"] = BodyInstance->GetCollisionEnabled();
+            
+            // Override Mass
+            BodyJson["bOverrideMass"] = BodyInstance->IsOverrideMass();
+            
+            // Mass In Kg
+            BodyJson["MassInKg"] = BodyInstance->GetMassInKg();
+            
+            // Linear Damping
+            BodyJson["LinearDamping"] = BodyInstance->GetLinearDamping();
+            
+            // Angular Damping
+            BodyJson["AngularDamping"] = BodyInstance->GetAngularDamping();
+            
+            // Is Trigger
+            BodyJson["bIsTrigger"] = BodyInstance->IsTrigger();
+            
+            // Notify Rigid Body Collision
+            BodyJson["bNotifyRigidBodyCollision"] = BodyInstance->GetNotifyRigidBodyCollision();
+            
+            // Use CCD
+            BodyJson["bUseCCD"] = BodyInstance->GetUseCCD();
+            
+            // Linear Lock
+            bool bX, bY, bZ;
+            BodyInstance->GetLinearLock(bX, bY, bZ);
+            BodyJson["bLockXLinear"] = bX;
+            BodyJson["bLockYLinear"] = bY;
+            BodyJson["bLockZLinear"] = bZ;
+            
+            // Angular Lock
+            BodyInstance->GetAngularLock(bX, bY, bZ);
+            BodyJson["bLockXAngular"] = bX;
+            BodyJson["bLockYAngular"] = bY;
+            BodyJson["bLockZAngular"] = bZ;
+            
+            // Sleep Threshold Multiplier
+            BodyJson["SleepThresholdMultiplier"] = BodyInstance->GetSleepThresholdMultiplier();
+            
+            InOutJson[Prop.Name] = BodyJson;
         }
         break;
     }

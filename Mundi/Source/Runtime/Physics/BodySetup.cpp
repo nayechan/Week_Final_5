@@ -69,12 +69,12 @@ void UBodySetup::CreatePhysicsShapes(FBodyInstance* BodyInstance, const FVector&
 {
     if (!BodyInstance || !BodyInstance->RigidActor) return;
 
-    FPhysicsSystem& System = FPhysicsSystem::Get();
-    PxPhysics* Physics = System.GetPhysics();
+    FPhysicsSystem* System = GEngine.GetPhysicsSystem();
+    PxPhysics* Physics = System->GetPhysics();
     if (!Physics) return;
 
     // 사용할 재질 결정
-    PxMaterial* Material = System.GetDefaultMaterial();
+    PxMaterial* Material = System->GetDefaultMaterial();
     UPhysicalMaterial* UsedMat = InMaterial ? InMaterial : PhysMaterial;
     if (UsedMat && UsedMat->MatHandle)
     {
@@ -90,7 +90,7 @@ void UBodySetup::CreatePhysicsShapes(FBodyInstance* BodyInstance, const FVector&
         PxShape* Shape = CreateSphereShape(Elem, Scale3D, Material);
         if (Shape)
         {
-            ConfigureShapeFlags(Shape, Elem.GetCollisionEnabled(), BodyInstance->bIsTrigger);
+            ConfigureShapeFlags(Shape, Elem.GetCollisionEnabled(), BodyInstance->IsTrigger());
             BodyInstance->RigidActor->attachShape(*Shape);
             BodyInstance->Shapes.Add(Shape);
             Shape->release(); // Actor가 소유권을 가짐
@@ -106,7 +106,7 @@ void UBodySetup::CreatePhysicsShapes(FBodyInstance* BodyInstance, const FVector&
         PxShape* Shape = CreateBoxShape(Elem, Scale3D, Material);
         if (Shape)
         {
-            ConfigureShapeFlags(Shape, Elem.GetCollisionEnabled(), BodyInstance->bIsTrigger);
+            ConfigureShapeFlags(Shape, Elem.GetCollisionEnabled(), BodyInstance->IsTrigger());
             BodyInstance->RigidActor->attachShape(*Shape);
             BodyInstance->Shapes.Add(Shape);
             Shape->release();
@@ -122,7 +122,7 @@ void UBodySetup::CreatePhysicsShapes(FBodyInstance* BodyInstance, const FVector&
         PxShape* Shape = CreateCapsuleShape(Elem, Scale3D, Material);
         if (Shape)
         {
-            ConfigureShapeFlags(Shape, Elem.GetCollisionEnabled(), BodyInstance->bIsTrigger);
+            ConfigureShapeFlags(Shape, Elem.GetCollisionEnabled(), BodyInstance->IsTrigger());
             BodyInstance->RigidActor->attachShape(*Shape);
             BodyInstance->Shapes.Add(Shape);
             Shape->release();
@@ -133,8 +133,8 @@ void UBodySetup::CreatePhysicsShapes(FBodyInstance* BodyInstance, const FVector&
 PxShape* UBodySetup::CreateSphereShape(const FKSphereElem& Elem, const FVector& Scale3D,
                                         PxMaterial* Material)
 {
-    FPhysicsSystem& System = FPhysicsSystem::Get();
-    PxPhysics* Physics = System.GetPhysics();
+    FPhysicsSystem* System = GEngine.GetPhysicsSystem();
+    PxPhysics* Physics = System->GetPhysics();
     if (!Physics || !Material) return nullptr;
 
     // 스케일 적용 (균일 스케일 사용 - 최소값)
@@ -162,8 +162,8 @@ PxShape* UBodySetup::CreateSphereShape(const FKSphereElem& Elem, const FVector& 
 PxShape* UBodySetup::CreateBoxShape(const FKBoxElem& Elem, const FVector& Scale3D,
                                      PxMaterial* Material)
 {
-    FPhysicsSystem& System = FPhysicsSystem::Get();
-    PxPhysics* Physics = System.GetPhysics();
+    FPhysicsSystem* System = GEngine.GetPhysicsSystem();
+    PxPhysics* Physics = System->GetPhysics();
     if (!Physics || !Material) return nullptr;
 
     // Half Extent에 스케일 적용
@@ -192,8 +192,8 @@ PxShape* UBodySetup::CreateBoxShape(const FKBoxElem& Elem, const FVector& Scale3
 PxShape* UBodySetup::CreateCapsuleShape(const FKSphylElem& Elem, const FVector& Scale3D,
                                          PxMaterial* Material)
 {
-    FPhysicsSystem& System = FPhysicsSystem::Get();
-    PxPhysics* Physics = System.GetPhysics();
+    FPhysicsSystem* System = GEngine.GetPhysicsSystem();
+    PxPhysics* Physics = System->GetPhysics();
     if (!Physics || !Material) return nullptr;
 
     // 캡슐 스케일 적용

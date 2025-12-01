@@ -14,6 +14,15 @@ UShapeComponent::UShapeComponent() : bShapeIsVisible(true), bShapeHiddenInGame(t
     bCanEverTick = true;
 }
 
+UShapeComponent::~UShapeComponent()
+{
+    if (BodySetup != nullptr)
+    {
+        DeleteObject(BodySetup);
+        BodySetup = nullptr;
+    }
+}
+
 void UShapeComponent::BeginPlay()
 {
     Super::BeginPlay();
@@ -248,8 +257,5 @@ FAABB UShapeComponent::GetWorldAABB() const
 void UShapeComponent::DuplicateSubObjects()
 {
     Super::DuplicateSubObjects();
+    BodySetup = nullptr; 
 }
-
-
-
-

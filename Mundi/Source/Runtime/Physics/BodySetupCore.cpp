@@ -6,7 +6,6 @@
 UBodySetupCore::UBodySetupCore()
     : BoneName("None")
     , PhysicsType(EPhysicsType::Default)
-    , CollisionTraceFlag(ECollisionTraceFlag::UseDefault)
     , CollisionResponse(EBodyCollisionResponse::BodyCollision_Enabled)
 {
 }

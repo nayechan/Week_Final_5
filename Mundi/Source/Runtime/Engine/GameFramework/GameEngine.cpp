@@ -184,7 +184,8 @@ bool UGameEngine::Startup(HINSTANCE hInstance)
     Renderer = std::make_unique<URenderer>(&RHIDevice);
 
     // Physics 초기화
-    FPhysicsSystem::Get().Initialize();
+    PhysicsSystem = new FPhysicsSystem();
+    PhysicsSystem->Initialize();
 
     // Initialize audio device for game runtime
     FAudioDevice::Initialize();
@@ -258,9 +259,6 @@ void UGameEngine::Tick(float DeltaSeconds)
         bool bLeftDown = INPUT.IsMouseButtonDown(LeftButton);
         SGameHUD::Get().Update(MousePos.X, MousePos.Y, bLeftDown);
     }
-
-    // 물리 업데이트 (위치 다시 고민해보기)
-    FPhysicsSystem::Get().UpdateSimulation(DeltaSeconds);
 
     INPUT.Update();
 }
@@ -375,7 +373,12 @@ void UGameEngine::Shutdown()
     // Shutdown audio device
     FAudioDevice::Shutdown();
 
-    FPhysicsSystem::Get().Shutdown();
+    if (PhysicsSystem)
+    {
+        PhysicsSystem->Shutdown();
+        delete PhysicsSystem;
+        PhysicsSystem = nullptr;
+    }
 
     // Explicitly release D3D11RHI resources before global destruction
     RHIDevice.Release();

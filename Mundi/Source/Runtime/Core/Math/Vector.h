@@ -263,6 +263,12 @@ struct FVector
 	// 크기
 	float Size()         const { return std::sqrt(X * X + Y * Y + Z * Z); }
 	float SizeSquared()  const { return X * X + Y * Y + Z * Z; }
+	bool Equals(const FVector& V, float Tolerance = 1.e-4f) const
+	{
+		return std::abs(X - V.X) <= Tolerance &&
+			   std::abs(Y - V.Y) <= Tolerance &&
+			   std::abs(Z - V.Z) <= Tolerance;
+	}
 
 	// XYZ중 가장 큰 값 리턴
 	float GetMaxValue() const{ return (X > Y) ? ((X > Z) ? X : Z) : Y; }

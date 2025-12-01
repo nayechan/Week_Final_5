@@ -30,7 +30,6 @@ UCLASS(DisplayName="셰이프 컴포넌트", Description="충돌 모양 기본 �
 class UShapeComponent : public UPrimitiveComponent
 { 
 public:  
-
 	GENERATED_REFLECTION_BODY();
 
 public:
@@ -44,6 +43,7 @@ public:
 	bool bShapeHiddenInGame;
 
 	UShapeComponent();
+	~UShapeComponent() override;
 
 	virtual void TickComponent(float DeltaSeconds) override;
 
@@ -82,4 +82,6 @@ protected:
 	TArray<FOverlapInfo> OverlapInfos; 
 	//TODO: float LineThickness;
 
+protected:
+	UBodySetup* BodySetup;
 };

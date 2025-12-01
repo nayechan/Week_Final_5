@@ -5,7 +5,10 @@
 #include "Texture.h"
 #include "TSubclassOf.h"
 #include "Distribution.h"
+//#include "BodyInstance.h"
 #include <type_traits>
+
+struct FBodyInstance;
 
 // ===== 타입 자동 감지 템플릿 =====
 
@@ -85,6 +88,15 @@ struct TPropertyTypeTraits<FDistributionColor>
 	static constexpr EPropertyType GetType()
 	{
 		return EPropertyType::DistributionColor;
+	}
+};
+
+template<>
+struct TPropertyTypeTraits<FBodyInstance>
+{
+	static constexpr EPropertyType GetType()
+	{
+		return EPropertyType::BodyInstance;
 	}
 };
 

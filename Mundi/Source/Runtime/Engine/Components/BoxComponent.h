@@ -109,7 +109,7 @@ public:
 	 */
 	bool ContainsPoint(const FVector& Point) const;
 
-	physx::PxGeometry* GetPhysicsGeometry() override;
+	UBodySetup* GetBodySetup() override;
 
 private:
 	/** 현재 Bounds (캐시됨) */

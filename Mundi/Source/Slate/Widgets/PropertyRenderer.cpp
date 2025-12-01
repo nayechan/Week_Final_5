@@ -275,6 +275,10 @@ bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectIn
 	case EPropertyType::DistributionColor:
 		bChanged = RenderDistributionColorProperty(Property, ObjectInstance);
 		break;
+	
+	case EPropertyType::BodyInstance:
+		bChanged = RenderBodyInstanceProperty(Property, ObjectInstance);
+		break;
 
 	default:
 		ImGui::Text("%s: [Unknown Type]", Property.Name);
@@ -3673,4 +3677,199 @@ bool UPropertyRenderer::RenderDistributionColorProperty(const FProperty& Prop, v
 	}
 
 	return bChanged;
+}
+
+bool UPropertyRenderer::RenderBodyInstanceProperty(const FProperty& Prop, void* Instance)
+{
+    FBodyInstance* BodyInstance = Prop.GetValuePtr<FBodyInstance>(Instance);
+    if (!BodyInstance || !BodyInstance->IsValidBodyInstance()) { return false; }
+
+    bool bChanged = false;
+	
+    // --- 기본 설정 ---
+    ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.2f, 1.0f), "기본 설정");
+    ImGui::Separator();
+    {
+	    bool bSimulatePhysics = BodyInstance->IsSimulatePhysics();
+	    if (ImGui::Checkbox("물리 시뮬레이션##SimPhysics", &bSimulatePhysics))
+	    {
+		    BodyInstance->SetSimulatePhysics(bSimulatePhysics);
+		    bChanged = true;
+	    }
+
+	    bool bEnableGravity = BodyInstance->IsEnabledGravity();
+	    if (ImGui::Checkbox("중력 활성##EnableGravity", &bEnableGravity))
+	    {
+		    BodyInstance->SetEnableGravity(bEnableGravity);
+		    bChanged = true;
+	    }
+
+	    bool bStartAwake = BodyInstance->IsStartAwake();
+	    if (ImGui::Checkbox("시작 시 활성##StartAwake", &bStartAwake))
+	    {
+		    BodyInstance->SetStartAwake(bStartAwake);
+		    bChanged = true;
+	    }
+
+	    bool bCollisionEnabled = BodyInstance->GetCollisionEnabled();
+	    if (ImGui::Checkbox("충돌 활성##CollisionEnabled", &bCollisionEnabled))
+	    {
+		    BodyInstance->SetCollisionEnabled(bCollisionEnabled);
+		    bChanged = true;
+	    }
+    }
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    // --- 질량 설정 ---
+    ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.2f, 1.0f), "질량");
+    ImGui::Separator();
+    {
+	    bool bOverrideMass = BodyInstance->IsOverrideMass();
+	    if (ImGui::Checkbox("질량 오버라이드##OverrideMass", &bOverrideMass))
+	    {
+		    BodyInstance->SetOverrideMass(bOverrideMass);
+		    bChanged = true;
+	    }
+
+	    ImGui::BeginDisabled(!bOverrideMass);
+	    {
+		    float MassInKg = BodyInstance->GetMassInKg();
+		    ImGui::DragFloat("질량 (kg)##MassInKg", &MassInKg, 0.1f, 0.1f, 10000.0f, "%.2f");
+		    if (ImGui::IsItemDeactivatedAfterEdit())
+		    {
+			    MassInKg = FMath::Max(0.1f, MassInKg);
+			    BodyInstance->SetMassInKg(MassInKg);
+			    bChanged = true;
+		    }
+	    }
+	    ImGui::EndDisabled();
+
+	    // 현재 질량 정보 표시 (읽기 전용)
+	    ImGui::BeginDisabled(true);
+	    {
+		    float BodyMass = BodyInstance->GetBodyMass();
+		    ImGui::DragFloat("현재 질량##CurrentMass", &BodyMass, 0.0f, 0.0f, 0.0f, "%.2f");
+	    }
+	    ImGui::EndDisabled();
+    }
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    // --- 감쇠 설정 ---
+    ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.2f, 1.0f), "감쇠");
+    ImGui::Separator();
+    {
+	    float LinearDamping = BodyInstance->GetLinearDamping();
+	    ImGui::DragFloat("선형 감쇠##LinearDamping", &LinearDamping, 0.001f, 0.0f, 1.0f, "%.4f");
+	    if (ImGui::IsItemDeactivatedAfterEdit())
+	    {
+		    LinearDamping = FMath::Clamp(LinearDamping, 0.0f, 1.0f);
+		    BodyInstance->SetLinearDamping(LinearDamping);
+		    bChanged = true;
+	    }
+
+	    float AngularDamping = BodyInstance->GetAngularDamping();
+	    ImGui::DragFloat("각속도 감쇠##AngularDamping", &AngularDamping, 0.001f, 0.0f, 1.0f, "%.4f");
+	    if (ImGui::IsItemDeactivatedAfterEdit())
+	    {
+		    AngularDamping = FMath::Clamp(AngularDamping, 0.0f, 1.0f);
+		    BodyInstance->SetAngularDamping(AngularDamping);
+		    bChanged = true;
+	    }
+    }
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    // --- 충돌 설정 ---
+    ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.2f, 1.0f), "충돌");
+    ImGui::Separator();
+    {
+	    bool bIsTrigger = BodyInstance->IsTrigger();
+	    if (ImGui::Checkbox("트리거##IsTrigger", &bIsTrigger))
+	    {
+		    BodyInstance->SetTrigger(bIsTrigger);
+		    bChanged = true;
+	    }
+
+	    bool bNotifyCollision = BodyInstance->GetNotifyRigidBodyCollision();
+	    if (ImGui::Checkbox("충돌 이벤트##NotifyCollision", &bNotifyCollision))
+	    {
+		    BodyInstance->SetNotifyRigidBodyCollision(bNotifyCollision);
+		    bChanged = true;
+	    }
+
+	    bool bUseCCD = BodyInstance->GetUseCCD();
+	    if (ImGui::Checkbox("CCD 사용##UseCCD", &bUseCCD))
+	    {
+		    BodyInstance->SetUseCCD(bUseCCD);
+		    bChanged = true;
+	    }
+    }
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    // --- DOF 잠금 설정 ---
+    ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.2f, 1.0f), "DOF 잠금");
+    ImGui::Separator();
+    {
+	    ImGui::Text("선형 잠금");
+	    {
+		    bool bX, bY, bZ;
+		    BodyInstance->GetLinearLock(bX, bY, bZ);
+
+		    if (ImGui::Checkbox("X 잠금##LockXLinear", &bX) | ImGui::Checkbox("Y 잠금##LockYLinear", &bY) | ImGui::Checkbox(
+			    "Z 잠금##LockZLinear", &bZ))
+		    {
+			    BodyInstance->SetLinearLock(bX, bY, bZ);
+			    bChanged = true;
+		    }
+	    }
+
+	    ImGui::Spacing();
+
+	    ImGui::Text("각속도 잠금");
+	    {
+		    bool bX, bY, bZ;
+		    BodyInstance->GetAngularLock(bX, bY, bZ);
+
+		    if (ImGui::Checkbox("X 잠금##LockXAngular", &bX) | ImGui::Checkbox("Y 잠금##LockYAngular", &bY) |
+			    ImGui::Checkbox("Z 잠금##LockZAngular", &bZ))
+		    {
+			    BodyInstance->SetAngularLock(bX, bY, bZ);
+			    bChanged = true;
+		    }
+	    }
+    }
+
+    ImGui::Spacing();
+    ImGui::Spacing();
+
+    // --- 슬립 설정 ---
+    ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.2f, 1.0f), "슬립");
+    ImGui::Separator();
+    {
+	    float SleepThreshold = BodyInstance->GetSleepThresholdMultiplier();
+	    ImGui::DragFloat("슬립 임계값 배수##SleepThreshold", &SleepThreshold, 0.1f, 0.1f, 10.0f, "%.2f");
+	    if (ImGui::IsItemDeactivatedAfterEdit())
+	    {
+		    SleepThreshold = FMath::Max(0.1f, SleepThreshold);
+		    BodyInstance->SetSleepThresholdMultiplier(SleepThreshold);
+		    bChanged = true;
+	    }
+
+	    ImGui::Spacing();
+
+	    // 상태 표시 (읽기 전용)
+	    bool bAwake = BodyInstance->IsAwake();
+	    ImGui::BeginDisabled(true);
+	    ImGui::Checkbox("활성 상태##IsAwake", &bAwake);
+	    ImGui::EndDisabled();
+    }
+	
+    return bChanged;
 }

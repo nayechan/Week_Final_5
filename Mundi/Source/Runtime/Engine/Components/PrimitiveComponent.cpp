@@ -16,11 +16,6 @@ void UPrimitiveComponent::BeginPlay()
 
 void UPrimitiveComponent::EndPlay()
 {
-    if (BodyInstance)
-    {
-        delete BodyInstance;
-        BodyInstance = nullptr;
-    }
     Super::EndPlay();
 }
 
@@ -51,6 +46,13 @@ void UPrimitiveComponent::OnUnregister()
     Super::OnUnregister();
 }
 
+void UPrimitiveComponent::OnTransformUpdated()
+{
+    Super::OnTransformUpdated();
+    if (bIsSyncingPhysicsToComponent) { return; }
+    BodyInstance.SetWorldTransform(GetWorldTransform(), false);
+}
+
 void UPrimitiveComponent::SetMaterialByName(uint32 InElementIndex, const FString& InMaterialName)
 {
     SetMaterial(InElementIndex, UResourceManager::GetInstance().Load<UMaterial>(InMaterialName));
@@ -59,6 +61,7 @@ void UPrimitiveComponent::SetMaterialByName(uint32 InElementIndex, const FString
 void UPrimitiveComponent::DuplicateSubObjects()
 {
     Super::DuplicateSubObjects();
+    BodyInstance = BodyInstance.DuplicateBodyInstance();
 }
 
 void UPrimitiveComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
@@ -92,35 +95,29 @@ bool UPrimitiveComponent::IsOverlappingActor(const AActor* Other) const
 
 void UPrimitiveComponent::SyncComponentToPhysics()
 {
-    // 물리가 켜져 있고, 바디 인스턴스가 유효한 경우에만 동기화
-    if (bSimulatePhysics && BodyInstance)
-    {
-        // 1. 물리 엔진에서 계산된 최신 Transform을 가져옴
-        FTransform NewTransform = BodyInstance->GetWorldTransform();
+    bIsSyncingPhysicsToComponent = true; 
 
-        // 2. 컴포넌트의 월드 트랜스폼 업데이트
-        SetWorldTransform(NewTransform);
+    // 물리가 켜져 있고, 바디 인스턴스가 유효한 경우에만 동기화
+    if (BodyInstance.IsValidBodyInstance() && IsSimulatingPhysics())
+    {
+        FTransform PxWorldTransform = BodyInstance.GetWorldTransform();
+        SetWorldTransform(PxWorldTransform); 
     }
+    bIsSyncingPhysicsToComponent = false;
 }
 
 void UPrimitiveComponent::CreatePhysicsState()
 {
-    if (!BodyInstance) { BodyInstance = new FBodyInstance(this); }
+    FPhysicsScene* PhysScene = GetWorld() ? GetWorld()->GetPhysicsScene() : nullptr;
+    BodyInstance.InitBody(GetBodySetup(), GetWorldTransform(), this, PhysScene);
+}
 
-    BodyInstance->bSimulatePhysics = bSimulatePhysics;
-    BodyInstance->MassInKg = Mass;
-
-    // NOTE: 임시로 그냥 모든 Primitive 박스로 처리
-    FVector WorldScale = GetWorldScale();
-    float X = std::abs(WorldScale.X);
-    float Y = std::abs(WorldScale.Y);
-    float Z = std::abs(WorldScale.Z);
-    physx::PxGeometry* Geom = new physx::PxBoxGeometry(X, Y, Z);
-    
-    if (Geom)
+void UPrimitiveComponent::RecreatePhysicsState()
+{
+    if (BodyInstance.IsValidBodyInstance())
     {
-        // 재질은 일단 기본값으로
-        BodyInstance->InitBody(GetWorldTransform(), *Geom, nullptr);
-        delete Geom; 
+        BodyInstance.TermBody();
     }
+
+    CreatePhysicsState();
 }

@@ -30,6 +30,7 @@ enum class EPropertyType : uint8
 	DistributionFloat,   // FDistributionFloat 타입 (파티클 Distribution)
 	DistributionVector,  // FDistributionVector 타입 (파티클 Distribution)
 	DistributionColor,   // FDistributionColor 타입 (파티클 Distribution)
+	BodyInstance,   // BodyInstance 타입
 	// 추후 추가될 프로퍼티들은 직접 해줘야함.
 	Count			// 요소 개수, 항상 마지막!
 };
