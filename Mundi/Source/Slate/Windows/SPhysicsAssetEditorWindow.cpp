@@ -1264,12 +1264,14 @@ void SPhysicsAssetEditorWindow::RenderLeftPanel(float PanelWidth)
 		ImNodes::BeginNodeEditor();
 
 		// 레이아웃 상수
-		const float ColumnSpacing = 180.0f;
+		const float ColumnSpacing1 = 150.0f;   // Body → Constraint 간격
+		const float ColumnSpacing2 = 200.0f;   // Constraint → Body 간격 (Constraint가 더 넓음)
 		const float RowSpacing = 100.0f;
+		const float ConstraintWrapWidth = 140.0f;  // Constraint 텍스트 줄바꿈 너비
 
 		float col1X = 50.0f;
-		float col2X = col1X + ColumnSpacing;
-		float col3X = col2X + ColumnSpacing;
+		float col2X = col1X + ColumnSpacing1;
+		float col3X = col2X + ColumnSpacing2;
 		float centerY = (connectedConstraints.size() * RowSpacing) / 2.0f;
 
 		// ─────────────────────────────────────────────────
@@ -1349,9 +1351,11 @@ void SPhysicsAssetEditorWindow::RenderLeftPanel(float PanelWidth)
 			{
 				childName = State->EditingAsset->BodySetups[constraint.ChildBodyIndex]->BoneName.ToString();
 			}
-			// 핀과 내용을 같은 줄에 배치
+			// 핀과 내용을 같은 줄에 배치 (긴 이름은 줄바꿈)
 			ImNodes::BeginInputAttribute(constraintInputAttr);
-			ImGui::Text("%s : %s", parentName.c_str(), childName.c_str());
+			ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + ConstraintWrapWidth);
+			ImGui::TextWrapped("%s : %s", parentName.c_str(), childName.c_str());
+			ImGui::PopTextWrapPos();
 			ImNodes::EndInputAttribute();
 			ImGui::SameLine();
 			ImNodes::BeginOutputAttribute(constraintOutputAttr);

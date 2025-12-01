@@ -491,6 +491,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir
     <ClCompile Include="Source\Slate\Widgets\PhysicsAssetEditor\BodyPropertiesWidget.cpp" />
     <ClCompile Include="Source\Slate\Widgets\PhysicsAssetEditor\ConstraintPropertiesWidget.cpp" />
     <ClCompile Include="Source\Slate\Widgets\PhysicsAssetEditor\SkeletonTreeWidget.cpp" />
+    <ClCompile Include="Source\Slate\Widgets\PhysicsAssetEditor\ToolsWidget.cpp" />
     <ClCompile Include="Source\Slate\Widgets\PropertyRenderer.cpp" />
     <ClCompile Include="Source\Slate\Widgets\CurveEditorWidget.cpp" />
     <ClCompile Include="Source\Slate\Windows\ContentBrowserWindow.cpp" />
@@ -1060,6 +1061,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir
     <ClInclude Include="Source\Slate\Widgets\PhysicsAssetEditor\BodyPropertiesWidget.h" />
     <ClInclude Include="Source\Slate\Widgets\PhysicsAssetEditor\ConstraintPropertiesWidget.h" />
     <ClInclude Include="Source\Slate\Widgets\PhysicsAssetEditor\SkeletonTreeWidget.h" />
+    <ClInclude Include="Source\Slate\Widgets\PhysicsAssetEditor\ToolsWidget.h" />
     <ClInclude Include="Source\Slate\Widgets\PropertyRenderer.h" />
     <ClInclude Include="Source\Slate\Widgets\CurveEditorWidget.h" />
     <ClInclude Include="Source\Slate\Windows\ContentBrowserWindow.h" />
