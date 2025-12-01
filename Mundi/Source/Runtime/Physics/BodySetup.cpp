@@ -549,6 +549,7 @@ FArchive& operator<<(FArchive& Ar, UBodySetup& BodySetup)
                 Serialization::ReadArray(Ar, Dummy);
             }
         }
+        BodySetup.CreatePhysicsMeshes();
     }
     return Ar;
 }
