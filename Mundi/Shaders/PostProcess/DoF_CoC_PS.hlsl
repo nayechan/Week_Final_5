@@ -38,11 +38,28 @@ float4 mainPS(float4 position : SV_Position, float2 texcoord : TEXCOORD0) : SV_T
     // 최대 CoC 값(MaxCoc)으로 정규화 및 클램프
     coc = saturate(coc / FDepthOfFieldBuffer.MaxCoc);
 
-    // Near/Far 필드 구분
-    // viewZ가 FocalDistance보다 작으면 Near 필드 (G 채널)
-    // viewZ가 FocalDistance보다 크면 Far 필드 (R 채널)
-    float farCoC = (viewZ > FDepthOfFieldBuffer.FocalDistance) ? coc : 0.0f;
-    float nearCoC = (viewZ < FDepthOfFieldBuffer.FocalDistance) ? coc : 0.0f;
+    // ===== 부드러운 전환 영역 처리 (윤곽선 아티팩트 제거) =====
+
+    // Near/Far 필드 구분 + Transition Range 적용
+    float farCoC = 0.0f;
+    float nearCoC = 0.0f;
+
+    if (viewZ > FDepthOfFieldBuffer.FocalDistance)
+    {
+        // Far 영역: FocalDistance부터 멀어질수록 CoC 증가
+        // Transition Range를 사용하여 부드럽게 블렌딩
+        float distanceFromFocus = viewZ - FDepthOfFieldBuffer.FocalDistance;
+        float transitionFactor = smoothstep(0.0, FDepthOfFieldBuffer.FarTransitionRange, distanceFromFocus);
+        farCoC = coc * transitionFactor;
+    }
+    else if (viewZ < FDepthOfFieldBuffer.FocalDistance)
+    {
+        // Near 영역: FocalDistance부터 가까워질수록 CoC 증가
+        // Transition Range를 사용하여 부드럽게 블렌딩
+        float distanceFromFocus = FDepthOfFieldBuffer.FocalDistance - viewZ;
+        float transitionFactor = smoothstep(0.0, FDepthOfFieldBuffer.NearTransitionRange, distanceFromFocus);
+        nearCoC = coc * transitionFactor;
+    }
 
     // R: Far CoC, G: Near CoC, B: 0, A: RawDepth
     return float4(farCoC, nearCoC, 0, rawDepth);

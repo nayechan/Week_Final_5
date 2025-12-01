@@ -19,24 +19,22 @@ float4 mainPS(float4 position : SV_Position, float2 texcoord : TEXCOORD0) : SV_T
     float blendFactor = max(nearCoC, farCoC);
 
     // FDepthOfFieldBuffer.Weight를 사용하여 전체 DoF 효과의 강도를 조절
-    // Weight가 1.0이면 계산된 CoC 값을 그대로 사용
-    // Weight가 0.0이면 DoF 효과 없음
     blendFactor *= FDepthOfFieldBuffer.Weight;
 
-    // 블러 색상이 유효한지 확인 (알파 또는 RGB 합으로 판단)
-    float blurValid = blurredColor.a;  // 알파 채널로 블러 유효성 확인
+    // 블러 색상 유효성 확인 (알파 채널 기반)
+    float blurValid = saturate(blurredColor.a * 10.0);  // 부드러운 페이드인
 
-    float4 finalColor;
-    if (blurValid > 0.01 && blendFactor > 0.01)
-    {
-        // 블러가 유효하고 CoC가 있는 경우만 블렌딩
-        finalColor = lerp(originalColor, blurredColor, saturate(blendFactor));
-    }
-    else
-    {
-        // 블러가 없거나 초점 영역인 경우 원본 그대로 사용
-        finalColor = originalColor;
-    }
+    // ===== 부드러운 전환 영역 처리 (윤곽선 아티팩트 제거) =====
+
+    // 1. CoC를 부드럽게 램핑 (0.05 임계점 주변을 부드럽게)
+    // smoothstep으로 0.02~0.08 사이를 부드럽게 전환
+    float cocRamp = smoothstep(0.02, 0.08, blendFactor);
+
+    // 2. 블러 유효성도 부드럽게 적용
+    float finalBlendFactor = cocRamp * blurValid;
+
+    // 3. 원본과 블러를 부드럽게 블렌딩 (if문 제거하여 하드 컷 방지)
+    float4 finalColor = lerp(originalColor, blurredColor, saturate(finalBlendFactor));
 
     // 알파 채널은 원본의 값을 유지
     finalColor.a = originalColor.a;

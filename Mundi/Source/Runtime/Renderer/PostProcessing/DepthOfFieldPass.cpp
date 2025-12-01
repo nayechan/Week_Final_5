@@ -4,62 +4,6 @@
 #include "SwapGuard.h"
 #include "DepthOfFieldComponent.h"
 
-void FDepthOfFieldPass::Execute(const FPostProcessModifier& M, FSceneView* View, D3D11RHI* RHIDevice)
-{
-	if (UDepthOfFieldComponent* DofComponent = Cast<UDepthOfFieldComponent>(M.SourceObject); DofComponent == nullptr)
-	{
-		UE_LOG("DepthOfField: Source object is not a DepthOfFieldComponent!\n");
-		return;
-	}
-
-	// ============================================================
-	// (1) CoC 단계
-	// ============================================================
-
-	// [선택] A. Downscale
-	//ExecuteDownscalePass(View, RHIDevice);
-
-	// [필수] B. CoC 계산
-	ExecuteCoCPass(M, View, RHIDevice);
-
-	// [선택] E. Dilation
-	// 전경 픽셀을 외곽으로 확대하여 경계 아티팩트 제거
-	ExecuteDilationPass(View, RHIDevice);
-
-
-	// ============================================================
-	// (2) Blur 단계
-	// ============================================================
-
-	// [선택] C. Prefilter
-	//ExecutePreFilterPass(View, RHIDevice);
-
-	// [선택] D. Near/Far Split
-	// Near와 Far 영역을 분리하여 각각 독립적으로 블러 적용 (아티팩트 절단)
-	ExecuteNearFarSplitPass(View, RHIDevice);
-
-	// [필수] F. Hex Blur (3-pass) - Near/Far 분리 방식
-	ExecuteHexBlurPass(View, RHIDevice, RHI_SRV_Index::DofNearMap, ERTVMode::DofNearTarget, RHI_SRV_Index::DofNearMap);
-	ExecuteHexBlurPass(View, RHIDevice, RHI_SRV_Index::DofFarMap, ERTVMode::DofFarTarget, RHI_SRV_Index::DofFarMap);
-
-	// 3) Near와 Far 블러 결과 병합
-	ExecuteMergeNearFarPass(View, RHIDevice);
-
-	// [선택] G. Upscale
-	//ExecuteUpscalePass(View, RHIDevice);
-
-	// [선택] T. Temporal Blend
-	//ExecuteTemporalBlendPass(View, RHIDevice);
-
-
-	// ============================================================
-	// (3) Composite 단계
-	// ============================================================
-	// 
-	// [필수] H. Composite
-	ExecuteCompositePass(M, View, RHIDevice);
-}
-
 // @brief - 텍스처를 다른 렌더 타겟으로 복사해주는 내부 헬퍼 함수
 static void ExecuteCopyPass(FSceneView* View, D3D11RHI* RHIDevice, ERTVMode Dst, RHI_SRV_Index Src)
 {
@@ -88,20 +32,61 @@ static void ExecuteCopyPass(FSceneView* View, D3D11RHI* RHIDevice, ERTVMode Dst,
 	Swap.Commit();
 }
 
-void FDepthOfFieldPass::ExecuteDownscalePass(FSceneView* View, D3D11RHI* RHIDevice)
+void FDepthOfFieldPass::Execute(const FPostProcessModifier& M, FSceneView* View, D3D11RHI* RHIDevice)
 {
-	FSwapGuard Swap(RHIDevice, 0, 2);
-	RHIDevice->OMSetRenderTargets(ERTVMode::DofBlurTarget);
+	if (UDepthOfFieldComponent* DofComponent = Cast<UDepthOfFieldComponent>(M.SourceObject); DofComponent == nullptr)
+	{
+		UE_LOG("DepthOfField: Source object is not a DepthOfFieldComponent!\n");
+		return;
+	}
 
-	UShader* VS = UResourceManager::GetInstance().Load<UShader>("FullScreenTriangle_VS");
-	UShader* PS = UResourceManager::GetInstance().Load<UShader>("DoF_Downscale_PS");
-	RHIDevice->PrepareShader(VS, PS);
+	// ============================================================
+	// (1) CoC 단계
+	// ============================================================
 
-	ID3D11ShaderResourceView* SRV = RHIDevice->GetSRV(RHI_SRV_Index::SceneColorSource);
-	RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &SRV);
-	RHIDevice->DrawFullScreenQuad();
+	// [필수] B. CoC 계산
+	ExecuteCoCPass(M, View, RHIDevice);
 
-	Swap.Commit();
+	// [선택] E. Dilation
+	// 전경 픽셀을 외곽으로 확대하여 경계 아티팩트 제거
+	ExecuteDilationPass(View, RHIDevice);
+
+
+	// ============================================================
+	// (2) Blur 단계
+	// ============================================================
+
+	// [선택] D. Near/Far Split
+	// Near와 Far 영역을 분리하여 각각 독립적으로 블러 적용 (아티팩트 절단)
+	ExecuteNearFarSplitPass(View, RHIDevice);
+
+	// [선택] C. Prefilter - Near/Far 각각에 적용하여 밝은 영역 강조
+	ExecutePreFilterPass(View, RHIDevice, RHI_SRV_Index::DofNearMap, ERTVMode::DofBlurTarget);
+	ExecuteCopyPass(View, RHIDevice, ERTVMode::DofNearTarget, RHI_SRV_Index::DofBlurMap);
+
+	ExecutePreFilterPass(View, RHIDevice, RHI_SRV_Index::DofFarMap, ERTVMode::DofBlurTarget);
+	ExecuteCopyPass(View, RHIDevice, ERTVMode::DofFarTarget, RHI_SRV_Index::DofBlurMap);
+
+	// [필수] F. Hex Blur (3-pass) - Near/Far 분리 방식
+	ExecuteHexBlurPass(View, RHIDevice, RHI_SRV_Index::DofNearMap, ERTVMode::DofNearTarget, RHI_SRV_Index::DofNearMap);
+	ExecuteHexBlurPass(View, RHIDevice, RHI_SRV_Index::DofFarMap, ERTVMode::DofFarTarget, RHI_SRV_Index::DofFarMap);
+
+	// 3) Near와 Far 블러 결과 병합
+	ExecuteMergeNearFarPass(View, RHIDevice);
+
+	// [선택] G. Upscale
+	//ExecuteUpscalePass(View, RHIDevice);
+
+	// [선택] T. Temporal Blend
+	//ExecuteTemporalBlendPass(View, RHIDevice);
+
+
+	// ============================================================
+	// (3) Composite 단계
+	// ============================================================
+	// 
+	// [필수] H. Composite
+	ExecuteCompositePass(M, View, RHIDevice);
 }
 
 void FDepthOfFieldPass::ExecuteCoCPass(const FPostProcessModifier& M, FSceneView* View, D3D11RHI* RHIDevice)
@@ -230,8 +215,44 @@ void FDepthOfFieldPass::ExecuteDilationPass(FSceneView* View, D3D11RHI* RHIDevic
 }
 
 
-void FDepthOfFieldPass::ExecutePreFilterPass(FSceneView* View, D3D11RHI* RHIDevice)
+void FDepthOfFieldPass::ExecutePreFilterPass(FSceneView* View, D3D11RHI* RHIDevice, RHI_SRV_Index InputSRV, ERTVMode OutputRTV)
 {
+	// PreFilter 패스: 밝은 영역을 추출 및 강조하여 보케 하이라이트 향상
+	ID3D11RenderTargetView* nullRTV = nullptr;
+	RHIDevice->GetDeviceContext()->OMSetRenderTargets(1, &nullRTV, nullptr);
+
+	ID3D11ShaderResourceView* nullSRVs[1] = { nullptr };
+	RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, nullSRVs);
+
+	FSwapGuard Swap(RHIDevice, 0, 1);
+	RHIDevice->OMSetRenderTargets(OutputRTV);
+	RHIDevice->OMSetDepthStencilState(EComparisonFunc::Always);
+	RHIDevice->OMSetBlendState(false);
+
+	UShader* VS = UResourceManager::GetInstance().Load<UShader>("Shaders/Utility/FullScreenTriangle_VS.hlsl");
+	UShader* PS = UResourceManager::GetInstance().Load<UShader>("Shaders/PostProcess/DoF_PreFilter_PS.hlsl");
+	if (!VS || !VS->GetVertexShader() || !PS || !PS->GetPixelShader())
+	{
+		UE_LOG("DoF PreFilter 셰이더 없음!\n");
+		return;
+	}
+
+	RHIDevice->PrepareShader(VS, PS);
+
+	ID3D11ShaderResourceView* InputTextureSRV = RHIDevice->GetSRV(InputSRV);
+	ID3D11SamplerState* LinearClampSampler = RHIDevice->GetSamplerState(RHI_Sampler_Index::LinearClamp);
+
+	if (!InputTextureSRV || !LinearClampSampler)
+	{
+		UE_LOG("DoF PreFilter: Required SRVs or Samplers are null!\n");
+		return;
+	}
+
+	RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &InputTextureSRV);
+	RHIDevice->GetDeviceContext()->PSSetSamplers(0, 1, &LinearClampSampler);
+
+	RHIDevice->DrawFullScreenQuad();
+	Swap.Commit();
 }
 
 void FDepthOfFieldPass::ExecuteNearFarSplitPass(FSceneView* View, D3D11RHI* RHIDevice)
@@ -299,10 +320,6 @@ void FDepthOfFieldPass::ExecuteNearFarSplitPass(FSceneView* View, D3D11RHI* RHID
 	// RTV 언바인드 (RTV/SRV 충돌 방지 - Near/Far 타겟을 다음 패스에서 SRV로 읽을 것이므로)
 	ID3D11RenderTargetView* nullRTVs[2] = { nullptr, nullptr };
 	RHIDevice->GetDeviceContext()->OMSetRenderTargets(2, nullRTVs, nullptr);
-}
-
-void FDepthOfFieldPass::ExecuteUpscalePass(FSceneView* View, D3D11RHI* RHIDevice)
-{
 }
 
 void FDepthOfFieldPass::ExecuteTemporalBlendPass(FSceneView* View, D3D11RHI* RHIDevice)
