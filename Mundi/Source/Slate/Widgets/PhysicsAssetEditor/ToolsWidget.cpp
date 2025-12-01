@@ -62,7 +62,9 @@ void UToolsWidget::RenderGenerationSection()
 	{
 		ImGui::Indent(8.0f);
 
-		float buttonWidth = ImGui::GetContentRegionAvail().x - 8.0f;
+		float fullWidth = ImGui::GetContentRegionAvail().x - 8.0f;
+		float inputWidth = fullWidth * 0.6f;  // 입력 위젯은 60% 너비
+		float buttonWidth = fullWidth;  // 버튼은 전체 너비
 
 		// Primitive Type 콤보박스
 		// EAggCollisionShape: Sphere=0, Box=1, Sphyl=2 (Capsule)
@@ -72,7 +74,7 @@ void UToolsWidget::RenderGenerationSection()
 		else if (SelectedPrimitiveType == EAggCollisionShape::Box) currentType = 1;
 		else if (SelectedPrimitiveType == EAggCollisionShape::Sphyl) currentType = 2;
 
-		ImGui::SetNextItemWidth(buttonWidth);
+		ImGui::SetNextItemWidth(inputWidth);
 		if (ImGui::Combo("Primitive Type", &currentType, PrimitiveTypes, IM_ARRAYSIZE(PrimitiveTypes)))
 		{
 			switch (currentType)
@@ -84,7 +86,7 @@ void UToolsWidget::RenderGenerationSection()
 		}
 
 		// Min Bone Size 슬라이더
-		ImGui::SetNextItemWidth(buttonWidth);
+		ImGui::SetNextItemWidth(inputWidth);
 		ImGui::SliderFloat("Min Bone Size", &MinBoneSize, 0.001f, 0.1f, "%.3f");
 		if (ImGui::IsItemHovered())
 		{
