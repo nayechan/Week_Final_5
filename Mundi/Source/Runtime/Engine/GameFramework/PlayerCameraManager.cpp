@@ -6,7 +6,6 @@
 #include "Camera/CamMod_LetterBox.h"
 #include "Camera/CamMod_Vignette.h"
 #include "Camera/CamMod_Gamma.h"
-#include "Camera/CamMod_DOF.h"
 #include "SceneView.h"
 #include "CameraActor.h"
 #include "CameraComponent.h"
