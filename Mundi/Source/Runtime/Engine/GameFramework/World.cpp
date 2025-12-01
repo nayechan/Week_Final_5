@@ -714,11 +714,7 @@ AActor* UWorld::SpawnActor(UClass* Class, const FTransform& Transform)
 
 	// 현재 레벨에 액터 등록
 	AddActorToLevel(NewActor);
-
-	if (this->bPie)
-	{
-		NewActor->BeginPlay();
-	}
+	NewActor->BeginPlay();
 
 	return NewActor;
 }

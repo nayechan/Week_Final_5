@@ -122,3 +122,76 @@ FArchive& operator<<(FArchive& Ar, FStaticMesh& Mesh)
     }
     return Ar;
 }
+
+FArchive& operator<<(FArchive& Ar, FSkeletalMeshData& Data)
+{
+    if (Ar.IsSaving())
+    {
+        // 1. Vertices 저장
+        Serialization::WriteArray(Ar, Data.Vertices);
+
+        // 2. Indices 저장
+        Serialization::WriteArray(Ar, Data.Indices);
+
+        // 3. Skeleton 저장
+        Ar << Data.Skeleton;
+
+        // 4. GroupInfos 저장
+        uint32 gCount = static_cast<uint32>(Data.GroupInfos.size());
+        Ar << gCount;
+        for (auto& g : Data.GroupInfos)
+        {
+            Ar << g;
+        }
+
+        // 5. Material 플래그 저장
+        Ar << Data.bHasMaterial;
+
+        // 6. CacheFilePath 저장
+        Serialization::WriteString(Ar, Data.CacheFilePath);
+
+        // *** BodySetup 저장 ***
+        uint8 bHasBodySetup = (Data.BodySetup != nullptr) ? 1 : 0;
+        Ar << bHasBodySetup;
+        if (bHasBodySetup && Data.BodySetup)
+        {
+            Ar << *Data.BodySetup;
+        }
+    }
+    else if (Ar.IsLoading())
+    {
+        // 1. Vertices 로드
+        Serialization::ReadArray(Ar, Data.Vertices);
+
+        // 2. Indices 로드
+        Serialization::ReadArray(Ar, Data.Indices);
+
+        // 3. Skeleton 로드
+        Ar << Data.Skeleton;
+
+        // 4. GroupInfos 로드
+        uint32 gCount;
+        Ar << gCount;
+        Data.GroupInfos.resize(gCount);
+        for (auto& g : Data.GroupInfos)
+        {
+            Ar << g;
+        }
+
+        // 5. Material 플래그 로드
+        Ar << Data.bHasMaterial;
+
+        // 6. CacheFilePath 로드
+        Serialization::ReadString(Ar, Data.CacheFilePath);
+
+        // *** BodySetup 로드 ***
+        uint8 bHasBodySetup = 0;
+        Ar << bHasBodySetup;
+        if (bHasBodySetup)
+        {
+            Data.BodySetup = ObjectFactory::NewObject<UBodySetup>();
+            Ar << *Data.BodySetup;
+        }
+    }
+    return Ar;
+}

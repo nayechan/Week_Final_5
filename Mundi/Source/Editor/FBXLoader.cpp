@@ -13,6 +13,8 @@
 #include <filesystem>
 #include <functional>
 
+#include "ObjManager.h"
+
 IMPLEMENT_CLASS(UFbxLoader)
 
 // 노드가 스켈레톤 속성을 포함하는지 확인
@@ -447,6 +449,11 @@ FSkeletalMeshData* UFbxLoader::LoadFbxMeshAsset(const FString& FilePath)
 		MeshData->GroupInfos[MatrialIndex].StartIndex = Count;
 		MeshData->GroupInfos[MatrialIndex].IndexCount = IndexList.Num();
 		Count += IndexList.Num();
+	}
+	
+	if (MeshData->Vertices.size() > 0)
+	{
+		MeshData->BodySetup = FObjManager::GenerateBodySetupFromSkeletalMesh(MeshData);
 	}
 
 #ifdef USE_OBJ_CACHE

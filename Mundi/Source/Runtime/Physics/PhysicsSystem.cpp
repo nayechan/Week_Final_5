@@ -86,7 +86,10 @@ void FPhysicsSystem::ReconnectPVD()
 {
     if (!mPvd) return;
 
-    if (mPvd->isConnected()) { mPvd->disconnect(); }
+    if (mPvd->isConnected())
+    {
+        mPvd->disconnect();
+    }
 
     PxPvdTransport* transport = mPvd->getTransport();
     

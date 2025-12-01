@@ -71,4 +71,5 @@ public:
 	static void RegisterStaticMeshAsset(const FString& PathFileName, FStaticMesh* InStaticMesh);
 	// UBodySetup 생성
 	static UBodySetup* GenerateBodySetupFromMesh(FStaticMesh* InMesh);
+	static UBodySetup* GenerateBodySetupFromSkeletalMesh(FSkeletalMeshData* InMesh);
 };

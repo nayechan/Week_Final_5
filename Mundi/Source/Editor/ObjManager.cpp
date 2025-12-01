@@ -342,8 +342,6 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 			NewFStaticMesh->CacheFilePath = BinPathFileName;
 			bLoadedSuccessfully = true;
 			UE_LOG("Successfully loaded '%s' from cache.", NormalizedPathStr.c_str());
-			
-			NewFStaticMesh->BodySetup->CreatePhysicsMeshes();
 		}
 		catch (const std::exception& e)
 		{
@@ -409,7 +407,6 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 		if (NewFStaticMesh->Vertices.size() > 0)
 		{
 			NewFStaticMesh->BodySetup = GenerateBodySetupFromMesh(NewFStaticMesh);
-			NewFStaticMesh->BodySetup->CreatePhysicsMeshes();
 		}
 
 #ifdef USE_OBJ_CACHE
@@ -442,7 +439,6 @@ FStaticMesh* FObjManager::LoadObjStaticMeshAsset(const FString& PathFileName)
 		if (!NewFStaticMesh->BodySetup && NewFStaticMesh->Vertices.size() > 0)
 		{
 			NewFStaticMesh->BodySetup = GenerateBodySetupFromMesh(NewFStaticMesh);
-			NewFStaticMesh->BodySetup->CreatePhysicsMeshes();
 			bNeedsUpdate = true;
 		}
 		
@@ -577,6 +573,46 @@ UBodySetup* FObjManager::GenerateBodySetupFromMesh(FStaticMesh* InMesh)
 
 	// Convex Shape
 	BodySetup->AddConvexElem(ConvexVertices);
+	BodySetup->CreatePhysicsMeshes();
+
+	return BodySetup;
+}
+
+UBodySetup* FObjManager::GenerateBodySetupFromSkeletalMesh(FSkeletalMeshData* InMesh)
+{
+	// 1. 데이터 유효성 검사
+	if (!InMesh || InMesh->Vertices.empty())
+	{
+		UE_LOG("ERROR: Invalid skeletal mesh for BodySetup generation");
+		return nullptr;
+	}
+
+	UBodySetup* BodySetup = NewObject<UBodySetup>();
+	BodySetup->DefaultCollisionEnabled = ECollisionEnabled::QueryAndPhysics;
+
+	FVector MinBound(FLT_MAX, FLT_MAX, FLT_MAX);
+	FVector MaxBound(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	// Convex용 버텍스 배열 예약
+	TArray<FVector> ConvexVertices;
+	ConvexVertices.Reserve(InMesh->Vertices.size());
+
+	for (const auto& Vertex : InMesh->Vertices)
+	{
+		const FVector& Pos = Vertex.Position; 
+
+		MinBound = MinBound.ComponentMin(Pos);
+		MaxBound = MaxBound.ComponentMax(Pos);
+       
+		ConvexVertices.Add(Pos); 
+	}
+
+	FVector BoxCenter = (MinBound + MaxBound) * 0.5f;
+	FVector BoxExtent = (MaxBound - MinBound) * 0.5f;
+    
+	BodySetup->AddBoxElem(BoxExtent.X, BoxExtent.Y, BoxExtent.Z, BoxCenter, FQuat::Identity());
+	BodySetup->AddConvexElem(ConvexVertices);
+	BodySetup->CreatePhysicsMeshes();
 
 	return BodySetup;
 }
