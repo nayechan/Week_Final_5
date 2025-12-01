@@ -14,5 +14,7 @@ public:
 
     void DuplicateSubObjects() override;
     DECLARE_DUPLICATE(UGizmoScaleComponent)
+    
+    bool CanSimulatingPhysics() const override { return false; }
 };
 

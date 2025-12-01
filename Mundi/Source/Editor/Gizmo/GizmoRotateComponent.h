@@ -13,5 +13,7 @@ public:
 
     void DuplicateSubObjects() override;
     DECLARE_DUPLICATE(UGizmoRotateComponent)
+    
+    bool CanSimulatingPhysics() const override { return false; }
 };
 

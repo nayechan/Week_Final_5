@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "Object.h"
+#include "ResourceBase.h"
 #include "SkeletalBodySetup.h"
 #include "PhysicsConstraintTemplate.h"
 #include "UPhysicsAsset.generated.h"
@@ -54,11 +54,15 @@ namespace std
  * - 캐릭터 충돌 처리
  */
 UCLASS(DisplayName="Physics Asset", Description="스켈레탈 메시용 물리 에셋")
-class UPhysicsAsset : public UObject
+class UPhysicsAsset : public UResourceBase
 {
     GENERATED_REFLECTION_BODY()
 
 public:
+    // --- 리소스 로드/저장 ---
+    void Load(const FString& InFilePath, ID3D11Device* InDevice = nullptr);
+    void Save(const FString& InFilePath);
+
     // --- BodySetup 컬렉션 ---
 
     // 모든 SkeletalBodySetup 배열 (각 본에 대응)

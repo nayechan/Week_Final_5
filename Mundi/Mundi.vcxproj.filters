@@ -1161,7 +1161,7 @@
     <ClCompile Include="Generated\UBodySetupCore.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
-    <ClCompile Include="Generated\FBodyInstance.generated.cpp">
+    <ClCompile Include="Generated\FKConvexElem.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
   </ItemGroup>
@@ -2441,7 +2441,7 @@
     <ClInclude Include="Generated\UBodySetupCore.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
-    <ClInclude Include="Generated\FBodyInstance.generated.h">
+    <ClInclude Include="Generated\FKConvexElem.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
   </ItemGroup>

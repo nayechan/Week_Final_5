@@ -72,6 +72,11 @@ void UStaticMesh::Load(const FString& InFilePath, ID3D11Device* InDevice, EVerte
         // SkeletalMeshData를 StaticMesh로 변환
         StaticMeshAsset = ConvertSkeletalToStaticMesh(*SkeletalData);
         StaticMeshAsset->PathFileName = InFilePath;
+        if (StaticMeshAsset->BodySetup == nullptr)
+        {
+            // 캐싱화 안되어있어서 너무 느림
+            // StaticMeshAsset->BodySetup = FObjManager::GenerateBodySetupFromMesh(StaticMeshAsset);
+        }
 
         // FBX 메시를 ObjManager 캐시에 등록 (메모리 관리)
         FObjManager::RegisterStaticMeshAsset(InFilePath, StaticMeshAsset);

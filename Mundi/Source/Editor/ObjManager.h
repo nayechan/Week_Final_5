@@ -59,7 +59,7 @@ class UStaticMesh;
 
 class FObjManager
 {
-private:
+private:	
 	static TMap<FString, FStaticMesh*> ObjStaticMeshMap;
 public:
 	static void Preload();
@@ -69,4 +69,6 @@ public:
 
 	// FBX 등 외부에서 생성된 FStaticMesh를 캐시에 등록
 	static void RegisterStaticMeshAsset(const FString& PathFileName, FStaticMesh* InStaticMesh);
+	// UBodySetup 생성
+	static UBodySetup* GenerateBodySetupFromMesh(FStaticMesh* InMesh);
 };

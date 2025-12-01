@@ -41,6 +41,9 @@ public:
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
     DECLARE_DUPLICATE(UGizmoArrowComponent)
+    
+    bool CanSimulatingPhysics() const override { return false; }
+    
 protected:
     float ComputeScreenConstantScale(float ViewWidth, float ViewHeight, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix, float TargetPixels) const;
 

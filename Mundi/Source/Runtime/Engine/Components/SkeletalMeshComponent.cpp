@@ -516,9 +516,6 @@ void USkeletalMeshComponent::InitRagdoll()
     // Constraint 생성
     CreateRagdollConstraints();
 
-    // 인접 바디 충돌 비활성화
-    //ApplyCollisionDisableTable();
-
     // 블렌딩용 포즈 배열 초기화
     const int32 NumBones = Skeleton->Bones.Num();
     PreRagdollPose.SetNum(NumBones);
@@ -622,42 +619,6 @@ void USkeletalMeshComponent::CreateRagdollConstraints()
     }
 
     UE_LOG("[Ragdoll] CreateRagdollConstraints: %d constraints created", RagdollConstraints.Num());
-}
-
-void USkeletalMeshComponent::ApplyCollisionDisableTable()
-{
-    if (!SkeletalMesh)
-    {
-        return;
-    }
-
-    UPhysicsAsset* PhysAsset = SkeletalMesh->GetPhysicsAsset();
-    if (!PhysAsset)
-    {
-        return;
-    }
-
-    // PhysicsAsset의 CollisionDisableTable 적용
-    // 인접한 바디 간 자기 충돌 방지
-    for (const auto& Pair : PhysAsset->CollisionDisableTable)
-    {
-        int32 Idx1 = Pair.first.BodyIndex1;
-        int32 Idx2 = Pair.first.BodyIndex2;
-
-        if (Idx1 >= 0 && Idx1 < RagdollBodies.Num() &&
-            Idx2 >= 0 && Idx2 < RagdollBodies.Num())
-        {
-            FBodyInstance* Body1 = RagdollBodies[Idx1];
-            FBodyInstance* Body2 = RagdollBodies[Idx2];
-
-            if (Body1 && Body2 && Body1->RigidActor && Body2->RigidActor)
-            {
-                // TODO: PhysX 충돌 필터 설정
-                // PxSetGroupCollisionFlag 또는 SimulationFilterShader에서 처리
-                // 현재는 PhysicsAsset에서 설정된 테이블만 참조
-            }
-        }
-    }
 }
 
 void USkeletalMeshComponent::StartRagdoll(bool bBlend)

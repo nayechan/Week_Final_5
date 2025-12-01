@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "BodySetup.h"
 #include "PhysicsSystem.h"
 #include "BodySetupCore.h"
 
@@ -26,7 +27,7 @@ public:
     
 // --- 초기화/해제 ---
 public:
-    void InitBody(UBodySetup* Setup, const FTransform& Transform, UPrimitiveComponent* PrimComp, class FPhysicsScene* InRBScene);
+    void InitBody(UBodySetup* Setup, const FTransform& Transform, UPrimitiveComponent* PrimComp, class FPhysicsScene* InRBScene, ECollisionShapeMode ShapeMode = ECollisionShapeMode::Simple);
     void TermBody();
 
 private:

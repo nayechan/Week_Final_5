@@ -172,6 +172,8 @@ public:
 	// 리본 파티클 렌더링
 	void FillRibbonBuffers(const FSceneView* View);
 	void CreateRibbonParticleBatch(TArray<FMeshBatchElement>& OutMeshBatchElements);
+	
+	bool CanSimulatingPhysics() const override { return false; }
 
 private:
 	void InitializeEmitterInstances();

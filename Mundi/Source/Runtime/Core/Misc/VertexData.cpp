@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "VertexData.h"
+#include "BodySetup.h"
 
 void FBillboardVertex::FillFrom(const FMeshData& mesh, size_t i)
 {
@@ -73,4 +74,51 @@ void FBillboardVertexInfo_GPU::FillFrom(const FNormalVertex& src)
     UVRect[1] = src.color.Y;
     UVRect[2] = src.color.Z;
     UVRect[3] = src.color.W;
+}
+
+FArchive& operator<<(FArchive& Ar, FStaticMesh& Mesh)
+{
+    if (Ar.IsSaving())
+    {
+        Serialization::WriteString(Ar, Mesh.PathFileName);
+        Serialization::WriteArray(Ar, Mesh.Vertices);
+        Serialization::WriteArray(Ar, Mesh.Indices);
+
+        uint32_t gCount = (uint32_t)Mesh.GroupInfos.size();
+        Ar << gCount;
+        for (auto& g : Mesh.GroupInfos) Ar << g;
+
+        Ar << Mesh.bHasMaterial;
+
+        // *** BodySetup 저장 ***
+        uint8 bHasBodySetup = (Mesh.BodySetup != nullptr) ? 1 : 0;
+        Ar << bHasBodySetup;
+        if (bHasBodySetup && Mesh.BodySetup)
+        {
+            Ar << *Mesh.BodySetup;
+        }
+    }
+    else if (Ar.IsLoading())
+    {
+        Serialization::ReadString(Ar, Mesh.PathFileName);
+        Serialization::ReadArray(Ar, Mesh.Vertices);
+        Serialization::ReadArray(Ar, Mesh.Indices);
+
+        uint32_t gCount;
+        Ar << gCount;
+        Mesh.GroupInfos.resize(gCount);
+        for (auto& g : Mesh.GroupInfos) Ar << g;
+
+        Ar << Mesh.bHasMaterial;
+
+        // *** BodySetup 로드 ***
+        uint8 bHasBodySetup = 0;
+        Ar << bHasBodySetup;
+        if (bHasBodySetup)
+        {
+            Mesh.BodySetup = ObjectFactory::NewObject<UBodySetup>();
+            Ar << *Mesh.BodySetup;
+        }
+    }
+    return Ar;
 }

@@ -207,6 +207,18 @@ void UStaticMeshComponent::OnTransformUpdated()
 	MarkWorldPartitionDirty();
 }
 
+void UStaticMeshComponent::CreatePhysicsState()
+{
+	if (!CanSimulatingPhysics() || !GetBodySetup()) { return; }
+	FPhysicsScene* PhysScene = GetWorld() ? GetWorld()->GetPhysicsScene() : nullptr;
+	BodyInstance.InitBody(GetBodySetup(), GetWorldTransform(), this, PhysScene, ShapeMode);
+}
+
+UBodySetup* UStaticMeshComponent::GetBodySetup()
+{
+	return StaticMesh->GetStaticMeshAsset()->BodySetup;
+}
+
 void UStaticMeshComponent::DuplicateSubObjects()
 {
 	Super::DuplicateSubObjects();

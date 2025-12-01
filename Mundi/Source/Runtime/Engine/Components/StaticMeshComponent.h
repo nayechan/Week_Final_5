@@ -46,5 +46,11 @@ public:
 protected:
 	void OnTransformUpdated() override;
 
+public:
+	UPROPERTY(EditAnywhere, Category="Physics", DisplayName="충돌 모드")
+	ECollisionShapeMode ShapeMode = ECollisionShapeMode::Simple;
+	
 protected:
+	void CreatePhysicsState() override;
+	UBodySetup* GetBodySetup() override;
 };

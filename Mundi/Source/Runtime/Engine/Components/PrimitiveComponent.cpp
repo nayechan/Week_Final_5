@@ -108,12 +108,14 @@ void UPrimitiveComponent::SyncComponentToPhysics()
 
 void UPrimitiveComponent::CreatePhysicsState()
 {
+    if (!CanSimulatingPhysics() || !GetBodySetup()) { return; }
     FPhysicsScene* PhysScene = GetWorld() ? GetWorld()->GetPhysicsScene() : nullptr;
     BodyInstance.InitBody(GetBodySetup(), GetWorldTransform(), this, PhysScene);
 }
 
 void UPrimitiveComponent::RecreatePhysicsState()
 {
+    if (!CanSimulatingPhysics()) { return; }
     if (BodyInstance.IsValidBodyInstance())
     {
         BodyInstance.TermBody();

@@ -8,6 +8,13 @@
 // 전방 선언
 struct FBodyInstance;
 
+UENUM(DisplayName="충돌 생성 모드")
+enum class ECollisionShapeMode : uint8
+{
+    Simple,     // Box, Sphere, Capsule만 생성 (가벼움)
+    Convex,     // Convex Hull만 생성 (정밀함)
+};
+
 /**
  * UBodySetup
  *
@@ -27,7 +34,6 @@ class UBodySetup : public UBodySetupCore
 
 public:
     // --- 충돌 Geometry ---
-
     // 충돌 Geometry 컨테이너 (Sphere, Box, Capsule 등)
     UPROPERTY(EditAnywhere, Category="BodySetup")
     FKAggregateGeom AggGeom;
@@ -44,19 +50,28 @@ public:
 
     // --- 생성자/소멸자 ---
     UBodySetup();
-    virtual ~UBodySetup();
+    ~UBodySetup() override;
 
-    // --- PhysX Shape 생성 ---
+    // 리소스 쿠킹 (Cooking) - 데이터 로드 시점에 호출
+    /**
+     * VertexData를 기반으로 PhysX ConvexMesh를 '쿠킹'하여 메모리에 저장
+     * BodyInstance나 Scale과는 무관하게, 에셋 자체의 데이터를 준비
+     */
+    void CreatePhysicsMeshes(); 
 
+    /** * 쿠킹된 PhysX 리소스 해제 */
+    void ClearPhysicsMeshes();
+    
     /**
      * AggGeom의 모든 Shape를 PhysX Shape로 변환하여 BodyInstance에 추가
      *
      * @param BodyInstance 대상 FBodyInstance
      * @param Scale3D 적용할 스케일
      * @param InMaterial 사용할 물리 재질 (nullptr이면 PhysMaterial 또는 기본 재질 사용)
+     * @param ShapeMode 어떤 도형들을 생성할지 (Box만, 혹은 Convex만)
      */
     void CreatePhysicsShapes(FBodyInstance* BodyInstance, const FVector& Scale3D = FVector::One(),
-                             UPhysicalMaterial* InMaterial = nullptr);
+                             UPhysicalMaterial* InMaterial = nullptr, ECollisionShapeMode ShapeMode = ECollisionShapeMode::Simple);
 
     /**
      * 개별 Shape 생성 함수들 (내부 사용)
@@ -67,6 +82,7 @@ public:
                                     physx::PxMaterial* Material);
     physx::PxShape* CreateCapsuleShape(const FKSphylElem& Elem, const FVector& Scale3D,
                                         physx::PxMaterial* Material);
+    physx::PxShape* CreateConvexShape(const FKConvexElem& Elem, const FVector& Scale3D, physx::PxMaterial* Material);
 
     // --- 유틸리티 ---
 
@@ -93,10 +109,11 @@ public:
     int32 AddCapsuleElem(float Radius, float HalfHeight,
                          const FVector& Center = FVector::Zero(),
                          const FQuat& Rotation = FQuat::Identity());
-
+    int32 AddConvexElem(const TArray<FVector>& InVertices, const FTransform& InTransform = FTransform());
+    
     // 모든 Shape 제거
     void ClearAllShapes();
 
     // --- 직렬화 ---
-    virtual void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
+    friend FArchive& operator<<(FArchive& Ar, UBodySetup& BodySetup);
 };

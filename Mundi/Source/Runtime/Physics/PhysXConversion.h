@@ -21,14 +21,14 @@ namespace PhysXConvert
     inline physx::PxVec3 ToPx(const FVector& V)
     {
         // X→Z, Y→X, Z→Y
-        return physx::PxVec3(V.Y, V.Z, V.X);
+        return physx::PxVec3(-V.Y, V.Z, V.X);
     }
 
     // PhysX → 프로젝트
     inline FVector FromPx(const physx::PxVec3& V)
     {
         // Z→X, X→Y, Y→Z
-        return FVector(V.z, V.x, V.y);
+        return FVector(V.z, -V.x, V.y);
     }
 
     // --- 회전(Quaternion) 변환 --- 
@@ -38,14 +38,14 @@ namespace PhysXConvert
     {
         // 쿼터니언 축도 동일하게 변환
         // (X, Y, Z, W) → (Y, Z, X, W)
-        return physx::PxQuat(Q.Y, Q.Z, Q.X, Q.W);
+        return physx::PxQuat(-Q.Y, Q.Z, Q.X, -Q.W);
     }
 
     // PhysX → 프로젝트
     inline FQuat FromPx(const physx::PxQuat& Q)
     {
         // (X, Y, Z, W) → (Z, X, Y, W)
-        return FQuat(Q.z, Q.x, Q.y, Q.w);
+        return FQuat(Q.z, -Q.x, Q.y, -Q.w);
     }
 
     // --- Transform 변환 --- 

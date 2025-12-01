@@ -28,6 +28,8 @@ public:
 
 	// ───── 복사 관련 ────────────────────────────
 	void DuplicateSubObjects() override;
+	
+	bool CanSimulatingPhysics() const override { return false; }
 
 private:
 	FString Text;

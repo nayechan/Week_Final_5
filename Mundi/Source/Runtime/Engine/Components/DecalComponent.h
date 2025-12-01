@@ -70,6 +70,8 @@ public:
 	virtual void TickComponent(float DeltaTime) override;
 
 	void OnRegister(UWorld* InWorld) override;
+	
+    bool CanSimulatingPhysics() const override { return false; }
 
 private:
 	//UPROPERTY(EditAnywhere, Category="Decal", Tooltip="데칼 텍스처입니다")

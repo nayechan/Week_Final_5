@@ -55,6 +55,8 @@ public:
         return bIsCulled;
     }
 
+    // 클래스별로 물리가 가능한지 아닌지 결정 
+    virtual bool CanSimulatingPhysics() const { return false; }
     bool IsSimulatingPhysics() const
     {
         return BodyInstance.IsSimulatePhysics();
@@ -74,7 +76,7 @@ public:
     bool bBlockComponent;
 
 protected:
-    void CreatePhysicsState();
+    virtual void CreatePhysicsState();
     
 public:
     void RecreatePhysicsState();

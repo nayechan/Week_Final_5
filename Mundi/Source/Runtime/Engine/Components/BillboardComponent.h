@@ -43,6 +43,8 @@ public:
 
     // Duplication
     void DuplicateSubObjects() override;
+    
+    bool CanSimulatingPhysics() const override { return false; }
 
 private:
     FString TexturePath;

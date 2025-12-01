@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "SphereElem.h"
 #include "BoxElem.h"
+#include "ConvexElem.h"
 #include "SphylElem.h"
 #include "FKAggregateGeom.generated.h"
 
@@ -20,14 +21,16 @@ public:
 
     UPROPERTY(EditAnywhere, Category="Shapes")
     TArray<FKSphylElem> SphylElems;
+    
+    UPROPERTY(EditAnywhere, Category="Shapes")
+    TArray<FKConvexElem> ConvexElems;
 
     // 생성자
     FKAggregateGeom() = default;
 
     FKAggregateGeom(const FKAggregateGeom& Other)
-        : SphereElems(Other.SphereElems)
-        , BoxElems(Other.BoxElems)
-        , SphylElems(Other.SphylElems)
+        : SphereElems(Other.SphereElems), BoxElems(Other.BoxElems)
+        , SphylElems(Other.SphylElems), ConvexElems(Other.ConvexElems)
     {
     }
 
@@ -38,6 +41,7 @@ public:
             SphereElems = Other.SphereElems;
             BoxElems = Other.BoxElems;
             SphylElems = Other.SphylElems;
+            ConvexElems = Other.ConvexElems;
         }
         return *this;
     }
@@ -45,7 +49,7 @@ public:
     // 전체 Element 개수
     int32 GetElementCount() const
     {
-        return SphereElems.Num() + BoxElems.Num() + SphylElems.Num();
+        return SphereElems.Num() + BoxElems.Num() + SphylElems.Num() + ConvexElems.Num();
     }
 
     // 타입별 Element 개수
@@ -56,6 +60,7 @@ public:
         case EAggCollisionShape::Sphere: return SphereElems.Num();
         case EAggCollisionShape::Box:    return BoxElems.Num();
         case EAggCollisionShape::Sphyl:  return SphylElems.Num();
+        case EAggCollisionShape::Convex:  return ConvexElems.Num();
         default: return 0;
         }
     }
@@ -77,6 +82,10 @@ public:
             if (Index >= 0 && Index < SphylElems.Num())
                 return &SphylElems[Index];
             break;
+        case EAggCollisionShape::Convex:
+            if (Index >= 0 && Index < ConvexElems.Num())
+                return &ConvexElems[Index];
+            break;
         default:
             break;
         }
@@ -94,6 +103,7 @@ public:
         int32 SphereCount = SphereElems.Num();
         int32 BoxCount = BoxElems.Num();
         int32 SphylCount = SphylElems.Num();
+        int32 ConvexCount = ConvexElems.Num();
 
         if (InIndex < SphereCount)
         {
@@ -110,6 +120,12 @@ public:
         if (InIndex < SphylCount)
         {
             return &SphylElems[InIndex];
+        }
+        InIndex -= SphylCount;
+        
+        if (InIndex < ConvexCount)
+        {
+            return &ConvexElems[InIndex];
         }
 
         return nullptr;
@@ -138,6 +154,11 @@ public:
             if (SphylElems[i].GetName() == InName)
                 return &SphylElems[i];
         }
+        for (int32 i = 0; i < ConvexElems.Num(); ++i)
+        {
+            if (ConvexElems[i].GetName() == InName)
+                return &ConvexElems[i];
+        }
         return nullptr;
     }
 
@@ -164,6 +185,12 @@ public:
                 return Index;
             ++Index;
         }
+        for (int32 i = 0; i < ConvexElems.Num(); ++i)
+        {
+            if (ConvexElems[i].GetName() == InName)
+                return Index;
+            ++Index;
+        }
 
         return -1; // Not found
     }
@@ -174,6 +201,7 @@ public:
         SphereElems.Empty();
         BoxElems.Empty();
         SphylElems.Empty();
+        ConvexElems.Empty();
     }
 
     // Shape 추가 함수들
@@ -190,6 +218,11 @@ public:
     int32 AddSphylElem(const FKSphylElem& Elem)
     {
         return SphylElems.Add(Elem);
+    }
+
+    int32 AddConvexElem(const FKConvexElem& Elem)
+    {
+        return ConvexElems.Add(Elem);
     }
 
     // Shape 제거 함수들
@@ -217,6 +250,14 @@ public:
         }
     }
 
+    void RemoveConvexElem(int32 Index)
+    {
+        if (Index >= 0 && Index < ConvexElems.Num())
+        {
+            ConvexElems.RemoveAt(Index);
+        }
+    }
+
     // 전체 볼륨 계산
     float GetScaledVolume(const FVector& Scale3D) const
     {
@@ -237,6 +278,11 @@ public:
             if (SphylElems[i].GetContributeToMass())
                 Volume += SphylElems[i].GetScaledVolume(Scale3D);
         }
+        for (int32 i = 0; i < ConvexElems.Num(); ++i)
+        {
+            if (ConvexElems[i].GetContributeToMass())
+                Volume += ConvexElems[i].GetScaledVolume(Scale3D);
+        }
 
         return Volume;
     }
@@ -244,7 +290,7 @@ public:
     // 비어있는지 확인
     bool IsEmpty() const
     {
-        return SphereElems.IsEmpty() && BoxElems.IsEmpty() && SphylElems.IsEmpty();
+        return SphereElems.IsEmpty() && BoxElems.IsEmpty() && SphylElems.IsEmpty() && ConvexElems.IsEmpty();
     }
 
     // 유효한 Shape가 있는지 확인
@@ -284,6 +330,15 @@ public:
                 SphylElems[i].DrawElemSolid(PDI, ElemTM, Scale, Color);
             else
                 SphylElems[i].DrawElemWire(PDI, ElemTM, Scale, Color);
+        }
+
+        for (int32 i = 0; i < SphylElems.Num(); ++i)
+        {
+            FTransform ElemTM = Transform * ConvexElems[i].GetTransform();
+            if (bDrawSolid)
+                ConvexElems[i].DrawElemSolid(PDI, ElemTM, Scale, Color);
+            else
+                ConvexElems[i].DrawElemWire(PDI, ElemTM, Scale, Color);
         }
     }
 };

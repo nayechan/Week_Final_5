@@ -27,6 +27,8 @@ public:
     void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
     
     void DuplicateSubObjects() override;
+    
+    bool CanSimulatingPhysics() const override { return true; }
 
 protected:
     void MarkWorldPartitionDirty();

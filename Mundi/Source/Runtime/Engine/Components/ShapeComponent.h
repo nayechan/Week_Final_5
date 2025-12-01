@@ -64,6 +64,8 @@ public:
 
 	// Duplication
 	virtual void DuplicateSubObjects() override;
+	
+	bool CanSimulatingPhysics() const override { return true; }
 
 	// ㅡㅡㅡㅡㅡㅡㅡㅡㅡ디버깅용ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
  

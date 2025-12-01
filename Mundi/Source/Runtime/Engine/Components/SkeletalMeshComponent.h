@@ -251,11 +251,6 @@ protected:
      */
     void CreateRagdollConstraints();
 
-    /**
-     * 인접 바디 간 충돌 비활성화 적용
-     */
-    void ApplyCollisionDisableTable();
-
 private:
     // --- Ragdoll 상태 ---
     ERagdollState RagdollState = ERagdollState::Disabled;
@@ -269,5 +264,5 @@ private:
 
     // --- 블렌딩용 포즈 저장 ---
     TArray<FTransform> PreRagdollPose;  // Ragdoll 전환 전 애니메이션 포즈
-    TArray<FTransform> RagdollPose;     // 물리에서 가져온 포즈
+    TArray<FTransform> RagdollPose;     // 피직스에서 가져온 포즈
 };

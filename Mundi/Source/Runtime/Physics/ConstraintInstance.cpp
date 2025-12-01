@@ -78,7 +78,7 @@ void FConstraintInstance::InitConstraint(
 
     // 본 방향: 부모→자식 (Twist 축으로 사용)
     PxVec3 BoneDirection = (ChildGlobalPose.p - ParentGlobalPose.p);
-    if (BoneDirection.magnitude() < 0.001f)
+    if (BoneDirection.magnitude() < KINDA_SMALL_NUMBER)
     {
         BoneDirection = PxVec3(1, 0, 0);  // 거리가 너무 가까우면 기본값 사용
     }
@@ -197,7 +197,7 @@ void FConstraintInstance::ConfigureLinearLimits(PxD6Joint* Joint)
 {
     if (!Joint) return;
 
-    // 선형 모션 타입 변환 헬퍼
+    // 선형 모션 타입 변환
     auto ToPxMotion = [](ELinearConstraintMotion Motion) -> PxD6Motion::Enum
     {
         switch (Motion)
@@ -238,7 +238,7 @@ void FConstraintInstance::ConfigureAngularLimits(PxD6Joint* Joint)
 {
     if (!Joint) return;
 
-    // 각도 모션 타입 변환 헬퍼
+    // 각도 모션 타입 변환
     auto ToPxMotion = [](EAngularConstraintMotion Motion) -> PxD6Motion::Enum
     {
         switch (Motion)
@@ -261,7 +261,6 @@ void FConstraintInstance::ConfigureAngularLimits(PxD6Joint* Joint)
     float Swing2Rad = PhysXConvert::DegreesToRadians(Swing2LimitAngle);
 
     // contactDist: limit 경계에서 부드러운 접촉 처리를 위한 거리
-    // 이 값이 없으면 PVD에서 오류가 발생할 수 있음
     float ContactDist = 0.01f;
 
     // Twist 제한 설정

@@ -42,11 +42,11 @@ public:
 
 	/** Capsule의 반지름 (로컬 스페이스) */
 	UPROPERTY(EditAnywhere, Category="CapsuleRadius")
-	float CapsuleRadius = 50.0f;
+	float CapsuleRadius = 1.0f;
 
 	/** Capsule의 반 높이 (로컬 스페이스, 중심에서 끝까지, 반지름 제외) */
 	UPROPERTY(EditAnywhere, Category="CapsuleHalfHeight")
-	float CapsuleHalfHeight = 100.0f;
+	float CapsuleHalfHeight = 2.0f;
 
 	/**
 	 * Capsule 크기를 설정합니다.
@@ -128,6 +128,8 @@ public:
 	 * 특정 점이 Capsule 내부에 있는지 확인합니다.
 	 */
 	bool ContainsPoint(const FVector& Point) const;
+
+	UBodySetup* GetBodySetup() override;
 
 private:
 	/** 현재 Bounds (캐시됨) */

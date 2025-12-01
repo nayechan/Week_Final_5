@@ -7,6 +7,7 @@
 #include "SphereComponent.h"
 #include "BoxComponent.h"
 #include "Actor.h"
+#include "BodySetup.h"
 #include "World.h"
 #include "CollisionManager.h"
 #include "WorldPartitionManager.h"
@@ -17,8 +18,6 @@
 
 UCapsuleComponent::UCapsuleComponent()
 {
-	CapsuleRadius = 50.0f;
-	CapsuleHalfHeight = 100.0f;
 	UpdateBounds();
 }
 
@@ -56,6 +55,7 @@ void UCapsuleComponent::SetCapsuleSize(float InRadius, float InHalfHeight, bool 
 				Partition->MarkDirty(this);
 			}
 		}
+		RecreatePhysicsState();
 	}
 }
 
@@ -452,4 +452,16 @@ bool UCapsuleComponent::ContainsPoint(const FVector& Point) const
 
 	// 거리가 반지름보다 작거나 같으면 포함
 	return DistanceSquared <= (Radius * Radius);
+}
+
+UBodySetup* UCapsuleComponent::GetBodySetup()
+{
+	if (BodySetup == nullptr)
+	{
+		BodySetup = NewObject<UBodySetup>();
+	}
+	BodySetup->ClearAllShapes();
+	BodySetup->AddCapsuleElem(CapsuleRadius, CapsuleHalfHeight);
+
+	return BodySetup;
 }

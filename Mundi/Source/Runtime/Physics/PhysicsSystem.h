@@ -18,6 +18,7 @@ public:
     PxPhysics* GetPhysics() const { return mPhysics; }
     PxDefaultCpuDispatcher* GetCpuDispatcher() const { return mDispatcher; }
     PxMaterial* GetDefaultMaterial() const { return mMaterial; }
+    PxCooking* GetCooking() const { return mCooking; }
 
 private:
     // 복사 방지는 여전히 해두는 게 안전함
@@ -33,4 +34,5 @@ private:
     PxDefaultCpuDispatcher* mDispatcher = nullptr;
     PxMaterial* mMaterial = nullptr;
     PxPvd* mPvd = nullptr;
+    PxCooking* mCooking = nullptr;
 };
