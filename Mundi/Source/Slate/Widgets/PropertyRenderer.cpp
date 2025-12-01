@@ -25,6 +25,7 @@
 #include "ParticleModule.h"
 #include "ParticleSystemComponent.h"
 #include "ParticleSystem.h"
+#include "PhysicsAsset.h"
 
 // 정적 멤버 변수 초기화
 TArray<FString> UPropertyRenderer::CachedSkeletalMeshPaths;
@@ -43,6 +44,8 @@ TArray<FString> UPropertyRenderer::CachedScriptPaths;
 TArray<const char*> UPropertyRenderer::CachedScriptItems;
 TArray<FString> UPropertyRenderer::CachedParticleSystemPaths;
 TArray<FString> UPropertyRenderer::CachedParticleSystemItems;
+TArray<FString> UPropertyRenderer::CachedPhysicsAssetPaths;
+TArray<FString> UPropertyRenderer::CachedPhysicsAssetItems;
 
 static bool ItemsGetter(void* Data, int Index, const char** CItem)
 {
@@ -144,6 +147,10 @@ bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectIn
 
 	case EPropertyType::ParticleSystem:
 		bChanged = RenderParticleSystemProperty(Property, ObjectInstance);
+		break;
+
+	case EPropertyType::PhysicsAsset:
+		bChanged = RenderPhysicsAssetProperty(Property, ObjectInstance);
 		break;
 
 	case EPropertyType::Array:
@@ -603,6 +610,34 @@ void UPropertyRenderer::CacheResources()
 			}
 		}
 	}
+
+	// 7. PhysicsAsset (.physicsasset) - 파일 시스템 스캔
+	if (CachedPhysicsAssetPaths.IsEmpty() && CachedPhysicsAssetItems.IsEmpty())
+	{
+		// "None" 항목 추가
+		CachedPhysicsAssetPaths.Add("");
+		CachedPhysicsAssetItems.Add("None");
+
+		// Data/ 디렉토리 전체 스캔 (PhysicsAsset은 여러 곳에 있을 수 있음)
+		const FString DataDir = GDataDir + "/";
+		if (fs::exists(UTF8ToWide(DataDir)) && fs::is_directory(UTF8ToWide(DataDir)))
+		{
+			for (const auto& Entry : fs::recursive_directory_iterator(UTF8ToWide(DataDir)))
+			{
+				if (Entry.is_regular_file())
+				{
+					FString Ext = WideToUTF8(Entry.path().extension().wstring());
+					std::transform(Ext.begin(), Ext.end(), Ext.begin(), ::tolower);
+					if (Ext == ".physicsasset")
+					{
+						FString Path = NormalizePath(WideToUTF8(Entry.path().wstring()));
+						CachedPhysicsAssetPaths.Add(Path);
+						CachedPhysicsAssetItems.Add(WideToUTF8(Entry.path().filename().wstring()));
+					}
+				}
+			}
+		}
+	}
 }
 
 void UPropertyRenderer::ClearResourcesCache()
@@ -623,6 +658,8 @@ void UPropertyRenderer::ClearResourcesCache()
 	CachedScriptItems.Empty();
 	CachedParticleSystemPaths.Empty();
 	CachedParticleSystemItems.Empty();
+	CachedPhysicsAssetPaths.Empty();
+	CachedPhysicsAssetItems.Empty();
 }
 
 // ===== 타입별 렌더링 구현 =====
@@ -2051,6 +2088,78 @@ bool UPropertyRenderer::RenderParticleSystemProperty(const FProperty& Prop, void
 				{
 					*ParticlePtr = UResourceManager::GetInstance().Load<UParticleSystem>(CachedParticleSystemPaths[SelectedIdx]);
 				}
+			}
+			return true;
+		}
+	}
+
+	// 툴팁: 전체 경로 표시
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		if (CurrentPath.empty())
+		{
+			ImGui::Text("None");
+		}
+		else
+		{
+			ImGui::TextUnformatted(CurrentPath.c_str());
+		}
+		ImGui::EndTooltip();
+	}
+
+	return false;
+}
+
+bool UPropertyRenderer::RenderPhysicsAssetProperty(const FProperty& Prop, void* Instance)
+{
+	CacheResources();
+
+	UPhysicsAsset** PhysicsAssetPtr = Prop.GetValuePtr<UPhysicsAsset*>(Instance);
+
+	FString CurrentPath;
+	if (*PhysicsAssetPtr)
+	{
+		CurrentPath = (*PhysicsAssetPtr)->GetFilePath();
+	}
+
+	if (CachedPhysicsAssetPaths.empty())
+	{
+		ImGui::Text("%s: <No Physics Assets>", Prop.Name);
+		return false;
+	}
+
+	int SelectedIdx = 0; // Default to "None"
+	for (int i = 0; i < static_cast<int>(CachedPhysicsAssetPaths.size()); ++i)
+	{
+		if (CachedPhysicsAssetPaths[i] == CurrentPath)
+		{
+			SelectedIdx = i;
+			break;
+		}
+	}
+
+	// TArray<FString>을 const char* 배열로 변환
+	TArray<const char*> ItemsPtr;
+	ItemsPtr.reserve(CachedPhysicsAssetItems.size());
+	for (const FString& item : CachedPhysicsAssetItems)
+	{
+		ItemsPtr.push_back(item.c_str());
+	}
+
+	ImGui::SetNextItemWidth(240);
+	if (ImGui::Combo(Prop.Name, &SelectedIdx, ItemsPtr.data(), static_cast<int>(ItemsPtr.size())))
+	{
+		if (SelectedIdx >= 0 && SelectedIdx < static_cast<int>(CachedPhysicsAssetPaths.size()))
+		{
+			// PhysicsAsset 직접 할당
+			if (CachedPhysicsAssetPaths[SelectedIdx].empty())
+			{
+				*PhysicsAssetPtr = nullptr;
+			}
+			else
+			{
+				*PhysicsAssetPtr = UResourceManager::GetInstance().Load<UPhysicsAsset>(CachedPhysicsAssetPaths[SelectedIdx]);
 			}
 			return true;
 		}
@@ -3685,7 +3794,9 @@ bool UPropertyRenderer::RenderBodyInstanceProperty(const FProperty& Prop, void* 
 	if (!Primitive || !Primitive->CanSimulatingPhysics()) { return false; }
 	
 	FBodyInstance* BodyInstance = Prop.GetValuePtr<FBodyInstance>(Instance);
-	if (!BodyInstance || !BodyInstance->IsValidBodyInstance()) { return false; }
+	if (!BodyInstance) { return false; }
+	// IsValidBodyInstance() 체크 제거 - 실제 물리 바디가 없어도 프로퍼티 편집 가능
+	// SkeletalMeshComponent는 per-bone PhysicsAsset을 사용하므로 컴포넌트 레벨 BodyInstance가 없음
 
 	bool bChanged = false;
 	ImGuiStorage* storage = ImGui::GetStateStorage();

@@ -13,6 +13,7 @@
 #include "SkeletalMesh.h"
 #include "AnimSequence.h"
 #include "../Engine/Particles/ParticleSystem.h"
+#include "../Physics/PhysicsAsset.h"
 // ... 기타 include ...
 
 // --- 전방 선언 ---
@@ -281,6 +282,8 @@ EResourceType UResourceManager::GetResourceType()
         return EResourceType::Animation;
     if (T::StaticClass() == UParticleSystem::StaticClass())
         return EResourceType::ParticleSystem;
+    if (T::StaticClass() == UPhysicsAsset::StaticClass())
+        return EResourceType::PhysicsAsset;
 
     return EResourceType::None;
 }

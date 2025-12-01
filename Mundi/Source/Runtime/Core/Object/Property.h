@@ -27,6 +27,7 @@ enum class EPropertyType : uint8
 	UClass,         // UClass* 타입 (클래스 선택 UI)
 	Enum,           // enum class 타입 (콤보박스 UI)
 	ParticleSystem, // UParticleSystem* 타입 (파티클 시스템 선택 UI)
+	PhysicsAsset,   // UPhysicsAsset* 타입 (물리 에셋 선택 UI)
 	DistributionFloat,   // FDistributionFloat 타입 (파티클 Distribution)
 	DistributionVector,  // FDistributionVector 타입 (파티클 Distribution)
 	DistributionColor,   // FDistributionColor 타입 (파티클 Distribution)

@@ -54,6 +54,7 @@ enum class EResourceType : uint8
     Sound,
     Animation,
     ParticleSystem,
+    PhysicsAsset,
 
     End
 };
@@ -267,6 +268,7 @@ enum class EViewerType : uint8
     Animation,
     BlendSpace,
     Particle,
+    PhysicsAsset,
 
     End,
 };

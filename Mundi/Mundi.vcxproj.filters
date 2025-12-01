@@ -1190,6 +1190,9 @@
     <ClCompile Include="Generated\FKConvexElem.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
+    <ClCompile Include="Generated\USkeletalMesh.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
     <ClCompile Include="Generated\UVehicleComponent.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
@@ -2599,6 +2602,9 @@
     </ClInclude>
     <ClInclude Include="VehicleDataStruct.h">
       <Filter>Source\Runtime\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\USkeletalMesh.generated.h">
+      <Filter>Generated</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

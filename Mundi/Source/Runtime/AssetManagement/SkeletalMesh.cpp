@@ -8,8 +8,6 @@
 #include "PathUtils.h"
 #include <filesystem>
 
-IMPLEMENT_CLASS(USkeletalMesh)
-
 USkeletalMesh::USkeletalMesh()
 {
 }

@@ -116,7 +116,7 @@ physx::PxRigidDynamic* FBodyInstance::CreateInternalActor(const FTransform& Tran
         NewActor->setAngularDamping(AngularDamping);
         NewActor->setActorFlag(PxActorFlag::eDISABLE_GRAVITY, !bEnableGravity);
 
-        if (bUseCCD)
+        if (bUseCCD && bSimulatePhysics)
         {
             NewActor->setRigidBodyFlag(PxRigidBodyFlag::eENABLE_CCD, true);
         }
@@ -338,8 +338,8 @@ void FBodyInstance::SetAngularDamping(float InAngularDamping)
 
 void FBodyInstance::SetCollisionEnabled(bool bEnabled)
 {
-    if (!RigidActor || bEnabled == bCollisionEnabled) { return; }
     bCollisionEnabled = bEnabled;
+    if (!RigidActor || bEnabled == bCollisionEnabled) { return; }
 
     if (!CurrentScene) return;
 
@@ -617,14 +617,6 @@ void FBodyInstance::ApplyBodySetupSettings(const UBodySetupCore* BodySetupCore)
 
     // CollisionResponse 적용 (충돌 활성/비활성)
     ApplyCollisionResponse(BodySetupCore->CollisionResponse);
-    
-    // Shape 플래그 적용
-    for (int32 i = 0; i < Shapes.Num(); ++i)
-    {
-        if (!Shapes[i]) continue;
-        Shapes[i]->setFlag(PxShapeFlag::eSIMULATION_SHAPE, !bIsTrigger);
-        Shapes[i]->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
-    }
 }
 
 void FBodyInstance::ApplyPhysicsType(EPhysicsType PhysicsType)
@@ -659,15 +651,15 @@ void FBodyInstance::ApplyCollisionResponse(EBodyCollisionResponse::Type Response
     if (!RigidActor) return;
 
     bool bEnableCollision = (Response == EBodyCollisionResponse::BodyCollision_Enabled);
-
+    
     for (int32 i = 0; i < Shapes.Num(); ++i)
     {
         if (!Shapes[i]) continue;
 
-        if (bEnableCollision)
+        if (bCollisionEnabled)
         {
             // 충돌 활성화
-            Shapes[i]->setFlag(PxShapeFlag::eSIMULATION_SHAPE, !bIsTrigger);
+            Shapes[i]->setFlag(PxShapeFlag::eSIMULATION_SHAPE, bEnableCollision && !bIsTrigger);
             Shapes[i]->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);
         }
         else

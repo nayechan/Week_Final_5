@@ -32,6 +32,12 @@ void FPhysicsSystem::Initialize()
         return;
     }
 
+    // Extensions 초기화 (Joint, Serialization 등 확장 기능 사용을 위해 필수)
+    if (!PxInitExtensions(*mPhysics, mPvd))
+    {
+        UE_LOG("[FPhysicsSystem]: PxInitExtensions Error");
+    }
+    
     PxCookingParams Params(Scale);
     Params.meshWeldTolerance = 0.1f; 
     Params.meshPreprocessParams |= PxMeshPreprocessingFlag::eWELD_VERTICES;
@@ -89,6 +95,9 @@ void FPhysicsSystem::Shutdown()
 
     // Vehicle SDK 해제
     PxCloseVehicleSDK();
+    
+    // Extensions 해제 (Physics 해제 전에 호출해야 함)
+    PxCloseExtensions();
 
     // Physics 해제
     if (mPhysics)       mPhysics->release();

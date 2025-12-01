@@ -434,6 +434,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Runtime\Physics\BodyInstance.cpp" />
     <ClCompile Include="Source\Runtime\Physics\BodySetup.cpp" />
     <ClCompile Include="Source\Runtime\Physics\BodySetupCore.cpp" />
+    <ClCompile Include="Source\Runtime\Physics\ConstraintInstance.cpp" />
     <ClCompile Include="Source\Runtime\Physics\PhysicalMaterial.cpp" />
     <ClCompile Include="Source\Runtime\Physics\PhysicsAsset.cpp" />
     <ClCompile Include="Source\Runtime\Physics\PhysicsConstraintTemplate.cpp" />
@@ -707,6 +708,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Generated\FKConvexElem.generated.cpp" />
     <ClCompile Include="Generated\UVehicleComponent.generated.cpp" />
     <ClCompile Include="Generated\AVehicleActor.generated.cpp" />
+    <ClCompile Include="Generated\USkeletalMesh.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Common\LightingBuffers.hlsl">
@@ -1274,6 +1276,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Generated\FConstraintInstance.generated.h" />
     <ClInclude Include="Generated\UBodySetupCore.generated.h" />
     <ClInclude Include="Generated\FKConvexElem.generated.h" />
+    <ClInclude Include="Generated\USkeletalMesh.generated.h" />
     <ClInclude Include="VehicleDataStruct.h" />
     <ClInclude Include="Generated\UVehicleComponent.generated.h" />
     <ClInclude Include="Generated\AVehicleActor.generated.h" />

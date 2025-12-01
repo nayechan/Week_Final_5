@@ -371,6 +371,22 @@ struct TPropertyTypeTraits<FBodyInstance>
 		Class->AddProperty(Prop); \
 	}
 
+// PhysicsAsset 프로퍼티 추가
+#define ADD_PROPERTY_PHYSICSASSET(VarType, VarName, CategoryName, bEditAnywhere, ...) \
+	{ \
+		static_assert(std::is_array_v<std::remove_reference_t<decltype(CategoryName)>>, \
+		              "CategoryName must be a string literal!"); \
+		FProperty Prop; \
+		Prop.Name = #VarName; \
+		Prop.Type = EPropertyType::PhysicsAsset; \
+		Prop.Offset = offsetof(ThisClass_t, VarName); \
+		Prop.Category = CategoryName; \
+		Prop.bIsEditAnywhere = bEditAnywhere; \
+		Prop.Tooltip = "" __VA_ARGS__; \
+		Prop.OwnerKind = CurrentOwnerKind; \
+		Class->AddProperty(Prop); \
+	}
+
 // TArray<...> 프로퍼티 추가
 // 첫 번째 인자로 배열의 내부 요소 타입을 받습니다.
 #define ADD_PROPERTY_ARRAY(InnerPropertyType, VarName, CategoryName, bEditAnywhere, ...) \

@@ -3,6 +3,7 @@
 #include "BodyInstance.h"
 #include "PhysicalMaterial.h"
 #include "PhysicsSystem.h"
+#include "JsonSerializer.h"
 
 using namespace physx;
 
@@ -549,7 +550,6 @@ FArchive& operator<<(FArchive& Ar, UBodySetup& BodySetup)
                 Serialization::ReadArray(Ar, Dummy);
             }
         }
-        BodySetup.CreatePhysicsMeshes();
     }
     return Ar;
 }
