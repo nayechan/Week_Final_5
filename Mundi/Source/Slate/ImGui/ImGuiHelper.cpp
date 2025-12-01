@@ -3,6 +3,7 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
+#include "ImGui/imnodes.h"
 #include "Renderer.h"
 
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, uint32 msg, WPARAM wParam, LPARAM lParam);
@@ -28,6 +29,7 @@ void UImGuiHelper::Initialize(HWND InWindowHandle)
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+	ImNodes::CreateContext();
 
 	// 커스텀 다크 테마 적용
 	SetupCustomTheme();
@@ -57,6 +59,7 @@ void UImGuiHelper::Initialize(HWND InWindowHandle, ID3D11Device* InDevice, ID3D1
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+	ImNodes::CreateContext();
 
 	// 커스텀 다크 테마 적용
 	SetupCustomTheme();
@@ -99,6 +102,7 @@ void UImGuiHelper::Release()
 
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
+	ImNodes::DestroyContext();
 	ImGui::DestroyContext();
 
 	bIsInitialized = false;

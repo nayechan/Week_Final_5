@@ -106,10 +106,20 @@ void USkeletonTreeWidget::RebuildCache()
 			}
 		}
 
-		// 본 -> 제약조건 맵 구축 (자식 바디의 본 인덱스 기준)
+		// 본 -> 제약조건 맵 구축 (부모/자식 바디 모두에 표시)
 		for (int32 i = 0; i < static_cast<int32>(EditorState->EditingAsset->ConstraintSetups.size()); ++i)
 		{
 			const FConstraintSetup& Constraint = EditorState->EditingAsset->ConstraintSetups[i];
+			// 부모 바디의 본에 추가
+			if (Constraint.ParentBodyIndex >= 0 && Constraint.ParentBodyIndex < static_cast<int32>(EditorState->EditingAsset->BodySetups.size()))
+			{
+				UBodySetup* ParentBody = EditorState->EditingAsset->BodySetups[Constraint.ParentBodyIndex];
+				if (ParentBody && ParentBody->BoneIndex >= 0)
+				{
+					Cache.BoneToConstraintMap[ParentBody->BoneIndex].push_back(i);
+				}
+			}
+			// 자식 바디의 본에 추가
 			if (Constraint.ChildBodyIndex >= 0 && Constraint.ChildBodyIndex < static_cast<int32>(EditorState->EditingAsset->BodySetups.size()))
 			{
 				UBodySetup* ChildBody = EditorState->EditingAsset->BodySetups[Constraint.ChildBodyIndex];
@@ -194,13 +204,14 @@ void USkeletonTreeWidget::RenderBoneNode(int32 BoneIndex, int32 Depth)
 		ImGui::PopStyleColor();
 	}
 
-	// 클릭 처리: 본 선택 시 해당 바디도 함께 선택
+	// 클릭 처리: 본 선택 시 해당 바디도 함께 선택 + 그래프 기준 변경
 	if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen())
 	{
 		EditorState->SelectedBoneIndex = BoneIndex;
 		if (bHasBody)
 		{
 			EditorState->SelectBody(BodyIndex);
+			EditorState->GraphPivotBodyIndex = BodyIndex;  // 그래프 기준도 변경
 		}
 	}
 
@@ -212,6 +223,7 @@ void USkeletonTreeWidget::RenderBoneNode(int32 BoneIndex, int32 Depth)
 		if (bHasBody)
 		{
 			EditorState->SelectBody(BodyIndex);
+			EditorState->GraphPivotBodyIndex = BodyIndex;  // 그래프 기준도 변경
 		}
 
 		if (!bHasBody)
@@ -231,6 +243,7 @@ void USkeletonTreeWidget::RenderBoneNode(int32 BoneIndex, int32 Depth)
 			if (ImGui::MenuItem("Select Body"))
 			{
 				EditorState->SelectBody(BodyIndex);
+				EditorState->GraphPivotBodyIndex = BodyIndex;  // 그래프 기준도 변경
 			}
 
 			ImGui::Separator();
@@ -327,6 +340,7 @@ void USkeletonTreeWidget::RenderBodyNode(int32 BodyIndex)
 	if (ImGui::IsItemClicked())
 	{
 		EditorState->SelectBody(BodyIndex);
+		EditorState->GraphPivotBodyIndex = BodyIndex;  // 그래프 기준도 변경
 	}
 
 	if (bNodeOpen)
