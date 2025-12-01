@@ -41,7 +41,7 @@ public:
 
 	/** Sphere의 반지름 (로컬 스페이스) */
 	UPROPERTY(EditAnywhere, Category="SphereRadius")
-	float SphereRadius = 50.0f;
+	float SphereRadius = 1.0f;
 
 	/**
 	 * Sphere 반지름을 설정합니다.
@@ -108,6 +108,8 @@ public:
 	 * 특정 점이 Sphere 내부에 있는지 확인합니다.
 	 */
 	bool ContainsPoint(const FVector& Point) const;
+
+	UBodySetup* GetBodySetup() override;
 
 private:
 	/** 현재 Bounds (캐시됨) */

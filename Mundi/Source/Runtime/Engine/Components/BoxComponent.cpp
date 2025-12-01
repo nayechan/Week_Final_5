@@ -289,17 +289,8 @@ UBodySetup* UBoxComponent::GetBodySetup()
 	{
 		BodySetup = NewObject<UBodySetup>();
 	}
-	BodySetup->AggGeom.BoxElems.Empty();
-
-	FKBoxElem BoxElem;
-    
-	BoxElem.X = BoxExtent.X;
-	BoxElem.Y = BoxExtent.Y;
-	BoxElem.Z = BoxExtent.Z;
-    
-	BoxElem.Center = FVector::Zero();
-	BoxElem.Rotation = FQuat::Identity();
-	BodySetup->AggGeom.BoxElems.Add(BoxElem);
+	BodySetup->ClearAllShapes();
+	BodySetup->AddBoxElem(BoxExtent.X, BoxExtent.Y, BoxExtent.Z);
 
 	return BodySetup;
 }

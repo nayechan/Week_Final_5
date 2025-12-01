@@ -307,6 +307,7 @@ void FBodyInstance::SetLinearDamping(float InLinearDamping)
 {
     if (PxRigidDynamic* DynamicActor = GetDynamicActor())
     {
+        LinearDamping = InLinearDamping;
         DynamicActor->setLinearDamping(InLinearDamping);
     }
 }
@@ -315,6 +316,7 @@ void FBodyInstance::SetAngularDamping(float InAngularDamping)
 {
     if (PxRigidDynamic* DynamicActor = GetDynamicActor())
     {
+        AngularDamping = InAngularDamping;
         DynamicActor->setAngularDamping(InAngularDamping);
     }
 }

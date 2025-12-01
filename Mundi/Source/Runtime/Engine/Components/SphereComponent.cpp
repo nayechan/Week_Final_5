@@ -7,6 +7,7 @@
 #include "BoxComponent.h"
 #include "Actor.h"
 #include "AABB.h"
+#include "BodySetup.h"
 #include "World.h"
 #include "CollisionManager.h"
 #include "WorldPartitionManager.h"
@@ -36,6 +37,10 @@ void USphereComponent::DuplicateSubObjects()
 
 void USphereComponent::SetSphereRadius(float InRadius, bool bUpdateBoundsNow)
 {
+	if (SphereRadius - InRadius <= 0.0001f)
+	{
+		return; 
+	}
 	SphereRadius = InRadius;
 
 	if (bUpdateBoundsNow)
@@ -54,6 +59,7 @@ void USphereComponent::SetSphereRadius(float InRadius, bool bUpdateBoundsNow)
 				Partition->MarkDirty(this);
 			}
 		}
+		RecreatePhysicsState();
 	}
 }
 
@@ -235,4 +241,16 @@ bool USphereComponent::ContainsPoint(const FVector& Point) const
 
 	// 거리가 반지름보다 작거나 같으면 포함
 	return DistanceSquared <= (Radius * Radius);
+}
+
+UBodySetup* USphereComponent::GetBodySetup()
+{
+	if (BodySetup == nullptr)
+	{
+		BodySetup = NewObject<UBodySetup>();
+	}
+	BodySetup->ClearAllShapes();
+	BodySetup->AddSphereElem(GetSphereRadius());
+
+	return BodySetup;
 }
