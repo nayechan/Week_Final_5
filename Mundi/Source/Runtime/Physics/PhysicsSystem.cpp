@@ -22,6 +22,13 @@ void FPhysicsSystem::Initialize()
         return;
     }
 
+    // Extensions 초기화 (Joint, Serialization 등 확장 기능 사용을 위해 필수)
+    if (!PxInitExtensions(*mPhysics, mPvd))
+    {
+        UE_LOG("[FPhysicsSystem]: PxInitExtensions Error");
+        return;
+    }
+
     // 2개의 워커 스레드를 생성하여 모든 씬이 공유함
     mDispatcher = PxDefaultCpuDispatcherCreate(2);
 
@@ -40,6 +47,9 @@ void FPhysicsSystem::Shutdown()
 
     // 디스패처 해제
     if (mDispatcher)    mDispatcher->release();
+
+    // Extensions 해제 (Physics 해제 전에 호출해야 함)
+    PxCloseExtensions();
 
     // Physics 해제
     if (mPhysics)       mPhysics->release();
