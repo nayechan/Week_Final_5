@@ -5,6 +5,7 @@
 #include "Level.h"
 #include "Gizmo/GizmoActor.h"
 #include "LightManager.h"
+#include "WeakObjectPtr.h"
 
 class FPhysScene;
 // Forward Declarations

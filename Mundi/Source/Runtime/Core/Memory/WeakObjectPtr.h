@@ -69,3 +69,108 @@ private:
     /** @brief GObjectArray 내 UObject의 고유 인덱스이다. */
     uint32 InternalIndex;
 };
+
+/*-----------------------------------------------------------------------------
+    TWeakObjectPtr<T>
+ -----------------------------------------------------------------------------*/
+
+/**
+ * @class TWeakObjectPtr
+ * @brief FWeakObjectPtr를 래핑한 템플릿 버전. T* 타입으로 안전하게 반환한다.
+ * @tparam T    UObject를 상속받는 클래스여야 한다.
+ */
+template<typename T>
+class TWeakObjectPtr
+{
+public:
+    using ElementType = T;
+
+    static_assert(std::is_base_of_v<UObject, T>);
+
+    // --- 생성자 ---
+
+    TWeakObjectPtr() = default;
+    
+    TWeakObjectPtr(std::nullptr_t) : WeakPtr() {}
+
+    TWeakObjectPtr(T* InObject) : WeakPtr(InObject) {}
+
+    template <typename OtherT>
+    TWeakObjectPtr(const TWeakObjectPtr<OtherT>& Other) : WeakPtr(Other.GetWeakPtr()) {}
+
+    // --- 대입 연산자 ---
+
+    /** T* 대입 */
+    TWeakObjectPtr& operator=(T* InObject)
+    {
+        WeakPtr = InObject;
+        return *this;
+    }
+
+    /** nullptr 대입 */
+    TWeakObjectPtr& operator=(std::nullptr_t)
+    {
+        WeakPtr = nullptr;
+        return *this;
+    }
+
+    // --- 접근자 (Accessor) ---
+
+    /** * @brief 유효한 T* 포인터를 반환한다.
+     * @note FWeakObjectPtr::Get()이 유효하다면, 해당 슬롯은 올바른 타입의 객체임이 보장된다고 가정한다.
+     */
+    T* Get() const
+    {
+        return static_cast<T*>(WeakPtr.Get());
+    }
+
+    bool IsValid() const
+    {
+        return WeakPtr.IsValid();
+    }
+
+    // --- 연산자 오버로딩 ---
+
+    explicit operator bool() const { return IsValid(); }
+
+    T* operator->() const { return Get(); }
+    T& operator*() const { return *Get(); }
+
+    bool operator==(const TWeakObjectPtr& Other) const { return WeakPtr == Other.WeakPtr; }
+    bool operator!=(const TWeakObjectPtr& Other) const { return WeakPtr != Other.WeakPtr; }
+
+    bool operator==(const T* InObject) const { return Get() == InObject; }
+    bool operator!=(const T* InObject) const { return Get() != InObject; }
+
+    bool operator==(std::nullptr_t) const { return !IsValid(); }
+    bool operator!=(std::nullptr_t) const { return IsValid(); }
+
+private:
+    FWeakObjectPtr WeakPtr;
+};
+
+/*-----------------------------------------------------------------------------
+    std::hash 특수화
+ -----------------------------------------------------------------------------*/
+namespace std
+{
+    /** TWeakObjectPtr 해시 */
+    template <typename T>
+    struct hash<TWeakObjectPtr<T>>
+    {
+        size_t operator()(const TWeakObjectPtr<T>& Key) const noexcept
+        {
+            return hash<void*>()(static_cast<void*>(Key.Get()));
+        }
+    };
+
+    /** FWeakObjectPtr 해시 */
+    template <>
+    struct hash<FWeakObjectPtr>
+    {
+        size_t operator()(const FWeakObjectPtr& Key) const noexcept
+        {
+            return hash<void*>()(static_cast<void*>(Key.Get()));
+        }
+    };
+}

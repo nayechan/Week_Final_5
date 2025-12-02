@@ -43,6 +43,9 @@ cbuffer DecalBuffer : register(b6)
 {
     row_major float4x4 DecalMatrix;
     float DecalOpacity;
+    float FadeProgress;     // Fade progress (0-1)
+    uint FadeStyle;         // 0:Standard, 1:WipeLtoR, 2:Dissolve, 3:Iris
+    float _pad_decal;
 }
 
 // --- 텍스처 리소스 ---
@@ -55,6 +58,13 @@ TextureCubeArray<float2> g_VSMShadowCube : register(t11);
 SamplerState g_Sample : register(s0);
 SamplerComparisonState g_ShadowSample : register(s2);
 SamplerState g_VSMSampler : register(s3);
+
+// --- 유틸리티 함수 ---
+// UV 좌표로부터 무작위처럼 보이는 값을 생성하는 해시 함수
+float hash(float2 p)
+{
+    return frac(sin(dot(p, float2(12.9898, 78.233))) * 43758.5453);
+}
 
 // --- 입출력 구조체 ---
 struct VS_INPUT
@@ -91,8 +101,9 @@ PS_INPUT mainVS(VS_INPUT input)
     // World position
     float4 worldPos = mul(float4(input.position, 1.0f), WorldMatrix);
     float4 viewPos = mul(worldPos, ViewMatrix);
-    // Decal projection
-    output.decalPos = mul(worldPos, DecalMatrix);
+
+    // 샘플 방식: worldPos를 그대로 PS로 전달 (PS에서 DecalMatrix 적용)
+    output.decalPos = worldPos;
 
     // Screen position
     float4x4 VP = mul(ViewMatrix, ProjectionMatrix);
@@ -139,33 +150,78 @@ PS_INPUT mainVS(VS_INPUT input)
 //================================================================================================
 float4 mainPS(PS_INPUT input) : SV_TARGET
 {
-    // 부동 소수점 오차 무시를 위해 Epsilon 사용
-    static const float Epsilon = 1e-6f; // 0.000001f
-    
-    // 1. Decal projection 범위 체크
-    float3 ndc = input.decalPos.xyz / input.decalPos.w;
+    // 샘플 코드 방식: 월드 좌표를 데칼 로컬 공간으로 변환
 
-    // decal의 forward가 +x임 -> x방향 projection
-    if (ndc.x < 0.0f - Epsilon || 1.0f + Epsilon < ndc.x ||
-        ndc.y < -1.0f - Epsilon || 1.0f + Epsilon < ndc.y ||
-        ndc.z < -1.0f - Epsilon || 1.0f + Epsilon < ndc.z)
+    // 1. input.decalPos는 월드 좌표 (VS에서 그대로 전달됨)
+    // DecalMatrix(DecalInverseWorld)를 곱하여 로컬 공간으로 변환
+    float3 localPos = mul(input.decalPos, DecalMatrix).xyz;
+
+    // 2. 데칼 볼륨 범위 체크: [-0.5, 0.5] 범위 밖이면 discard
+    if (abs(localPos.x) > 0.5f ||
+        abs(localPos.y) > 0.5f ||
+        abs(localPos.z) > 0.5f)
     {
         discard;
     }
 
-    // 2. UV 계산 및 텍스처 샘플링
-    float2 uv = (ndc.yz + 1.0f) / 2.0f;
-    uv.y = 1.0f - uv.y;
+    // 3. 픽셀의 3D 위치를 X축에서 바라보고 2D 평면(YZ)에 투사하여 UV 생성
+    float2 uv = localPos.yz * float2(-1.0f, -1.0f) + 0.5f;
     uv += UVScrollSpeed * UVScrollTime;
 
     float4 decalTexture = g_DecalTexColor.Sample(g_Sample, uv);
 
-    // 3. 조명 계산 (매크로에 따라)
+    // 4. 알파값 기본 체크
+    if (decalTexture.a < 0.01f)
+    {
+        discard;
+    }
+
+    // 5. FadeStyle에 따라 다른 효과 적용
+    float softness = 0.1f; // 경계선의 부드러움 정도
+    float scaledProgress = FadeProgress * (1.0f + softness);
+
+    switch (FadeStyle)
+    {
+        case 0: // Standard Alpha Fade
+            decalTexture.a *= FadeProgress;
+            break;
+        case 1: // Wipe Left to Right
+        {
+            float threshold = uv.x;
+            float t = saturate((scaledProgress - threshold) / softness);
+            decalTexture.a *= t * t * (3.0f - 2.0f * t); // Smoothstep
+            break;
+        }
+        case 2: // Procedural Random Dissolve
+        {
+            float threshold = hash(uv);
+            float t = saturate((scaledProgress - threshold) / softness);
+            decalTexture.a *= t * t * (3.0f - 2.0f * t); // Smoothstep
+            break;
+        }
+        case 3: // Iris (중앙에서 확장/축소)
+        {
+            float threshold = distance(uv, float2(0.5f, 0.5f)) * 1.414f;
+            float t = saturate((scaledProgress - threshold) / softness);
+            decalTexture.a *= t * t * (3.0f - 2.0f * t); // Smoothstep
+            break;
+        }
+    }
+
+    // 6. Edge hardening: 매우 낮은 알파값을 부드럽게 제거하여 프린지 방지
+    float edge = saturate((decalTexture.a - 0.05f) / 0.05f);
+    decalTexture.a *= edge;
+    clip(decalTexture.a - 0.001f);
+
+    // 7. 조명 계산 및 최종 알파 적용 (매크로에 따라)
 #ifdef LIGHTING_MODEL_GOURAUD
     // Gouraud: VS에서 계산한 조명 결과 사용
     float4 finalColor = input.litColor;
     finalColor.rgb *= decalTexture.rgb;  // Texture modulation
     finalColor.a = decalTexture.a * DecalOpacity;
+
+    // Premultiply alpha to avoid white wash with standard alpha blending
+    finalColor.rgb *= finalColor.a;
     return finalColor;
 
 #elif defined(LIGHTING_MODEL_LAMBERT) || defined(LIGHTING_MODEL_PHONG)
@@ -198,12 +254,18 @@ float4 mainPS(PS_INPUT input) : SV_TARGET
     );
 
     float4 finalColor = float4(litColor, decalTexture.a * DecalOpacity);
+
+    // Premultiply alpha to avoid white wash with standard alpha blending
+    finalColor.rgb *= finalColor.a;
     return finalColor;
 
 #else
     // No lighting model - 기존 방식 (단순 텍스처)
     float4 finalColor = decalTexture;
     finalColor.a *= DecalOpacity;
+
+    // Premultiply alpha to avoid white wash with standard alpha blending
+    finalColor.rgb *= finalColor.a;
     return finalColor;
 #endif
 }

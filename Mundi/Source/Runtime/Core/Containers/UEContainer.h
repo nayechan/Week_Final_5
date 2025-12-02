@@ -19,44 +19,6 @@ typedef wchar_t WIDECHAR;
 typedef std::string FString;
 typedef std::wstring FWideString;
 
-// Lightweight weak object pointer compatible with engine UObject lifetime
-// - Stores a raw pointer (non-owning)
-// - Provides IsValid(), Get(), operators for containers
-// - Hash specialization provided below for unordered_map/set
-template<typename T>
-class TWeakObjectPtr
-{
-public:
-    using ElementType = T;
-
-    TWeakObjectPtr() : Ptr(nullptr) {}
-    TWeakObjectPtr(std::nullptr_t) : Ptr(nullptr) {}
-    explicit TWeakObjectPtr(T* InPtr) : Ptr(InPtr) {}
-
-    bool IsValid() const { return Ptr != nullptr; }
-    T* Get() const { return Ptr; }
-
-    T& operator*() const { return *Ptr; }
-    T* operator->() const { return Ptr; }
-
-    bool operator==(const TWeakObjectPtr& Other) const { return Ptr == Other.Ptr; }
-    bool operator!=(const TWeakObjectPtr& Other) const { return Ptr != Other.Ptr; }
-
-private:
-    T* Ptr;
-};
-
-namespace std {
-    template <typename T>
-    struct hash<TWeakObjectPtr<T>>
-    {
-        size_t operator()(const TWeakObjectPtr<T>& Key) const noexcept
-        {
-            return hash<const void*>()(static_cast<const void*>(Key.Get()));
-        }
-    };
-}
-
 template<typename T>
 using TUniqueObjectPtr = std::unique_ptr<T>;
 
