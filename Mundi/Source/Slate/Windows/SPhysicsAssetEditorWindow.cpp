@@ -499,7 +499,7 @@ void SPhysicsAssetEditorWindow::RenderLeftHierarchyArea(float totalHeight)
 
 	ImGui::BeginChild("HierarchyArea", ImVec2(0, hierarchyHeight), true);
 	{
-		ImGui::Text("Hierarchy");
+		ImGui::Text("스켈레톤 트리");
 		ImGui::Separator();
 		RenderHierarchyPanel();
 	}
@@ -521,7 +521,7 @@ void SPhysicsAssetEditorWindow::RenderLeftGraphArea()
 {
 	ImGui::BeginChild("GraphArea", ImVec2(0, 0), true);
 	{
-		ImGui::Text("Graph");
+		ImGui::Text("그래프");
 		ImGui::Separator();
 		RenderGraphPanel();
 	}
@@ -535,7 +535,7 @@ void SPhysicsAssetEditorWindow::RenderRightDetailsArea(float totalHeight)
 
 	ImGui::BeginChild("DetailsArea", ImVec2(0, detailsHeight), true);
 	{
-		ImGui::Text("Details");
+		ImGui::Text("디테일");
 		ImGui::Separator();
 		RenderDetailsPanel();
 	}
@@ -557,7 +557,7 @@ void SPhysicsAssetEditorWindow::RenderRightToolArea()
 {
 	ImGui::BeginChild("ToolArea", ImVec2(0, 0), true);
 	{
-		ImGui::Text("Tools");
+		ImGui::Text("툴");
 		ImGui::Separator();
 		RenderToolPanel();
 	}
@@ -647,7 +647,7 @@ void SPhysicsAssetEditorWindow::RenderHierarchyPanel()
 
 	// === 검색 바 ===
 	ImGui::SetNextItemWidth(-1);
-	ImGui::InputTextWithHint("##BoneSearch", "Search bones...", BoneSearchBuffer, sizeof(BoneSearchBuffer));
+	ImGui::InputTextWithHint("##BoneSearch", "본 이름 검색...", BoneSearchBuffer, sizeof(BoneSearchBuffer));
 	FString SearchFilter = BoneSearchBuffer;
 	bool bHasFilter = !SearchFilter.empty();
 
@@ -870,8 +870,539 @@ void SPhysicsAssetEditorWindow::RenderDetailsPanel()
 	PhysicsAssetEditorState* State = GetActivePhysicsState();
 	if (!State) return;
 
-	// TODO: Phase 7에서 구현
-	ImGui::TextDisabled("(Property details will be shown here)");
+	UPhysicsAsset* PhysAsset = State->EditingPhysicsAsset;
+
+	// 본이 선택된 경우
+	if (State->SelectedBoneIndex != -1)
+	{
+		RenderBoneDetails(State->SelectedBoneIndex);
+	}
+	// 바디가 선택된 경우
+	else if (State->SelectedBodyIndex != -1 && PhysAsset)
+	{
+		USkeletalBodySetup* Body = PhysAsset->GetBodySetup(State->SelectedBodyIndex);
+		if (Body)
+		{
+			RenderBodyDetails(Body, State->SelectedBodyIndex);
+		}
+	}
+}
+
+void SPhysicsAssetEditorWindow::RenderBoneDetails(int32 BoneIndex)
+{
+	PhysicsAssetEditorState* State = GetActivePhysicsState();
+	if (!State) return;
+
+	// 프리뷰 액터에서 스켈레탈 메시 가져오기
+	USkeletalMesh* Mesh = nullptr;
+	if (State->PreviewActor)
+	{
+		if (USkeletalMeshComponent* MeshComp = State->PreviewActor->GetSkeletalMeshComponent())
+		{
+			Mesh = MeshComp->GetSkeletalMesh();
+		}
+	}
+	if (!Mesh) return;
+
+	const FSkeleton* Skeleton = Mesh->GetSkeleton();
+	if (!Skeleton) return;
+
+	const TArray<FBone>& Bones = Skeleton->Bones;
+	if (BoneIndex < 0 || BoneIndex >= (int32)Bones.Num()) return;
+
+	const FBone& Bone = Bones[BoneIndex];
+	UPhysicsAsset* PhysAsset = State->EditingPhysicsAsset;
+
+	// ▼ Bone Info 섹션
+	if (ImGui::CollapsingHeader("본", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Indent(10.0f);
+
+		// 본 이름
+		ImGui::Text("본 이름:");
+		ImGui::SameLine(100.0f);
+		ImGui::TextColored(ImVec4(0.8f, 0.9f, 1.0f, 1.0f), "%s", Bone.Name.c_str());
+
+		// 본 인덱스
+		ImGui::Text("본 인덱스:");
+		ImGui::SameLine(100.0f);
+		ImGui::Text("%d", BoneIndex);
+
+		// 부모 본
+		ImGui::Text("부모 본:");
+		ImGui::SameLine(100.0f);
+		if (Bone.ParentIndex >= 0 && Bone.ParentIndex < (int32)Bones.Num())
+		{
+			ImGui::Text("%s (%d)", Bones[Bone.ParentIndex].Name.c_str(), Bone.ParentIndex);
+		}
+		else
+		{
+			ImGui::TextDisabled("None (Root)");
+		}
+
+		ImGui::Separator();
+
+		// 본 트랜스폼 (읽기 전용) - BindPose 행렬에서 추출
+		ImGui::Text("바인드 포즈:");
+
+		// FMatrix에서 위치 추출 (행렬의 4행)
+		FVector Location(Bone.BindPose.M[3][0], Bone.BindPose.M[3][1], Bone.BindPose.M[3][2]);
+
+		ImGui::BeginDisabled(true);
+		ImGui::DragFloat3("Location", &Location.X, 0.1f);
+		ImGui::EndDisabled();
+
+		ImGui::Unindent(10.0f);
+	}
+
+	ImGui::Spacing();
+	ImGui::Separator();
+	ImGui::Spacing();
+
+	// 바디 존재 여부 확인
+	int32 ExistingBodyIndex = PhysAsset ? PhysAsset->FindBodySetupIndex(Bone.Name) : -1;
+
+	if (ExistingBodyIndex != -1)
+	{
+		// 이미 바디가 있는 경우
+		ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f), "이미 피직스 바디가 존재합니다.");
+		ImGui::Spacing();
+
+		if (ImGui::Button("바디 편집", ImVec2(-1, 0)))
+		{
+			State->SelectedBodyIndex = ExistingBodyIndex;
+			State->SelectedBoneIndex = -1;
+		}
+	}
+	else
+	{
+		// 바디가 없는 경우 - 생성 옵션
+		ImGui::Indent(10.0f);
+		ImGui::Text("바디 추가");
+		ImGui::Spacing();
+
+		// Shape 버튼 스타일
+		const float buttonWidth = 50.0f;
+		const float addButtonWidth = 60.0f;
+		const float buttonSpacing = 2.0f;
+
+		// 선택 안된 버튼 스타일 (어두운 배경)
+		ImVec4 normalColor = ImVec4(0.25f, 0.25f, 0.28f, 1.0f);
+		ImVec4 hoverColor = ImVec4(0.35f, 0.35f, 0.38f, 1.0f);
+		ImVec4 activeColor = ImVec4(0.20f, 0.20f, 0.23f, 1.0f);
+		// 선택된 버튼 스타일 (파란색)
+		ImVec4 selectedColor = ImVec4(0.26f, 0.59f, 0.98f, 0.8f);
+		ImVec4 selectedHoverColor = ImVec4(0.30f, 0.65f, 1.0f, 0.9f);
+		ImVec4 selectedActiveColor = ImVec4(0.22f, 0.52f, 0.88f, 1.0f);
+
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(buttonSpacing, 0));
+
+		// 구
+		bool bSphereSelected = (SelectedShapeType == 0);
+		if (bSphereSelected)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Button, selectedColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, selectedHoverColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, selectedActiveColor);
+		}
+		else
+		{
+			ImGui::PushStyleColor(ImGuiCol_Button, normalColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hoverColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, activeColor);
+		}
+		if (ImGui::Button("구", ImVec2(buttonWidth, 0)))
+			SelectedShapeType = 0;
+		ImGui::PopStyleColor(3);
+
+		ImGui::SameLine();
+
+		// 박스
+		bool bBoxSelected = (SelectedShapeType == 1);
+		if (bBoxSelected)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Button, selectedColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, selectedHoverColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, selectedActiveColor);
+		}
+		else
+		{
+			ImGui::PushStyleColor(ImGuiCol_Button, normalColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hoverColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, activeColor);
+		}
+		if (ImGui::Button("박스", ImVec2(buttonWidth, 0)))
+			SelectedShapeType = 1;
+		ImGui::PopStyleColor(3);
+
+		ImGui::SameLine();
+
+		// 캡슐
+		bool bCapsuleSelected = (SelectedShapeType == 2);
+		if (bCapsuleSelected)
+		{
+			ImGui::PushStyleColor(ImGuiCol_Button, selectedColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, selectedHoverColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, selectedActiveColor);
+		}
+		else
+		{
+			ImGui::PushStyleColor(ImGuiCol_Button, normalColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hoverColor);
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, activeColor);
+		}
+		if (ImGui::Button("캡슐", ImVec2(buttonWidth, 0)))
+			SelectedShapeType = 2;
+		ImGui::PopStyleColor(3);
+
+		ImGui::PopStyleVar(); // ItemSpacing
+
+		// 오른쪽 끝에 추가 버튼 (초록색 강조)
+		ImGui::SameLine(ImGui::GetContentRegionAvail().x - addButtonWidth + ImGui::GetCursorPosX());
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.55f, 0.3f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.65f, 0.35f, 1.0f));
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.15f, 0.45f, 0.25f, 1.0f));
+		if (ImGui::Button("+ 추가", ImVec2(addButtonWidth, 0)))
+		{
+			AddBodyToBone(BoneIndex, SelectedShapeType);
+		}
+		ImGui::PopStyleColor(3);
+
+		// 하단 여백 및 구분선
+		ImGui::Unindent(10.0f);
+		ImGui::Spacing();
+		ImGui::Separator();
+	}
+}
+
+void SPhysicsAssetEditorWindow::RenderBodyDetails(USkeletalBodySetup* Body, int32 BodyIndex)
+{
+	PhysicsAssetEditorState* State = GetActivePhysicsState();
+	if (!State) return;
+
+	bool bChanged = false;
+
+	// ▼ Body Setup 섹션
+	if (ImGui::CollapsingHeader("바디 셋업", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Indent(10.0f);
+
+		// 본 이름 (읽기 전용)
+		ImGui::Text("본 이름:");
+		ImGui::SameLine(120.0f);
+		ImGui::TextColored(ImVec4(0.8f, 0.9f, 1.0f, 1.0f), "%s", Body->BoneName.ToString().c_str());
+
+		// Physics Type
+		ImGui::Text("피직스 타입:");
+		ImGui::SameLine(120.0f);
+		const char* physicsTypes[] = { "Default", "Simulated", "Kinematic" };
+		int currentPhysType = static_cast<int>(Body->PhysicsType);
+		ImGui::SetNextItemWidth(-1);
+		if (ImGui::Combo("##PhysicsType", &currentPhysType, physicsTypes, IM_ARRAYSIZE(physicsTypes)))
+		{
+			Body->PhysicsType = static_cast<EPhysicsType>(currentPhysType);
+			bChanged = true;
+		}
+
+		// Collision Response
+		ImGui::Text("충돌:");
+		ImGui::SameLine(120.0f);
+		const char* collisionTypes[] = { "Enabled", "Disabled" };
+		int currentCollision = static_cast<int>(Body->CollisionResponse);
+		ImGui::SetNextItemWidth(-1);
+		if (ImGui::Combo("##Collision", &currentCollision, collisionTypes, IM_ARRAYSIZE(collisionTypes)))
+		{
+			Body->CollisionResponse = static_cast<EBodyCollisionResponse::Type>(currentCollision);
+			bChanged = true;
+		}
+
+		ImGui::Unindent(10.0f);
+	}
+
+	ImGui::Spacing();
+
+	// ▼ Collision Shape 섹션
+	if (ImGui::CollapsingHeader("충돌 프리미티브", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Indent(10.0f);
+
+		// 현재 Shape 정보 표시
+		FKAggregateGeom& AggGeom = Body->AggGeom;
+		int32 sphereCount = AggGeom.SphereElems.Num();
+		int32 boxCount = AggGeom.BoxElems.Num();
+		int32 capsuleCount = AggGeom.SphylElems.Num();
+
+		if (sphereCount == 0 && boxCount == 0 && capsuleCount == 0)
+		{
+			ImGui::TextDisabled("충돌 프리미티브가 없습니다.");
+
+			ImGui::Spacing();
+			ImGui::Text("프리미티브 추가");
+			if (ImGui::Button("+ 구")) { Body->AddSphereElem(5.0f); bChanged = true; }
+			ImGui::SameLine();
+			if (ImGui::Button("+ 박스")) { Body->AddBoxElem(5.0f, 5.0f, 5.0f); bChanged = true; }
+			ImGui::SameLine();
+			if (ImGui::Button("+ 캡슐")) { Body->AddCapsuleElem(3.0f, 10.0f); bChanged = true; }
+		}
+		else
+		{
+			// Shape 렌더링
+			if (RenderShapeDetails(Body))
+			{
+				bChanged = true;
+			}
+		}
+
+		ImGui::Unindent(10.0f);
+	}
+
+	ImGui::Spacing();
+	ImGui::Separator();
+	ImGui::Spacing();
+
+	// 삭제 버튼
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.6f, 0.2f, 0.2f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.3f, 0.3f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.15f, 0.15f, 1.0f));
+	if (ImGui::Button("바디 삭제", ImVec2(-1, 0)))
+	{
+		RemoveBody(BodyIndex);
+	}
+	ImGui::PopStyleColor(3);
+
+	// 변경 플래그 설정
+	if (bChanged)
+	{
+		State->bIsDirty = true;
+	}
+}
+
+bool SPhysicsAssetEditorWindow::RenderShapeDetails(USkeletalBodySetup* Body)
+{
+	PhysicsAssetEditorState* State = GetActivePhysicsState();
+	if (!State) return false;
+
+	bool bChanged = false;
+	FKAggregateGeom& AggGeom = Body->AggGeom;
+
+	// Sphere Elements
+	for (int32 i = 0; i < AggGeom.SphereElems.Num(); ++i)
+	{
+		FKSphereElem& Elem = AggGeom.SphereElems[i];
+		ImGui::PushID(("Sphere_" + std::to_string(i)).c_str());
+
+		bool bOpen = ImGui::TreeNodeEx(("구 " + std::to_string(i)).c_str(), ImGuiTreeNodeFlags_DefaultOpen);
+
+		// 우클릭 컨텍스트 메뉴
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::MenuItem("삭제"))
+			{
+				AggGeom.RemoveSphereElem(i);
+				bChanged = true;
+				ImGui::EndPopup();
+				ImGui::PopID();
+				if (bOpen) ImGui::TreePop();
+				break;
+			}
+			ImGui::EndPopup();
+		}
+
+		if (bOpen)
+		{
+			if (ImGui::DragFloat3("중앙", &Elem.Center.X, 0.1f)) bChanged = true;
+			if (ImGui::DragFloat("반경", &Elem.Radius, 0.1f, 0.1f, 1000.0f)) bChanged = true;
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+
+	// Box Elements
+	for (int32 i = 0; i < AggGeom.BoxElems.Num(); ++i)
+	{
+		FKBoxElem& Elem = AggGeom.BoxElems[i];
+		ImGui::PushID(("Box_" + std::to_string(i)).c_str());
+
+		bool bOpen = ImGui::TreeNodeEx(("박스 " + std::to_string(i)).c_str(), ImGuiTreeNodeFlags_DefaultOpen);
+
+		// 우클릭 컨텍스트 메뉴
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::MenuItem("삭제"))
+			{
+				AggGeom.RemoveBoxElem(i);
+				bChanged = true;
+				ImGui::EndPopup();
+				ImGui::PopID();
+				if (bOpen) ImGui::TreePop();
+				break;
+			}
+			ImGui::EndPopup();
+		}
+
+		if (bOpen)
+		{
+			if (ImGui::DragFloat3("중앙", &Elem.Center.X, 0.1f)) bChanged = true;
+
+			// Rotation을 Euler로 변환하여 편집
+			FVector euler = Elem.Rotation.ToEulerZYXDeg();
+			if (ImGui::DragFloat3("회전", &euler.X, 1.0f))
+			{
+				Elem.Rotation = FQuat::MakeFromEulerZYX(euler);
+				bChanged = true;
+			}
+
+			// Half Extent
+			FVector halfExtent(Elem.X, Elem.Y, Elem.Z);
+			if (ImGui::DragFloat3("반경", &halfExtent.X, 0.1f, 0.1f, 1000.0f))
+			{
+				Elem.X = halfExtent.X;
+				Elem.Y = halfExtent.Y;
+				Elem.Z = halfExtent.Z;
+				bChanged = true;
+			}
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+
+	// Capsule (Sphyl) Elements
+	for (int32 i = 0; i < AggGeom.SphylElems.Num(); ++i)
+	{
+		FKSphylElem& Elem = AggGeom.SphylElems[i];
+		ImGui::PushID(("Capsule_" + std::to_string(i)).c_str());
+
+		bool bOpen = ImGui::TreeNodeEx(("캡슐 " + std::to_string(i)).c_str(), ImGuiTreeNodeFlags_DefaultOpen);
+
+		// 우클릭 컨텍스트 메뉴
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::MenuItem("삭제"))
+			{
+				AggGeom.RemoveSphylElem(i);
+				bChanged = true;
+				ImGui::EndPopup();
+				ImGui::PopID();
+				if (bOpen) ImGui::TreePop();
+				break;
+			}
+			ImGui::EndPopup();
+		}
+
+		if (bOpen)
+		{
+			if (ImGui::DragFloat3("중앙", &Elem.Center.X, 0.1f)) bChanged = true;
+
+			// Rotation을 Euler로 변환하여 편집
+			FVector euler = Elem.Rotation.ToEulerZYXDeg();
+			if (ImGui::DragFloat3("회전", &euler.X, 1.0f))
+			{
+				Elem.Rotation = FQuat::MakeFromEulerZYX(euler);
+				bChanged = true;
+			}
+
+			if (ImGui::DragFloat("반경", &Elem.Radius, 0.1f, 0.1f, 1000.0f)) bChanged = true;
+			if (ImGui::DragFloat("길이", &Elem.Length, 0.1f, 0.0f, 1000.0f)) bChanged = true;
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+
+	// Shape 추가 버튼
+	ImGui::Spacing();
+	ImGui::Separator();
+	ImGui::Text("프리미티브 추가");
+	if (ImGui::Button("+ 구")) { Body->AddSphereElem(5.0f); bChanged = true; }
+	ImGui::SameLine();
+	if (ImGui::Button("+ 박스")) { Body->AddBoxElem(5.0f, 5.0f, 5.0f); bChanged = true; }
+	ImGui::SameLine();
+	if (ImGui::Button("+ 캡슐")) { Body->AddCapsuleElem(3.0f, 10.0f); bChanged = true; }
+
+	if (bChanged)
+	{
+		State->bIsDirty = true;
+	}
+
+	return bChanged;
+}
+
+void SPhysicsAssetEditorWindow::AddBodyToBone(int32 BoneIndex, int32 ShapeType)
+{
+	PhysicsAssetEditorState* State = GetActivePhysicsState();
+	if (!State) return;
+
+	// 프리뷰 액터에서 스켈레탈 메시 가져오기
+	USkeletalMesh* Mesh = nullptr;
+	if (State->PreviewActor)
+	{
+		if (USkeletalMeshComponent* MeshComp = State->PreviewActor->GetSkeletalMeshComponent())
+		{
+			Mesh = MeshComp->GetSkeletalMesh();
+		}
+	}
+	if (!Mesh) return;
+
+	UPhysicsAsset* PhysAsset = State->EditingPhysicsAsset;
+	if (!PhysAsset)
+	{
+		// PhysicsAsset이 없으면 새로 생성
+		PhysAsset = new UPhysicsAsset();
+		State->EditingPhysicsAsset = PhysAsset;
+	}
+
+	const FSkeleton* Skeleton = Mesh->GetSkeleton();
+	if (!Skeleton) return;
+
+	const TArray<FBone>& Bones = Skeleton->Bones;
+	if (BoneIndex < 0 || BoneIndex >= (int32)Bones.Num()) return;
+
+	const FBone& Bone = Bones[BoneIndex];
+
+	// 새 BodySetup 생성
+	USkeletalBodySetup* NewBody = new USkeletalBodySetup();
+	NewBody->BoneName = Bone.Name;
+	NewBody->PhysicsType = EPhysicsType::Default;
+	NewBody->CollisionResponse = EBodyCollisionResponse::BodyCollision_Enabled;
+
+	// Shape 추가 (기본 크기)
+	switch (ShapeType)
+	{
+	case 0: // Sphere
+		NewBody->AddSphereElem(5.0f);
+		break;
+	case 1: // Box
+		NewBody->AddBoxElem(5.0f, 5.0f, 5.0f);
+		break;
+	case 2: // Capsule
+		NewBody->AddCapsuleElem(3.0f, 10.0f);
+		break;
+	}
+
+	// PhysicsAsset에 추가
+	int32 NewIndex = PhysAsset->AddBodySetup(NewBody);
+
+	// 선택 상태 업데이트
+	State->SelectedBodyIndex = NewIndex;
+	State->SelectedBoneIndex = -1;
+	State->bIsDirty = true;
+}
+
+void SPhysicsAssetEditorWindow::RemoveBody(int32 BodyIndex)
+{
+	PhysicsAssetEditorState* State = GetActivePhysicsState();
+	if (!State) return;
+
+	UPhysicsAsset* PhysAsset = State->EditingPhysicsAsset;
+	if (!PhysAsset) return;
+
+	if (BodyIndex < 0 || BodyIndex >= PhysAsset->GetBodySetupCount()) return;
+
+	// 바디 제거
+	PhysAsset->RemoveBodySetup(BodyIndex);
+
+	// 선택 상태 초기화
+	State->SelectedBodyIndex = -1;
+	State->bIsDirty = true;
 }
 
 void SPhysicsAssetEditorWindow::RenderToolPanel()

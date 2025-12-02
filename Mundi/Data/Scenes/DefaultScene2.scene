@@ -1,6 +1,6 @@
 {
   "Actors" : {
-    "1029" : {
+    "1061" : {
       "ObjectName" : "ADirectionalLightActor_2",
       "OwnedComponents" : [{
           "CascadedAreaColorDebugValue" : 0.000000,
@@ -8,7 +8,7 @@
           "CascadedCount" : 4,
           "CascadedLinearBlendingValue" : 0.500000,
           "CascadedOverlapValue" : 0.200000,
-          "Id" : 1031,
+          "Id" : 1063,
           "Intensity" : 1.000000,
           "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
           "ObjectName" : "UDirectionalLightComponent_2",
@@ -30,16 +30,16 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1031,
+      "RootComponentId" : 1063,
       "Tag" : "",
       "Type" : "ADirectionalLightActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1032" : {
+    "1064" : {
       "ObjectName" : "AAmbientLightActor_2",
       "OwnedComponents" : [{
-          "Id" : 1034,
+          "Id" : 1066,
           "Intensity" : 0.100000,
           "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
           "ObjectName" : "UAmbientLightComponent_2",
@@ -60,19 +60,19 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1034,
+      "RootComponentId" : 1066,
       "Tag" : "",
       "Type" : "AAmbientLightActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1035" : {
+    "1067" : {
       "ObjectName" : "APlayerCameraManager_3",
       "OwnedComponents" : [{
           "AspectRatio" : 1.000000,
           "FarClip" : 100.000000,
           "FieldOfView" : 60.000000,
-          "Id" : 1037,
+          "Id" : 1069,
           "NearClip" : 0.100000,
           "ObjectName" : "UCameraComponent_8",
           "ParentId" : 0,
@@ -88,16 +88,16 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1037,
+      "RootComponentId" : 1069,
       "Tag" : "",
       "Type" : "APlayerCameraManager",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1038" : {
+    "1070" : {
       "ObjectName" : "AParticleEventManager_20",
       "OwnedComponents" : [{
-          "Id" : 1039,
+          "Id" : 1071,
           "ObjectName" : "USceneComponent_22",
           "ParentId" : 0,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
@@ -110,13 +110,13 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1039,
+      "RootComponentId" : 1071,
       "Tag" : "",
       "Type" : "AParticleEventManager",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1040" : {
+    "1072" : {
       "ObjectName" : "스켈레탈 메시_0",
       "OwnedComponents" : [{
           "BodyInstance" : {
@@ -139,7 +139,7 @@
             "bStartAwake" : true,
             "bUseCCD" : false
           },
-          "Id" : 1043,
+          "Id" : 1074,
           "MaterialSlots" : [{
               "Type" : "None"
             }, {
@@ -162,16 +162,16 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1043,
+      "RootComponentId" : 1074,
       "Tag" : "",
       "Type" : "ASkeletalMeshActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1045" : {
+    "1075" : {
       "ObjectName" : "AParticleEventManager_3",
       "OwnedComponents" : [{
-          "Id" : 1046,
+          "Id" : 1076,
           "ObjectName" : "USceneComponent_4",
           "ParentId" : 0,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
@@ -184,16 +184,16 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1046,
+      "RootComponentId" : 1076,
       "Tag" : "",
       "Type" : "AParticleEventManager",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1047" : {
+    "1077" : {
       "ObjectName" : "AParticleEventManager_42",
       "OwnedComponents" : [{
-          "Id" : 1048,
+          "Id" : 1078,
           "ObjectName" : "USceneComponent_45",
           "ParentId" : 0,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
@@ -206,16 +206,16 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1048,
+      "RootComponentId" : 1078,
       "Tag" : "",
       "Type" : "AParticleEventManager",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1056" : {
+    "1079" : {
       "ObjectName" : "AParticleEventManager_5",
       "OwnedComponents" : [{
-          "Id" : 1057,
+          "Id" : 1080,
           "ObjectName" : "USceneComponent_6",
           "ParentId" : 0,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
@@ -228,13 +228,13 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1057,
+      "RootComponentId" : 1080,
       "Tag" : "",
       "Type" : "AParticleEventManager",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1066" : {
+    "1081" : {
       "ObjectName" : "스태틱 메시_0",
       "OwnedComponents" : [{
           "BodyInstance" : {
@@ -257,7 +257,7 @@
             "bStartAwake" : true,
             "bUseCCD" : false
           },
-          "Id" : 1067,
+          "Id" : 1083,
           "MaterialSlots" : [{
               "AssetPath" : "texture",
               "Type" : "UMaterial"
@@ -279,13 +279,13 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1067,
+      "RootComponentId" : 1083,
       "Tag" : "",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1068" : {
+    "1084" : {
       "ObjectName" : "AStaticMeshActor_0",
       "OwnedComponents" : [{
           "BodyInstance" : {
@@ -308,7 +308,7 @@
             "bStartAwake" : true,
             "bUseCCD" : false
           },
-          "Id" : 1069,
+          "Id" : 1086,
           "MaterialSlots" : [{
               "AssetPath" : "MatID_1.001",
               "Type" : "UMaterial"
@@ -330,13 +330,13 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1069,
+      "RootComponentId" : 1086,
       "Tag" : "",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1070" : {
+    "1087" : {
       "ObjectName" : "AStaticMeshActor_1",
       "OwnedComponents" : [{
           "BodyInstance" : {
@@ -359,7 +359,7 @@
             "bStartAwake" : true,
             "bUseCCD" : false
           },
-          "Id" : 1071,
+          "Id" : 1089,
           "MaterialSlots" : [{
               "AssetPath" : "MatID_1.001",
               "Type" : "UMaterial"
@@ -381,13 +381,13 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1071,
+      "RootComponentId" : 1089,
       "Tag" : "",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1072" : {
+    "1090" : {
       "ObjectName" : "AStaticMeshActor_2",
       "OwnedComponents" : [{
           "BodyInstance" : {
@@ -410,7 +410,7 @@
             "bStartAwake" : true,
             "bUseCCD" : false
           },
-          "Id" : 1073,
+          "Id" : 1092,
           "MaterialSlots" : [{
               "AssetPath" : "texture",
               "Type" : "UMaterial"
@@ -432,13 +432,13 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1073,
+      "RootComponentId" : 1092,
       "Tag" : "",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1074" : {
+    "1093" : {
       "ObjectName" : "AStaticMeshActor_3",
       "OwnedComponents" : [{
           "BodyInstance" : {
@@ -461,7 +461,7 @@
             "bStartAwake" : true,
             "bUseCCD" : false
           },
-          "Id" : 1075,
+          "Id" : 1095,
           "MaterialSlots" : [{
               "AssetPath" : "texture",
               "Type" : "UMaterial"
@@ -483,13 +483,13 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1075,
+      "RootComponentId" : 1095,
       "Tag" : "",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1076" : {
+    "1096" : {
       "ObjectName" : "AStaticMeshActor_4",
       "OwnedComponents" : [{
           "BodyInstance" : {
@@ -512,7 +512,7 @@
             "bStartAwake" : true,
             "bUseCCD" : false
           },
-          "Id" : 1077,
+          "Id" : 1098,
           "MaterialSlots" : [{
               "AssetPath" : "MatID_1.001",
               "Type" : "UMaterial"
@@ -534,14 +534,36 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1077,
+      "RootComponentId" : 1098,
       "Tag" : "",
       "Type" : "AStaticMeshActor",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
+    },
+    "1107" : {
+      "ObjectName" : "AParticleEventManager_6",
+      "OwnedComponents" : [{
+          "Id" : 1108,
+          "ObjectName" : "USceneComponent_7",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1108,
+      "Tag" : "",
+      "Type" : "AParticleEventManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
     }
   },
-  "NextUUID" : 1078,
+  "NextUUID" : 1117,
   "PerspectiveCamera" : {
     "FOV" : [60.000000],
     "FarClip" : [2000.000000],
@@ -549,5 +571,8 @@
     "NearClip" : [0.100000],
     "Rotation" : [0.000000, 23.600559, -17.302704]
   },
-  "Version" : 1
+  "Version" : 1,
+  "WorldSettings" : {
+    "GameModeClass" : "AHudExampleGameMode"
+  }
 }
