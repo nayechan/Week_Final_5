@@ -5,70 +5,104 @@
 #include <algorithm>
 #include <memory>
 
+#include "WeakObjectPtr.h"
+
 using FDelegateHandle = size_t;
 
 template<typename... Args>
 class TDelegate
 {
 public:
-	using HandlerType = std::function<void(Args...)>;
+    using HandlerType = std::function<void(Args...)>;
+    using ValidatorType = std::function<bool()>; 
 
-	TDelegate() : NextHandle(1) {}
+    TDelegate() : NextHandle(1) {}
 
-	FDelegateHandle Add(const HandlerType& Handler)
-	{
-		FDelegateHandle Handle = NextHandle++;
-		Handlers.push_back({ Handle, Handler });
-		return Handle;
-	}
+    FDelegateHandle Add(const HandlerType& Handler)
+    {
+       FDelegateHandle Handle = NextHandle++;
+       Handlers.push_back({ 
+           Handle, 
+           Handler, 
+           [] { return true; }
+       });
+       return Handle;
+    }
 
-	// original: template<typename T>
-	template<typename TObj, typename TClass>
-	FDelegateHandle AddDynamic(TObj* Instance, void(TClass::* Func)(Args...))
-	{
-		FDelegateHandle Handle = NextHandle++;
-		Handlers.push_back({
-			Handle,
-			[=](Args... args) {
-			(Instance->*Func)(args...); }
-		});
-		return Handle;
-	}
+    template<typename TObj, typename TClass>
+    FDelegateHandle AddDynamic(TObj* Instance, void(TClass::* Func)(Args...))
+    {
+        FDelegateHandle Handle = NextHandle++;
 
-	void Broadcast(Args... args) 
-	{
-		for (auto& Entry : Handlers) {
-			if (Entry.Handler)
-			{
-				Entry.Handler(args...);
-			}
-		}
-	}
+        if constexpr (std::is_base_of_v<UObject, TObj>)
+        {
+            TWeakObjectPtr<TObj> WeakInstance(Instance);
+            Handlers.push_back({
+                Handle,
+                [WeakInstance, Func](Args... args) {
+                    if (auto Pinned = WeakInstance.Get()) (Pinned->*Func)(args...);
+                },
+                [WeakInstance]() { return WeakInstance.IsValid(); }
+            });
+        }
+        else
+        {
+            Handlers.push_back({
+                Handle,
+                [=](Args... args) { (Instance->*Func)(args...); },
+                [] { return true; }
+            });
+        }
+        return Handle;
+    }
 
-	void Remove(FDelegateHandle Handle)
-	{
-		auto it = std::remove_if(Handlers.begin(), Handlers.end(),
-		[&](const Entry& e)
-		{
-			return e.Handle == Handle;
-		});
-		Handlers.erase(it, Handlers.end());
-	}
+    void Broadcast(Args... args) 
+    {
+       auto NewEnd = std::remove_if(Handlers.begin(), Handlers.end(),
+           [](const Entry& Entry) {
+               if (!Entry.Validator()) 
+               {
+                   return true; 
+               }
+               return false;
+           });
 
-	void Clear()
-	{
-		Handlers.clear();
-	}
+       if (NewEnd != Handlers.end())
+       {
+           Handlers.erase(NewEnd, Handlers.end());
+       }
+
+       std::vector<Entry> SafeHandlers = Handlers;
+       for (auto& Entry : SafeHandlers) {
+          if (Entry.Handler)
+          {
+             Entry.Handler(args...);
+          }
+       }
+    }
+
+    void Remove(FDelegateHandle Handle)
+    {
+       auto it = std::remove_if(Handlers.begin(), Handlers.end(),
+       [&](const Entry& e) { return e.Handle == Handle; });
+       Handlers.erase(it, Handlers.end());
+    }
+
+    void Clear()
+    {
+       Handlers.clear();
+    }
 
 private:
-	struct Entry
-	{
-		FDelegateHandle Handle;
-		HandlerType Handler;
-	};
+    struct Entry
+    {
+       FDelegateHandle Handle;
+       HandlerType Handler;
+       ValidatorType Validator; 
+    };
 
-	std::vector<Entry> Handlers;
-	FDelegateHandle NextHandle;
+    std::vector<Entry> Handlers;
+    FDelegateHandle NextHandle;
 };
 
 // 델리게이트 인스턴스 생성용 매크로 (실제 멤버 변수 선언)
