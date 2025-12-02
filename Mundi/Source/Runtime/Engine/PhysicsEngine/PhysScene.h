@@ -4,6 +4,8 @@
 
 #include "PhysXSupport.h"
 
+class FPhysXSimEventCallback;
+
 class FPhysScene
 {
 public:
@@ -67,6 +69,9 @@ private:
 
     /** PhysX Scene을 소유하고 있는 월드 */
     UWorld* OwningWorld;
+
+    /** PhysX 이벤트 콜백 */
+    FPhysXSimEventCallback* SimEventCallback;
 
     /** 시뮬레이션이 종료되고 처리될 충돌 정보 큐 */
     TArray<FCollisionNotifyInfo> PendingCollisionNotifies;

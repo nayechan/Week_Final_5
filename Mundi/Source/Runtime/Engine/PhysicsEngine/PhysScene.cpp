@@ -116,7 +116,8 @@ void FPhysScene::InitPhysScene()
 
     SceneDesc.gravity = PxVec3(0, 0, -9.81);
 
-    SceneDesc.simulationEventCallback = new FPhysXSimEventCallback(this);
+    SimEventCallback = new FPhysXSimEventCallback(this);
+    SceneDesc.simulationEventCallback = SimEventCallback;
 
     PhysXScene = GPhysXSDK->createScene(SceneDesc);
 
@@ -144,6 +145,12 @@ void FPhysScene::TermPhysScene()
 
         PhysXScene->release();
         PhysXScene = nullptr;
+    }
+
+    if (SimEventCallback)
+    {
+        delete SimEventCallback;
+        SimEventCallback = nullptr;
     }
 }
 
