@@ -177,7 +177,8 @@ struct PhysicsAssetEditorState : public ViewerState
     bool bShowConstraints = true;
 
     // 파일 경로
-    FString CurrentFilePath;
+    FString SkeletalMeshPath;   // 스켈레탈 메시 경로 (프리뷰용)
+    FString CurrentFilePath;    // Physics Asset 경로 (저장/불러오기용)
 
     // 시각화 라인 컴포넌트
     class ULineComponent* BodyShapeLineComponent = nullptr;
@@ -189,4 +190,7 @@ struct PhysicsAssetEditorState : public ViewerState
 
     // 더티 플래그
     bool bIsDirty = false;
+
+    // 경고/에러 팝업용
+    FString PendingWarningMessage;
 };

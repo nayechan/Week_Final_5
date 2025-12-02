@@ -1909,7 +1909,20 @@ bool UPropertyRenderer::RenderSkeletalMeshProperty(const FProperty& Prop, void* 
 		// Create a context to store asset info
 		UEditorAssetPreviewContext* Context = NewObject<UEditorAssetPreviewContext>();
 		Context->ViewerType = EViewerType::PhysicsAsset;
-		Context->AssetPath = CurrentPath;
+
+		// 스켈레탈 메시 경로 설정 (프리뷰용)
+		Context->SkeletalMeshPath = CurrentPath;
+
+		// 컴포넌트에 이미 PhysicsAsset이 있으면 그 경로를 가져옴
+		Context->PhysicsAssetPath = "";
+		UObject* Object = static_cast<UObject*>(Instance);
+		if (USkeletalMeshComponent* SkelMeshComp = Cast<USkeletalMeshComponent>(Object))
+		{
+			if (SkelMeshComp->PhysicsAsset)
+			{
+				Context->PhysicsAssetPath = SkelMeshComp->PhysicsAsset->GetFilePath();
+			}
+		}
 
 		// Request USlateManager to open the viewer
 		USlateManager::GetInstance().OpenAssetViewer(Context);

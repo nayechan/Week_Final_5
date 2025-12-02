@@ -183,6 +183,28 @@ void SPhysicsAssetEditorWindow::OnRender()
 		bIsWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows);
 		bIsWindowFocused = ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows);
 
+		// 경고 팝업 처리
+		PhysicsAssetEditorState* WarningState = GetActivePhysicsState();
+		if (WarningState && !WarningState->PendingWarningMessage.empty())
+		{
+			ImGui::OpenPopup("Warning##PhysicsAssetEditor");
+		}
+
+		if (ImGui::BeginPopupModal("Warning##PhysicsAssetEditor", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			if (WarningState)
+			{
+				ImGui::Text("%s", WarningState->PendingWarningMessage.c_str());
+				ImGui::Separator();
+				if (ImGui::Button("OK", ImVec2(120, 0)))
+				{
+					WarningState->PendingWarningMessage.clear();
+					ImGui::CloseCurrentPopup();
+				}
+			}
+			ImGui::EndPopup();
+		}
+
 		// 탭바 및 툴바 렌더링
 		RenderTabsAndToolbar(EViewerType::PhysicsAsset);
 
@@ -680,6 +702,9 @@ void SPhysicsAssetEditorWindow::SavePhysicsAsset()
 		return;
 	}
 
+	// 저장 전 SkeletalMeshPath 동기화 (Load 시 메시 복원에 필요)
+	State->EditingPhysicsAsset->SkeletalMeshPath = State->SkeletalMeshPath;
+
 	PhysicsAssetEditorBootstrap::SavePhysicsAsset(State->EditingPhysicsAsset, State->CurrentFilePath);
 	State->bIsDirty = false;
 }
@@ -700,6 +725,10 @@ void SPhysicsAssetEditorWindow::SavePhysicsAssetAs()
 	{
 		FString FilePath = SavePath.string();
 		State->CurrentFilePath = FilePath;
+
+		// 저장 전 SkeletalMeshPath 동기화 (Load 시 메시 복원에 필요)
+		State->EditingPhysicsAsset->SkeletalMeshPath = State->SkeletalMeshPath;
+
 		PhysicsAssetEditorBootstrap::SavePhysicsAsset(State->EditingPhysicsAsset, FilePath);
 		State->bIsDirty = false;
 	}

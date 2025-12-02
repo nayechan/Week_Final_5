@@ -58,24 +58,69 @@ ViewerState* PhysicsAssetEditorBootstrap::CreateViewerState(const char* Name, UW
 		{
 			State->PreviewActor = PreviewActor;
 
-			// Context에 AssetPath가 있으면 파일에서 로드, 없으면 기본 생성
 			UPhysicsAsset* PhysAsset = nullptr;
-			if (Context && !Context->AssetPath.empty())
+
+			// Case 3: ContentBrowser에서 .physicsasset 더블클릭 (AssetPath 사용)
+			if (Context && !Context->AssetPath.empty() && Context->AssetPath.find(".physicsasset") != FString::npos)
 			{
-				// 파일에서 PhysicsAsset 로드
 				PhysAsset = LoadPhysicsAsset(Context->AssetPath);
 				if (PhysAsset)
 				{
 					State->CurrentFilePath = Context->AssetPath;
+					State->SkeletalMeshPath = PhysAsset->SkeletalMeshPath;
 					State->bIsDirty = false;
 					UE_LOG("[PhysicsAssetEditorBootstrap] PhysicsAsset 로드: %s", Context->AssetPath.c_str());
+
+					// PhysicsAsset에서 메시 경로 추출하여 프리뷰 메시 로드
+					if (!PhysAsset->SkeletalMeshPath.empty())
+					{
+						USkeletalMesh* PreviewMesh = UResourceManager::GetInstance().Load<USkeletalMesh>(PhysAsset->SkeletalMeshPath.c_str());
+						if (PreviewMesh && PreviewActor->GetSkeletalMeshComponent())
+						{
+							PreviewActor->GetSkeletalMeshComponent()->SetSkeletalMesh(PreviewMesh->GetPathFileName());
+						}
+					}
+					else
+					{
+						State->PendingWarningMessage = "메시 정보가 없는 PhysicsAsset입니다.\n프리뷰를 표시할 수 없습니다.";
+					}
+				}
+			}
+			// Case 1 & 2: PropertyRenderer에서 버튼 클릭 (SkeletalMeshPath, PhysicsAssetPath 사용)
+			else if (Context)
+			{
+				// 스켈레탈 메시 경로 설정
+				State->SkeletalMeshPath = Context->SkeletalMeshPath;
+
+				// PhysicsAsset 경로가 있으면 로드 (Case 2)
+				if (!Context->PhysicsAssetPath.empty())
+				{
+					PhysAsset = LoadPhysicsAsset(Context->PhysicsAssetPath);
+					if (PhysAsset)
+					{
+						State->CurrentFilePath = Context->PhysicsAssetPath;
+						State->bIsDirty = false;
+						UE_LOG("[PhysicsAssetEditorBootstrap] PhysicsAsset 로드: %s", Context->PhysicsAssetPath.c_str());
+					}
+				}
+
+				// 프리뷰 메시 로드
+				if (!State->SkeletalMeshPath.empty())
+				{
+					USkeletalMesh* PreviewMesh = UResourceManager::GetInstance().Load<USkeletalMesh>(State->SkeletalMeshPath.c_str());
+					if (PreviewMesh && PreviewActor->GetSkeletalMeshComponent())
+					{
+						PreviewActor->GetSkeletalMeshComponent()->SetSkeletalMesh(PreviewMesh->GetPathFileName());
+					}
 				}
 			}
 
-			// 로드 실패하거나 AssetPath가 없으면 기본 생성
+			// PhysicsAsset이 없으면 기본 생성 (Case 1)
 			if (!PhysAsset)
 			{
 				PhysAsset = CreateDefaultPhysicsAsset();
+				PhysAsset->SkeletalMeshPath = State->SkeletalMeshPath;  // 메시 경로 설정
+				State->CurrentFilePath = "";  // 새 파일이므로 경로 없음
 				UE_LOG("[PhysicsAssetEditorBootstrap] 기본 PhysicsAsset 생성");
 			}
 

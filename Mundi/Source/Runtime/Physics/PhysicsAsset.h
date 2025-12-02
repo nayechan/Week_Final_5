@@ -81,6 +81,10 @@ public:
     UPROPERTY(EditAnywhere, Category="Physics")
     UPhysicalMaterial* DefaultPhysMaterial = nullptr;
 
+    // 연결된 스켈레탈 메시 경로 (필수 - 이 경로가 없으면 저장/로드 불가)
+    UPROPERTY(EditAnywhere, Category="Mesh")
+    FString SkeletalMeshPath;
+
     // 전체 시뮬레이션 활성화 여부
     //UPROPERTY(EditAnywhere, Category="Physics")
     //bool bEnablePhysicsSimulation = true;

@@ -256,6 +256,9 @@ void UPhysicsAsset::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 
     if (bInIsLoading)  // 로드
     {
+        // SkeletalMeshPath 로드
+        FJsonSerializer::ReadString(InOutHandle, "SkeletalMeshPath", SkeletalMeshPath);
+
         // BodySetups 로드
         JSON BodySetupsJson;
         if (FJsonSerializer::ReadArray(InOutHandle, "BodySetups", BodySetupsJson))
@@ -300,6 +303,9 @@ void UPhysicsAsset::Serialize(const bool bInIsLoading, JSON& InOutHandle)
     }
     else  // 저장
     {
+        // SkeletalMeshPath 저장
+        InOutHandle["SkeletalMeshPath"] = SkeletalMeshPath;
+
         // BodySetups 저장
         JSON BodySetupsJson = JSON::Make(JSON::Class::Array);
         for (USkeletalBodySetup* BodySetup : SkeletalBodySetups)
