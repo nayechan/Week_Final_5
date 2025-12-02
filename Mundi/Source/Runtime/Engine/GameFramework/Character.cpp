@@ -172,7 +172,19 @@ void ACharacter::SetupPlayerInputComponent(UInputComponent* InInputComponent)
 {
 	Super::SetupPlayerInputComponent(InInputComponent);
 
-	// 입력 바인딩은 파생 클래스 또는 Lua 스크립트에서 처리
+	if (!InInputComponent)
+	{
+		return;
+	}
+
+	// WASD 이동 바인딩
+	InInputComponent->BindAxis("MoveForward", 'W', 1.0f, this, &ACharacter::MoveForward);
+	InInputComponent->BindAxis("MoveForward", 'S', -1.0f, this, &ACharacter::MoveForward);
+	InInputComponent->BindAxis("MoveRight", 'D', 1.0f, this, &ACharacter::MoveRight);
+	InInputComponent->BindAxis("MoveRight", 'A', -1.0f, this, &ACharacter::MoveRight);
+
+	// 점프 바인딩
+	InInputComponent->BindAction("Jump", VK_SPACE, this, &ACharacter::Jump, &ACharacter::StopJumping);
 }
 
 // ────────────────────────────────────────────────────────────────────────────
