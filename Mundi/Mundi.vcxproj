@@ -272,6 +272,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Source\Editor\FbxLoader.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\SkeletalMesh.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Memory\WeakObjectPtr.cpp" />
     <ClCompile Include="Source\Runtime\Core\Misc\DebugUtils.cpp" />
     <ClCompile Include="Source\Runtime\Core\Misc\VertexData.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimationRuntime.cpp" />
@@ -835,6 +836,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Editor\PlatformProcess.h" />
     <ClInclude Include="Source\Editor\PlatformCrashHandler.h" />
     <ClInclude Include="Source\Runtime\AssetManagement\SkeletalMesh.h" />
+    <ClInclude Include="Source\Runtime\Core\Memory\WeakObjectPtr.h" />
     <ClInclude Include="Source\Runtime\Core\Misc\DebugUtils.h" />
     <ClInclude Include="Source\Runtime\Core\Misc\Delegates.h" />
     <ClInclude Include="Source\Runtime\Core\Misc\Hash.h" />
