@@ -474,6 +474,16 @@ void UVehicleComponent::PostPhysicsTick(float DeltaTime)
 	}
 }
 
+void UVehicleComponent::OnTransformUpdated()
+{
+	Super::OnTransformUpdated();
+	if (PhysXVehicle && PhysXVehicle->getRigidDynamicActor())
+	{
+		PxTransform PxWorldTransform = PhysXConvert::ToPx(GetWorldTransform());
+		PhysXVehicle->getRigidDynamicActor()->setGlobalPose(PxWorldTransform);
+	}
+}
+
 void UVehicleComponent::Simulate(float DeltaTime)
 {
 	if (PhysXVehicle && BodyInstance.RigidActor && VehicleQueryData && BatchQuery && FrictionPairs)

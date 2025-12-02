@@ -25,6 +25,7 @@ public:
 	void TickComponent(float DeltaTime) override;
 	void DuplicateSubObjects() override;
 	void PostPhysicsTick(float DeltaTime) override;
+	void OnTransformUpdated() override;
 
 	bool CanSimulatingPhysics() const  override { return true; }
 
