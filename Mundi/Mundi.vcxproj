@@ -117,7 +117,8 @@
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)ThirdParty\lib\FBXSDK\$(Configuration)\libfbxsdk.dll" "$(OutDir)"
 xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir)"</Command>
+xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\$(Configuration)\*.dll" "$(OutDir)"</Command>
       <Message>
       </Message>
     </PostBuildEvent>
@@ -149,7 +150,8 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)ThirdParty\lib\FBXSDK\$(Configuration)\libfbxsdk.dll" "$(OutDir)"
 xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir)"</Command>
+xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\$(Configuration)\*.dll" "$(OutDir)"</Command>
       <Message>
       </Message>
     </PostBuildEvent>
@@ -185,7 +187,8 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)ThirdParty\lib\FBXSDK\$(Configuration)\libfbxsdk.dll" "$(OutDir)"
 xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir)"</Command>
+xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\$(Configuration)\*.dll" "$(OutDir)"</Command>
       <Message>
       </Message>
     </PostBuildEvent>
@@ -221,7 +224,8 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir
     <PostBuildEvent>
       <Command>xcopy /y /d "$(ProjectDir)ThirdParty\lib\FBXSDK\$(Configuration)\libfbxsdk.dll" "$(OutDir)"
 xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"
-xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir)"</Command>
+xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir)"
+xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\$(Configuration)\*.dll" "$(OutDir)"</Command>
       <Message>[PostBuild] Copying dependencies and publishing symbols...</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -293,7 +297,9 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimStateMachine.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimStateMachineInstance.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimSequencePlayer.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Cloth\ClothTest.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Cloth\ClothManager.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Cloth\ClothUtil.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Cloth\DxContextManagerCallbackImpl.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\CharacterMovementComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\DOFComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\InputComponent.cpp" />
@@ -950,7 +956,10 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimNodeBase.h" />
     <ClInclude Include="Source\Runtime\Engine\Animation\AnimSingleNodeInstance.h" />
     <ClInclude Include="Source\Runtime\Engine\Audio\Sound.h" />
+    <ClInclude Include="Source\Runtime\Engine\Cloth\ClothManager.h" />
     <ClInclude Include="Source\Runtime\Engine\Cloth\ClothTest.h" />
+    <ClInclude Include="Source\Runtime\Engine\Cloth\ClothUtil.h" />
+    <ClInclude Include="Source\Runtime\Engine\Cloth\DxContextManagerCallbackImpl.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\AudioComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\CapsuleComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\CharacterMovementComponent.h" />

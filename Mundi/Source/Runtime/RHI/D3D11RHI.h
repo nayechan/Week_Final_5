@@ -32,6 +32,7 @@ CreateConstantBuffer(&TYPE##Buffer, sizeof(TYPE));
 
 
 struct FLinearColor;
+class UClothManager;
 
 enum class EComparisonFunc
 {
@@ -230,6 +231,8 @@ private:
 	void SwapRenderTargets();
 
 private:
+	UClothManager* ClothManager;
+
 	//24
 	D3D11_VIEWPORT ViewportInfo{};
 

@@ -2,6 +2,7 @@
 #include "StatsOverlayD2D.h"
 #include "GameUI/SGameHUD.h"
 #include "Color.h"
+#include "Source/Runtime/Engine/Cloth/ClothManager.h"
 
 void D3D11RHI::Initialize(HWND hWindow)
 {
@@ -22,6 +23,8 @@ void D3D11RHI::Initialize(HWND hWindow)
 
     // Initialize Game HUD
     SGameHUD::Get().Initialize(Device, DeviceContext, SwapChain);
+  /*  ClothManager = NewObject<UClothManager>();
+    ClothManager->Init(GetDevice());*/
 }
 
 void D3D11RHI::Release()
