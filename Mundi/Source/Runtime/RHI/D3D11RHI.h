@@ -152,6 +152,9 @@ public:
 	// Viewport query
 	UINT GetViewportWidth() const { return (UINT)ViewportInfo.Width; }
 	UINT GetViewportHeight() const { return (UINT)ViewportInfo.Height; }
+	UINT GetViewportTopLeftX() const { return (UINT)ViewportInfo.TopLeftX; }
+	UINT GetViewportTopLeftY() const { return (UINT)ViewportInfo.TopLeftY; }
+	void SetViewportResolutionSize(const float ResolutionSize);
 
 	void PrepareShader(UShader* InShader);
 	void PrepareShader(UShader* InVertexShader, UShader* InPixelShader);

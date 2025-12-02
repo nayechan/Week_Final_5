@@ -3,6 +3,7 @@
 #include <d3dcompiler.h>
 #include "Vector.h"
 #include <wrl.h>
+#include <d3d11_1.h>
 
 // NOTE: 개발 편의성을 위해서 DX11를 종속적으로 사용한다 (URHIDevice를 사용하지 않음)
 

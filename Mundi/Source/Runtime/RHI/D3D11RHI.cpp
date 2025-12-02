@@ -1241,6 +1241,22 @@ ID3D11SamplerState* D3D11RHI::GetSamplerState(RHI_Sampler_Index SamplerIndex) co
     return TempSamplerState;
 }
 
+void D3D11RHI::SetViewportResolutionSize(const float ResolutionSize)
+{
+    if (ResolutionSize == 1.0f)
+    {
+        DeviceContext->RSSetViewports(1, &ViewportInfo);
+    }
+    else 
+    {
+        D3D11_VIEWPORT ResolutionViewport = {};
+        ResolutionViewport = ViewportInfo;
+        float Per = ResolutionSize;
+        ResolutionViewport.TopLeftX = static_cast<uint32>(roundf(ViewportInfo.TopLeftX * Per));
+        ResolutionViewport.TopLeftY = static_cast<uint32>(roundf(ViewportInfo.TopLeftY * Per));
+        DeviceContext->RSSetViewports(1, &ResolutionViewport);
+    }
+}
 
 void D3D11RHI::PrepareShader(UShader* InShader)
 {

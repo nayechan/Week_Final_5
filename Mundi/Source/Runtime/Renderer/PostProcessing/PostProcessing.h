@@ -42,4 +42,7 @@ public:
     
     // 한 패스를 수행: 여기서 FSwapGuard 생성→Draw→Commit
     virtual void Execute(const FPostProcessModifier& M, FSceneView* View, D3D11RHI* RHIDevice) = 0;
+protected:
+    void Pass(D3D11RHI* RHIDevice, TArray<ID3D11ShaderResourceView*> SRVs, ID3D11RenderTargetView* RTV, const char* PSPath);
+
 };

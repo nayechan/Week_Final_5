@@ -37,8 +37,11 @@ public:
     UPROPERTY(EditAnywhere, Category = "DepthOfField", Range = "0.01, 1000.0")
     float FocusRange = 0.0f;
 
-    UPROPERTY(EditAnywhere, Category = "DepthOfField", Range = "3.0, 30.0")
-    float GaussianBlurWeight = 3;
+    UPROPERTY(EditAnywhere, Category = "DepthOfField", Range = "1.0, 30.0")
+    float GaussianBlurWeight = 1;
+
+    UPROPERTY(EditAnywhere, Category = "DepthOfField")
+    bool bUseDownSampling = false;
 private:
 
 };

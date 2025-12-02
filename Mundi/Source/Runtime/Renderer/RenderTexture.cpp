@@ -17,8 +17,8 @@ void URenderTexture::InitResolution(ID3D11Device* Device, const float InResoluti
 	}		
 	D3D11_TEXTURE2D_DESC TexDesc;
 	FrameBufferTex->GetDesc(&TexDesc);
-	uint32 ResizeWidth = TexDesc.Width;
-	uint32 ResizeHeight = TexDesc.Height;
+	uint32 ResizeWidth = static_cast<uint32>(roundf(TexDesc.Width * InResolution));
+	uint32 ResizeHeight = static_cast<uint32>(roundf(TexDesc.Height * InResolution));
 	if (Resolution != InResolution || TexWidth != ResizeWidth || TexHeight != ResizeHeight)
 	{
 		Resolution = InResolution;
@@ -66,6 +66,13 @@ void URenderTexture::CreateResources(ID3D11Device* Device, const uint32 Width, c
 	RTVDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 	RTVDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	RTVDesc.Texture2D.MipSlice = 0;
+
+	if (TexResource.Get() != nullptr) 
+	{
+		TexResource.Get()->Release();
+		SRV.Get()->Release();
+		RTV.Get()->Release();
+	}
 
 	Device->CreateTexture2D(&TexDesc, nullptr, TexResource.GetAddressOf());
 	Device->CreateShaderResourceView(TexResource.Get(), &SRVDesc, SRV.GetAddressOf());

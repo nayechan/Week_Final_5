@@ -71,8 +71,8 @@
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\PostProcess\DOF_COCGaussianBlur_PS.hlsl" />
-    <FxCompile Include="Shaders\PostProcess\DownSamplingPS.hlsl" />
-    <FxCompile Include="Shaders\PostProcess\UpSampling.hlsl" />
+    <FxCompile Include="Shaders\PostProcess\DownSampling_PS.hlsl" />
+    <FxCompile Include="Shaders\PostProcess\UpSampling_PS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Generated\UParticleModuleSizeScaleBySpeed.generated.cpp">

@@ -583,25 +583,22 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }, {
-          "COCSize" : 1.000000,
           "FocusDistance" : 25.000000,
           "FocusRange" : 14.500000,
-          "GaussianBlurWeight" : 6.210000,
+          "GaussianBlurWeight" : 5.700000,
           "Id" : 1067,
-          "McIntoshCount" : 0,
-          "McIntoshRange" : 3,
           "ObjectName" : "UDOFComponent_1",
           "ParentId" : 1066,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
           "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
           "Type" : "UDOFComponent",
-          "bBokeh" : false,
           "bHiddenInGame" : false,
           "bIsActive" : true,
           "bIsVisible" : true,
           "bTickEnabled" : true,
-          "bTickInEditor" : false
+          "bTickInEditor" : false,
+          "bUseDownSampling" : false
         }],
       "RootComponentId" : 1066,
       "Tag" : "",
@@ -1225,10 +1222,10 @@
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1151" : {
+    "1120" : {
       "ObjectName" : "AParticleEventManager_18",
       "OwnedComponents" : [{
-          "Id" : 1152,
+          "Id" : 1121,
           "ObjectName" : "USceneComponent_20",
           "ParentId" : 0,
           "RelativeLocation" : [0.000000, 0.000000, 0.000000],
@@ -1241,20 +1238,42 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1152,
+      "RootComponentId" : 1121,
+      "Tag" : "",
+      "Type" : "AParticleEventManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1154" : {
+      "ObjectName" : "AParticleEventManager_19",
+      "OwnedComponents" : [{
+          "Id" : 1155,
+          "ObjectName" : "USceneComponent_21",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1155,
       "Tag" : "",
       "Type" : "AParticleEventManager",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     }
   },
-  "NextUUID" : 1173,
+  "NextUUID" : 1182,
   "PerspectiveCamera" : {
     "FOV" : [60.000000],
     "FarClip" : [1167.000000],
-    "Location" : [19.781996, 2.085378, 4.432100],
+    "Location" : [19.974682, 2.413844, 4.445362],
     "NearClip" : [0.100000],
-    "Rotation" : [0.000000, 15.599730, 0.198201]
+    "Rotation" : [0.000000, 16.799717, -6.201779]
   },
   "Version" : 1
 }
