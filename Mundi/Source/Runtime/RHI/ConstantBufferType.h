@@ -21,6 +21,9 @@ struct DecalBufferType
 {
     FMatrix DecalMatrix;
     float Opacity;
+    float FadeProgress;     // Fade progress (0-1)
+    uint32_t FadeStyle;     // 0:Standard, 1:WipeLtoR, 2:Dissolve, 3:Iris
+    float _pad;             // Padding for alignment
 };
 
 // Fireball material parameters (b6 in PS)
