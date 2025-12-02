@@ -2311,7 +2311,110 @@ void SPhysicsAssetEditorWindow::AutoGenerateBodies(EAggCollisionShape PrimitiveT
 	}
 
 	// ────────────────────────────────────────────────
+	// Leaf body pruning (위상 정렬 방식)
+	// Shape가 없는 leaf body를 제거하고, 새로운 leaf가 되면 반복
+	// ────────────────────────────────────────────────
+	{
+		// 각 bone의 "body가 있는 자식" 수 계산
+		TArray<int32> ChildBodyCount;
+		ChildBodyCount.SetNum(BoneCount);
+		for (int32 i = 0; i < BoneCount; ++i)
+		{
+			ChildBodyCount[i] = 0;
+		}
+
+		// 자식 bone이 body를 가지고 있으면 부모의 count 증가
+		for (int32 i = 0; i < BoneCount; ++i)
+		{
+			int32 ParentBoneIdx = Skeleton->Bones[i].ParentIndex;
+			if (ParentBoneIdx >= 0 && Asset->FindBodyIndexByBone(i) >= 0)
+			{
+				ChildBodyCount[ParentBoneIdx]++;
+			}
+		}
+
+		// 제거할 bone index들을 추적
+		TArray<bool> BodiesToRemove;
+		BodiesToRemove.SetNum(BoneCount);
+		for (int32 i = 0; i < BoneCount; ++i)
+		{
+			BodiesToRemove[i] = false;
+		}
+
+		// Leaf body (자식 body가 없는)를 queue에 추가
+		TArray<int32> Queue;
+		for (int32 i = 0; i < BoneCount; ++i)
+		{
+			int32 BodyIdx = Asset->FindBodyIndexByBone(i);
+			if (BodyIdx >= 0 && ChildBodyCount[i] == 0)
+			{
+				Queue.Add(i);  // Bone index를 queue에 추가
+			}
+		}
+
+		int32 PrunedCount = 0;
+
+		// 위상 정렬 방식으로 처리
+		while (!Queue.IsEmpty())
+		{
+			int32 BoneIdx = Queue[0];
+			Queue.RemoveAt(0);
+
+			int32 BodyIdx = Asset->FindBodyIndexByBone(BoneIdx);
+			if (BodyIdx < 0) continue;
+			if (BodiesToRemove[BoneIdx]) continue;  // 이미 제거 대상
+
+			UBodySetup* Body = Asset->BodySetups[BodyIdx];
+			if (!Body) continue;
+
+			// Shape가 없으면 제거 대상
+			if (Body->AggGeom.GetElementCount() == 0)
+			{
+				BodiesToRemove[BoneIdx] = true;
+				PrunedCount++;
+
+				// 부모 bone의 자식 count 감소
+				int32 ParentBoneIdx = Skeleton->Bones[BoneIdx].ParentIndex;
+				if (ParentBoneIdx >= 0)
+				{
+					ChildBodyCount[ParentBoneIdx]--;
+
+					// 부모가 새로운 leaf가 되면 queue에 추가
+					if (ChildBodyCount[ParentBoneIdx] == 0)
+					{
+						int32 ParentBodyIdx = Asset->FindBodyIndexByBone(ParentBoneIdx);
+						if (ParentBodyIdx >= 0 && !BodiesToRemove[ParentBoneIdx])
+						{
+							Queue.Add(ParentBoneIdx);
+						}
+					}
+				}
+			}
+			// Shape가 있으면 제거하지 않음 (chain 유지)
+		}
+
+		// 제거 대상 body들을 역순으로 제거 (index 변경 방지)
+		for (int32 i = BoneCount - 1; i >= 0; --i)
+		{
+			if (BodiesToRemove[i])
+			{
+				int32 BodyIdx = Asset->FindBodyIndexByBone(i);
+				if (BodyIdx >= 0)
+				{
+					Asset->RemoveBody(BodyIdx);
+				}
+			}
+		}
+
+		if (PrunedCount > 0)
+		{
+			UE_LOG("[SPhysicsAssetEditorWindow] Pruned %d empty leaf bodies", PrunedCount);
+		}
+	}
+
+	// ────────────────────────────────────────────────
 	// 부모-자식 본 사이에 제약 조건 생성
+	// Pruning 후 중간 empty body는 유지되므로 직접 부모-자식 연결
 	// ────────────────────────────────────────────────
 	for (int32 i = 0; i < BoneCount; ++i)
 	{
