@@ -136,8 +136,8 @@ void FSceneRenderer::Render()
 	
 	if (!World->bPie)
 	{
-		// 디버그 요소는 Post Processing 적용하지 않음
-		// NOTE: RenderDebugPass()는 이미 투명 패스 전에 호출됨 (파티클과의 깊이 관계를 위해)
+		// 디버그 요소는 Post Processing 적용하지 않음 (후처리 이후 렌더링)
+		RenderDebugPass();	// 그리드, 선택 박스 등 디버그 라인 출력
 		RenderEditorPrimitivesPass();	// 빌보드, 기타 화살표 출력 (상호작용, 피킹 O)
 
 		// 오버레이(Overlay) Primitive 렌더링
@@ -206,13 +206,6 @@ void FSceneRenderer::RenderLitPath()
 	RHIDevice->OMSetBlendState(false);  // 불투명: 블렌딩 OFF
 	RenderOpaquePass(View->RenderSettings->GetViewMode());
 
-	// 디버그 요소들(그리드, 선택 박스 등)을 투명 패스 전에 렌더링
-	// 깊이 버퍼에 기록하여 파티클과 올바른 깊이 관계 유지
-	if (!World->bPie)
-	{
-		RenderDebugPass();
-	}
-
 	RenderDecalPass();
 	RenderParticleSystemPass();
 }
@@ -250,14 +243,8 @@ void FSceneRenderer::RenderWireframePath()
 	// 파티클 시스템 렌더링 (와이어프레임)
 	RenderParticleSystemPass();
 
-	// 상태 복구 (그리드 등 디버그 요소는 Solid로 렌더링)
+	// 상태 복구
 	RHIDevice->RSSetState(ERasterizerMode::Solid);
-
-	// 디버그 요소 렌더링 (그리드, 선택 박스 등)
-	if (!World->bPie)
-	{
-		RenderDebugPass();
-	}
 
 	RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTargetWithId);
 }
@@ -1271,7 +1258,7 @@ void FSceneRenderer::RenderPostProcessingPasses()
 	}
 
 	// Register Depth of Field Modifiers
-	// DoF는 Priority와 BlendWeight로 여러 컴포넌트를 블렌딩할 수 있음
+	// DoF는 Priority와 BlendWeight로 여러 컴포넌트를 블렌딩할 수 있음																				
 	for (UDepthOfFieldComponent* DofComponent : SceneGlobals.DepthOfFields)
 	{
 		if (DofComponent && DofComponent->IsDepthOfFieldEnabled())
