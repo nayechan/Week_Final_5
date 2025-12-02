@@ -1043,7 +1043,7 @@ void FSceneRenderer::RenderDecalPass()
 
 	for (UDecalComponent* Decal : Proxies.Decals)
 	{
-		if (!Decal || !Decal->GetDecalTexture())
+		if (!Decal || !Decal->GetDecalTexture() || !Decal->IsVisible())
 		{
 			continue;
 		}
@@ -1077,7 +1077,13 @@ void FSceneRenderer::RenderDecalPass()
 
 		// 데칼 전용 상수 버퍼 설정
 		const FMatrix DecalMatrix = Decal->GetDecalProjectionMatrix();
-		RHIDevice->SetAndUpdateConstantBuffer(DecalBufferType(DecalMatrix, Decal->GetOpacity()));
+		DecalBufferType DecalCB;
+		DecalCB.DecalMatrix = DecalMatrix;
+		DecalCB.Opacity = Decal->GetOpacity();
+		DecalCB.FadeProgress = Decal->GetFadeAlpha();  // FadeProperty에서 가져옴
+		DecalCB.FadeStyle = Decal->GetFadeStyle();     // FadeProperty에서 가져옴
+		DecalCB._pad = 0.0f;
+		RHIDevice->SetAndUpdateConstantBuffer(DecalCB);
 
 		// 3. TargetPrimitive 순회하며 수집 후 렌더링
 		MeshBatchElements.Empty();
