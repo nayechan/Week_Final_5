@@ -2,6 +2,7 @@
 #include "PhysicsScene.h"
 #include "BodyInstance.h"
 #include "PhysicsSystem.h"
+#include "PhysXSimEventCallback.h"
 #include "PlatformTime.h"
 #include "PrimitiveComponent.h"
 
@@ -12,6 +13,32 @@ FPhysicsScene::FPhysicsScene() : mScene(nullptr) {}
 FPhysicsScene::~FPhysicsScene()
 {
     Shutdown();
+}
+
+static PxFilterFlags SimpleSimulationFilterShader(
+    PxFilterObjectAttributes attributes0, PxFilterData filterData0,
+    PxFilterObjectAttributes attributes1, PxFilterData filterData1,
+    PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize)
+{
+    pairFlags = PxPairFlag::eCONTACT_DEFAULT;
+
+    // Trigger인지 확인
+    if (PxFilterObjectIsTrigger(attributes0) || PxFilterObjectIsTrigger(attributes1))
+    {
+        // Trigger면 뚫고 지나가야 하니 반발력(Solve) 끄기
+        pairFlags &= ~PxPairFlag::eSOLVE_CONTACT;
+        
+        // Trigger 진입/이탈 알림 켜기
+        pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+        pairFlags |= PxPairFlag::eNOTIFY_TOUCH_LOST;
+        
+        return PxFilterFlag::eDEFAULT;
+    }
+    // 충돌 시작(Hit) 알림을 받기 위해 플래그 추가
+    pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+    pairFlags |= PxPairFlag::eNOTIFY_CONTACT_POINTS;
+    
+    return PxFilterFlag::eDEFAULT;
 }
 
 void FPhysicsScene::Initialize(FPhysicsSystem* System)
@@ -34,7 +61,9 @@ void FPhysicsScene::Initialize(FPhysicsSystem* System)
         return; 
     }
 
-    SceneDesc.filterShader = PxDefaultSimulationFilterShader;
+    SceneDesc.filterShader = SimpleSimulationFilterShader;
+    mSimulationEventCallback = new FPhysXSimEventCallback();
+    SceneDesc.simulationEventCallback = mSimulationEventCallback;
     SceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVE_ACTORS; // 활성화된 액터 목록만 가져올 수 있게
     SceneDesc.flags |= PxSceneFlag::eENABLE_CCD; // CCD 허용
     SceneDesc.flags |= PxSceneFlag::eENABLE_PCM; // 충돌 접점 관리...?
@@ -43,14 +72,9 @@ void FPhysicsScene::Initialize(FPhysicsSystem* System)
     PxPvdSceneClient* PvdClient = mScene->getScenePvdClient();
     if (PvdClient)
     {
-        // 제약 조건(Joint 등) 보이기
-        PvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
-        
-        // 씬 쿼리(Raycast 등) 보이기
-        PvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
-        
-        // 충돌 접점(Contact Point) 보이기
-        PvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
+        PvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true); // 제약 조건(Joint 등) 보이기
+        PvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true); // 씬 쿼리(Raycast 등) 보이기
+        PvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true); // 충돌 접점(Contact Point) 보이기
     }
 }
 
@@ -113,6 +137,11 @@ void FPhysicsScene::Shutdown()
         // 씬 안에 있는 액터들은 World가 정리되며 자동으로 정리
         mScene->release();
         mScene = nullptr;
+    }
+    if (mSimulationEventCallback)
+    {
+        delete mSimulationEventCallback;
+        mSimulationEventCallback = nullptr;
     }
 }
 

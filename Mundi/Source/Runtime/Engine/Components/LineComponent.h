@@ -14,6 +14,8 @@ public:
     virtual ~ULineComponent() override;
 
 public:
+    void OnUnregister() override;
+
     // Line management
     ULine* AddLine(const FVector& StartPoint, const FVector& EndPoint, const FVector4& Color = FVector4(1,1,1,1));
     void RemoveLine(ULine* Line);

@@ -94,6 +94,11 @@ UWorld::~UWorld()
 	GridActor = nullptr;
 	GizmoActor = nullptr;
 
+	if (Partition)
+	{
+		Partition.reset();
+	}
+	
 	if (PhysicsScene)
 	{
 		PhysicsScene->Shutdown();
@@ -305,8 +310,6 @@ void UWorld::Tick(float DeltaSeconds)
 		PhysicsScene->FetchAndSync();
 		PhysicsScene->ProcessCommandQueue();
 	}
-	
-	ProcessPendingKillActors();
 }
 
 UWorld* UWorld::DuplicateWorldForPIE(UWorld* InEditorWorld)
@@ -527,6 +530,7 @@ void UWorld::SetLevel(std::unique_ptr<ULevel> InLevel)
     {
         for (AActor* Actor : Level->GetActors())
         {
+        	Actor->ResetComponents();
             ObjectFactory::DeleteObject(Actor);
         }
         Level->Clear();
@@ -592,42 +596,71 @@ void UWorld::AddActorToLevel(AActor* Actor)
 	}
 }
 
-void UWorld::AddPendingKillActor(AActor* Actor)
+void UWorld::MarkObjectForDestruction(UObject* Obj)
 {
-	PendingKillActors.Add(Actor);
+	PendingKillObjects.AddUnique(Obj);
 }
 
-void UWorld::ProcessPendingKillActors()
+void UWorld::CleanUpPendingKill()
 {
-	// 1. 처리할 액터가 없으면 즉시 반환 (최적화)
-	if (PendingKillActors.IsEmpty())
+	if (PendingKillObjects.IsEmpty())
 	{
 		return;
 	}
+	
+	TArray<UObject*> ObjectsToKill = PendingKillObjects;
+    
+	// 분류를 위한 임시 리스트
+	TArray<AActor*> ActorsToKill;
+	TArray<UActorComponent*> ComponentsToKill;
+	TArray<UObject*> OthersToKill;
 
-	// 2. (안전성) 파괴 목록의 '사본'을 만듭니다.
-	TArray<AActor*> ActorsToKill = PendingKillActors;
-
-	// 3. 원본 목록은 즉시 비워 다음 프레임을 준비합니다.
-	PendingKillActors.Empty();
-
-	// 4. '사본'을 순회하며 실제 파괴를 수행합니다.
-	for (AActor* Actor : ActorsToKill)
+	for (UObject* Obj : ObjectsToKill)
 	{
-		// 게임 수명 종료
-		if (bPie)
+		if (AActor* Actor = Cast<AActor>(Obj))
 		{
-			Actor->EndPlay();
+			ActorsToKill.Add(Actor);
+		}
+		else if (UActorComponent* Comp = Cast<UActorComponent>(Obj))
+		{
+			ComponentsToKill.Add(Comp);
+		}
+		else if (Obj)
+		{
+			OthersToKill.Add(Obj);
+		}
+	}
+
+	for (UActorComponent* Comp : ComponentsToKill)
+	{
+		if (!Comp) continue;
+
+		AActor* Owner = Comp->GetOwner();
+       
+		if (Owner && Owner->IsPendingDestroy())
+		{
+			continue; 
 		}
 
-		DestroyActor(Actor);
+		Comp->UnregisterComponent();
+		DeleteObject(Comp);
 	}
-}
 
-AActor* UWorld::SpawnActor(UClass* Class)
-{
-	// 기본 Transform(원점)으로 스폰하는 메인 함수를 호출합니다.
-	return SpawnActor(Class, FTransform());
+	for (AActor* Actor : ActorsToKill)
+	{
+		if (Actor)
+		{
+			Actor->EndPlay();
+			DestroyActor(Actor); 
+		}
+	}
+
+	for (UObject* Obj : OthersToKill)
+	{
+		if (Obj) DeleteObject(Obj);
+	}
+
+	PendingKillObjects.clear();
 }
 
 AActor* UWorld::FindActorByName(const FName& ActorName)

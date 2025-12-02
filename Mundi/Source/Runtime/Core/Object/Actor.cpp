@@ -27,8 +27,8 @@ AActor::AActor()
 
 AActor::~AActor()
 {
-	DestroyAllComponents();
-
+	ResetComponents();
+	
 	if (LuaGameObject)
 	{
 		delete LuaGameObject;
@@ -68,7 +68,7 @@ void AActor::Tick(float DeltaSeconds)
 
 	for (UActorComponent* Comp : OwnedComponents)
 	{
-		if (Comp && Comp->IsComponentTickEnabled())
+		if (Comp && Comp->IsComponentTickEnabled() && !Comp->IsPendingDestroy())
 		{
 			// 에디터 모드일 때 컴포넌트별 bTickInEditor 체크 (Preview World 포함)
 			bool bShouldTick = World->bPie || Comp->CanTickInEditor() || World->IsPreviewWorld();
@@ -94,7 +94,7 @@ void AActor::EndPlay()
 {
 	for (UActorComponent* Comp : OwnedComponents)
 	{
-		if (Comp)
+		if (Comp && !Comp->IsPendingDestroy())
 		{
 			Comp->EndPlay();
 		}
@@ -117,8 +117,10 @@ void AActor::Destroy()
 	}
 
 	MarkPendingDestroy();
-
-	World->AddPendingKillActor(this);
+	if (GetWorld())
+	{
+		GetWorld()->MarkObjectForDestruction(this);
+	}
 }
 
 void AActor::SetRootComponent(USceneComponent* InRoot)
@@ -286,22 +288,31 @@ void AActor::RegisterAllComponents(UWorld* InWorld)
 // 소유 중인 Component 전체 삭제
 void AActor::DestroyAllComponents()
 {
-	TArray<UActorComponent*> Temp;
-	Temp.reserve(OwnedComponents.size());
-
-	for (UActorComponent* C : OwnedComponents) 
-		Temp.push_back(C);
-
-	for (UActorComponent* C : Temp)
+	for (UActorComponent* C : OwnedComponents)
 	{
-		if (!C) 
-			continue;
-		C->DestroyComponent(); // 내부에서 등록 해제도 처리
+		if (C && !C->IsPendingDestroy()) // 아직 살아있는 놈만
+		{
+			C->DestroyComponent();
+		}
 	}
-	OwnedComponents.Empty();
+}
 
+void AActor::ResetComponents()
+{
+	TSet<UActorComponent*> ComponentsToDelete = OwnedComponents;
+
+	OwnedComponents.Empty();
 	SceneComponents.Empty();
 	RootComponent = nullptr;
+
+	for (UActorComponent* C : ComponentsToDelete)
+	{
+		if (C)
+		{
+			C->UnregisterComponent();
+			DeleteObject(C); 
+		}
+	}
 }
 
 // ───────────────
@@ -694,7 +705,7 @@ void AActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 	if (bInIsLoading)
 	{
 		// 액터 생성자에서 만들어진 컴포넌트를 무시하고 저장된 컴포넌트만 다시 붙인다
-		DestroyAllComponents();
+		ResetComponents();
 
 		uint32 RootUUID;
 		FJsonSerializer::ReadUint32(InOutHandle, "RootComponentId", RootUUID);

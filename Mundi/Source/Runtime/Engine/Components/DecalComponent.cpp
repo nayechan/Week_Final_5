@@ -67,7 +67,7 @@ void UDecalComponent::TickComponent(float DeltaTime)
 		{
 			if (UWorld* World = GetWorld())
 			{
-				World->AddPendingKillActor(GetOwner());
+				World->MarkObjectForDestruction(GetOwner());
 			}
 		}
 	}

@@ -24,7 +24,8 @@ protected:
 	~UStaticMeshComponent() override;
 
 public:
-
+	void BeginPlay() override;
+	void OnHit(UPrimitiveComponent* This, UPrimitiveComponent* Other, FHitResult HitResult);
     // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
 
 	UPROPERTY(EditAnywhere, Category="Static Mesh", Tooltip="Static mesh asset to render")

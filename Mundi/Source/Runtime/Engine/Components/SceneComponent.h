@@ -25,6 +25,7 @@ protected:
     ~USceneComponent() override;
 
 public:
+    void DestroyComponent() override;
 
     // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
 

@@ -7,9 +7,10 @@ IMPLEMENT_CLASS(AGridActor)
 
 AGridActor::AGridActor()
 {
-    LineComponent = NewObject<ULineComponent>();
-    LineComponent->SetupAttachment(RootComponent);
-    AddOwnedComponent(LineComponent);
+    LineComponent = CreateDefaultSubobject<ULineComponent>("LineComponent");
+    RootComponent = LineComponent;
+    
+    //LineComponent->SetupAttachment(RootComponent);
 }
 
 void AGridActor::Initialize()

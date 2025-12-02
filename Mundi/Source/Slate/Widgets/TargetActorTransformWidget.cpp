@@ -111,6 +111,7 @@ namespace
 		UActorComponent* ComponentPendingRemoval
 	)
 	{
+		if (SelectedActor->IsPendingDestroy() || SelectedComponent->IsPendingDestroy()) { return; }
 		for (UActorComponent* Component : SelectedActor->GetOwnedComponents())
 		{
 			if (Cast<USceneComponent>(Component))
@@ -159,7 +160,7 @@ namespace
 		UActorComponent*& ComponentPendingRemoval,
 		TSet<USceneComponent*>& Visited)
 	{
-		if (!Component)
+		if (!Component || Component->IsPendingDestroy())
 			return;
 
 		// 에디터 전용 컴포넌트는 계층구조에 표시하지 않음
@@ -187,7 +188,7 @@ namespace
 		{
 			NodeFlags |= ImGuiTreeNodeFlags_Selected;
 		}
-
+		
 		FString Label = Component->GetClass() ? Component->GetName() : "Unknown Component";
 		if (Component == Actor.GetRootComponent())
 		{

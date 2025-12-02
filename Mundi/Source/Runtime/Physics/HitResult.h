@@ -16,10 +16,6 @@ struct FHitResult
     FVector  ImpactPoint;           // 충돌 지점 (World)
     FVector  ImpactNormal;          // 충돌 표면의 법선 벡터
     FVector  Location;              // 충돌 이후 내 중심점
-    
-    // --- 디버깅용 ---
-    FVector  TraceStart;            // 레이 시작점
-    FVector  TraceEnd;              // 레이 끝점
     bool     bBlockingHit = false;
 
     // --- 맞춘 곳 ---

@@ -149,6 +149,7 @@ void UBodySetup::CreatePhysicsShapes(FBodyInstance* BodyInstance, const FVector&
     {
         Material = UsedMat->MatHandle;
     }
+    void* BoneNameUserData = (void*)&this->BoneName;
 
     if (ShapeMode == ECollisionShapeMode::Simple)
     {
@@ -161,6 +162,7 @@ void UBodySetup::CreatePhysicsShapes(FBodyInstance* BodyInstance, const FVector&
             PxShape* Shape = CreateSphereShape(Elem, Scale3D, Material);
             if (Shape)
             {
+                Shape->userData = BoneNameUserData;
                 ConfigureShapeFlags(Shape, Elem.GetCollisionEnabled(), BodyInstance->IsTrigger());
                 BodyInstance->RigidActor->attachShape(*Shape);
                 BodyInstance->Shapes.Add(Shape);
@@ -177,6 +179,7 @@ void UBodySetup::CreatePhysicsShapes(FBodyInstance* BodyInstance, const FVector&
             PxShape* Shape = CreateBoxShape(Elem, Scale3D, Material);
             if (Shape)
             {
+                Shape->userData = BoneNameUserData;
                 ConfigureShapeFlags(Shape, Elem.GetCollisionEnabled(), BodyInstance->IsTrigger());
                 BodyInstance->RigidActor->attachShape(*Shape);
                 BodyInstance->Shapes.Add(Shape);
@@ -193,6 +196,7 @@ void UBodySetup::CreatePhysicsShapes(FBodyInstance* BodyInstance, const FVector&
             PxShape* Shape = CreateCapsuleShape(Elem, Scale3D, Material);
             if (Shape)
             {
+                Shape->userData = BoneNameUserData;
                 ConfigureShapeFlags(Shape, Elem.GetCollisionEnabled(), BodyInstance->IsTrigger());
                 BodyInstance->RigidActor->attachShape(*Shape);
                 BodyInstance->Shapes.Add(Shape);
@@ -210,6 +214,7 @@ void UBodySetup::CreatePhysicsShapes(FBodyInstance* BodyInstance, const FVector&
             
             if (Shape)
             {
+                Shape->userData = BoneNameUserData;
                 ConfigureShapeFlags(Shape, Elem.GetCollisionEnabled(), BodyInstance->IsTrigger());
                 BodyInstance->RigidActor->attachShape(*Shape);
                 BodyInstance->Shapes.Add(Shape);

@@ -340,6 +340,10 @@ void UGameEngine::MainLoop()
 
         Tick(DeltaSeconds);
         Render();
+        for (auto& WorldContext : WorldContexts)
+        {
+            WorldContext.World->CleanUpPendingKill();
+        }
 
         // Shader Hot Reloading - Call AFTER render to avoid mid-frame resource conflicts
         // This ensures all GPU commands are submitted before we check for shader updates

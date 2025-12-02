@@ -337,6 +337,10 @@ void UEditorEngine::MainLoop()
         FPlatformCrashHandler::TickCrashMode();
         Tick(DeltaSeconds);
         Render();
+        for (auto& WorldContext : WorldContexts)
+        {
+            WorldContext.World->CleanUpPendingKill();
+        }
         
         // Shader Hot Reloading - Call AFTER render to avoid mid-frame resource conflicts
         // This ensures all GPU commands are submitted before we check for shader updates
@@ -408,7 +412,7 @@ void UEditorEngine::StartPIE()
     }
 
     // NOTE: BeginPlay 중에 삭제된 액터 삭제 후 Tick 시작
-    GWorld->ProcessPendingKillActors();
+    GWorld->CleanUpPendingKill();
 }
 
 void UEditorEngine::EndPIE()

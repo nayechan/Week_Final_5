@@ -42,7 +42,7 @@ public:
     void UnregisterComponent();                        // 외부에서 호출 (AActor)
     virtual void OnRegister(UWorld* InWorld);          // 내부 훅 (오버라이드 지점)
     virtual void OnUnregister();                       // 내부 훅 (오버라이드 지점)
-    void DestroyComponent();                           // 소멸
+    virtual void DestroyComponent();                           // 소멸
 
     // ─────────────── 활성화/틱
     void SetActive(bool bNewActive) { bIsActive = bNewActive; }

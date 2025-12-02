@@ -58,6 +58,10 @@ ULineComponent::~ULineComponent()
     ClearLines();
 }
 
+void ULineComponent::OnUnregister()
+{
+}
+
 ULine* ULineComponent::AddLine(const FVector& StartPoint, const FVector& EndPoint, const FVector4& Color)
 {
     ULine* NewLine = NewObject<ULine>();

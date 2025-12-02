@@ -2,8 +2,8 @@
 #include <PxPhysicsAPI.h>
 
 using namespace physx;
-
-class FPhysicsSystem; // 전방 선언
+class FPhysicsSystem;
+class FPhysXSimEventCallback;
 
 class FPhysicsScene
 {
@@ -37,6 +37,7 @@ public:
     
 private:
     PxScene* mScene = nullptr;
+    FPhysXSimEventCallback* mSimulationEventCallback = nullptr;
     TArray<PhysicsCommand> CommandQueue;
 
 // Stat Getter

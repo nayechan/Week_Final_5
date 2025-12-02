@@ -41,6 +41,8 @@ struct FName
         ComparisonIndex = Index; // 필요시 다른 규칙 적용 가능
     }
 
+    bool IsValid() const { return DisplayIndex != -1 && ComparisonIndex != -1; }
+
     bool operator==(const FName& Other) const { return ComparisonIndex == Other.ComparisonIndex; }
     FString ToString() const { return FNamePool::Get(DisplayIndex).Display; }
 

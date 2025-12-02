@@ -22,25 +22,37 @@ USceneComponent::USceneComponent()
 
 USceneComponent::~USceneComponent()
 {
-    // 자식 메모리 해제
-    // 복사본을 만들어 부모 리스트 무효화 문제를 피함
+    if (AttachParent)
+    {
+        AttachParent->AttachChildren.Remove(this);
+        AttachParent = nullptr;
+    }
+
+    // 자식들과의 연결 해제
+    // 자식들은 각자의 수명주기(Actor가 관리)에 따라 죽을 것임
+    for (USceneComponent* Child : AttachChildren)
+    {
+        if (Child)
+        {
+            Child->AttachParent = nullptr;
+        }
+    }
+    AttachChildren.Empty();
+}
+
+void USceneComponent::DestroyComponent()
+{
+    if (IsPendingDestroy()) return;
+
+    Super::DestroyComponent(); 
+
     TArray<USceneComponent*> ChildrenCopy = AttachChildren;
-    AttachChildren.clear();
     for (USceneComponent* Child : ChildrenCopy)
     {
         if (Child && !Child->IsPendingDestroy())
         {
-            // DestroyComponent를 통한 적절한 정리
             Child->DestroyComponent();
         }
-    }
-
-    // 부모에서 자신 제거
-    if (AttachParent)
-    {
-        TArray<USceneComponent*>& ParentChildren = AttachParent->AttachChildren;
-        ParentChildren.Remove(this);
-        AttachParent = nullptr;
     }
 }
 

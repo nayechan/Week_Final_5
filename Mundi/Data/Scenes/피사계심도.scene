@@ -1,0 +1,1033 @@
+{
+  "Actors" : {
+    "1226" : {
+      "ObjectName" : "피사계 심도_0",
+      "OwnedComponents" : [{
+          "Aperture" : 24.000000,
+          "BlendWeight" : 1.000000,
+          "BlurSampleCount" : 12,
+          "BokehRotationDegrees" : 0.000000,
+          "FarBlurScale" : 1.000000,
+          "FarTransitionRange" : 71.000000,
+          "FocalDistance" : 59.000000,
+          "FocalLength" : 58.000000,
+          "Id" : 1228,
+          "MaxCocRadius" : 32.000000,
+          "NearBlurScale" : 1.000000,
+          "NearTransitionRange" : 35.000000,
+          "ObjectName" : "UDepthOfFieldComponent_1",
+          "ParentId" : 0,
+          "Priority" : 0,
+          "RelativeLocation" : [-80.000000, 45.000000, 6.000000],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "UDepthOfFieldComponent",
+          "VolumeExtent" : [20.000000, 25.000000, 555.000000],
+          "bEnableDepthOfField" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false,
+          "bUnbounded" : false
+        }],
+      "RootComponentId" : 1228,
+      "Tag" : "",
+      "Type" : "ADepthOfFieldActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1229" : {
+      "ObjectName" : "태양",
+      "OwnedComponents" : [{
+          "CascadedAreaColorDebugValue" : 0.000000,
+          "CascadedAreaShadowDebugValue" : -1,
+          "CascadedCount" : 4,
+          "CascadedLinearBlendingValue" : 0.500000,
+          "CascadedOverlapValue" : 0.200000,
+          "Id" : 1231,
+          "Intensity" : 0.700000,
+          "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
+          "ObjectName" : "UDirectionalLightComponent_1",
+          "ParentId" : 0,
+          "RelativeLocation" : [-52.377960, 0.000000, 26.543203],
+          "RelativeRotationEuler" : [-67.853470, 22.626501, -39.393192],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "ShadowBias" : 0.000010,
+          "ShadowResolutionScale" : 2048,
+          "ShadowSharpen" : 0.500000,
+          "ShadowSlopeBias" : 0.000010,
+          "Temperature" : 6500.000000,
+          "Type" : "UDirectionalLightComponent",
+          "bCascaded" : true,
+          "bCastShadows" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1231,
+      "Tag" : "",
+      "Type" : "ADirectionalLightActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1232" : {
+      "ObjectName" : "주변광",
+      "OwnedComponents" : [{
+          "Id" : 1234,
+          "Intensity" : 0.100000,
+          "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
+          "ObjectName" : "UAmbientLightComponent_1",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "ShadowBias" : 0.000010,
+          "ShadowResolutionScale" : 1024,
+          "ShadowSharpen" : 0.500000,
+          "ShadowSlopeBias" : 0.000010,
+          "Temperature" : 6500.000000,
+          "Type" : "UAmbientLightComponent",
+          "bCastShadows" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1234,
+      "Tag" : "",
+      "Type" : "AAmbientLightActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1235" : {
+      "ObjectName" : "카메라",
+      "OwnedComponents" : [{
+          "AspectRatio" : 1.000000,
+          "FarClip" : 500.000000,
+          "FieldOfView" : 100.000000,
+          "Id" : 1237,
+          "NearClip" : 0.100000,
+          "ObjectName" : "UCameraComponent_1",
+          "ParentId" : 0,
+          "ProjectionMode" : 0,
+          "RelativeLocation" : [-80.000000, 45.000000, 10.000000],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "UCameraComponent",
+          "ZoomFactor" : 1.000000,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1237,
+      "Tag" : "",
+      "Type" : "APlayerCameraManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1238" : {
+      "ObjectName" : "AParticleEventManager_1",
+      "OwnedComponents" : [{
+          "Id" : 1239,
+          "ObjectName" : "USceneComponent_1",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1239,
+      "Tag" : "",
+      "Type" : "AParticleEventManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1240" : {
+      "ObjectName" : "AParticleEventManager_5",
+      "OwnedComponents" : [{
+          "Id" : 1241,
+          "ObjectName" : "USceneComponent_13",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1241,
+      "Tag" : "",
+      "Type" : "AParticleEventManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1242" : {
+      "ObjectName" : "바닥",
+      "OwnedComponents" : [{
+          "BodyInstance" : {
+            "AngularDamping" : 0.050000,
+            "LinearDamping" : 0.010000,
+            "MassInKg" : 10.000000,
+            "SleepThresholdMultiplier" : 1.000000,
+            "bCollisionEnabled" : false,
+            "bEnableGravity" : false,
+            "bIsTrigger" : false,
+            "bLockXAngular" : false,
+            "bLockXLinear" : false,
+            "bLockYAngular" : false,
+            "bLockYLinear" : false,
+            "bLockZAngular" : false,
+            "bLockZLinear" : false,
+            "bNotifyRigidBodyCollision" : false,
+            "bOverrideMass" : false,
+            "bSimulatePhysics" : false,
+            "bStartAwake" : false,
+            "bUseCCD" : false
+          },
+          "Id" : 1244,
+          "MaterialSlots" : [{
+              "Overrides" : {
+                "Scalars" : {
+
+                },
+                "Textures" : {
+                  "0" : "None"
+                },
+                "Vectors" : {
+                  "DiffuseColor" : [1.000000, 0.648649, 0.000000, 1.000000]
+                }
+              },
+              "ParentPath" : "texture",
+              "Type" : "UMaterialInstanceDynamic"
+            }],
+          "ObjectName" : "UStaticMeshComponent_5",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 50.000000, 1.000000],
+          "RelativeRotationEuler" : [0.000000, 90.000000, -0.000000],
+          "RelativeScale" : [1.000000, 100.000000, 200.000000],
+          "ShapeMode" : 0,
+          "StaticMesh" : "Data/cube-tex.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1244,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1246" : {
+      "ObjectName" : "AParticleEventManager_9",
+      "OwnedComponents" : [{
+          "Id" : 1247,
+          "ObjectName" : "USceneComponent_17",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1247,
+      "Tag" : "",
+      "Type" : "AParticleEventManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1248" : {
+      "ObjectName" : "장애물_1_1",
+      "OwnedComponents" : [{
+          "BodyInstance" : {
+            "AngularDamping" : 0.050000,
+            "LinearDamping" : 0.010000,
+            "MassInKg" : 10.000000,
+            "SleepThresholdMultiplier" : 1.000000,
+            "bCollisionEnabled" : false,
+            "bEnableGravity" : false,
+            "bIsTrigger" : false,
+            "bLockXAngular" : false,
+            "bLockXLinear" : false,
+            "bLockYAngular" : false,
+            "bLockYLinear" : false,
+            "bLockZAngular" : false,
+            "bLockZLinear" : false,
+            "bNotifyRigidBodyCollision" : false,
+            "bOverrideMass" : false,
+            "bSimulatePhysics" : false,
+            "bStartAwake" : false,
+            "bUseCCD" : false
+          },
+          "Id" : 1250,
+          "MaterialSlots" : [{
+              "Overrides" : {
+                "Scalars" : {
+
+                },
+                "Textures" : {
+                  "0" : "Data/Model/bathroom_floor_Base_Color.png",
+                  "1" : "Data/Model/bathroom_floor_Normal_OpenGL.png"
+                },
+                "Vectors" : {
+                  "DiffuseColor" : [0.478764, 0.118305, 0.118305, 1.000000],
+                  "EmissiveColor" : [0.194988, 0.231660, 0.000000, 1.000000]
+                }
+              },
+              "ParentPath" : "Shaders/Materials/UberLit.hlsl",
+              "Type" : "UMaterialInstanceDynamic"
+            }],
+          "ObjectName" : "UStaticMeshComponent_15",
+          "ParentId" : 0,
+          "RelativeLocation" : [-50.000000, 36.414391, 3.000000],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 5.000000, 5.000000],
+          "ShapeMode" : 0,
+          "StaticMesh" : "Data/Model/Cube.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : false,
+          "bGenerateOverlapEvents" : false,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1250,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1252" : {
+      "ObjectName" : "장애물_1_3",
+      "OwnedComponents" : [{
+          "BodyInstance" : {
+            "AngularDamping" : 0.050000,
+            "LinearDamping" : 0.010000,
+            "MassInKg" : 10.000000,
+            "SleepThresholdMultiplier" : 1.000000,
+            "bCollisionEnabled" : false,
+            "bEnableGravity" : false,
+            "bIsTrigger" : false,
+            "bLockXAngular" : false,
+            "bLockXLinear" : false,
+            "bLockYAngular" : false,
+            "bLockYLinear" : false,
+            "bLockZAngular" : false,
+            "bLockZLinear" : false,
+            "bNotifyRigidBodyCollision" : false,
+            "bOverrideMass" : false,
+            "bSimulatePhysics" : false,
+            "bStartAwake" : false,
+            "bUseCCD" : false
+          },
+          "Id" : 1254,
+          "MaterialSlots" : [{
+              "Overrides" : {
+                "Scalars" : {
+
+                },
+                "Textures" : {
+
+                },
+                "Vectors" : {
+                  "AmbientColor" : [0.332046, 0.008974, 0.008974, 1.000000],
+                  "DiffuseColor" : [1.000000, 0.000000, 0.000000, 1.000000],
+                  "EmissiveColor" : [0.000000, 0.000000, 0.000000, 1.000000],
+                  "SpecularColor" : [0.277992, 0.110553, 0.110553, 1.000000],
+                  "TransmissionFilter" : [1.000000, 1.000000, 1.000000, 1.000000]
+                }
+              },
+              "ParentPath" : "Material_0.001",
+              "Type" : "UMaterialInstanceDynamic"
+            }],
+          "ObjectName" : "UStaticMeshComponent_15",
+          "ParentId" : 0,
+          "RelativeLocation" : [-37.000000, 55.000000, 8.000000],
+          "RelativeRotationEuler" : [0.000000, -0.000000, -151.126755],
+          "RelativeScale" : [5.000000, 7.000000, 7.000000],
+          "ShapeMode" : 0,
+          "StaticMesh" : "Data/Model/SHC.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : false,
+          "bGenerateOverlapEvents" : false,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1254,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1256" : {
+      "ObjectName" : "장애물_1_4",
+      "OwnedComponents" : [{
+          "BodyInstance" : {
+            "AngularDamping" : 0.050000,
+            "LinearDamping" : 0.010000,
+            "MassInKg" : 10.000000,
+            "SleepThresholdMultiplier" : 1.000000,
+            "bCollisionEnabled" : false,
+            "bEnableGravity" : false,
+            "bIsTrigger" : false,
+            "bLockXAngular" : false,
+            "bLockXLinear" : false,
+            "bLockYAngular" : false,
+            "bLockYLinear" : false,
+            "bLockZAngular" : false,
+            "bLockZLinear" : false,
+            "bNotifyRigidBodyCollision" : false,
+            "bOverrideMass" : false,
+            "bSimulatePhysics" : false,
+            "bStartAwake" : false,
+            "bUseCCD" : false
+          },
+          "Id" : 1258,
+          "MaterialSlots" : [{
+              "Overrides" : {
+                "Scalars" : {
+
+                },
+                "Textures" : {
+                  "0" : "Data/Model/bathroom_floor_Base_Color.png",
+                  "1" : "Data/Model/bathroom_floor_Normal_OpenGL.png"
+                },
+                "Vectors" : {
+
+                }
+              },
+              "ParentPath" : "Shaders/Materials/UberLit.hlsl",
+              "Type" : "UMaterialInstanceDynamic"
+            }],
+          "ObjectName" : "UStaticMeshComponent_15",
+          "ParentId" : 0,
+          "RelativeLocation" : [-55.849091, 22.384041, 3.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, -32.327766],
+          "RelativeScale" : [1.000000, 5.000000, 5.000000],
+          "ShapeMode" : 0,
+          "StaticMesh" : "Data/Model/Cube.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : false,
+          "bGenerateOverlapEvents" : false,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1258,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1260" : {
+      "ObjectName" : "장애물_2_1",
+      "OwnedComponents" : [{
+          "BodyInstance" : {
+            "AngularDamping" : 0.050000,
+            "LinearDamping" : 0.010000,
+            "MassInKg" : 10.000000,
+            "SleepThresholdMultiplier" : 1.000000,
+            "bCollisionEnabled" : false,
+            "bEnableGravity" : false,
+            "bIsTrigger" : false,
+            "bLockXAngular" : false,
+            "bLockXLinear" : false,
+            "bLockYAngular" : false,
+            "bLockYLinear" : false,
+            "bLockZAngular" : false,
+            "bLockZLinear" : false,
+            "bNotifyRigidBodyCollision" : false,
+            "bOverrideMass" : false,
+            "bSimulatePhysics" : false,
+            "bStartAwake" : false,
+            "bUseCCD" : false
+          },
+          "Id" : 1262,
+          "MaterialSlots" : [{
+              "Overrides" : {
+                "Scalars" : {
+
+                },
+                "Textures" : {
+
+                },
+                "Vectors" : {
+                  "DiffuseColor" : [0.086463, 0.000000, 0.447876, 1.000000]
+                }
+              },
+              "ParentPath" : "Material_0",
+              "Type" : "UMaterialInstanceDynamic"
+            }],
+          "ObjectName" : "UStaticMeshComponent_15",
+          "ParentId" : 0,
+          "RelativeLocation" : [-25.000000, 43.996826, 7.980136],
+          "RelativeRotationEuler" : [0.000000, -0.000000, -179.999985],
+          "RelativeScale" : [3.000000, 5.000000, 5.000000],
+          "ShapeMode" : 0,
+          "StaticMesh" : "Data/Model/CGC.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : false,
+          "bGenerateOverlapEvents" : false,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1262,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1264" : {
+      "ObjectName" : "장애물_2_2",
+      "OwnedComponents" : [{
+          "BodyInstance" : {
+            "AngularDamping" : 0.050000,
+            "LinearDamping" : 0.010000,
+            "MassInKg" : 10.000000,
+            "SleepThresholdMultiplier" : 1.000000,
+            "bCollisionEnabled" : false,
+            "bEnableGravity" : false,
+            "bIsTrigger" : false,
+            "bLockXAngular" : false,
+            "bLockXLinear" : false,
+            "bLockYAngular" : false,
+            "bLockYLinear" : false,
+            "bLockZAngular" : false,
+            "bLockZLinear" : false,
+            "bNotifyRigidBodyCollision" : false,
+            "bOverrideMass" : false,
+            "bSimulatePhysics" : false,
+            "bStartAwake" : false,
+            "bUseCCD" : false
+          },
+          "Id" : 1266,
+          "MaterialSlots" : [{
+              "Overrides" : {
+                "Scalars" : {
+
+                },
+                "Textures" : {
+                  "0" : "Data/Textures/StoneWall01_BaseColor.png",
+                  "1" : "Data/Textures/StoneWall01_Normal.png"
+                },
+                "Vectors" : {
+
+                }
+              },
+              "ParentPath" : "Shaders/Materials/UberLit.hlsl",
+              "Type" : "UMaterialInstanceDynamic"
+            }],
+          "ObjectName" : "UStaticMeshComponent_15",
+          "ParentId" : 0,
+          "RelativeLocation" : [-25.000000, 63.965256, 5.000000],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 37.384129],
+          "RelativeScale" : [1.000000, 25.000000, 30.930338],
+          "ShapeMode" : 0,
+          "StaticMesh" : "Data/Model/Cube.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : false,
+          "bGenerateOverlapEvents" : false,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1266,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1268" : {
+      "ObjectName" : "장애물_3_1",
+      "OwnedComponents" : [{
+          "BodyInstance" : {
+            "AngularDamping" : 0.050000,
+            "LinearDamping" : 0.010000,
+            "MassInKg" : 10.000000,
+            "SleepThresholdMultiplier" : 1.000000,
+            "bCollisionEnabled" : false,
+            "bEnableGravity" : false,
+            "bIsTrigger" : false,
+            "bLockXAngular" : false,
+            "bLockXLinear" : false,
+            "bLockYAngular" : false,
+            "bLockYLinear" : false,
+            "bLockZAngular" : false,
+            "bLockZLinear" : false,
+            "bNotifyRigidBodyCollision" : false,
+            "bOverrideMass" : false,
+            "bSimulatePhysics" : false,
+            "bStartAwake" : false,
+            "bUseCCD" : false
+          },
+          "Id" : 1270,
+          "MaterialSlots" : [{
+              "Overrides" : {
+                "Scalars" : {
+
+                },
+                "Textures" : {
+                  "0" : "Data/Textures/StoneWall01_BaseColor.png",
+                  "1" : "Data/Textures/StoneWall01_Normal.png"
+                },
+                "Vectors" : {
+                  "AmbientColor" : [0.000000, 0.409266, 0.044245, 1.000000],
+                  "DiffuseColor" : [1.000000, 1.000000, 1.000000, 1.000000],
+                  "EmissiveColor" : [0.000000, 0.000000, 0.000000, 1.000000],
+                  "SpecularColor" : [0.610799, 1.000000, 0.057915, 1.000000],
+                  "TransmissionFilter" : [1.000000, 1.000000, 1.000000, 1.000000]
+                }
+              },
+              "ParentPath" : "Shaders/Materials/UberLit.hlsl",
+              "Type" : "UMaterialInstanceDynamic"
+            }],
+          "ObjectName" : "UStaticMeshComponent_15",
+          "ParentId" : 0,
+          "RelativeLocation" : [-5.000000, 45.000000, 5.000000],
+          "RelativeRotationEuler" : [66.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 25.000000, 25.000000],
+          "ShapeMode" : 0,
+          "StaticMesh" : "Data/Model/Cube.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : false,
+          "bGenerateOverlapEvents" : false,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1270,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1272" : {
+      "ObjectName" : "장애물_4_1",
+      "OwnedComponents" : [{
+          "BodyInstance" : {
+            "AngularDamping" : 0.050000,
+            "LinearDamping" : 0.010000,
+            "MassInKg" : 10.000000,
+            "SleepThresholdMultiplier" : 1.000000,
+            "bCollisionEnabled" : false,
+            "bEnableGravity" : false,
+            "bIsTrigger" : false,
+            "bLockXAngular" : false,
+            "bLockXLinear" : false,
+            "bLockYAngular" : false,
+            "bLockYLinear" : false,
+            "bLockZAngular" : false,
+            "bLockZLinear" : false,
+            "bNotifyRigidBodyCollision" : false,
+            "bOverrideMass" : false,
+            "bSimulatePhysics" : false,
+            "bStartAwake" : false,
+            "bUseCCD" : false
+          },
+          "Id" : 1274,
+          "MaterialSlots" : [{
+              "Overrides" : {
+                "Scalars" : {
+
+                },
+                "Textures" : {
+                  "0" : "Data/Model/bathroom_floor_Base_Color.png",
+                  "1" : "Data/Model/bathroom_floor_Normal_OpenGL.png"
+                },
+                "Vectors" : {
+
+                }
+              },
+              "ParentPath" : "Shaders/Materials/UberLit.hlsl",
+              "Type" : "UMaterialInstanceDynamic"
+            }],
+          "ObjectName" : "UStaticMeshComponent_15",
+          "ParentId" : 0,
+          "RelativeLocation" : [35.000000, 23.906855, 5.000000],
+          "RelativeRotationEuler" : [66.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 35.000000, 35.000000],
+          "ShapeMode" : 0,
+          "StaticMesh" : "Data/Model/Cube.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : false,
+          "bGenerateOverlapEvents" : false,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1274,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1276" : {
+      "ObjectName" : "장애물_5_1",
+      "OwnedComponents" : [{
+          "BodyInstance" : {
+            "AngularDamping" : 0.050000,
+            "LinearDamping" : 0.010000,
+            "MassInKg" : 10.000000,
+            "SleepThresholdMultiplier" : 1.000000,
+            "bCollisionEnabled" : false,
+            "bEnableGravity" : false,
+            "bIsTrigger" : false,
+            "bLockXAngular" : false,
+            "bLockXLinear" : false,
+            "bLockYAngular" : false,
+            "bLockYLinear" : false,
+            "bLockZAngular" : false,
+            "bLockZLinear" : false,
+            "bNotifyRigidBodyCollision" : false,
+            "bOverrideMass" : false,
+            "bSimulatePhysics" : false,
+            "bStartAwake" : false,
+            "bUseCCD" : false
+          },
+          "Id" : 1278,
+          "MaterialSlots" : [{
+              "AssetPath" : "MatID_1",
+              "Type" : "UMaterial"
+            }],
+          "ObjectName" : "UStaticMeshComponent_15",
+          "ParentId" : 0,
+          "RelativeLocation" : [15.000000, 20.084080, 5.000000],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [15.000000, 15.000000, 15.000000],
+          "ShapeMode" : 0,
+          "StaticMesh" : "Data/apple_mid.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : false,
+          "bGenerateOverlapEvents" : false,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1278,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1279" : {
+      "ObjectName" : "장애물_6_1",
+      "OwnedComponents" : [{
+          "BodyInstance" : {
+            "AngularDamping" : 0.050000,
+            "LinearDamping" : 0.010000,
+            "MassInKg" : 10.000000,
+            "SleepThresholdMultiplier" : 1.000000,
+            "bCollisionEnabled" : false,
+            "bEnableGravity" : false,
+            "bIsTrigger" : false,
+            "bLockXAngular" : false,
+            "bLockXLinear" : false,
+            "bLockYAngular" : false,
+            "bLockYLinear" : false,
+            "bLockZAngular" : false,
+            "bLockZLinear" : false,
+            "bNotifyRigidBodyCollision" : false,
+            "bOverrideMass" : false,
+            "bSimulatePhysics" : false,
+            "bStartAwake" : false,
+            "bUseCCD" : false
+          },
+          "Id" : 1281,
+          "MaterialSlots" : [{
+              "Type" : "None"
+            }, {
+              "AssetPath" : "Polyart_Default",
+              "Type" : "UMaterial"
+            }],
+          "ObjectName" : "UStaticMeshComponent_15",
+          "ParentId" : 0,
+          "RelativeLocation" : [-42.178196, 21.000000, 1.000000],
+          "RelativeRotationEuler" : [-0.000000, -0.000000, 144.612366],
+          "RelativeScale" : [11.000000, 11.000000, 11.000000],
+          "ShapeMode" : 0,
+          "StaticMesh" : "Data/CactusPA.fbx",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : false,
+          "bGenerateOverlapEvents" : false,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1281,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1282" : {
+      "ObjectName" : "장애물_7_1",
+      "OwnedComponents" : [{
+          "BodyInstance" : {
+            "AngularDamping" : 0.050000,
+            "LinearDamping" : 0.010000,
+            "MassInKg" : 10.000000,
+            "SleepThresholdMultiplier" : 1.000000,
+            "bCollisionEnabled" : false,
+            "bEnableGravity" : false,
+            "bIsTrigger" : false,
+            "bLockXAngular" : false,
+            "bLockXLinear" : false,
+            "bLockYAngular" : false,
+            "bLockYLinear" : false,
+            "bLockZAngular" : false,
+            "bLockZLinear" : false,
+            "bNotifyRigidBodyCollision" : false,
+            "bOverrideMass" : false,
+            "bSimulatePhysics" : false,
+            "bStartAwake" : false,
+            "bUseCCD" : false
+          },
+          "Id" : 1284,
+          "MaterialSlots" : [{
+              "Overrides" : {
+                "Scalars" : {
+
+                },
+                "Textures" : {
+
+                },
+                "Vectors" : {
+                  "DiffuseColor" : [0.000000, 0.131274, 1.000000, 1.000000]
+                }
+              },
+              "ParentPath" : "Body",
+              "Type" : "UMaterialInstanceDynamic"
+            }, {
+              "AssetPath" : "Black",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Window.001",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Bumpers",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Lights",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Bottom",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Tires",
+              "Type" : "UMaterial"
+            }, {
+              "AssetPath" : "Wheels",
+              "Type" : "UMaterial"
+            }],
+          "ObjectName" : "UStaticMeshComponent_15",
+          "ParentId" : 0,
+          "RelativeLocation" : [-50.000000, 61.751446, 3.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, -90.549057],
+          "RelativeScale" : [3.000000, 3.000000, 3.000000],
+          "ShapeMode" : 0,
+          "StaticMesh" : "Data/Model/Car.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : false,
+          "bGenerateOverlapEvents" : false,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1284,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1286" : {
+      "ObjectName" : "AParticleEventManager_5",
+      "OwnedComponents" : [{
+          "Id" : 1287,
+          "ObjectName" : "USceneComponent_6",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1287,
+      "Tag" : "",
+      "Type" : "AParticleEventManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1288" : {
+      "ObjectName" : "파티클",
+      "OwnedComponents" : [{
+          "BodyInstance" : {
+            "AngularDamping" : 0.050000,
+            "LinearDamping" : 0.010000,
+            "MassInKg" : 10.000000,
+            "SleepThresholdMultiplier" : 1.000000,
+            "bCollisionEnabled" : true,
+            "bEnableGravity" : true,
+            "bIsTrigger" : false,
+            "bLockXAngular" : false,
+            "bLockXLinear" : false,
+            "bLockYAngular" : false,
+            "bLockYLinear" : false,
+            "bLockZAngular" : false,
+            "bLockZLinear" : false,
+            "bNotifyRigidBodyCollision" : true,
+            "bOverrideMass" : false,
+            "bSimulatePhysics" : true,
+            "bStartAwake" : true,
+            "bUseCCD" : false
+          },
+          "DebugParticleType" : 0,
+          "Id" : 1289,
+          "ObjectName" : "UParticleSystemComponent_1",
+          "ParentId" : 1290,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Template" : "C:/Users/Jungle/Desktop/Krafton_TechLab_Final/Mundi/Data/Particles/DOF.particle",
+          "Type" : "UParticleSystemComponent",
+          "bAutoActivate" : true,
+          "bBlockComponent" : false,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : true
+        }, {
+          "Id" : 1290,
+          "ObjectName" : "USceneComponent_8",
+          "ParentId" : 0,
+          "RelativeLocation" : [96.000000, 50.000000, 247.675232],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1290,
+      "Tag" : "",
+      "Type" : "AEmptyActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1291" : {
+      "ObjectName" : "AParticleEventManager_6",
+      "OwnedComponents" : [{
+          "Id" : 1292,
+          "ObjectName" : "USceneComponent_8",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1292,
+      "Tag" : "",
+      "Type" : "AParticleEventManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1304" : {
+      "ObjectName" : "AParticleEventManager_14",
+      "OwnedComponents" : [{
+          "Id" : 1305,
+          "ObjectName" : "USceneComponent_17",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1305,
+      "Tag" : "",
+      "Type" : "AParticleEventManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    }
+  },
+  "NextUUID" : 2080,
+  "PerspectiveCamera" : {
+    "FOV" : [60.000000],
+    "FarClip" : [2000.000000],
+    "Location" : [-79.996613, 41.977032, 15.680503],
+    "NearClip" : [0.100000],
+    "Rotation" : [0.000000, -12.099395, 2.100869]
+  },
+  "Version" : 1
+}

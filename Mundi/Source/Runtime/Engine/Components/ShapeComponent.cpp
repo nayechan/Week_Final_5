@@ -192,16 +192,6 @@ void UShapeComponent::TickComponent(float DeltaSeconds)
             {
                 OtherOwner->OnComponentBeginOverlap.Broadcast(Comp, this);
             }
-
-            // Hit호출 
-            Owner->OnComponentHit.Broadcast(this, Comp);
-            if (bBlockComponent)
-            {
-                if (AActor* OtherOwner = Comp->GetOwner())
-                {
-                    OtherOwner->OnComponentHit.Broadcast(Comp, this);
-                }
-            }
         }
     }
 

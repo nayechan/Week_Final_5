@@ -16,6 +16,15 @@ UActorComponent::UActorComponent()
 
 UActorComponent::~UActorComponent()
 {
+    UnregisterComponent();
+
+    if (Owner)
+    {
+        //if (!Owner->IsPendingDestroy())
+        {
+            Owner->RemoveOwnedComponent(this);
+        }
+    }
 }
 
 UWorld* UActorComponent::GetWorld() const
@@ -26,18 +35,17 @@ UWorld* UActorComponent::GetWorld() const
 // 외부에서 호출되는 컴포넌트 삭제 요청 (= 이 함수 끝나고 너 월드에서 지울 거임)
 void UActorComponent::DestroyComponent()
 {
-    // TODO: 실제로도 컴포넌트 PendingDestroy 적용 필요 (액터는 지연 삭제 처리됨)
-    if (bPendingDestroy)
-    {
-        return;
-    }
+    if (bPendingDestroy) { return; }
     bPendingDestroy = true;
-
-    // 스스로 등록 해제
+    
+    AActor* Owner = GetOwner();
+    if (Owner && Owner->GetRootComponent() == this)
+    {
+        Owner->Destroy(); 
+        return; 
+    }
     UnregisterComponent();
-
-    // UObject 메모리 해제
-    DeleteObject(this);
+    GetWorld()->MarkObjectForDestruction(this);
 }
 
 // ─────────────── Registration
