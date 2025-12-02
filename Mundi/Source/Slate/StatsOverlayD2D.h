@@ -1,7 +1,6 @@
 ﻿#pragma once
-
-#include <d3d11.h>
-#include <dxgi.h>
+#include <d2d1_1.h>
+#include <dwrite.h>
 
 class UStatsOverlayD2D
 {
@@ -12,24 +11,24 @@ public:
 	void Shutdown();
     void Draw();
 
-    void SetShowFPS(bool b);
-    void SetShowMemory(bool b);
-    void SetShowPicking(bool b);
-    void SetShowDecal(bool b);
-    void SetShowTileCulling(bool b);
-    void SetShowLights(bool b);
-    void SetShowShadow(bool b);
-    void SetShowSkinning(bool b);
-    void SetShowParticles(bool b);
-    void ToggleFPS();
-    void ToggleMemory();
-    void TogglePicking();
-    void ToggleDecal();
-    void ToggleTileCulling();
-    void ToggleLights();
-    void ToggleShadow();
-    void ToggleSkinning();
-    void ToggleParticles();
+    void SetShowFPS(bool b) { bShowFPS = b; }
+    void SetShowMemory(bool b) { bShowMemory = b; }
+    void SetShowPicking(bool b)  { bShowPicking = b; }
+    void SetShowDecal(bool b)  { bShowDecal = b; }
+    void SetShowTileCulling(bool b)  { bShowTileCulling = b; }
+    void SetShowLights(bool b) { bShowLights = b; }
+    void SetShowShadow(bool b) { bShowShadow = b; }
+    void SetShowSkinning(bool b) { bShowSkinning = b; }
+    void SetShowParticles(bool b) { bShowParticles = b; }
+    void ToggleFPS() { bShowFPS = !bShowFPS; }
+    void ToggleMemory() { bShowMemory = !bShowMemory; }
+    void TogglePicking() { bShowPicking = !bShowPicking; }
+    void ToggleDecal() { bShowDecal = !bShowDecal; }
+    void ToggleTileCulling() { bShowTileCulling = !bShowTileCulling; }
+    void ToggleLights() { bShowLights = !bShowLights; }
+    void ToggleShadow() { bShowShadow = !bShowShadow; }
+    void ToggleSkinning() { bShowSkinning = !bShowSkinning; }
+    void ToggleParticles() { bShowParticles = !bShowParticles; }
     bool IsFPSVisible() const { return bShowFPS; }
     bool IsMemoryVisible() const { return bShowMemory; }
     bool IsPickingVisible() const { return bShowPicking; }
@@ -47,7 +46,7 @@ private:
     UStatsOverlayD2D& operator=(const UStatsOverlayD2D&) = delete;
 
     void EnsureInitialized();
-    void ReleaseD2DTarget();
+    void ReleaseD2DResources();
 
 private:
     bool bInitialized = false;
@@ -64,13 +63,19 @@ private:
     ID3D11Device* D3DDevice = nullptr;
     ID3D11DeviceContext* D3DContext = nullptr;
     IDXGISwapChain* SwapChain = nullptr;
+    
+    ID2D1Factory1* D2DFactory = nullptr;
+    ID2D1Device* D2DDevice = nullptr;
+    ID2D1DeviceContext* D2DContext = nullptr;
+    IDWriteFactory* DWriteFactory = nullptr;
+    IDWriteTextFormat* TextFormat = nullptr;
 
-    // D2D 리소스 캐싱 (매 프레임 재사용)
-    struct ID2D1Factory1* D2dFactory = nullptr;
-    struct ID2D1Device* D2dDevice = nullptr;
-    struct ID2D1DeviceContext* D2dCtx = nullptr;
-    struct IDWriteFactory* Dwrite = nullptr;
-    struct IDWriteTextFormat* TextFormat = nullptr;
-    struct ID2D1SolidColorBrush* CachedBrush = nullptr;
-    bool bD2DInitialized = false;
+    ID2D1SolidColorBrush* BrushYellow = nullptr;
+    ID2D1SolidColorBrush* BrushSkyBlue = nullptr;
+    ID2D1SolidColorBrush* BrushLightGreen = nullptr;
+    ID2D1SolidColorBrush* BrushOrange = nullptr;
+    ID2D1SolidColorBrush* BrushCyan = nullptr;
+    ID2D1SolidColorBrush* BrushViolet = nullptr;
+    ID2D1SolidColorBrush* BrushDeepPink = nullptr;
+    ID2D1SolidColorBrush* BrushBlack = nullptr;
 };
