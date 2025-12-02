@@ -661,7 +661,7 @@ void SPhysicsAssetEditorWindow::DestroyViewerState(ViewerState*& State)
 			UBoxComponent* BoxComp = PhysState->FloorActor->GetBoxComponent();
 			if (BoxComp)
 			{
-				BoxComp->GetBodyInstance().TermBody();
+				BoxComp->GetBodyInstance()->TermBody();
 			}
 			PhysState->FloorActor->Destroy();
 			PhysState->FloorActor = nullptr;
@@ -3066,7 +3066,7 @@ void SPhysicsAssetEditorWindow::StartSimulation()
 				BoxComp->SetSimulatePhysics(false);  // 바닥은 Static
 
 				// 바닥을 시뮬레이션 PhysScene에 등록
-				BoxComp->GetBodyInstance().InitBody(BoxComp->GetBodySetup(), BoxComp->GetWorldTransform(), BoxComp, PhysScene);
+				BoxComp->GetBodyInstance()->InitBody(BoxComp->GetBodySetup(), BoxComp->GetWorldTransform(), BoxComp, PhysScene);
 			}
 
 			// 위치: 캐릭터 아래
@@ -3141,7 +3141,7 @@ void SPhysicsAssetEditorWindow::StopSimulation()
 		UBoxComponent* BoxComp = State->FloorActor->GetBoxComponent();
 		if (BoxComp)
 		{
-			BoxComp->GetBodyInstance().TermBody();
+			BoxComp->GetBodyInstance()->TermBody();
 		}
 
 		State->FloorActor->Destroy();

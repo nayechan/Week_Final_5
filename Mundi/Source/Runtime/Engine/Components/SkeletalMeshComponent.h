@@ -171,7 +171,7 @@ public:
      * @brief 랙돌 시뮬레이션 활성화/비활성화
      * @param bEnable true: 랙돌 활성화 (물리 시뮬레이션), false: 애니메이션 모드
      */
-    void SetSimulatePhysics(bool bEnable);
+    virtual void SetSimulatePhysics(bool bEnable) override;
 
     /**
      * @brief 랙돌 시뮬레이션 중인지 확인

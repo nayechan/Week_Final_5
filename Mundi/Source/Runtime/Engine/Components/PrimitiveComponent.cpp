@@ -8,6 +8,7 @@ UPrimitiveComponent::UPrimitiveComponent()
     : bGenerateOverlapEvents(true)
     , bSimulatePhysics(false)
 {
+    OnComponentHit.AddDynamic(this, &UPrimitiveComponent::OnHitDebug);
 }
 
 UPrimitiveComponent::~UPrimitiveComponent()
@@ -167,4 +168,31 @@ bool UPrimitiveComponent::IsOverlappingActor(const AActor* Other) const
         }
     }
     return false;
+}
+
+void UPrimitiveComponent::DispatchBlockingHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, const FVector& NormalImpulse, const FHitResult& Hit)
+{
+    OnComponentHit.Broadcast(this, OtherActor, OtherComp, NormalImpulse, Hit);
+}
+
+void UPrimitiveComponent::DispatchWakeEvents(bool bWake, FName BoneName)
+{
+    if (bWake)
+    {
+        OnComponentWake.Broadcast(this, BoneName);
+    }
+    else
+    {
+        OnComponentSleep.Broadcast(this, BoneName); 
+    }
+}
+
+void UPrimitiveComponent::DispatchBeginOverlap(AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+    OnComponentBeginOverlap.Broadcast(this, OtherActor, OtherComp, OtherBodyIndex);
+}
+
+void UPrimitiveComponent::DispatchEndOverlap(AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+    OnComponentEndOverlap.Broadcast(this, OtherActor, OtherComp, OtherBodyIndex);
 }

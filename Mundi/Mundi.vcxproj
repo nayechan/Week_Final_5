@@ -277,6 +277,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir
     <ClCompile Include="Source\Editor\FbxLoader.cpp" />
     <ClCompile Include="Source\Editor\PhysicalMaterialLoader.cpp" />
     <ClCompile Include="Source\Runtime\AssetManagement\SkeletalMesh.cpp" />
+    <ClCompile Include="Source\Runtime\Core\Memory\WeakObjectPtr.cpp" />
     <ClCompile Include="Source\Runtime\Core\Misc\DebugUtils.cpp" />
     <ClCompile Include="Source\Runtime\Core\Misc\VertexData.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimationRuntime.cpp" />
@@ -461,6 +462,8 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir
     <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysicsDebugUtils.cpp" />
     <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysicsTypes.cpp" />
     <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysScene.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysXPublic.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysXSimEventCallback.cpp" />
     <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysXSupport.cpp" />
     <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\ShapeElem.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Scripting\GameObject.cpp" />
@@ -922,6 +925,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir
     <ClInclude Include="Source\Editor\PlatformProcess.h" />
     <ClInclude Include="Source\Editor\PlatformCrashHandler.h" />
     <ClInclude Include="Source\Runtime\AssetManagement\SkeletalMesh.h" />
+    <ClInclude Include="Source\Runtime\Core\Memory\WeakObjectPtr.h" />
     <ClInclude Include="Source\Runtime\Core\Misc\DebugUtils.h" />
     <ClInclude Include="Source\Runtime\Core\Misc\Delegates.h" />
     <ClInclude Include="Source\Runtime\Core\Misc\Hash.h" />
@@ -1024,6 +1028,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\physx\$(Configuration)\*.dll" "$(OutDir
     <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysicsTypes.h" />
     <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysScene.h" />
     <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysXPublic.h" />
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysXSimEventCallback.h" />
     <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysXSupport.h" />
     <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\ShapeElem.h" />
     <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\SphereElem.h" />

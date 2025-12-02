@@ -67,7 +67,7 @@ void UBodySetup::AddShapesToRigidActor_AssumesLocked(FBodyInstance* OwningInstan
                 NewShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
                 NewShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, false);
             }
-            else
+            else if (BoxElem.GetCollisionEnabled() == ECollisionEnabled::QueryAndPhysics)
             {
                 NewShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, true);
                 NewShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, true);

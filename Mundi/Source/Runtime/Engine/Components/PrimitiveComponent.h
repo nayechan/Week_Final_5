@@ -18,15 +18,20 @@ struct FOverlapInfo
     UPrimitiveComponent* Other = nullptr;
 };
 
+// @todo 델리게이트 매크로가 type alias 선언이 아닌 변수 선언을 하고 있어서, 직접 type alias 선언
+DECLARE_DELEGATE_TYPE(FComponentHitSignature, UPrimitiveComponent*, AActor*, UPrimitiveComponent*, FVector, const FHitResult&)
+DECLARE_DELEGATE_TYPE(FComponentBeginOverlapSignature, UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32)
+DECLARE_DELEGATE_TYPE(FComponentEndOverlapSignature, UPrimitiveComponent*, AActor*, UPrimitiveComponent*, int32)
+DECLARE_DELEGATE_TYPE(FComponentWakeSignature, UPrimitiveComponent*, FName)
+DECLARE_DELEGATE_TYPE(FComponentSleepSignature, UPrimitiveComponent*, FName)
+
 UCLASS(DisplayName="프리미티브 컴포넌트", Description="렌더링 가능한 기본 컴포넌트입니다")
 class UPrimitiveComponent :public USceneComponent
 {
 public:
-
     GENERATED_REFLECTION_BODY();
-
+    
 public:
-
     // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
 
     UPROPERTY(EditAnywhere, Category="Shape")
@@ -40,6 +45,12 @@ public:
 
     UPROPERTY(EditAnywhere, Category="Physics")
     UPhysicalMaterial* PhysicalMaterial;
+
+    FComponentHitSignature OnComponentHit;
+    FComponentBeginOverlapSignature OnComponentBeginOverlap;
+    FComponentEndOverlapSignature OnComponentEndOverlap;
+    FComponentWakeSignature OnComponentWake;
+    FComponentSleepSignature OnComponentSleep;
 
     UPrimitiveComponent();
     virtual ~UPrimitiveComponent();
@@ -84,13 +95,21 @@ public:
 
     virtual UBodySetup* GetBodySetup() { return nullptr; }
 
-    void SetSimulatePhysics(bool bInSimulatePhysics);
+    virtual FBodyInstance* GetBodyInstance(FName BoneName = FName()) { return &BodyInstance; }
+
+    virtual void SetSimulatePhysics(bool bInSimulatePhysics);
 
     // ───── 충돌 관련 ──────────────────────────── 
     bool IsOverlappingActor(const AActor* Other) const;
     virtual const TArray<FOverlapInfo>& GetOverlapInfos() const { static TArray<FOverlapInfo> Empty; return Empty; }
 
-    //Delegate 
+    void DispatchBlockingHit(AActor* OtherActor, UPrimitiveComponent* OtherComp, const FVector& NormalImpulse, const FHitResult& Hit);
+    
+    void DispatchWakeEvents(bool bWake, FName BoneName);
+
+    void DispatchBeginOverlap(AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+    
+    void DispatchEndOverlap(AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
     
     // ───── 복사 관련 ────────────────────────────
     void DuplicateSubObjects() override;
@@ -102,14 +121,16 @@ public:
     // ───── 직렬화 ────────────────────────────
     void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
-    // ───── 충돌 관련 (접근자) ────────────────────────────
-    FBodyInstance& GetBodyInstance() { return BodyInstance; }
-    const FBodyInstance& GetBodyInstance() const { return BodyInstance; }
-
 protected:
     bool bIsCulled = false;
 
     // ───── 충돌 관련 ────────────────────────────
     FBodyInstance BodyInstance;
 
+private:
+    // ───── 디버그용 ────────────────────────────
+    void OnHitDebug(UPrimitiveComponent* Comp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+    {
+        UE_LOG("Hit!");        
+    }
 };

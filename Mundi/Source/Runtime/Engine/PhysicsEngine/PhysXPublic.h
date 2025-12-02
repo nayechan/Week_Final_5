@@ -1,6 +1,8 @@
 #pragma once
 #include <PxPhysicsAPI.h>
 
+class UPrimitiveComponent;
+struct FBodyInstance;
 using namespace physx;
 
 // ==================================================================================
@@ -146,3 +148,117 @@ inline FMatrix P2UMatrix(const PxMat44& PMat)
 }
 
 // ==================================================================================
+
+struct FHitResult
+{
+    /** 충돌 여부 (true면 충돌함) */
+    bool bBlockingHit = false;
+
+    /** 시작점으로부터 거리 */
+    float Distance = 0.0f;
+
+    /** 실제 표면과 닿은 접점 (Location과 다를 수 있음) */
+    FVector ImpactPoint = FVector::Zero();
+
+    /** 충돌 표면의 법선 벡터 */
+    FVector ImpactNormal = FVector::Zero(); 
+
+    /** 충돌한 액터 */
+    AActor* Actor = nullptr;
+
+    /** 충돌한 컴포넌트 */
+    UPrimitiveComponent* Component = nullptr;
+
+    /** 충돌한 본 이름 (헤드샷 판정 등에 필수) */
+    FName BoneName;
+
+    /** 물리 재질 (발소리, 피격 이펙트 구분용 - 필요시 추가) */
+    // TWeakObjectPtr<UPhysicalMaterial> PhysMaterial; 
+
+    void Init()
+    {
+        bBlockingHit = false;
+        Distance = 0.0f;
+        ImpactPoint = FVector::Zero();
+        ImpactNormal = FVector::Zero();
+        Actor = nullptr;
+        Component = nullptr;
+    }
+
+    FHitResult() { Init(); }
+};
+
+/**
+ * 강체 충돌 정보
+ */
+struct FRigidBodyCollisionInfo
+{
+    /** 충돌한 액터 */
+    AActor* Actor;
+
+    /** 충돌한 컴포넌트 */
+    UPrimitiveComponent* Component;
+
+    /** PhysicsAsset 내의 바디 인덱스 */
+    int32 BodyIndex = -1;
+
+    /** PhysicsAsset 내의 본 이름 */
+    FName BoneName;
+
+    /** FBodyInstance로부터 정보를 가져옴 */
+    void SetFrom(FBodyInstance* BodyInst);
+
+    /** 유효성 검사 */
+    bool IsValid() const;
+};
+
+/** 물리 이벤트 타입 정의 */
+enum class ECollisionNotifyType : uint8
+{
+    None,
+    Hit,            // OnComponentHit 
+    BeginOverlap,   // OnComponentBeginOverlap 
+    EndOverlap,     // OnComponentEndOverlap 
+    Wake,           // OnComponentWake 
+    Sleep           // OnComponentSleep 
+};
+
+/** 
+ * 대기 중인 충돌 알림 정보 (큐에 저장될 항목)
+ */
+struct FCollisionNotifyInfo
+{
+    /** 이벤트 타입 */
+    ECollisionNotifyType Type = ECollisionNotifyType::None;
+    
+    /** 첫 번째 객체(Info0)에게 이벤트를 호출할지 여부 */
+    bool bCallEvent0 = false;
+
+    /** 두 번째 객체(Info1)에게 이벤트를 호출할지 여부 */
+    bool bCallEvent1 = false;
+
+    /** 첫 번째 객체 정보 */
+    FRigidBodyCollisionInfo Info0;
+
+    /** 두 번째 객체 정보 */
+    FRigidBodyCollisionInfo Info1;
+
+    /** 충돌 지점 (World Space) */
+    FVector ImpactPoint = FVector::Zero();
+
+    /**
+     * 충돌 법선 (World Space)
+     * @todo Info1에서 Info0를 향하는 방향 등 기준 통일 필요
+     */
+    FVector ImpactNormal = FVector::Zero();
+
+    /** 충격량 크기 (물리적 반응, 사운드, 데미지 계산용) */
+    float TotalImpulse = 0.0f;
+
+    FCollisionNotifyInfo() = default;
+
+    /** * 알림을 보낼 수 있는지 유효성 검사 
+     * (양쪽 액터/컴포넌트가 삭제되지 않았는지 확인)
+     */
+    bool IsValidForNotify() const;
+};

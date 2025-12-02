@@ -103,7 +103,11 @@ void FBodyInstance::InitBody(UBodySetup* Setup, const FTransform& Transform, UPr
     RigidActor->userData = this;
 
     UPhysicalMaterial* PhysicalMaterial = GetSimplePhysicalMaterial();
-    Setup->AddShapesToRigidActor_AssumesLocked(this, Scale3D, RigidActor, PhysicalMaterial);
+    
+    {
+        SCOPED_SCENE_WRITE_LOCK(PhysScene->GetPxScene());    
+        Setup->AddShapesToRigidActor_AssumesLocked(this, Scale3D, RigidActor, PhysicalMaterial);
+    }
 
     if (IsDynamic())
     {
