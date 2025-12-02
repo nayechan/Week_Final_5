@@ -1,6 +1,15 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
+    <FxCompile Include="Shaders\PostProcess\DOF_BokehBlur_PS.hlsl">
+      <Filter>Shaders\PostProcess</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\DOF_COCGaussianBlur_PS.hlsl">
+      <Filter>Shaders\PostProcess</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\DOF_McIntosh_PS.hlsl">
+      <Filter>Shaders\PostProcess</Filter>
+    </FxCompile>
     <FxCompile Include="Shaders\Materials\Fireball.hlsl">
       <Filter>Shaders\Materials</Filter>
     </FxCompile>
@@ -58,31 +67,22 @@
     <FxCompile Include="Shaders\Utility\SceneDepth_PS.hlsl">
       <Filter>Shaders\Utility</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\Particle\ParticleSprite.hlsl">
+    <FxCompile Include="Shaders\Particle\ParticleBeam.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Particle\ParticleMesh.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\Particle\ParticleBeam.hlsl">
-      <Filter>Shaders\Particle</Filter>
-    </FxCompile>
     <FxCompile Include="Shaders\Particle\ParticleRibbon.hlsl">
       <Filter>Shaders\Particle</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\PostProcess\DOF_BokehBlur_PS.hlsl" />
-    <FxCompile Include="Shaders\PostProcess\DOF_COCGaussianBlur_PS.hlsl" />
-    <FxCompile Include="Shaders\PostProcess\DOF_McIntosh_PS.hlsl" />
+    <FxCompile Include="Shaders\Particle\ParticleSprite.hlsl">
+      <Filter>Shaders\Particle</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Generated\UParticleModuleSizeScaleBySpeed.generated.cpp">
-      <Filter>Generated</Filter>
-    </ClCompile>
-    <ClCompile Include="Generated\UParticleModuleMeshRotation.generated.cpp">
-      <Filter>Generated</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Engine\Viewer\ParticleEditorBootstrap.cpp">
-      <Filter>Source\Runtime\Engine\Viewer</Filter>
+    <ClCompile Include="Source\Runtime\Core\Misc\DebugUtils.cpp">
+      <Filter>Source\Runtime\Core\Misc</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleMeshRotation.cpp">
       <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
@@ -90,14 +90,140 @@
     <ClCompile Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleSizeScaleBySpeed.cpp">
       <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\Viewer\ParticleEditorBootstrap.cpp">
+      <Filter>Source\Runtime\Engine\Viewer</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Slate\Windows\SParticleEditorWindow.cpp">
       <Filter>Source\Slate\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Core\Misc\DebugUtils.cpp">
-      <Filter>Source\Runtime\Core\Misc</Filter>
+    <ClCompile Include="Generated\UParticleModuleSizeScaleBySpeed.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
+    <ClCompile Include="Generated\UParticleModuleMeshRotation.generated.cpp">
+      <Filter>Generated</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Source\Editor\PhysicalMaterialLoader.cpp">
+      <Filter>Source\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Core\Memory\WeakObjectPtr.cpp">
+      <Filter>Source\Runtime\Core\Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\Components\DOFComponent.cpp">
+      <Filter>Source\Runtime\Engine\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\Components\TriangleMeshComponent.cpp">
+      <Filter>Source\Runtime\Engine\Components</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\BoxActor.cpp">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Gamma.cpp">
+      <Filter>Source\Runtime\Engine\GameFramework\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\CapsuleActor.cpp">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\HudExampleGameMode.cpp">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\SphereActor.cpp">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleTrailSource.cpp">
+      <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\Particles\ParticleStats.cpp">
+      <Filter>Source\Runtime\Engine\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\AggregateGeom.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\BodyInstance.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\BodySetup.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\BodyShapeCalculator.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\BoxElem.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\ConstraintInstance.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysicalMaterial.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysicsAsset.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysicsDebugUtils.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysicsTypes.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysScene.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysXPublic.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysXSimEventCallback.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysXSupport.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\ShapeElem.cpp">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\Viewer\PhysicsAssetEditorBootstrap.cpp">
+      <Filter>Source\Runtime\Engine\Viewer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\Viewer\PhysicsPickingHelper.cpp">
+      <Filter>Source\Runtime\Engine\Viewer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Renderer\PostProcessing\DepthOfFieldPass.cpp">
+      <Filter>Source\Runtime\Renderer\PostProcessing</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Renderer\RenderTexture.cpp">
+      <Filter>Source\Runtime\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\Widgets\ModalDialog.cpp">
+      <Filter>Source\Slate\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\Widgets\PhysicsAssetEditor\BodyPropertiesWidget.cpp">
+      <Filter>Source\Slate\Widgets\PhysicsAssetEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\Widgets\PhysicsAssetEditor\ConstraintPropertiesWidget.cpp">
+      <Filter>Source\Slate\Widgets\PhysicsAssetEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\Widgets\PhysicsAssetEditor\SkeletonTreeWidget.cpp">
+      <Filter>Source\Slate\Widgets\PhysicsAssetEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\Widgets\PhysicsAssetEditor\ToolsWidget.cpp">
+      <Filter>Source\Slate\Widgets\PhysicsAssetEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\Windows\PhysicalMaterialEditorWindow.cpp">
+      <Filter>Source\Slate\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\Windows\SPhysicsAssetEditorWindow.cpp">
+      <Filter>Source\Slate\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\include\ImGui\imnodes.cpp">
+      <Filter>ThirdParty\include\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\Collision\CollisionBVH.cpp">
+      <Filter>Source\Runtime\Engine\Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\Collision\CollisionManager.cpp">
+      <Filter>Source\Runtime\Engine\Collision</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Runtime\Core\Misc\DebugUtils.cpp">
       <Filter>Source\Runtime\Core\Misc</Filter>
     </ClCompile>
@@ -392,6 +518,9 @@
     <ClCompile Include="Source\Runtime\Engine\GameFramework\PlayerController.cpp">
       <Filter>Source\Runtime\Engine\GameFramework</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\RibbonActor.cpp">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
+    </ClCompile>
     <ClCompile Include="Source\Runtime\Engine\GameFramework\SkeletalMeshActor.cpp">
       <Filter>Source\Runtime\Engine\GameFramework</Filter>
     </ClCompile>
@@ -647,27 +776,6 @@
     <ClCompile Include="Source\Slate\StatsOverlayD2D.cpp">
       <Filter>Source\Slate</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Slate\GameUI\FD2DRenderer.cpp">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\GameUI\SWidget.cpp">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\GameUI\STextBlock.cpp">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\GameUI\SButton.cpp">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\GameUI\SPanel.cpp">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\GameUI\SCanvas.cpp">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Slate\GameUI\SGameHUD.cpp">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Slate\UIManager.cpp">
       <Filter>Source\Slate</Filter>
     </ClCompile>
@@ -754,6 +862,27 @@
     </ClCompile>
     <ClCompile Include="Source\Slate\Widgets\Widget.cpp">
       <Filter>Source\Slate\Widgets</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\FD2DRenderer.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\SWidget.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\STextBlock.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\SButton.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\SPanel.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\SCanvas.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Slate\GameUI\SGameHUD.cpp">
+      <Filter>Source\Slate\GameUI</Filter>
     </ClCompile>
     <ClCompile Include="Source\Slate\Factory\UIWindowFactory.cpp">
       <Filter>Source\Slate\Factory</Filter>
@@ -1055,28 +1184,6 @@
     <ClCompile Include="Generated\UParticleModuleTypeDataRibbon.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
-    <ClCompile Include="ThirdParty\include\ImGui\imgui.cpp">
-      <Filter>ThirdParty\include\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\include\ImGui\imgui_demo.cpp">
-      <Filter>ThirdParty\include\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\include\ImGui\imgui_draw.cpp">
-      <Filter>ThirdParty\include\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\include\ImGui\imgui_impl_dx11.cpp">
-      <Filter>ThirdParty\include\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\include\ImGui\imgui_impl_win32.cpp">
-      <Filter>ThirdParty\include\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\include\ImGui\imgui_tables.cpp">
-      <Filter>ThirdParty\include\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="ThirdParty\include\ImGui\imgui_widgets.cpp">
-      <Filter>ThirdParty\include\ImGui</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Runtime\Engine\Particles\ParticleStats.cpp" />
     <ClCompile Include="Generated\AParticleEventManager.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
@@ -1090,16 +1197,16 @@
       <Filter>Generated</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Engine\Particles\ParticleEventManager.cpp">
-      <Filter>Generated</Filter>
+      <Filter>Source\Runtime\Engine\Particles</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleCollision.cpp">
-      <Filter>Generated</Filter>
+      <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventGenerator.cpp">
-      <Filter>Generated</Filter>
+      <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
     </ClCompile>
     <ClCompile Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventReceiver.cpp">
-      <Filter>Generated</Filter>
+      <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
     </ClCompile>
     <ClCompile Include="Generated\UParticleModuleEventReceiverKill.generated.cpp">
       <Filter>Generated</Filter>
@@ -1116,25 +1223,12 @@
     <ClCompile Include="Generated\UParticleModuleTrailSource.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleTrailSource.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Collision\CollisionBVH.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Collision\CollisionManager.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\GameFramework\RibbonActor.cpp">
-      <Filter>Source\Runtime\Engine\GameFramework</Filter>
-    </ClCompile>
     <ClCompile Include="Generated\ARibbonActor.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
     <ClCompile Include="Generated\UBodySetup.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\AggregateGeom.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\BodyInstance.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\BodySetup.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\BoxElem.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysScene.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysXSupport.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\ShapeElem.cpp" />
     <ClCompile Include="Generated\FBodyInstance.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
@@ -1177,45 +1271,37 @@
     <ClCompile Include="Generated\FKSphylElem.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Runtime\Engine\GameFramework\HudExampleGameMode.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysicsAsset.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysicsDebugUtils.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysicsTypes.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Viewer\PhysicsAssetEditorBootstrap.cpp" />
-    <ClCompile Include="Source\Slate\Widgets\PhysicsAssetEditor\BodyPropertiesWidget.cpp" />
-    <ClCompile Include="Source\Slate\Widgets\PhysicsAssetEditor\ConstraintPropertiesWidget.cpp" />
-    <ClCompile Include="Source\Slate\Widgets\PhysicsAssetEditor\SkeletonTreeWidget.cpp" />
-    <ClCompile Include="Source\Slate\Windows\SPhysicsAssetEditorWindow.cpp" />
-    <ClCompile Include="Source\Slate\Widgets\ModalDialog.cpp" />
     <ClCompile Include="Generated\UPhysicalMaterial.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Editor\PhysicalMaterialLoader.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Components\DOFComponent.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Components\TriangleMeshComponent.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\GameFramework\BoxActor.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Gamma.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\GameFramework\CapsuleActor.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\GameFramework\SphereActor.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\BodyShapeCalculator.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\ConstraintInstance.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\PhysicsEngine\PhysicalMaterial.cpp" />
-    <ClCompile Include="Source\Runtime\Renderer\PostProcessing\DepthOfFieldPass.cpp" />
-    <ClCompile Include="Source\Runtime\Renderer\RenderTexture.cpp" />
-    <ClCompile Include="Source\Slate\Widgets\PhysicsAssetEditor\ToolsWidget.cpp" />
-    <ClCompile Include="Source\Slate\Windows\PhysicalMaterialEditorWindow.cpp" />
-    <ClCompile Include="ThirdParty\include\ImGui\imnodes.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\Viewer\PhysicsPickingHelper.cpp" />
+    <ClCompile Include="ThirdParty\include\ImGui\imgui.cpp">
+      <Filter>ThirdParty\include\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\include\ImGui\imgui_demo.cpp">
+      <Filter>ThirdParty\include\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\include\ImGui\imgui_draw.cpp">
+      <Filter>ThirdParty\include\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\include\ImGui\imgui_impl_dx11.cpp">
+      <Filter>ThirdParty\include\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\include\ImGui\imgui_impl_win32.cpp">
+      <Filter>ThirdParty\include\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\include\ImGui\imgui_tables.cpp">
+      <Filter>ThirdParty\include\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\include\ImGui\imgui_widgets.cpp">
+      <Filter>ThirdParty\include\ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Generated\UParticleModuleSizeScaleBySpeed.generated.h">
-      <Filter>Generated</Filter>
+    <ClInclude Include="Source\Runtime\Core\Misc\DebugUtils.h">
+      <Filter>Source\Runtime\Core\Misc</Filter>
     </ClInclude>
-    <ClInclude Include="Generated\UParticleModuleMeshRotation.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Engine\Viewer\ParticleEditorBootstrap.h">
-      <Filter>Source\Runtime\Engine\Viewer</Filter>
+    <ClInclude Include="Source\Runtime\Engine\Particles\Distribution.h">
+      <Filter>Source\Runtime\Engine\Particles</Filter>
     </ClInclude>
     <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleMeshRotation.h">
       <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
@@ -1223,16 +1309,217 @@
     <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleSizeScaleBySpeed.h">
       <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Viewer\ParticleEditorBootstrap.h">
+      <Filter>Source\Runtime\Engine\Viewer</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Slate\Windows\SParticleEditorWindow.h">
       <Filter>Source\Slate\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Engine\Particles\Distribution.h">
-      <Filter>Source\Runtime\Engine\Particles</Filter>
+    <ClInclude Include="Generated\UParticleModuleSizeScaleBySpeed.generated.h">
+      <Filter>Generated</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Core\Misc\DebugUtils.h">
-      <Filter>Source\Runtime\Core\Misc</Filter>
+    <ClInclude Include="Generated\UParticleModuleMeshRotation.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ABoxActor.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ACapsuleActor.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ASphereActor.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ABoxActor.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ACapsuleActor.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ASphereActor.generated.h">
+      <Filter>Generated</Filter>
     </ClInclude>
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Source\Editor\PhysicalMaterialLoader.h">
+      <Filter>Source\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Memory\WeakObjectPtr.h">
+      <Filter>Source\Runtime\Core\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Core\Object\ObjectMacros.h">
+      <Filter>Source\Runtime\Core\Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Components\DOFComponent.h">
+      <Filter>Source\Runtime\Engine\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Components\TriangleMeshComponent.h">
+      <Filter>Source\Runtime\Engine\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\BoxActor.h">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Gamma.h">
+      <Filter>Source\Runtime\Engine\GameFramework\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\CapsuleActor.h">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\HudExampleGameMode.h">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\SphereActor.h">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleEventGeneratorInfo.h">
+      <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventReceiverBase.h">
+      <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventReceiverKill.h">
+      <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventReceiverSpawn.h">
+      <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleTrailSource.h">
+      <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Particles\ParticleBurstTypes.h">
+      <Filter>Source\Runtime\Engine\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Particles\ParticleEventGeneratorTypes.h">
+      <Filter>Source\Runtime\Engine\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Particles\ParticleEventTypes.h">
+      <Filter>Source\Runtime\Engine\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Particles\ParticleStats.h">
+      <Filter>Source\Runtime\Engine\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\AggregateGeom.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\BodyInstance.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\BodySetup.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\BodyShapeCalculator.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\BoxElem.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\ConstraintInstance.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\EAggCollisionShape.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\ECollisionEnabled.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\EConstraintType.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\EPhysicsShapeType.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\FBodySetup.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\FConstraintSetup.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysicalMaterial.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysicsAsset.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysicsDebugUtils.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysicsTypes.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysScene.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysXPublic.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysXSimEventCallback.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysXSupport.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\ShapeElem.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\SphereElem.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\SphylElem.h">
+      <Filter>Source\Runtime\Engine\PhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Viewer\PhysicsAssetEditorBootstrap.h">
+      <Filter>Source\Runtime\Engine\Viewer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Viewer\PhysicsAssetEditorState.h">
+      <Filter>Source\Runtime\Engine\Viewer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Viewer\PhysicsPickingHelper.h">
+      <Filter>Source\Runtime\Engine\Viewer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Renderer\PostProcessing\DepthOfFieldPass.h">
+      <Filter>Source\Runtime\Renderer\PostProcessing</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Renderer\RenderTexture.h">
+      <Filter>Source\Runtime\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\Widgets\ModalDialog.h">
+      <Filter>Source\Slate\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\Widgets\PhysicsAssetEditor\BodyPropertiesWidget.h">
+      <Filter>Source\Slate\Widgets\PhysicsAssetEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\Widgets\PhysicsAssetEditor\ConstraintPropertiesWidget.h">
+      <Filter>Source\Slate\Widgets\PhysicsAssetEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\Widgets\PhysicsAssetEditor\SkeletonTreeWidget.h">
+      <Filter>Source\Slate\Widgets\PhysicsAssetEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\Widgets\PhysicsAssetEditor\ToolsWidget.h">
+      <Filter>Source\Slate\Widgets\PhysicsAssetEditor</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\Windows\PhysicalMaterialEditorWindow.h">
+      <Filter>Source\Slate\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\Windows\SPhysicsAssetEditorWindow.h">
+      <Filter>Source\Slate\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\include\ImGui\imnodes.h">
+      <Filter>ThirdParty\include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\include\ImGui\imnodes_internal.h">
+      <Filter>ThirdParty\include\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Collision\CollisionBVH.h">
+      <Filter>Source\Runtime\Engine\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Collision\CollisionManager.h">
+      <Filter>Source\Runtime\Engine\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Collision\Sphere.h">
+      <Filter>Source\Runtime\Engine\Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Collision\BoxSphereBounds.h">
+      <Filter>Source\Runtime\Engine\Collision</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Runtime\Core\Misc\DebugUtils.h">
       <Filter>Source\Runtime\Core\Misc</Filter>
     </ClInclude>
@@ -1599,6 +1886,9 @@
     <ClInclude Include="Source\Runtime\Engine\GameFramework\PointLightActor.h">
       <Filter>Source\Runtime\Engine\GameFramework</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\RibbonActor.h">
+      <Filter>Source\Runtime\Engine\GameFramework</Filter>
+    </ClInclude>
     <ClInclude Include="Source\Runtime\Engine\GameFramework\SkeletalMeshActor.h">
       <Filter>Source\Runtime\Engine\GameFramework</Filter>
     </ClInclude>
@@ -1851,39 +2141,6 @@
     <ClInclude Include="Source\Slate\StatsOverlayD2D.h">
       <Filter>Source\Slate</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Slate\GameUI\PointerTypes.h">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\GameUI\SlateTypes.h">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\GameUI\Geometry.h">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\GameUI\Slot.h">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\GameUI\FD2DRenderer.h">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\GameUI\SWidget.h">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\GameUI\STextBlock.h">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\GameUI\SButton.h">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\GameUI\SPanel.h">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\GameUI\SCanvas.h">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Slate\GameUI\SGameHUD.h">
-      <Filter>Source\Slate\GameUI</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Slate\UIManager.h">
       <Filter>Source\Slate</Filter>
     </ClInclude>
@@ -1970,6 +2227,39 @@
     </ClInclude>
     <ClInclude Include="Source\Slate\Widgets\Widget.h">
       <Filter>Source\Slate\Widgets</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\PointerTypes.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\SlateTypes.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\Geometry.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\Slot.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\FD2DRenderer.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\SWidget.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\STextBlock.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\SButton.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\SPanel.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\SCanvas.h">
+      <Filter>Source\Slate\GameUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Slate\GameUI\SGameHUD.h">
+      <Filter>Source\Slate\GameUI</Filter>
     </ClInclude>
     <ClInclude Include="Source\Slate\Factory\UIWindowFactory.h">
       <Filter>Source\Slate\Factory</Filter>
@@ -2280,6 +2570,96 @@
     <ClInclude Include="Generated\UParticleModuleTypeDataRibbon.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
+    <ClInclude Include="Generated\AParticleEventManager.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UParticleModuleCollision.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UParticleModuleEventGenerator.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UParticleModuleEventReceiverBase.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Particles\ParticleEventManager.h">
+      <Filter>Source\Runtime\Engine\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleCollision.h">
+      <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventGenerator.h">
+      <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventReceiver.h">
+      <Filter>Source\Runtime\Engine\Particles\Modules</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UParticleModuleEventReceiverKill.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UParticleModuleEventReceiverSpawn.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\FParticleEventGeneratorInfo.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\FParticleBurst.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UParticleModuleTrailSource.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ARibbonActor.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UBodySetup.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\FBodyInstance.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\AHudExampleGameMode.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UPhysicsAsset.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\FBodySetup.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\FConstraintSetup.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UDOFComponent.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ABoxActor.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ACapsuleActor.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\ASphereActor.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\FKAggregateGeom.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\FKBoxElem.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\FKShapeElem.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\FKSphereElem.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\FKSphylElem.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UPhysicalMaterial.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
     <ClInclude Include="ThirdParty\include\ImGui\imconfig.h">
       <Filter>ThirdParty\include\ImGui</Filter>
     </ClInclude>
@@ -2385,175 +2765,6 @@
     <ClInclude Include="ThirdParty\include\Lua\lualib.h">
       <Filter>ThirdParty\include\Lua</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Runtime\Engine\Particles\ParticleStats.h" />
-    <ClInclude Include="Generated\AParticleEventManager.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\UParticleModuleCollision.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\UParticleModuleEventGenerator.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\UParticleModuleEventReceiverBase.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Engine\Particles\ParticleEventManager.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleCollision.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventGenerator.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventReceiver.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\UParticleModuleEventReceiverKill.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\UParticleModuleEventReceiverSpawn.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\FParticleEventGeneratorInfo.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\FParticleBurst.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\UParticleModuleTrailSource.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Core\Object\ObjectMacros.h" />
-    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleEventGeneratorInfo.h" />
-    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventReceiverBase.h" />
-    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventReceiverKill.h" />
-    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleEventReceiverSpawn.h" />
-    <ClInclude Include="Source\Runtime\Engine\Particles\Modules\ParticleModuleTrailSource.h" />
-    <ClInclude Include="Source\Runtime\Engine\Particles\ParticleBurstTypes.h" />
-    <ClInclude Include="Source\Runtime\Engine\Particles\ParticleEventGeneratorTypes.h" />
-    <ClInclude Include="Source\Runtime\Engine\Particles\ParticleEventTypes.h" />
-    <ClInclude Include="Source\Runtime\Engine\Collision\CollisionBVH.h" />
-    <ClInclude Include="Source\Runtime\Engine\Collision\CollisionManager.h" />
-    <ClInclude Include="Source\Runtime\Engine\Collision\Sphere.h" />
-    <ClInclude Include="Source\Runtime\Engine\Collision\BoxSphereBounds.h" />
-    <ClInclude Include="Source\Runtime\Engine\GameFramework\RibbonActor.h">
-      <Filter>Source\Runtime\Engine\GameFramework</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\ARibbonActor.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\UBodySetup.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\AggregateGeom.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\BodyInstance.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\BodySetup.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\BoxElem.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysScene.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysXPublic.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysXSupport.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\ShapeElem.h" />
-    <ClInclude Include="Generated\FBodyInstance.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\AHudExampleGameMode.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\UPhysicsAsset.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\FBodySetup.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\FConstraintSetup.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\UDOFComponent.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\ABoxActor.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\ACapsuleActor.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\ASphereActor.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\FKAggregateGeom.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\FKBoxElem.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\FKShapeElem.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\FKSphereElem.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\FKSphylElem.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Engine\GameFramework\HudExampleGameMode.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\EAggCollisionShape.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\FBodySetup.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\FConstraintSetup.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysicsAsset.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysicsDebugUtils.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysicsTypes.h" />
-    <ClInclude Include="Source\Runtime\Engine\Viewer\PhysicsAssetEditorBootstrap.h" />
-    <ClInclude Include="Source\Runtime\Engine\Viewer\PhysicsAssetEditorState.h" />
-    <ClInclude Include="Source\Slate\Widgets\PhysicsAssetEditor\BodyPropertiesWidget.h" />
-    <ClInclude Include="Source\Slate\Widgets\PhysicsAssetEditor\ConstraintPropertiesWidget.h" />
-    <ClInclude Include="Source\Slate\Widgets\PhysicsAssetEditor\SkeletonTreeWidget.h" />
-    <ClInclude Include="Source\Slate\Windows\SPhysicsAssetEditorWindow.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\ECollisionEnabled.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\EConstraintType.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\EPhysicsShapeType.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\SphereElem.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\SphylElem.h" />
-    <ClInclude Include="Generated\ABoxActor.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\ACapsuleActor.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\ASphereActor.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\UPhysicalMaterial.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Editor\PhysicalMaterialLoader.h" />
-    <ClInclude Include="Source\Runtime\Engine\Components\DOFComponent.h" />
-    <ClInclude Include="Source\Runtime\Engine\Components\TriangleMeshComponent.h" />
-    <ClInclude Include="Source\Runtime\Engine\GameFramework\BoxActor.h" />
-    <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Gamma.h" />
-    <ClInclude Include="Source\Runtime\Engine\GameFramework\CapsuleActor.h" />
-    <ClInclude Include="Source\Runtime\Engine\GameFramework\SphereActor.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\BodyShapeCalculator.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\ConstraintInstance.h" />
-    <ClInclude Include="Source\Runtime\Engine\PhysicsEngine\PhysicalMaterial.h" />
-    <ClInclude Include="Source\Runtime\Renderer\PostProcessing\DepthOfFieldPass.h" />
-    <ClInclude Include="Source\Runtime\Renderer\RenderTexture.h" />
-    <ClInclude Include="Source\Slate\Widgets\ModalDialog.h" />
-    <ClInclude Include="Source\Slate\Widgets\PhysicsAssetEditor\ToolsWidget.h" />
-    <ClInclude Include="Source\Slate\Windows\PhysicalMaterialEditorWindow.h" />
-    <ClInclude Include="ThirdParty\include\ImGui\imnodes.h" />
-    <ClInclude Include="ThirdParty\include\ImGui\imnodes_internal.h" />
-    <ClInclude Include="Generated\ABoxActor.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\ACapsuleActor.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Generated\ASphereActor.generated.h">
-      <Filter>Generated</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Runtime\Engine\Viewer\PhysicsPickingHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BuildTools\CodeGenerator\generate.py">
@@ -2570,161 +2781,167 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Source">
-      <UniqueIdentifier>{e114f4d6-bf7f-41c7-9e38-0328f4724d73}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime">
-      <UniqueIdentifier>{b98c11f6-b6fa-460f-83a7-afddedebc9bb}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Core">
-      <UniqueIdentifier>{87f0dd1b-90dd-4b85-87d3-ae422cfdc19b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Core\Misc">
-      <UniqueIdentifier>{a18a449b-7898-4e93-a914-756545118449}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Core\Math">
-      <UniqueIdentifier>{ef11447f-0822-441f-8bb4-3b7ab8ab331d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Core\Object">
-      <UniqueIdentifier>{c27f1ad7-3d1e-49f6-b609-1ae5a2713425}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Core\Containers">
-      <UniqueIdentifier>{dfb60ae7-5bdf-45ff-b024-8af7c35f3fbd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Core\Memory">
-      <UniqueIdentifier>{67ad2e36-7997-41dc-8a72-5820c197985b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine">
-      <UniqueIdentifier>{7d1834b5-08b1-4552-af5d-29ccd8d30cd6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Particles">
-      <UniqueIdentifier>{7c0fe118-4b30-4149-9459-273ca63c5ec6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Particles\Modules">
-      <UniqueIdentifier>{6de8a740-15f3-46db-9812-8928bb535f99}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Viewer">
-      <UniqueIdentifier>{719b94d4-512d-4569-9cde-c8617be84b94}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Animation">
-      <UniqueIdentifier>{b503772a-2bd2-4ddd-8790-e0554bd83984}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Components">
-      <UniqueIdentifier>{fbee7315-fe14-4a97-b39f-7c9edc6a2756}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\GameFramework">
-      <UniqueIdentifier>{966d80a4-e928-4449-98b9-4a4b7dce9259}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\GameFramework\Camera">
-      <UniqueIdentifier>{9bb58274-c256-404c-a90d-f6bbe5f4e70c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Audio">
-      <UniqueIdentifier>{ac90c436-b158-4577-aa8b-2ad3093805ff}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Scripting">
-      <UniqueIdentifier>{1be89c31-be2c-4352-9c83-9952dff6c347}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Collision">
-      <UniqueIdentifier>{594128cc-4120-4a1d-b7d0-b9eb68de83f6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Engine\Spatial">
-      <UniqueIdentifier>{6b9b8aee-5bfe-4e3e-9357-1df6aa5c5ba9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\AssetManagement">
-      <UniqueIdentifier>{4874eecd-d0e9-44c1-9150-358f7ededb45}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Renderer">
-      <UniqueIdentifier>{a58ea043-d943-4240-a1ff-a9b3c489e46c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\Renderer\PostProcessing">
-      <UniqueIdentifier>{d5e4a977-5fb5-459c-8ea8-d300dea4c495}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\InputCore">
-      <UniqueIdentifier>{26c3ab0b-943f-4b40-93ea-eaf9a060b411}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Runtime\RHI">
-      <UniqueIdentifier>{82148a80-cfc0-4399-9210-60952bc4a373}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Slate">
-      <UniqueIdentifier>{0e899bd0-5192-4693-93d1-a5b4867418dc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Slate\Windows">
-      <UniqueIdentifier>{d995cdf9-7dcf-4afb-b36f-35a155753364}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Slate\Widgets">
-      <UniqueIdentifier>{039089c9-ca8c-47a6-9afb-dd89fef1042f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Slate\GameUI">
-      <UniqueIdentifier>{a1b2c3d4-5678-90ab-cdef-1234567890ab}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Slate\Factory">
-      <UniqueIdentifier>{162aa53a-8209-4e71-8d82-a0f6390a28a9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Slate\ImGui">
-      <UniqueIdentifier>{c1bb7a96-7643-435b-9d88-59247d4e6c3d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Editor">
-      <UniqueIdentifier>{65bc8629-b402-4867-9865-10a4dc054c2a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Editor\Clipboard">
-      <UniqueIdentifier>{6e3bbf2c-10e5-44c0-9b2c-3c929dbc3917}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Editor\Gizmo">
-      <UniqueIdentifier>{df3be95a-f0b2-4a3a-8a9e-9d11019d93dc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source\Editor\Grid">
-      <UniqueIdentifier>{e97f0700-ecea-4309-8ab0-f8d1ed0a4276}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders">
-      <UniqueIdentifier>{94d61464-c916-4aac-ac9a-4e5286ea4951}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders\Materials">
-      <UniqueIdentifier>{d13f6af5-2b92-4e70-a3c0-817194310dae}</UniqueIdentifier>
+      <UniqueIdentifier>{425776a9-0192-414f-86bc-1e5246089014}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\PostProcess">
-      <UniqueIdentifier>{27291123-a382-431a-8da3-50b0f99add64}</UniqueIdentifier>
+      <UniqueIdentifier>{ca36e2cb-0813-4c2e-bdf8-4bc5011ea268}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\Shadows">
-      <UniqueIdentifier>{4143cb66-9d96-49f3-b4cf-064e99967b25}</UniqueIdentifier>
+    <Filter Include="Source">
+      <UniqueIdentifier>{02d2345a-f689-406d-9674-662ab8dd579d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\Common">
-      <UniqueIdentifier>{f100aa94-6d31-4d08-89af-ec73fcdf32ea}</UniqueIdentifier>
+    <Filter Include="Source\Editor">
+      <UniqueIdentifier>{5cea4157-c31c-4d7a-ab6f-3f729f665f21}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\UI">
-      <UniqueIdentifier>{3d4b0080-0b1e-464c-9e6d-ddbe19ae7945}</UniqueIdentifier>
+    <Filter Include="Source\Runtime">
+      <UniqueIdentifier>{397bc28e-00a0-44a7-9ddb-a3368191dc84}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\Effects">
-      <UniqueIdentifier>{4d9358c2-b45a-49d5-9e25-441da6234c07}</UniqueIdentifier>
+    <Filter Include="Source\Runtime\Core">
+      <UniqueIdentifier>{2b2d8c2d-913d-4549-b68f-6dc4d01fb857}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\Utility">
-      <UniqueIdentifier>{59bf2812-a9f3-41af-abd1-f64c7d9f5caf}</UniqueIdentifier>
+    <Filter Include="Source\Runtime\Core\Memory">
+      <UniqueIdentifier>{baa757a5-91c8-4966-8fc6-db1605bb15bc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Generated">
-      <UniqueIdentifier>{e77bf37a-1837-4957-b45a-bf16938dd89c}</UniqueIdentifier>
+    <Filter Include="Source\Runtime\Engine">
+      <UniqueIdentifier>{8d2c0c59-10b1-4aec-9e51-dce50565a1b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\Components">
+      <UniqueIdentifier>{1b4f403b-8e39-4ee3-b66e-2aeb8e6329ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\GameFramework">
+      <UniqueIdentifier>{d46a9e05-dc63-497f-ae59-3d96a5678b11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\GameFramework\Camera">
+      <UniqueIdentifier>{cad04ff7-9758-4860-b2ce-cfb371e2a15a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\Particles">
+      <UniqueIdentifier>{b7a7d686-c963-4255-b936-85b62b93e9a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\Particles\Modules">
+      <UniqueIdentifier>{ddd281c7-1e59-4a1b-945d-2f98dc6f376e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\PhysicsEngine">
+      <UniqueIdentifier>{76aa1c19-43e2-47bb-aa84-783e6c19865b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\Viewer">
+      <UniqueIdentifier>{75c03d2c-3a59-4eb6-81d3-dac7e68a43dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Renderer">
+      <UniqueIdentifier>{24541d56-d8e6-4d0b-ae00-35fc50697487}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Renderer\PostProcessing">
+      <UniqueIdentifier>{c8e2a04e-d802-47b3-a00a-3dead74add17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Slate">
+      <UniqueIdentifier>{e5c179db-8bac-4416-85d6-2f45b47e922c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Slate\Widgets">
+      <UniqueIdentifier>{84252084-09f2-4e61-b48d-c4d546e1247f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Slate\Widgets\PhysicsAssetEditor">
+      <UniqueIdentifier>{634ccdf8-b6e2-4170-a9bc-91890d72c82a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Slate\Windows">
+      <UniqueIdentifier>{26732c54-d4b9-413e-8125-7d9ea5ac43e2}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty">
-      <UniqueIdentifier>{17ea9d4c-f116-4725-ae90-6923a4f6079f}</UniqueIdentifier>
+      <UniqueIdentifier>{23153d03-45c0-4dd5-9b0f-52b0f4690fa5}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\include">
-      <UniqueIdentifier>{a2d405ef-1ba8-4ecd-9452-9fc96aecf6f4}</UniqueIdentifier>
+      <UniqueIdentifier>{feba5fcb-ab66-4250-ac15-73ff864b7e29}</UniqueIdentifier>
     </Filter>
     <Filter Include="ThirdParty\include\ImGui">
-      <UniqueIdentifier>{a0d5fa60-ad02-4778-89e0-e32bbcf5acd4}</UniqueIdentifier>
+      <UniqueIdentifier>{342b8dda-5ce5-4a1e-8fdb-84ea9d14a57b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ThirdParty\include\DirectXTK">
-      <UniqueIdentifier>{209d8c62-df34-419f-9802-5bec2c17012c}</UniqueIdentifier>
+    <Filter Include="Source\Runtime\Engine\Collision">
+      <UniqueIdentifier>{783c0147-3425-4fa9-824b-6773efcc17ef}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ThirdParty\include\Lua">
-      <UniqueIdentifier>{69e662bb-148a-47be-85e5-c6123c5593ef}</UniqueIdentifier>
+    <Filter Include="Source\Runtime\Core\Object">
+      <UniqueIdentifier>{a0e2253f-e42e-49a2-9cbb-1ab1d5f80819}</UniqueIdentifier>
     </Filter>
-    <Filter Include="BuildTools">
-      <UniqueIdentifier>{ab0dba4b-7797-4251-985e-19bb7685452d}</UniqueIdentifier>
+    <Filter Include="Source\Runtime\Core\Misc">
+      <UniqueIdentifier>{2a08a64f-be08-49bd-b449-503629121f54}</UniqueIdentifier>
     </Filter>
-    <Filter Include="BuildTools\CodeGenerator">
-      <UniqueIdentifier>{b66d2f99-2219-437b-afcc-ecbff59572f4}</UniqueIdentifier>
+    <Filter Include="Source\Runtime\Core\Math">
+      <UniqueIdentifier>{deb0c47e-9cfa-4ce0-a4e3-4946900bc230}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Core\Containers">
+      <UniqueIdentifier>{82d8f799-f4c0-420b-980f-2ef95337bb38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\Animation">
+      <UniqueIdentifier>{66da1993-04f8-4c86-9f49-b890693cfe8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\Audio">
+      <UniqueIdentifier>{1940ebf8-c8dc-4426-9faf-a9ea0e7a3dd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\Scripting">
+      <UniqueIdentifier>{9549e379-ee28-49f0-ad41-53b7a05a10d4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\Engine\Spatial">
+      <UniqueIdentifier>{3e417cab-9d6d-439f-b1aa-679bf77dbaf6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\AssetManagement">
+      <UniqueIdentifier>{4929acd0-5b9a-4339-a5aa-1c6d742d68d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\InputCore">
+      <UniqueIdentifier>{b392ce6c-1bbf-4eb5-a5c0-15369c8e3617}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Runtime\RHI">
+      <UniqueIdentifier>{6f7f400d-9b84-422f-8613-651f49248087}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Slate\GameUI">
+      <UniqueIdentifier>{905ac995-d6d7-4bd6-bc53-8cce5dcd6dde}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Slate\Factory">
+      <UniqueIdentifier>{cba651e5-39c0-4a2b-827d-cf7215e18b67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Slate\ImGui">
+      <UniqueIdentifier>{eabf8611-d8c3-4f25-8cdd-ede4d19c4f9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Clipboard">
+      <UniqueIdentifier>{7ffdcb25-d22e-4554-95e5-869fdc7c8b60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Gizmo">
+      <UniqueIdentifier>{56057cba-337f-46d3-b533-184870da2f1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Editor\Grid">
+      <UniqueIdentifier>{0eaf614f-8048-43eb-86cf-a4341140ebcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Materials">
+      <UniqueIdentifier>{927cfe1f-f9d3-4566-a530-bac6e8852625}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Shadows">
+      <UniqueIdentifier>{0e464df6-2aff-4127-9da7-6d1741c6295a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Common">
+      <UniqueIdentifier>{3c5df637-87fd-4de3-858d-800964dbe5de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\UI">
+      <UniqueIdentifier>{045e8829-2b3a-46ab-9d0e-fb2ea4b6a0c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Effects">
+      <UniqueIdentifier>{aa1c04c2-c066-46ee-a21f-1e880c61fd95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Utility">
+      <UniqueIdentifier>{63d1ce7e-b9d0-4218-98a5-e71cb373fc09}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\Particle">
-      <UniqueIdentifier>{3909ef3b-bebf-4ae0-8ef6-005273aa628f}</UniqueIdentifier>
+      <UniqueIdentifier>{5920ed5d-f10f-49b4-9669-2139e591709b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated">
+      <UniqueIdentifier>{2025a8ea-97ff-4178-b012-5d46bb355fb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\include\DirectXTK">
+      <UniqueIdentifier>{366ff9cb-43de-4032-be69-84db5e4747c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdParty\include\Lua">
+      <UniqueIdentifier>{ab0ca6cd-0ade-4417-9f1c-83057303764f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BuildTools">
+      <UniqueIdentifier>{b3525b72-de82-4e03-9d32-673256006cd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BuildTools\CodeGenerator">
+      <UniqueIdentifier>{abd21fb1-01eb-4b12-834f-d888ef9358c1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
