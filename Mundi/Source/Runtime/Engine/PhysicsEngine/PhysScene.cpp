@@ -363,3 +363,191 @@ void FPhysScene::DispatchPhysNotifications_AssumesLocked()
         }
     }
 }
+
+// 레이캐스트 필터 콜백: 특정 액터 무시
+class FIgnoreActorFilterCallback : public PxQueryFilterCallback
+{
+public:
+    AActor* IgnoreActor;
+
+    FIgnoreActorFilterCallback(AActor* InIgnoreActor) : IgnoreActor(InIgnoreActor) {}
+
+    virtual PxQueryHitType::Enum preFilter(
+        const PxFilterData& filterData, const PxShape* shape, const PxRigidActor* actor, PxHitFlags& queryFlags) override
+    {
+        if (!actor || !IgnoreActor)
+        {
+            return PxQueryHitType::eBLOCK;
+        }
+
+        // userData에서 BodyInstance를 가져와서 OwnerComponent의 Owner 확인
+        void* UserData = actor->userData;
+        if (UserData)
+        {
+            FBodyInstance* BodyInstance = static_cast<FBodyInstance*>(UserData);
+            if (BodyInstance && BodyInstance->OwnerComponent)
+            {
+                AActor* HitActor = BodyInstance->OwnerComponent->GetOwner();
+                if (HitActor == IgnoreActor)
+                {
+                    return PxQueryHitType::eNONE;  // 무시
+                }
+            }
+        }
+
+        return PxQueryHitType::eBLOCK;
+    }
+
+    virtual PxQueryHitType::Enum postFilter(const PxFilterData& filterData, const PxQueryHit& hit) override
+    {
+        return PxQueryHitType::eBLOCK;
+    }
+};
+
+bool FPhysScene::Raycast(const FVector& Origin, const FVector& Direction, float MaxDistance,
+                         FVector& OutHitLocation, FVector& OutHitNormal, float& OutHitDistance,
+                         AActor* IgnoreActor) const
+{
+    if (!PhysXScene)
+    {
+        return false;
+    }
+
+    PxVec3 PxOrigin = U2PVector(Origin);
+    PxVec3 PxDirection = U2PVector(Direction.GetNormalized());
+
+    PxRaycastBuffer Hit;
+
+    bool bHit = false;
+
+    if (IgnoreActor)
+    {
+        // 필터 콜백을 사용하여 특정 액터 무시
+        FIgnoreActorFilterCallback FilterCallback(IgnoreActor);
+        PxQueryFilterData FilterData;
+        FilterData.flags = PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::ePREFILTER;
+
+        bHit = PhysXScene->raycast(PxOrigin, PxDirection, MaxDistance, Hit, PxHitFlag::eDEFAULT, FilterData, &FilterCallback);
+    }
+    else
+    {
+        bHit = PhysXScene->raycast(PxOrigin, PxDirection, MaxDistance, Hit);
+    }
+
+    if (bHit && Hit.hasBlock)
+    {
+        OutHitLocation = P2UVector(Hit.block.position);
+        OutHitNormal = P2UVector(Hit.block.normal);
+        OutHitDistance = Hit.block.distance;
+        return true;
+    }
+
+    return false;
+}
+
+// ==================================================================================
+// Sweep Interface Implementation
+// ==================================================================================
+
+bool FPhysScene::SweepSingleInternal(const PxGeometry& Geometry, const FVector& Start, const FVector& End,
+                                      const FQuat& Rotation, FHitResult& OutHit, AActor* IgnoreActor) const
+{
+    if (!PhysXScene)
+    {
+        return false;
+    }
+
+    OutHit.Init();
+
+    FVector Direction = End - Start;
+    float Distance = Direction.Size();
+
+    if (Distance < KINDA_SMALL_NUMBER)
+    {
+        return false;
+    }
+
+    Direction /= Distance;  // Normalize
+
+    PxVec3 PxStart = U2PVector(Start);
+    PxVec3 PxDirection = U2PVector(Direction);
+    PxQuat PxRotation = U2PQuat(Rotation);
+    PxTransform StartPose(PxStart, PxRotation);
+
+    PxSweepBuffer Hit;
+    bool bHit = false;
+
+    if (IgnoreActor)
+    {
+        FIgnoreActorFilterCallback FilterCallback(IgnoreActor);
+        PxQueryFilterData FilterData;
+        FilterData.flags = PxQueryFlag::eDYNAMIC | PxQueryFlag::eSTATIC | PxQueryFlag::ePREFILTER;
+
+        bHit = PhysXScene->sweep(Geometry, StartPose, PxDirection, Distance, Hit,
+                                  PxHitFlag::eDEFAULT | PxHitFlag::eNORMAL | PxHitFlag::ePOSITION,
+                                  FilterData, &FilterCallback);
+    }
+    else
+    {
+        bHit = PhysXScene->sweep(Geometry, StartPose, PxDirection, Distance, Hit,
+                                  PxHitFlag::eDEFAULT | PxHitFlag::eNORMAL | PxHitFlag::ePOSITION);
+    }
+
+    if (bHit && Hit.hasBlock)
+    {
+        OutHit.bBlockingHit = true;
+        OutHit.Distance = Hit.block.distance;
+        OutHit.ImpactPoint = P2UVector(Hit.block.position);
+        OutHit.ImpactNormal = P2UVector(Hit.block.normal);
+
+        // 히트한 액터/컴포넌트 정보 추출
+        if (Hit.block.actor && Hit.block.actor->userData)
+        {
+            FBodyInstance* BodyInstance = static_cast<FBodyInstance*>(Hit.block.actor->userData);
+            if (BodyInstance && BodyInstance->OwnerComponent)
+            {
+                OutHit.Component = BodyInstance->OwnerComponent;
+                OutHit.Actor = BodyInstance->OwnerComponent->GetOwner();
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+bool FPhysScene::SweepSingleCapsule(const FVector& Start, const FVector& End,
+                                     float Radius, float HalfHeight,
+                                     FHitResult& OutHit,
+                                     AActor* IgnoreActor) const
+{
+    // PhysX 캡슐은 X축 정렬, 언리얼/Mundi는 Z축 정렬
+    // 따라서 캡슐을 Z축 정렬로 회전시켜야 함
+    PxCapsuleGeometry CapsuleGeom(Radius, HalfHeight);
+
+    // Z축 정렬을 위해 Y축으로 90도 회전
+    FQuat CapsuleRotation = FQuat::FromAxisAngle(FVector(0, 1, 0), DegreesToRadians(90.0f));
+
+    return SweepSingleInternal(CapsuleGeom, Start, End, CapsuleRotation, OutHit, IgnoreActor);
+}
+
+bool FPhysScene::SweepSingleSphere(const FVector& Start, const FVector& End,
+                                    float Radius,
+                                    FHitResult& OutHit,
+                                    AActor* IgnoreActor) const
+{
+    PxSphereGeometry SphereGeom(Radius);
+
+    return SweepSingleInternal(SphereGeom, Start, End, FQuat::Identity(), OutHit, IgnoreActor);
+}
+
+bool FPhysScene::SweepSingleBox(const FVector& Start, const FVector& End,
+                                 const FVector& HalfExtent, const FQuat& Rotation,
+                                 FHitResult& OutHit,
+                                 AActor* IgnoreActor) const
+{
+    PxBoxGeometry BoxGeom(U2PVector(HalfExtent));
+
+    return SweepSingleInternal(BoxGeom, Start, End, Rotation, OutHit, IgnoreActor);
+}

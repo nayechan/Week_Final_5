@@ -6,6 +6,10 @@
 #include "CharacterMovementComponent.h"
 #include "Character.h"
 #include "SceneComponent.h"
+#include "CapsuleComponent.h"
+#include "World.h"
+#include "PhysScene.h"
+#include "PhysXPublic.h"
 
 // ────────────────────────────────────────────────────────────────────────────
 // 생성자 / 소멸자
@@ -14,7 +18,7 @@
 UCharacterMovementComponent::UCharacterMovementComponent()
 	: CharacterOwner(nullptr)
 	, PendingInputVector(FVector())
-	, MovementMode(EMovementMode::Falling)
+	, MovementMode(EMovementMode::Walking)
 	, TimeInAir(0.0f)
 	, bIsJumping(false)
 	// 이동 설정
@@ -25,11 +29,15 @@ UCharacterMovementComponent::UCharacterMovementComponent()
 	, BrakingDeceleration(20.480f)
 	// 중력 설정
 	, GravityScale(1.0f)
-	, GravityDirection(0.0f, 0.0f, -1.0f) // 기본값: 아래 방향
+	, GravityDirection(0.0f, 0.0f, -1.0f)
 	// 점프 설정
-	, JumpZVelocity(4.200f)
+	, JumpZVelocity(10.0f)
 	, MaxAirTime(5.0f)
 	, bCanJump(true)
+	// 바닥 감지 설정
+	, WalkableFloorAngle(44.0f)
+	, FloorSnapDistance(0.02f)
+	, MaxStepHeight(45.0f)
 {
 	bCanEverTick = true;
 }
@@ -45,8 +53,6 @@ UCharacterMovementComponent::~UCharacterMovementComponent()
 void UCharacterMovementComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// Owner를 Character로 캐스팅
 	CharacterOwner = Cast<ACharacter>(Owner);
 }
 
@@ -75,7 +81,7 @@ void UCharacterMovementComponent::TickComponent(float DeltaTime)
 	// 5. 이동 모드 업데이트
 	if (bIsNowGrounded && !bWasGrounded)
 	{
-		// 착지 - 중력 방향의 속도 성분 제거
+		// 착지
 		SetMovementMode(EMovementMode::Walking);
 		float VerticalSpeed = FVector::Dot(Velocity, GravityDirection);
 		Velocity -= GravityDirection * VerticalSpeed;
@@ -109,12 +115,9 @@ void UCharacterMovementComponent::AddInputVector(FVector WorldDirection, float S
 		return;
 	}
 
-	// 중력 방향에 수직인 평면으로 입력 제한
-	// 입력 벡터에서 중력 방향 성분을 제거 (투영 후 빼기)
 	float DotWithGravity = FVector::Dot(WorldDirection, GravityDirection);
 	FVector HorizontalDirection = WorldDirection - (GravityDirection * DotWithGravity);
 
-	// 방향 벡터가 0이면 무시
 	if (HorizontalDirection.SizeSquared() < 0.0001f)
 	{
 		return;
@@ -126,17 +129,14 @@ void UCharacterMovementComponent::AddInputVector(FVector WorldDirection, float S
 
 bool UCharacterMovementComponent::Jump()
 {
-	// 점프 가능 조건 체크
 	if (!bCanJump || !IsGrounded())
 	{
 		return false;
 	}
 
-	// 중력 반대 방향으로 점프 속도 적용
 	FVector JumpVelocity = GravityDirection * -1.0f * JumpZVelocity;
 	Velocity += JumpVelocity;
 
-	// 이동 모드 변경
 	SetMovementMode(EMovementMode::Falling);
 	bIsJumping = true;
 
@@ -145,14 +145,11 @@ bool UCharacterMovementComponent::Jump()
 
 void UCharacterMovementComponent::StopJumping()
 {
-	// 점프 키를 뗐을 때 상승 속도를 줄임
-	// 중력 반대 방향으로의 속도만 감소
 	FVector UpDirection = GravityDirection * -1.0f;
 	float UpwardSpeed = FVector::Dot(Velocity, UpDirection);
 
 	if (bIsJumping && UpwardSpeed > 0.0f)
 	{
-		// 상승 속도 성분만 감소
 		Velocity -= UpDirection * (UpwardSpeed * 0.5f);
 	}
 }
@@ -163,7 +160,6 @@ void UCharacterMovementComponent::SetMovementMode(EMovementMode NewMode)
 	{
 		return;
 	}
-
 	MovementMode = NewMode;
 }
 
@@ -178,32 +174,25 @@ void UCharacterMovementComponent::SetGravityDirection(const FVector& NewDirectio
 
 void UCharacterMovementComponent::UpdateVelocity(float DeltaTime)
 {
-	// 입력 정규화
 	FVector InputVector = PendingInputVector;
 	if (InputVector.SizeSquared() > 1.0f)
 	{
 		InputVector = InputVector.GetNormalized();
 	}
 
-	// 입력이 있으면 가속
 	if (InputVector.SizeSquared() > 0.0001f)
 	{
-		// 가속도 계산
 		FVector TargetVelocity = InputVector * MaxWalkSpeed;
 		FVector CurrentHorizontalVelocity = Velocity;
 
-		// 중력 방향 속도 성분 제거
 		float VerticalSpeed = FVector::Dot(Velocity, GravityDirection);
 		CurrentHorizontalVelocity -= GravityDirection * VerticalSpeed;
 
-		// 목표 속도와의 차이 계산
 		FVector VelocityDifference = TargetVelocity - CurrentHorizontalVelocity;
 
-		// 가속도 적용 (지면에서는 최대 제어력, 공중에서는 AirControl)
 		float ControlPower = IsGrounded() ? 1.0f : AirControl;
 		FVector Accel = VelocityDifference.GetNormalized() * MaxAcceleration * ControlPower * DeltaTime;
 
-		// 속도 적용 (최대 속도 제한)
 		if (Accel.SizeSquared() > VelocityDifference.SizeSquared())
 		{
 			Velocity += VelocityDifference;
@@ -215,7 +204,6 @@ void UCharacterMovementComponent::UpdateVelocity(float DeltaTime)
 	}
 	else if (IsGrounded())
 	{
-		// 입력이 없으면 마찰 적용 (지면에서만)
 		FVector HorizontalVelocity = Velocity;
 		float VerticalSpeed = FVector::Dot(Velocity, GravityDirection);
 		HorizontalVelocity -= GravityDirection * VerticalSpeed;
@@ -223,12 +211,9 @@ void UCharacterMovementComponent::UpdateVelocity(float DeltaTime)
 		float Speed = HorizontalVelocity.Size();
 		if (Speed > 0.001f)
 		{
-			// 마찰력 계산
 			float Deceleration = GroundFriction * MaxWalkSpeed * DeltaTime;
 			float NewSpeed = FMath::Max(0.0f, Speed - Deceleration);
 			HorizontalVelocity = HorizontalVelocity.GetNormalized() * NewSpeed;
-
-			// 수평 속도만 업데이트 (수직 속도 유지)
 			Velocity = HorizontalVelocity + GravityDirection * VerticalSpeed;
 		}
 	}
@@ -247,17 +232,14 @@ void UCharacterMovementComponent::UpdateVelocity(float DeltaTime)
 
 void UCharacterMovementComponent::ApplyGravity(float DeltaTime)
 {
-	// 지면에 있으면 중력 적용 안 함
 	if (IsGrounded())
 	{
 		return;
 	}
 
-	// 중력 가속도 적용
 	FVector GravityAccel = GravityDirection * DefaultGravity * GravityScale * DeltaTime;
 	Velocity += GravityAccel;
 
-	// 최대 낙하 속도 제한 (40 m/s = 4000 cm/s)
 	float FallSpeed = FVector::Dot(Velocity, GravityDirection);
 	if (FallSpeed > 4000.0f)
 	{
@@ -272,33 +254,151 @@ void UCharacterMovementComponent::MoveUpdatedComponent(float DeltaTime)
 		return;
 	}
 
-	// 새 위치 계산
+	// 단순 이동 (충돌 처리 없음)
 	FVector Delta = Velocity * DeltaTime;
 	FVector NewLocation = UpdatedComponent->GetWorldLocation() + Delta;
-
-	// 위치 업데이트
 	UpdatedComponent->SetWorldLocation(NewLocation);
 }
 
+// Phase 3용 - 현재 사용 안 함
+bool UCharacterMovementComponent::SafeMoveUpdatedComponent(const FVector& Delta, FHitResult& OutHit)
+{
+	OutHit.Init();
+	return false;
+}
+
+// Phase 3용 - 현재 사용 안 함
+FVector UCharacterMovementComponent::ComputeSlideVector(const FVector& Delta, const FVector& Normal, const FHitResult& Hit) const
+{
+	return FVector::Zero();
+}
+
+// Phase 3용 - 현재 사용 안 함
+void UCharacterMovementComponent::SlideAlongSurface(const FVector& Delta, int32 MaxIterations)
+{
+}
+
+// Phase 4용 - 현재 사용 안 함
+bool UCharacterMovementComponent::TryStepUp(const FVector& Delta, const FHitResult& Hit)
+{
+	return false;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Phase 2: 바닥 감지 (캡슐 스윕)
+// ────────────────────────────────────────────────────────────────────────────
+
 bool UCharacterMovementComponent::CheckGround()
 {
-	if (!UpdatedComponent)
+	if (!UpdatedComponent || !CharacterOwner)
 	{
 		return false;
 	}
 
-	// 간단한 지면 체크: Z 위치가 0 이하면 지면
-	FVector Location = UpdatedComponent->GetWorldLocation();
-
-	if (Location.Z <= 0.0f)
+	// 위로 올라가는 중이면 (점프 중) 지면 체크 스킵
+	float VerticalVelocity = FVector::Dot(Velocity, GravityDirection);
+	if (VerticalVelocity < -0.1f)
 	{
-		// 지면에 스냅
-		Location.Z = 0.0f;
-		UpdatedComponent->SetWorldLocation(Location);
+		CurrentFloor.Clear();
+		return false;
+	}
+
+	// FindFloor로 바닥 탐색
+	FFindFloorResult FloorResult;
+	if (FindFloor(FloorResult))
+	{
+		CurrentFloor = FloorResult;
+
+		if (FloorResult.IsWalkableFloor() && FloorResult.FloorDist <= FloorSnapDistance)
+		{
+			// 바닥에 스냅
+			SnapToFloor();
+			return true;
+		}
+	}
+	else
+	{
+		CurrentFloor.Clear();
+	}
+
+	return false;
+}
+
+bool UCharacterMovementComponent::FindFloor(FFindFloorResult& OutFloorResult, float SweepDistance)
+{
+	OutFloorResult.Clear();
+
+	if (!UpdatedComponent || !CharacterOwner)
+	{
+		return false;
+	}
+
+	UCapsuleComponent* Capsule = CharacterOwner->GetCapsuleComponent();
+	if (!Capsule)
+	{
+		return false;
+	}
+
+	UWorld* World = CharacterOwner->GetWorld();
+	if (!World || !World->GetPhysicsScene())
+	{
+		return false;
+	}
+
+	FPhysScene* PhysScene = World->GetPhysicsScene();
+
+	if (SweepDistance < 0.0f)
+	{
+		SweepDistance = FloorSnapDistance + 3.0f;
+	}
+
+	float CapsuleRadius = Capsule->GetScaledCapsuleRadius();
+	float CapsuleHalfHeight = Capsule->GetScaledCapsuleHalfHeight();
+
+	FVector CapsuleLocation = UpdatedComponent->GetWorldLocation();
+	FVector Start = CapsuleLocation;
+	FVector End = Start + GravityDirection * SweepDistance;
+
+	FHitResult Hit;
+	if (PhysScene->SweepSingleCapsule(Start, End, CapsuleRadius, CapsuleHalfHeight, Hit, CharacterOwner))
+	{
+		OutFloorResult.bBlockingHit = true;
+		OutFloorResult.FloorDist = Hit.Distance;
+		OutFloorResult.HitLocation = Hit.ImpactPoint;
+		OutFloorResult.FloorNormal = Hit.ImpactNormal;
+		OutFloorResult.FloorZ = Hit.ImpactPoint.Z;
+		OutFloorResult.HitActor = Hit.Actor;
+		OutFloorResult.HitComponent = Hit.Component;
+		OutFloorResult.bWalkableFloor = IsWalkable(Hit.ImpactNormal);
+
 		return true;
 	}
 
 	return false;
+}
+
+bool UCharacterMovementComponent::IsWalkable(const FVector& Normal) const
+{
+	FVector UpDirection = GravityDirection * -1.0f;
+	float CosAngle = FVector::Dot(Normal, UpDirection);
+	float WalkableCos = std::cos(DegreesToRadians(WalkableFloorAngle));
+	return CosAngle >= WalkableCos;
+}
+
+void UCharacterMovementComponent::SnapToFloor()
+{
+	if (!UpdatedComponent || !CurrentFloor.bBlockingHit)
+	{
+		return;
+	}
+
+	FVector Location = UpdatedComponent->GetWorldLocation();
+
+	if (CurrentFloor.FloorDist > 0.01f)
+	{
+		Location.Z -= CurrentFloor.FloorDist;
+		UpdatedComponent->SetWorldLocation(Location);
+	}
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -313,6 +413,4 @@ void UCharacterMovementComponent::DuplicateSubObjects()
 void UCharacterMovementComponent::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 {
 	Super::Serialize(bInIsLoading, InOutHandle);
-
-	// TODO: 필요한 멤버 변수 직렬화 추가
 }

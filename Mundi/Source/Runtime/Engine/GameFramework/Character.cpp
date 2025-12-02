@@ -243,6 +243,7 @@ void ACharacter::LookUp(float Value)
 
 void ACharacter::Jump()
 {
+	UE_LOG("[Character::Jump] Called - CharacterMovement=%p", CharacterMovement);
 	if (CharacterMovement)
 	{
 		CharacterMovement->Jump();
@@ -259,7 +260,10 @@ void ACharacter::StopJumping()
 
 bool ACharacter::CanJump() const
 {
-	return CharacterMovement && CharacterMovement->bCanJump && IsGrounded();
+	bool bResult = CharacterMovement && CharacterMovement->bCanJump && IsGrounded();
+	UE_LOG("[Character::CanJump] CharacterMovement=%p, bCanJump=%d, IsGrounded=%d, Result=%d",
+		   CharacterMovement, CharacterMovement ? CharacterMovement->bCanJump : 0, IsGrounded(), bResult);
+	return bResult;
 }
 
 void ACharacter::Crouch()

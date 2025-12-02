@@ -9,6 +9,56 @@
 
 // 전방 선언
 class ACharacter;
+class FPhysScene;
+struct FHitResult;
+
+/**
+ * FFindFloorResult
+ *
+ * 바닥 탐색 결과를 저장하는 구조체입니다.
+ */
+struct FFindFloorResult
+{
+	/** 걸을 수 있는 바닥인지 (경사각 체크) */
+	bool bWalkableFloor = false;
+
+	/** 바닥이 감지되었는지 */
+	bool bBlockingHit = false;
+
+	/** 바닥까지의 거리 */
+	float FloorDist = 0.0f;
+
+	/** 바닥 표면의 Z 위치 */
+	float FloorZ = 0.0f;
+
+	/** 바닥 표면의 법선 벡터 */
+	FVector FloorNormal = FVector(0.0f, 0.0f, 1.0f);
+
+	/** 충돌 지점 */
+	FVector HitLocation = FVector::Zero();
+
+	/** 충돌한 액터 */
+	AActor* HitActor = nullptr;
+
+	/** 충돌한 컴포넌트 */
+	UPrimitiveComponent* HitComponent = nullptr;
+
+	/** 결과 초기화 */
+	void Clear()
+	{
+		bWalkableFloor = false;
+		bBlockingHit = false;
+		FloorDist = 0.0f;
+		FloorZ = 0.0f;
+		FloorNormal = FVector(0.0f, 0.0f, 1.0f);
+		HitLocation = FVector::Zero();
+		HitActor = nullptr;
+		HitComponent = nullptr;
+	}
+
+	/** 유효한 바닥인지 */
+	bool IsWalkableFloor() const { return bBlockingHit && bWalkableFloor; }
+};
 
 /**
  * EMovementMode
@@ -78,7 +128,7 @@ public:
 	float GravityScale;
 
 	/** 기본 중력 (-980 cm/s² ≈ -9.8 m/s²) */
-	static constexpr float DefaultGravity = 980.0f;
+	static constexpr float DefaultGravity = 9.8f;
 
 	/** 중력 방향 벡터 (정규화된 방향, 기본값: 아래) */
 	FVector GravityDirection;
@@ -106,6 +156,22 @@ public:
 
 	/** 점프 가능 여부 */
 	bool bCanJump;
+
+	// ────────────────────────────────────────────────
+	// 바닥 감지 설정
+	// ────────────────────────────────────────────────
+
+	UPROPERTY(EditAnywhere, Category="Floor", Tooltip="걸을 수 있는 최대 경사각 (도)")
+	float WalkableFloorAngle;
+
+	UPROPERTY(EditAnywhere, Category="Floor", Tooltip="바닥 스냅 허용 거리 (cm)")
+	float FloorSnapDistance;
+
+	UPROPERTY(EditAnywhere, Category="Floor", Tooltip="자동으로 오를 수 있는 최대 계단 높이 (cm)")
+	float MaxStepHeight;
+
+	/** 현재 바닥 정보 */
+	FFindFloorResult CurrentFloor;
 
 	// ────────────────────────────────────────────────
 	// 이동 함수
@@ -196,11 +262,69 @@ protected:
 	void MoveUpdatedComponent(float DeltaTime);
 
 	/**
+	 * 충돌 감지와 슬라이딩을 포함한 안전한 이동
+	 *
+	 * @param Delta - 이동할 벡터
+	 * @param OutHit - 충돌 결과 (출력)
+	 * @return 실제로 이동했으면 true
+	 */
+	bool SafeMoveUpdatedComponent(const FVector& Delta, FHitResult& OutHit);
+
+	/**
+	 * 충돌 시 슬라이드 벡터를 계산합니다.
+	 *
+	 * @param Delta - 원래 이동 벡터
+	 * @param Normal - 충돌면 법선
+	 * @param Hit - 충돌 정보
+	 * @return 슬라이드 벡터
+	 */
+	FVector ComputeSlideVector(const FVector& Delta, const FVector& Normal, const FHitResult& Hit) const;
+
+	/**
+	 * 슬라이딩을 포함한 이동을 수행합니다.
+	 *
+	 * @param Delta - 이동할 벡터
+	 * @param MaxIterations - 최대 슬라이딩 반복 횟수
+	 */
+	void SlideAlongSurface(const FVector& Delta, int32 MaxIterations = 4);
+
+	/**
+	 * 계단/장애물을 올라가는 시도를 합니다.
+	 *
+	 * @param Delta - 원래 이동 벡터
+	 * @param Hit - 충돌 정보
+	 * @return 계단 오르기에 성공하면 true
+	 */
+	bool TryStepUp(const FVector& Delta, const FHitResult& Hit);
+
+	/**
 	 * 지면 체크 (간단한 Z축 위치 기반)
 	 *
 	 * @return 지면에 있으면 true
 	 */
 	bool CheckGround();
+
+	/**
+	 * 캡슐 스윕을 사용하여 바닥을 탐색합니다.
+	 *
+	 * @param OutFloorResult - 바닥 탐색 결과 (출력)
+	 * @param SweepDistance - 스윕 거리 (기본값: FloorSnapDistance)
+	 * @return 바닥이 감지되면 true
+	 */
+	bool FindFloor(FFindFloorResult& OutFloorResult, float SweepDistance = -1.0f);
+
+	/**
+	 * 법선 벡터가 걸을 수 있는 표면인지 확인합니다.
+	 *
+	 * @param Normal - 표면 법선 벡터
+	 * @return 걸을 수 있으면 true
+	 */
+	bool IsWalkable(const FVector& Normal) const;
+
+	/**
+	 * 바닥에 스냅합니다 (Walking 상태일 때).
+	 */
+	void SnapToFloor();
 
 	// ────────────────────────────────────────────────
 	// 복제
