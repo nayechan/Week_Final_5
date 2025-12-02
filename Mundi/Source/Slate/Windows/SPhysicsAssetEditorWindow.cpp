@@ -37,37 +37,14 @@ SPhysicsAssetEditorWindow::SPhysicsAssetEditorWindow()
 
 SPhysicsAssetEditorWindow::~SPhysicsAssetEditorWindow()
 {
-	// 툴바 아이콘 정리
-	if (IconSave)
-	{
-		DeleteObject(IconSave);
-		IconSave = nullptr;
-	}
-	if (IconSaveAs)
-	{
-		DeleteObject(IconSaveAs);
-		IconSaveAs = nullptr;
-	}
-	if (IconLoad)
-	{
-		DeleteObject(IconLoad);
-		IconLoad = nullptr;
-	}
-	if (IconPlay)
-	{
-		DeleteObject(IconPlay);
-		IconPlay = nullptr;
-	}
-	if (IconStop)
-	{
-		DeleteObject(IconStop);
-		IconStop = nullptr;
-	}
-	if (IconReset)
-	{
-		DeleteObject(IconReset);
-		IconReset = nullptr;
-	}
+	// 툴바 아이콘은 ResourceManager가 관리하므로 포인터만 초기화
+	// (DeleteObject 호출 시 캐시된 리소스가 삭제되어 재열람 시 문제 발생)
+	IconSave = nullptr;
+	IconSaveAs = nullptr;
+	IconLoad = nullptr;
+	IconPlay = nullptr;
+	IconStop = nullptr;
+	IconReset = nullptr;
 
 	// 탭 정리
 	for (int i = 0; i < Tabs.Num(); ++i)
