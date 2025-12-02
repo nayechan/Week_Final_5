@@ -34,6 +34,8 @@ public:
 public:
     // ===== Lua-Bindable Properties (Auto-moved from protected/private) =====
 
+    UBodySetup* BoxBodySetup;
+
     UPROPERTY(EditAnywhere, Category="Shape")
     bool bGenerateOverlapEvents;
 
@@ -93,7 +95,7 @@ public:
     virtual void OnCreatePhysicsState();
     virtual void OnDestroyPhysicsState();
 
-    virtual UBodySetup* GetBodySetup() { return nullptr; }
+    virtual UBodySetup* GetBodySetup() { return BoxBodySetup; }
 
     virtual FBodyInstance* GetBodyInstance(FName BoneName = FName()) { return &BodyInstance; }
 

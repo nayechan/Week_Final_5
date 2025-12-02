@@ -5,6 +5,7 @@
 #include "pch.h"
 #include "HudExampleGameMode.h"
 #include "DancingCharacter.h"
+#include "Vehicle.h"
 
 #include "GameUI/SGameHUD.h"
 #include "GameUI/SButton.h"
@@ -17,7 +18,7 @@
 AHudExampleGameMode::AHudExampleGameMode()
 {
 	// 기본 Pawn 클래스를 DancingCharacter로 설정
-	DefaultPawnClass = ADancingCharacter::StaticClass();
+	DefaultPawnClass = AVehicle::StaticClass();
 }
 
 // ────────────────────────────────────────────────────────────────────────────

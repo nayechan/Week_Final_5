@@ -54,6 +54,16 @@ bool InitGamePhys()
         return false;
     }
 
+    if (!PxInitVehicleSDK(*GPhysXSDK))
+    {
+        UE_LOG("[PhysX Error] PxInitVehicleSDK() 실행이 실패했습니다.");
+        return false;
+    }
+
+    PxVehicleSetBasisVectors(PxVec3(0, 0, 1), PxVec3(1, 0, 0));
+
+    PxVehicleSetUpdateMode(PxVehicleUpdateMode::eVELOCITY_CHANGE);
+
     if (!PxInitExtensions(*GPhysXSDK, GPhysXVisualDebugger))
     {
         UE_LOG("[PhysX Error] PxInitExtensions() 실행이 실패했습니다.");

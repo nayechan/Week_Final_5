@@ -24,6 +24,7 @@ public:
     virtual void TickComponent(float DeltaSeconds) override;
     virtual void OnRegister(UWorld* InWorld) override;
     virtual void OnUnregister() override;
+    virtual void BeginPlay() override;
 
     // 차량 생성 함수 (InitializeComponent에서 호출됨)
     void SetupVehicle();

@@ -8,6 +8,25 @@ UPrimitiveComponent::UPrimitiveComponent()
     : bGenerateOverlapEvents(true)
     , bSimulatePhysics(false)
 {
+    BoxBodySetup = NewObject<UBodySetup>();
+    
+    if (!BoxBodySetup)
+    {
+        return;
+    }
+
+    BoxBodySetup->AggGeom.EmptyElements();
+
+    FKBoxElem BoxElem;
+
+    BoxElem.X = 1.0f;
+    BoxElem.Y = 1.0f;
+    BoxElem.Z = 1.0f;
+
+    BoxElem.Center = FVector::Zero();
+    BoxElem.Rotation = FQuat::Identity();
+
+    BoxBodySetup->AggGeom.BoxElems.Add(BoxElem); 
 }
 
 UPrimitiveComponent::~UPrimitiveComponent()

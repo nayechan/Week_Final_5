@@ -4,6 +4,7 @@
 
 AVehicle::AVehicle()
 {
+    // ChassisMesh = CreateDefaultSubobject<UStaticMeshComponent>("ChassisMesh");
     ChassisMesh = CreateDefaultSubobject<UStaticMeshComponent>("ChassisMesh");
     SetRootComponent(ChassisMesh);
     
@@ -25,7 +26,7 @@ AVehicle::AVehicle()
 
     SpringArm = CreateDefaultSubobject<USpringArmComponent>("SpringArm");
     SpringArm->SetupAttachment(ChassisMesh);
-    SpringArm->TargetArmLength = 0.6f;
+    SpringArm->TargetArmLength = 10.0f;
     SpringArm->SetRelativeRotation(FQuat::MakeFromEulerZYX(FVector(0, 15, 0)));
 
     Camera = CreateDefaultSubobject<UCameraComponent>("Camera");
