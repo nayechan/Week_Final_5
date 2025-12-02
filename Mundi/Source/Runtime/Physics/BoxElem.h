@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ShapeElem.h"
+#include "PrimitiveDrawInterface.h"
 #include "FKBoxElem.generated.h"
 
 /** 충돌용 Box Shape */
@@ -244,12 +245,35 @@ public:
     virtual void DrawElemWire(FPrimitiveDrawInterface* PDI, const FTransform& ElemTM,
                               float Scale, const FLinearColor& Color) const override
     {
-        // TODO: Wire box 렌더링 구현
+        if (!PDI) return;
+
+        // Box의 로컬 Transform (Center + Rotation)
+        FTransform LocalTM(Center, Rotation, FVector::One());
+
+        // ElemTM (Body Transform) * LocalTM (Shape Transform)
+        FTransform WorldTM;
+        WorldTM.Translation = ElemTM.TransformPosition(Center);
+        WorldTM.Rotation = ElemTM.Rotation * Rotation;
+        WorldTM.Scale3D = ElemTM.Scale3D;
+
+        // 스케일 적용된 Half Extent
+        FVector ScaledExtent(X * Scale, Y * Scale, Z * Scale);
+
+        PDI->DrawWireBox(WorldTM, ScaledExtent, Color);
     }
 
     virtual void DrawElemSolid(FPrimitiveDrawInterface* PDI, const FTransform& ElemTM,
                                float Scale, const FLinearColor& Color) const override
     {
-        // TODO: Solid box 렌더링 구현
+        if (!PDI) return;
+
+        FTransform WorldTM;
+        WorldTM.Translation = ElemTM.TransformPosition(Center);
+        WorldTM.Rotation = ElemTM.Rotation * Rotation;
+        WorldTM.Scale3D = ElemTM.Scale3D;
+
+        FVector ScaledExtent(X * Scale, Y * Scale, Z * Scale);
+
+        PDI->DrawSolidBox(WorldTM, ScaledExtent, Color);
     }
 };

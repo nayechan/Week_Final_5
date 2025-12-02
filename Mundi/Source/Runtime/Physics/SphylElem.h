@@ -1,5 +1,6 @@
 ﻿#pragma once
 #include "ShapeElem.h"
+#include "PrimitiveDrawInterface.h"
 #include "FKSphylElem.generated.h"
 
 /** 충돌용 Capsule Shape (Z축이 캡슐 축) */
@@ -241,12 +242,34 @@ public:
     virtual void DrawElemWire(FPrimitiveDrawInterface* PDI, const FTransform& ElemTM,
                               float Scale, const FLinearColor& Color) const override
     {
-        // TODO: Wire capsule 렌더링 구현
+        if (!PDI) return;
+
+        // 캡슐의 World Transform
+        FVector WorldCenter = ElemTM.TransformPosition(Center);
+        FQuat WorldRotation = ElemTM.Rotation * Rotation;
+
+        // 스케일 적용
+        float ScaledRadius = Radius * Scale;
+        float ScaledHalfHeight = GetHalfLength() * Scale;  // Length/2
+
+        PDI->DrawWireCapsule(WorldCenter, WorldRotation, ScaledRadius, ScaledHalfHeight,
+                             FPrimitiveDrawInterface::DefaultSphereSegments, Color);
     }
 
     virtual void DrawElemSolid(FPrimitiveDrawInterface* PDI, const FTransform& ElemTM,
                                float Scale, const FLinearColor& Color) const override
     {
-        // TODO: Solid capsule 렌더링 구현
+        if (!PDI) return;
+
+        FTransform WorldTM;
+        WorldTM.Translation = ElemTM.TransformPosition(Center);
+        WorldTM.Rotation = ElemTM.Rotation * Rotation;
+        WorldTM.Scale3D = FVector::One();
+
+        float ScaledRadius = Radius * Scale;
+        float ScaledHalfHeight = GetHalfLength() * Scale;
+
+        PDI->DrawSolidCapsule(WorldTM, ScaledRadius, ScaledHalfHeight,
+                              FPrimitiveDrawInterface::DefaultSphereSegments, Color);
     }
 };

@@ -159,6 +159,9 @@ struct ParticleEditorState : public ViewerState
     }
 };
 
+// 전방 선언
+class FPrimitiveDrawInterface;
+
 // Physics Asset Editor 상태
 struct PhysicsAssetEditorState : public ViewerState
 {
@@ -183,6 +186,12 @@ struct PhysicsAssetEditorState : public ViewerState
     // 시각화 라인 컴포넌트
     class ULineComponent* BodyShapeLineComponent = nullptr;
     class ULineComponent* ConstraintLineComponent = nullptr;
+
+    // 디버그 렌더링 인터페이스
+    FPrimitiveDrawInterface* PDI = nullptr;
+
+    // Shape 라인 재생성 플래그
+    bool bShapeLinesDirty = true;
 
     // 패널 비율 (좌측: Hierarchy/Graph, 우측: Details/Tool)
     float LeftTopRatio = 0.6f;

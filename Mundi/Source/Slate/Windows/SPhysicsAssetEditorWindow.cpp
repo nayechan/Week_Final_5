@@ -12,6 +12,10 @@
 #include "Source/Runtime/Engine/Components/LineComponent.h"
 #include "Source/Runtime/Engine/Components/SkeletalMeshComponent.h"
 #include "Source/Runtime/Engine/GameFramework/SkeletalMeshActor.h"
+#include "Source/Runtime/Physics/PrimitiveDrawInterface.h"
+#include "Source/Runtime/Physics/SphereElem.h"
+#include "Source/Runtime/Physics/BoxElem.h"
+#include "Source/Runtime/Physics/SphylElem.h"
 #include "SkeletalMesh.h"
 #include "ResourceManager.h"
 #include "Texture.h"
@@ -140,6 +144,12 @@ void SPhysicsAssetEditorWindow::OnUpdate(float DeltaSeconds)
 
 	PhysicsAssetEditorState* State = GetActivePhysicsState();
 	if (!State) return;
+
+	// Shape 라인 재생성 필요 시
+	if (State->bShapeLinesDirty && State->bShowBodies)
+	{
+		RebuildBodyShapeLines();
+	}
 
 	// 시뮬레이션 업데이트
 	if (State->bIsSimulating)
@@ -1321,6 +1331,7 @@ bool SPhysicsAssetEditorWindow::RenderShapeDetails(USkeletalBodySetup* Body)
 	if (bChanged)
 	{
 		State->bIsDirty = true;
+		State->bShapeLinesDirty = true;  // Shape 라인 재생성 필요
 	}
 
 	return bChanged;
@@ -1385,6 +1396,7 @@ void SPhysicsAssetEditorWindow::AddBodyToBone(int32 BoneIndex, int32 ShapeType)
 	State->SelectedBodyIndex = NewIndex;
 	State->SelectedBoneIndex = -1;
 	State->bIsDirty = true;
+	State->bShapeLinesDirty = true;  // Shape 라인 재생성 필요
 }
 
 void SPhysicsAssetEditorWindow::RemoveBody(int32 BodyIndex)
@@ -1403,6 +1415,7 @@ void SPhysicsAssetEditorWindow::RemoveBody(int32 BodyIndex)
 	// 선택 상태 초기화
 	State->SelectedBodyIndex = -1;
 	State->bIsDirty = true;
+	State->bShapeLinesDirty = true;  // Shape 라인 재생성 필요
 }
 
 void SPhysicsAssetEditorWindow::RenderToolPanel()
@@ -1457,7 +1470,82 @@ void SPhysicsAssetEditorWindow::AutoCreateConstraints()
 
 void SPhysicsAssetEditorWindow::RebuildBodyShapeLines()
 {
-	// TODO: Phase 9에서 구현
+	PhysicsAssetEditorState* State = GetActivePhysicsState();
+	if (!State || !State->PDI) return;
+
+	// 기존 라인 클리어
+	State->PDI->Clear();
+
+	UPhysicsAsset* PhysAsset = State->EditingPhysicsAsset;
+	if (!PhysAsset) return;
+
+	// 스켈레탈 메시에서 본 Transform 가져오기
+	USkeletalMesh* Mesh = nullptr;
+	if (State->PreviewActor)
+	{
+		if (USkeletalMeshComponent* MeshComp = State->PreviewActor->GetSkeletalMeshComponent())
+		{
+			Mesh = MeshComp->GetSkeletalMesh();
+		}
+	}
+
+	const FSkeleton* Skeleton = Mesh ? Mesh->GetSkeleton() : nullptr;
+
+	// 각 BodySetup의 Shape들을 렌더링
+	int32 BodyCount = PhysAsset->GetBodySetupCount();
+	for (int32 BodyIdx = 0; BodyIdx < BodyCount; ++BodyIdx)
+	{
+		USkeletalBodySetup* Body = PhysAsset->GetBodySetup(BodyIdx);
+		if (!Body) continue;
+
+		// 본 Transform 계산 (현재는 Identity, 추후 애니메이션 적용 시 변경)
+		FTransform BoneTM;
+
+		// 본 이름으로 본 인덱스 찾기
+		if (Skeleton)
+		{
+			auto it = Skeleton->BoneNameToIndex.find(Body->BoneName.ToString());
+			if (it != Skeleton->BoneNameToIndex.end())
+			{
+				int32 BoneIndex = it->second;
+				if (BoneIndex >= 0 && BoneIndex < (int32)Skeleton->Bones.Num())
+				{
+					// BindPose에서 위치 추출 (월드 공간)
+					const FMatrix& BindPose = Skeleton->Bones[BoneIndex].BindPose;
+					BoneTM.Translation = FVector(BindPose.M[3][0], BindPose.M[3][1], BindPose.M[3][2]);
+					// 회전은 Identity로 유지 (BindPose에서 회전 추출은 복잡)
+				}
+			}
+		}
+
+		// 선택된 바디는 다른 색상으로 렌더링
+		FLinearColor BodyColor = (BodyIdx == State->SelectedBodyIndex)
+			? FLinearColor(1.0f, 0.8f, 0.0f, 1.0f)   // 선택: 노란색
+			: FLinearColor(0.0f, 1.0f, 0.0f, 1.0f);  // 기본: 초록색
+
+		// cm → m 변환 (1유닛 = 1미터, Shape 데이터는 cm 단위)
+		const float CmToM = 0.01f;
+
+		// Sphere Elements
+		for (const FKSphereElem& Elem : Body->AggGeom.SphereElems)
+		{
+			Elem.DrawElemWire(State->PDI, BoneTM, CmToM, BodyColor);
+		}
+
+		// Box Elements
+		for (const FKBoxElem& Elem : Body->AggGeom.BoxElems)
+		{
+			Elem.DrawElemWire(State->PDI, BoneTM, CmToM, BodyColor);
+		}
+
+		// Capsule (Sphyl) Elements
+		for (const FKSphylElem& Elem : Body->AggGeom.SphylElems)
+		{
+			Elem.DrawElemWire(State->PDI, BoneTM, CmToM, BodyColor);
+		}
+	}
+
+	State->bShapeLinesDirty = false;
 }
 
 void SPhysicsAssetEditorWindow::RebuildConstraintLines()

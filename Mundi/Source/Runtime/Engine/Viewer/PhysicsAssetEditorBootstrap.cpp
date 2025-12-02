@@ -14,6 +14,7 @@
 #include "EditorAssetPreviewContext.h"
 #include "Source/Runtime/Engine/Components/LineComponent.h"
 #include "Source/Runtime/Engine/Components/SkeletalMeshComponent.h"
+#include "Source/Runtime/Physics/PrimitiveDrawInterface.h"
 #include "ResourceManager.h"
 
 ViewerState* PhysicsAssetEditorBootstrap::CreateViewerState(const char* Name, UWorld* InWorld,
@@ -141,6 +142,11 @@ ViewerState* PhysicsAssetEditorBootstrap::CreateViewerState(const char* Name, UW
 			ConstraintLineComp->RegisterComponent(State->World);
 			ConstraintLineComp->SetLineVisible(true);
 			State->ConstraintLineComponent = ConstraintLineComp;
+
+			// PrimitiveDrawInterface 생성 및 초기화
+			State->PDI = new FPrimitiveDrawInterface();
+			State->PDI->Initialize(BodyLineComp);
+			State->bShapeLinesDirty = true;  // 초기 렌더링 필요
 		}
 	}
 
@@ -153,24 +159,31 @@ void PhysicsAssetEditorBootstrap::DestroyViewerState(ViewerState*& State)
 
 	PhysicsAssetEditorState* PhysState = static_cast<PhysicsAssetEditorState*>(State);
 
-	// Viewport/Client 정리
-	if (PhysState->Viewport) 
-	{ 
-		delete PhysState->Viewport; 
-		PhysState->Viewport = nullptr; 
+	// PDI 정리
+	if (PhysState->PDI)
+	{
+		delete PhysState->PDI;
+		PhysState->PDI = nullptr;
 	}
 
-	if (PhysState->Client) 
-	{ 
-		delete PhysState->Client; 
-		PhysState->Client = nullptr; 
+	// Viewport/Client 정리
+	if (PhysState->Viewport)
+	{
+		delete PhysState->Viewport;
+		PhysState->Viewport = nullptr;
+	}
+
+	if (PhysState->Client)
+	{
+		delete PhysState->Client;
+		PhysState->Client = nullptr;
 	}
 
 	// World 정리 (PreviewActor와 LineComponent들은 World가 소유하므로 자동 정리)
-	if (PhysState->World) 
-	{ 
-		ObjectFactory::DeleteObject(PhysState->World); 
-		PhysState->World = nullptr; 
+	if (PhysState->World)
+	{
+		ObjectFactory::DeleteObject(PhysState->World);
+		PhysState->World = nullptr;
 	}
 
 	delete PhysState;

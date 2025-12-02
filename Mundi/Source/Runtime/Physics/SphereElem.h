@@ -1,5 +1,6 @@
 #pragma once
 #include "ShapeElem.h"
+#include "PrimitiveDrawInterface.h"
 #include "FKSphereElem.generated.h"
 
 /** 충돌용 Sphere Shape */
@@ -149,16 +150,27 @@ public:
         return FMath::Max(0.0f, Distance - Radius);
     }
 
-    // 디버그 렌더링 (나중에 구현)
+    // 디버그 렌더링
     virtual void DrawElemWire(FPrimitiveDrawInterface* PDI, const FTransform& ElemTM,
                               float Scale, const FLinearColor& Color) const override
     {
-        // TODO: Wire sphere 렌더링 구현
+        if (!PDI) return;
+
+        // ElemTM은 Body의 Transform, Center는 로컬 오프셋
+        FVector WorldCenter = ElemTM.TransformPosition(Center);
+        float ScaledRadius = Radius * Scale;
+
+        PDI->DrawWireSphere(WorldCenter, ScaledRadius, FPrimitiveDrawInterface::DefaultSphereSegments, Color);
     }
 
     virtual void DrawElemSolid(FPrimitiveDrawInterface* PDI, const FTransform& ElemTM,
                                float Scale, const FLinearColor& Color) const override
     {
-        // TODO: Solid sphere 렌더링 구현
+        if (!PDI) return;
+
+        FVector WorldCenter = ElemTM.TransformPosition(Center);
+        float ScaledRadius = Radius * Scale;
+
+        PDI->DrawSolidSphere(WorldCenter, ScaledRadius, FPrimitiveDrawInterface::DefaultSphereSegments, Color);
     }
 };
