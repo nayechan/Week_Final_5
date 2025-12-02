@@ -16,18 +16,20 @@ public:
      * @param SRVStartSlot 해제할 SRV의 시작 슬롯 번호
      * @param NumSRVsToClear 해제할 SRV의 개수
      */
-    FSwapGuard(D3D11RHI* InRHI, uint32 SRVStartSlot, uint32 NumSRVsToClear)
+    FSwapGuard(D3D11RHI* InRHI, uint32 SRVStartSlot, uint32 NumSRVsToClear, bool bSwapTargets = true)
         : RHI(InRHI)
         , bCommitted(false)
         , StartSlot(SRVStartSlot)
         , NumSRVs(NumSRVsToClear)
+        , bShouldSwapTargets(bSwapTargets)
     {
-        if (RHI)
+        if (RHI && bShouldSwapTargets)
         {
             // 생성 시 즉시 렌더 타겟 역할을 교환합니다.
             RHI->SwapRenderTargets();
         }
     }
+
 
     ~FSwapGuard()
     {
@@ -41,9 +43,8 @@ public:
                 TArray<ID3D11ShaderResourceView*> NullSRVs(NumSRVs, nullptr);
                 RHI->GetDeviceContext()->PSSetShaderResources(StartSlot, NumSRVs, NullSRVs.data());
             }
-
             // 2. 작업이 성공적으로 Commit되지 않았다면, 버퍼 스왑을 되돌립니다.
-            if (!bCommitted)
+            if (bShouldSwapTargets && !bCommitted)
             {
                 RHI->SwapRenderTargets();
             }
@@ -66,6 +67,7 @@ public:
 private:
     D3D11RHI* RHI;
     bool bCommitted;
+    bool bShouldSwapTargets;
     uint32 StartSlot;
     uint32 NumSRVs;
 };

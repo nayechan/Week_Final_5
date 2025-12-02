@@ -27,6 +27,7 @@
 #include "OBB.h"
 #include "BoundingSphere.h"
 #include "HeightFogComponent.h"
+#include "DepthOfFieldComponent.h"
 #include "Gizmo/GizmoArrowComponent.h"
 #include "Gizmo/GizmoRotateComponent.h"
 #include "Gizmo/GizmoScaleComponent.h"
@@ -46,7 +47,6 @@
 #include "LightStats.h"
 #include "ShadowStats.h"
 #include "PlatformTime.h"
-#include "PostProcessing/VignettePass.h"
 #include "FbxLoader.h"
 #include "CollisionManager.h"
 #include "ShapeComponent.h"
@@ -136,8 +136,8 @@ void FSceneRenderer::Render()
 	
 	if (!World->bPie)
 	{
-		// 디버그 요소는 Post Processing 적용하지 않음
-		// NOTE: RenderDebugPass()는 이미 투명 패스 전에 호출됨 (파티클과의 깊이 관계를 위해)
+		// 디버그 요소는 Post Processing 적용하지 않음 (후처리 이후 렌더링)
+		RenderDebugPass();	// 그리드, 선택 박스 등 디버그 라인 출력
 		RenderEditorPrimitivesPass();	// 빌보드, 기타 화살표 출력 (상호작용, 피킹 O)
 
 		// 오버레이(Overlay) Primitive 렌더링
@@ -206,13 +206,6 @@ void FSceneRenderer::RenderLitPath()
 	RHIDevice->OMSetBlendState(false);  // 불투명: 블렌딩 OFF
 	RenderOpaquePass(View->RenderSettings->GetViewMode());
 
-	// 디버그 요소들(그리드, 선택 박스 등)을 투명 패스 전에 렌더링
-	// 깊이 버퍼에 기록하여 파티클과 올바른 깊이 관계 유지
-	if (!World->bPie)
-	{
-		RenderDebugPass();
-	}
-
 	RenderDecalPass();
 	RenderParticleSystemPass();
 }
@@ -250,14 +243,8 @@ void FSceneRenderer::RenderWireframePath()
 	// 파티클 시스템 렌더링 (와이어프레임)
 	RenderParticleSystemPass();
 
-	// 상태 복구 (그리드 등 디버그 요소는 Solid로 렌더링)
+	// 상태 복구
 	RHIDevice->RSSetState(ERasterizerMode::Solid);
-
-	// 디버그 요소 렌더링 (그리드, 선택 박스 등)
-	if (!World->bPie)
-	{
-		RenderDebugPass();
-	}
 
 	RHIDevice->OMSetRenderTargets(ERTVMode::SceneColorTargetWithId);
 }
@@ -721,6 +708,7 @@ void FSceneRenderer::GatherVisibleProxies()
 	const bool bDrawSkeletalMeshes = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_SkeletalMeshes);
 	const bool bDrawDecals = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Decals);
 	const bool bDrawFog = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Fog);
+	const bool bDrawDepthOfField = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_DepthOfField);
 	const bool bDrawLight = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Lighting);
 	const bool bUseAntiAliasing = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_FXAA);
 	const bool bUseBillboard = World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_Billboard);
@@ -811,17 +799,18 @@ void FSceneRenderer::GatherVisibleProxies()
 					{
 						SceneGlobals.Fogs.Add(FogComponent);
 					}
-
+					else if (UDepthOfFieldComponent* DofComponent = Cast<UDepthOfFieldComponent>(Component); DofComponent && bDrawDepthOfField)
+					{
+						SceneGlobals.DepthOfFields.Add(DofComponent);
+					}
 					else if (UDirectionalLightComponent* LightComponent = Cast<UDirectionalLightComponent>(Component); LightComponent && bDrawLight)
 					{
 						SceneGlobals.DirectionalLights.Add(LightComponent);
 					}
-
 					else if (UAmbientLightComponent* LightComponent = Cast<UAmbientLightComponent>(Component); LightComponent && bDrawLight)
 					{
 						SceneGlobals.AmbientLights.Add(LightComponent);
 					}
-
 					else if (UPointLightComponent* LightComponent = Cast<UPointLightComponent>(Component); LightComponent && bDrawLight)
 					{
 						if (USpotLightComponent* SpotLightComponent = Cast<USpotLightComponent>(LightComponent); SpotLightComponent)
@@ -1267,7 +1256,27 @@ void FSceneRenderer::RenderPostProcessingPasses()
 			PostProcessModifiers.Add(FogPostProc);
 		}
 	}
-	
+
+	// Register Depth of Field Modifiers
+	// DoF는 Priority와 BlendWeight로 여러 컴포넌트를 블렌딩할 수 있음																				
+	for (UDepthOfFieldComponent* DofComponent : SceneGlobals.DepthOfFields)
+	{
+		if (DofComponent && DofComponent->IsDepthOfFieldEnabled())
+		{
+			// 카메라가 볼륨 안에 있는지 체크
+			if (DofComponent->IsInsideVolume(View->ViewLocation))
+			{
+				FPostProcessModifier DofPostProc;
+				DofPostProc.Type = EPostProcessEffectType::DOF;
+				DofPostProc.bEnabled = true;
+				DofPostProc.SourceObject = DofComponent;
+				DofPostProc.Priority = DofComponent->GetDofPriority();
+				DofPostProc.Weight = DofComponent->GetBlendWeight();
+				PostProcessModifiers.Add(DofPostProc);
+			}
+		}
+	}
+
 	PostProcessModifiers.Sort([](const FPostProcessModifier& LHS, const FPostProcessModifier& RHS)
 	{
 		if (LHS.Priority == RHS.Priority)
@@ -1293,6 +1302,8 @@ void FSceneRenderer::RenderPostProcessingPasses()
 		case EPostProcessEffectType::Gamma:
 			GammaPass.Execute(Modifier, View, RHIDevice);
 			break;
+		case EPostProcessEffectType::DOF:
+			DepthOfFieldPass.Execute(Modifier, View, RHIDevice);
 		}
 	}
 }

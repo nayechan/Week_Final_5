@@ -532,10 +532,14 @@ class HeaderParser:
         """메타데이터 문자열을 파싱하여 딕셔너리로 반환"""
         result = {}
 
-        # Key="Value" 패턴 찾기
-        for match in re.finditer(r'(\w+)\s*=\s*"([^"]+)"', metadata):
+        # Key="Value" "Value2" ... 패턴 찾기
+        pattern = re.compile(r'(\w+)\s*=\s*((?:"[^"]*"\s*(?:,\s*)?)+)')
+        for match in pattern.finditer(metadata):
             key = match.group(1)
-            value = match.group(2)
+            raw_value_str = match.group(2)
+            
+            lines = re.findall(r'"([^"]*)"', raw_value_str)
+            value = "".join(lines)
             result[key] = value
 
         # 단독 플래그 찾기 (예: Abstract, Blueprintable 등)
@@ -630,9 +634,11 @@ class HeaderParser:
                 prop.max_value = float(min_max[1].strip())
 
         # Tooltip 추출
-        tooltip_match = re.search(r'Tooltip\s*=\s*"([^"]+)"', metadata)
+        tooltip_match = re.search(r'Tooltip\s*=\s*((?:"[^"]*"\s*(?:,\s*)?)+)', metadata)
         if tooltip_match:
-            prop.tooltip = tooltip_match.group(1)
+            raw_tooltip_str = tooltip_match.group(1)
+            lines = re.findall(r'"([^"]*)"', raw_tooltip_str)
+            prop.tooltip = "".join(lines)
 
         # ScriptFile 메타데이터 추출 (예: ScriptFile=".lua")
         script_file_match = re.search(r'ScriptFile\s*=\s*"([^"]+)"', metadata)
@@ -654,9 +660,11 @@ class HeaderParser:
         )
 
         # DisplayName 추출
-        display_match = re.search(r'DisplayName\s*=\s*"([^"]+)"', metadata)
+        display_match = re.search(r'DisplayName\s*=\s*((?:"[^"]*"\s*(?:,\s*)?)+)', metadata)
         if display_match:
-            func.display_name = display_match.group(1)
+            raw_display_name_str = display_match.group(1)
+            lines = re.findall(r'"([^"]*)"', raw_display_name_str)
+            func.display_name = "".join(lines)
 
         # LuaBind 체크
         func.metadata['lua_bind'] = 'LuaBind' in metadata

@@ -197,11 +197,14 @@ public:
 
     // RTV Getters
     ID3D11RenderTargetView* GetBackBufferRTV() const { return BackBufferRTV; }
+    ID3D11RenderTargetView* GetDofNearRTV() const { return DofNearRTV; }
+    ID3D11RenderTargetView* GetDofFarRTV() const { return DofFarRTV; }
 
 private:
 	void CreateDeviceAndSwapChain(HWND hWindow); // 여기서 디바이스, 디바이스 컨택스트, 스왑체인, 뷰포트를 초기화한다
 	void CreateFrameBuffer();
 	void CreateIdBuffer();
+	void CreateDepthOfFieldBuffers();
 	void CreateRasterizerState();
 	void CreateConstantBuffer(ID3D11Buffer** ConstantBuffer, uint32 Size);
 	void CreateDepthStencilState();
@@ -213,6 +216,7 @@ private:
 	void ReleaseRasterizerState(); // rs
 	void ReleaseFrameBuffer(); // fb, rtv
 	void ReleaseIdBuffer();
+	void ReleaseDepthOfFieldBuffers();
 	void ReleaseDeviceAndSwapChain();
 
 	// FSwapGuard 클래스가 D3D11RHI의 private 멤버에 접근할 수 있도록 허용
@@ -262,6 +266,23 @@ private:
 	ID3D11Texture2D* SceneColorTextures[NUM_SCENE_BUFFERS];
 	ID3D11RenderTargetView* SceneColorRTVs[NUM_SCENE_BUFFERS];
 	ID3D11ShaderResourceView* SceneColorSRVs[NUM_SCENE_BUFFERS];
+
+	// Depth Of Field의 중간 처리 과정에서 필요한 리소스
+	ID3D11Texture2D* DofCoCTexture = nullptr;
+	ID3D11RenderTargetView* DofCoCRTV = nullptr;
+	ID3D11ShaderResourceView* DofCoCMapSRV = nullptr;
+
+	ID3D11Texture2D* DofBlurTexture = nullptr;
+	ID3D11RenderTargetView* DofBlurRTV = nullptr;
+	ID3D11ShaderResourceView* DofBlurMapSRV = nullptr;
+
+	ID3D11Texture2D* DofNearTexture = nullptr;
+	ID3D11RenderTargetView* DofNearRTV = nullptr;
+	ID3D11ShaderResourceView* DofNearMapSRV = nullptr;
+
+	ID3D11Texture2D* DofFarTexture = nullptr;
+	ID3D11RenderTargetView* DofFarRTV = nullptr;
+	ID3D11ShaderResourceView* DofFarMapSRV = nullptr;
 
 	// 현재 소스(읽기)와 타겟(쓰기)을 가리키는 인덱스
 	int32 SourceIndex = 0;

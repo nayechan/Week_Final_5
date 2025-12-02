@@ -103,19 +103,19 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>FBXSDK_SHARED;PX_PHYSX_STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_EDITOR;FBXSDK_SHARED;PX_PHYSX_STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Generated;$(ProjectDir)Source\Runtime\Core\Object;$(ProjectDir)Source\Runtime\Core\Math;$(ProjectDir)Source\Runtime\Core\Containers;$(ProjectDir)Source\Runtime\Core\Misc;$(ProjectDir)Source\Runtime\Core\Memory;$(ProjectDir)Source\Runtime\Engine\Animation;$(ProjectDir)Source\Runtime\Engine\GameFramework;$(ProjectDir)Source\Runtime\Engine\Scripting;$(ProjectDir)Source\Runtime\Engine\Components;$(ProjectDir)Source\Runtime\Engine\Collision;$(ProjectDir)Source\Runtime\Engine\Spatial;$(ProjectDir)Source\Runtime\Engine\Audio;$(ProjectDir)Source\Runtime\Engine\Particles;$(ProjectDir)Source\Runtime\Engine\Particles\Modules;$(ProjectDir)Source\Runtime\RHI;$(ProjectDir)Source\Runtime\Renderer;$(ProjectDir)Source\Runtime\AssetManagement;$(ProjectDir)Source\Runtime\InputCore;$(ProjectDir)Source\Runtime\Physics\;$(ProjectDir)Source\Editor;$(ProjectDir)Source\Slate;ThirdParty\include\DirectXTex;ThirdParty\include\DirectXTK;ThirdParty\include\Lua;ThirdParty\include\sol;ThirdParty\include;ThirdParty\include\FBXSDK;ThirdParty\include\PhysX</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Generated;$(ProjectDir)Source\Runtime\Core\Object;$(ProjectDir)Source\Runtime\Core\Math;$(ProjectDir)Source\Runtime\Core\Containers;$(ProjectDir)Source\Runtime\Core\Misc;$(ProjectDir)Source\Runtime\Core\Memory;$(ProjectDir)Source\Runtime\Engine\Animation;$(ProjectDir)Source\Runtime\Engine\GameFramework;$(ProjectDir)Source\Runtime\Engine\Scripting;$(ProjectDir)Source\Runtime\Engine\Components;$(ProjectDir)Source\Runtime\Engine\Collision;$(ProjectDir)Source\Runtime\Engine\Spatial;$(ProjectDir)Source\Runtime\Engine\Audio;$(ProjectDir)Source\Runtime\Engine\Particles;$(ProjectDir)Source\Runtime\Engine\Particles\Modules;$(ProjectDir)Source\Runtime\RHI;$(ProjectDir)Source\Runtime\Renderer\PostProcessing;$(ProjectDir)Source\Runtime\Renderer;$(ProjectDir)Source\Runtime\AssetManagement;$(ProjectDir)Source\Runtime\InputCore;$(ProjectDir)Source\Editor;$(ProjectDir)Source\Slate;ThirdParty\include\DirectXTex;ThirdParty\include\DirectXTK;ThirdParty\include\Lua;ThirdParty\include\sol;ThirdParty\include;ThirdParty\include\FBXSDK;ThirdParty\include\PhysX</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 /bigobj /MP %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);ThirdParty\lib\Lua\;ThirdParty\lib\DirectXTex\$(BaseConfiguration)\;ThirdParty\lib\DirectXTK\$(BaseConfiguration)\;ThirdParty\lib\FBXSDK\$(BaseConfiguration)\;ThirdParty\lib\PhysX\$(BaseConfiguration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);DirectXTK.lib;DirectXTex.lib;PhysXFoundation_static_64.lib;PhysXCommon_static_64.lib;PhysX_static_64.lib;PhysXCooking_static_64.lib;PhysXExtensions_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXVehicle_static_64.lib;PhysXPvdSDK_static_64.lib;lua54.lib;libfbxsdk.lib;alembic.lib;libxml2.lib;zlib.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);ThirdParty\lib\Lua\;ThirdParty\lib\DirectXTex\$(Configuration)\;ThirdParty\lib\FBXSDK\$(Configuration)\;ThirdParty\lib\DirectXTK\$(Configuration)\;ThirdParty\lib\PhysX\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTK.lib;DirectXTex.lib;%(AdditionalDependencies);lua54.lib;libfbxsdk.lib;alembic.lib;libxml2.lib;zlib.lib;PhysX_static_64.lib;PhysXCommon_static_64.lib;PhysXFoundation_static_64.lib;PhysXExtensions_static_64.lib;PhysXPvdSDK_static_64.lib;PhysXCooking_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXVehicle_static_64.lib</AdditionalDependencies>
       <AdditionalOptions>/IGNORE:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PreBuildEvent>
@@ -132,7 +132,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>FBXSDK_SHARED;PX_PHYSX_STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_GAME;FBXSDK_SHARED;PX_PHYSX_STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -144,8 +144,8 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);ThirdParty\lib\Lua\;ThirdParty\lib\DirectXTex\$(BaseConfiguration)\;ThirdParty\lib\DirectXTK\$(BaseConfiguration)\;ThirdParty\lib\FBXSDK\$(BaseConfiguration)\;ThirdParty\lib\PhysX\$(BaseConfiguration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);DirectXTK.lib;DirectXTex.lib;PhysXFoundation_static_64.lib;PhysXCommon_static_64.lib;PhysX_static_64.lib;PhysXCooking_static_64.lib;PhysXExtensions_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXVehicle_static_64.lib;PhysXPvdSDK_static_64.lib;lua54.lib;libfbxsdk.lib;alembic.lib;libxml2.lib;zlib.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);ThirdParty\lib\Lua\;ThirdParty\lib\DirectXTex\Debug\;ThirdParty\lib\DirectXTK\Debug\;ThirdParty\lib\FBXSDK\Debug\;ThirdParty\lib\PhysX\Debug\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTK.lib;DirectXTex.lib;%(AdditionalDependencies);lua54.lib;libfbxsdk.lib;alembic.lib;libxml2.lib;zlib.lib;PhysX_static_64.lib;PhysXCommon_static_64.lib;PhysXFoundation_static_64.lib;PhysXExtensions_static_64.lib;PhysXPvdSDK_static_64.lib;PhysXCooking_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXVehicle_static_64.lib</AdditionalDependencies>
       <AdditionalOptions>/IGNORE:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PreBuildEvent>
@@ -164,7 +164,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>FBXSDK_SHARED;PX_PHYSX_STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_EDITOR;FBXSDK_SHARED;PX_PHYSX_STATIC_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -178,8 +178,8 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);ThirdParty\lib\Lua\;ThirdParty\lib\DirectXTex\$(BaseConfiguration)\;ThirdParty\lib\DirectXTK\$(BaseConfiguration)\;ThirdParty\lib\FBXSDK\$(BaseConfiguration)\;ThirdParty\lib\PhysX\$(BaseConfiguration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);DirectXTK.lib;DirectXTex.lib;PhysXFoundation_static_64.lib;PhysXCommon_static_64.lib;PhysX_static_64.lib;PhysXCooking_static_64.lib;PhysXExtensions_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXVehicle_static_64.lib;PhysXPvdSDK_static_64.lib;lua54.lib;libfbxsdk.lib;alembic.lib;libxml2.lib;zlib.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);ThirdParty\lib\Lua\;ThirdParty\lib\DirectXTex\$(Configuration)\;ThirdParty\lib\FBXSDK\$(Configuration)\;ThirdParty\lib\DirectXTK\$(Configuration)\;ThirdParty\lib\PhysX\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTK.lib;DirectXTex.lib;%(AdditionalDependencies);lua54.lib;libfbxsdk.lib;alembic.lib;libxml2.lib;zlib.lib;PhysX_static_64.lib;PhysXCommon_static_64.lib;PhysXFoundation_static_64.lib;PhysXExtensions_static_64.lib;PhysXPvdSDK_static_64.lib;PhysXCooking_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXVehicle_static_64.lib</AdditionalDependencies>
       <AdditionalOptions>/IGNORE:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PreBuildEvent>
@@ -212,8 +212,8 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);ThirdParty\lib\Lua\;ThirdParty\lib\DirectXTex\$(BaseConfiguration)\;ThirdParty\lib\DirectXTK\$(BaseConfiguration)\;ThirdParty\lib\FBXSDK\$(BaseConfiguration)\;ThirdParty\lib\PhysX\$(BaseConfiguration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies);DirectXTK.lib;DirectXTex.lib;PhysXFoundation_static_64.lib;PhysXCommon_static_64.lib;PhysX_static_64.lib;PhysXCooking_static_64.lib;PhysXExtensions_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXVehicle_static_64.lib;PhysXPvdSDK_static_64.lib;lua54.lib;libfbxsdk.lib;alembic.lib;libxml2.lib;zlib.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);ThirdParty\lib\Lua\;ThirdParty\lib\DirectXTex\Release\;ThirdParty\lib\FBXSDK\Release\;ThirdParty\lib\DirectXTK\Release\;ThirdParty\lib\PhysX\Release\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>DirectXTK.lib;DirectXTex.lib;%(AdditionalDependencies);lua54.lib;libfbxsdk.lib;alembic.lib;libxml2.lib;zlib.lib;PhysX_static_64.lib;PhysXCommon_static_64.lib;PhysXFoundation_static_64.lib;PhysXExtensions_static_64.lib;PhysXPvdSDK_static_64.lib;PhysXCooking_static_64.lib;PhysXCharacterKinematic_static_64.lib;PhysXVehicle_static_64.lib</AdditionalDependencies>
       <AdditionalOptions>/IGNORE:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PreBuildEvent>
@@ -293,6 +293,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimStateMachineInstance.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimSequencePlayer.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\CharacterMovementComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Components\DepthOfFieldComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\InputComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\PropertyTestComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\SkeletalMeshComponent.cpp" />
@@ -302,6 +303,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Character.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Controller.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\DancingCharacter.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\DepthOfFieldActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\GameModeBase.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\GameStateBase.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\HudExampleGameMode.cpp" />
@@ -311,6 +313,9 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Runtime\Engine\GameFramework\SkeletalMeshActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\BoneAnchorComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Fade.cpp" />
+    <FxCompile Include="Shaders\Common\PostProcessCommon.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Shaders\Materials\Fireball.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_StandAlone|x64'">true</ExcludedFromBuild>
@@ -349,6 +354,36 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_StandAlone|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\DoF_CoC_PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\DoF_Composite_PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\DoF_Dilation_PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\DoF_MergeNearFar_PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\DoF_NearFarSplit_PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\DoF_PreFilter_PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\DoF_SeparatedBlur1_PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\DoF_SeparatedBlur2_PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\DoF_SeparatedBlur3_PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\FadeInOut_PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="Shaders\PostProcess\GammaCorrection_PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
@@ -358,6 +393,12 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_StandAlone|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_StandAlone|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\Passthrough_PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\Vignette_PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="Shaders\Shadows\DepthOnly_PS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -444,6 +485,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Source\Runtime\Physics\SkeletalBodySetup.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\AnimationViewerViewportClient.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\BlendSpaceEditorViewportClient.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\PostProcessing\DepthOfFieldPass.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\SkeletalViewerViewportClient.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\LightManager.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\PostProcessing\GammaPass.cpp" />
@@ -692,6 +734,8 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClCompile Include="Generated\FParticleBurst.generated.cpp" />
     <ClCompile Include="Generated\UParticleModuleTrailSource.generated.cpp" />
     <ClCompile Include="Generated\ARibbonActor.generated.cpp" />
+    <ClCompile Include="Generated\UDepthOfFieldComponent.generated.cpp" />
+    <ClCompile Include="Generated\ADepthOfFieldActor.generated.cpp" />
     <ClCompile Include="Generated\AHudExampleGameMode.generated.cpp" />
     <ClCompile Include="Generated\UBodySetup.generated.cpp" />
     <ClCompile Include="Generated\UPhysicalMaterial.generated.cpp" />
@@ -895,6 +939,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Runtime\Engine\Components\AudioComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\CapsuleComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\CharacterMovementComponent.h" />
+    <ClInclude Include="Source\Runtime\Engine\Components\DepthOfFieldComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\InputComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\LuaScriptComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\MovementComponent.h" />
@@ -915,6 +960,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Character.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Controller.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\DancingCharacter.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\DepthOfFieldActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\FAudioDevice.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CameraModifierBase.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Fade.h" />
@@ -987,6 +1033,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Source\Runtime\Physics\VehicleDataStruct.h" />
     <ClInclude Include="Source\Runtime\Renderer\AnimationViewerViewportClient.h" />
     <ClInclude Include="Source\Runtime\Renderer\BlendSpaceEditorViewportClient.h" />
+    <ClInclude Include="Source\Runtime\Renderer\PostProcessing\DepthOfFieldPass.h" />
     <ClInclude Include="Source\Runtime\Renderer\SkeletalViewerViewportClient.h" />
     <ClInclude Include="Source\Runtime\Renderer\LightManager.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\AmbientLightComponent.h" />
@@ -1263,6 +1310,8 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Lua\lua54.dll" "$(OutDir)"</Command>
     <ClInclude Include="Generated\FParticleBurst.generated.h" />
     <ClInclude Include="Generated\UParticleModuleTrailSource.generated.h" />
     <ClInclude Include="Generated\ARibbonActor.generated.h" />
+    <ClInclude Include="Generated\UDepthOfFieldComponent.generated.h" />
+    <ClInclude Include="Generated\ADepthOfFieldActor.generated.h" />
     <ClInclude Include="Generated\AHudExampleGameMode.generated.h" />
     <ClInclude Include="Generated\UBodySetup.generated.h" />
     <ClInclude Include="Generated\UPhysicalMaterial.generated.h" />

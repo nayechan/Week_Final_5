@@ -78,7 +78,6 @@ struct alignas(16) FFadeInOutBufferType // b2
     float Weight  = 1.0f;
     float _Pad[2] = {0,0};
 };
-static_assert(sizeof(FFadeInOutBufferType) % 16 == 0, "CB must be 16-byte aligned");
 
 struct alignas(16) FVinetteBufferType // b2
 {
@@ -92,14 +91,33 @@ struct alignas(16) FVinetteBufferType // b2
     float     Weight    = 1.0f;
     float     _Pad0[3];
 };
-static_assert(sizeof(FVinetteBufferType) % 16 == 0, "CB must be 16-byte aligned");
 
 struct alignas(16) FGammaCorrectionBufferType
 {
     float Gamma;
     float Padding[3];
 };
-static_assert(sizeof(FGammaCorrectionBufferType) % 16 == 0, "CB must be 16-byte aligned");
+
+struct alignas(16) FDepthOfFieldBufferType
+{
+    // Focus 관련 설정
+    float FocalDistance;    // 실제 대상과의 거리 (가장 선명하게 보이는 Depth 값)
+    float FocalLength;      // 카메라 렌즈의 물리적 초점 거리
+    float FNumber;          // 조리개 값
+    float MaxCoc;           // 보케의 최대 크기 (== 픽셀 당 허용 가능한 최대 흐림 반경)
+
+    // Near 및 Far 블러 관련 설정
+    float NearTransitionRange;
+    float FarTransitionRange;
+    float NearBlurScale;    // Near 블러 강도 조절
+    float FarBlurScale;     // Far 블러 강도 조절 
+
+    // 샘플링 관련 설정
+    int BlurSampleCount;    // 블러 샘플 수
+    float BokehRotation;    // Hexagonal 회전 각도
+    float Weight;           // Dof 최종 효과 수치를 조절
+    float _Pad;
+};
 
 struct FXAABufferType // b2
 {
@@ -234,13 +252,14 @@ MACRO(FGammaCorrectionBufferType)   \
 MACRO(FVinetteBufferType)           \
 MACRO(FXAABufferType)               \
 MACRO(FPixelConstBufferType)        \
+MACRO(FDepthOfFieldBufferType)      \
 MACRO(ViewProjBufferType)           \
 MACRO(ColorBufferType)              \
 MACRO(CameraBufferType)             \
 MACRO(FLightBufferType)             \
 MACRO(FViewportConstants)           \
 MACRO(FTileCullingBufferType)       \
-MACRO(FPointLightShadowBufferType)
+MACRO(FPointLightShadowBufferType)  
 
 // 16 바이트 패딩 어썰트
 #define STATIC_ASSERT_CBUFFER_ALIGNMENT(Type) \
@@ -258,6 +277,7 @@ CONSTANT_BUFFER_INFO(FFadeInOutBufferType, 2, false, true)
 CONSTANT_BUFFER_INFO(FGammaCorrectionBufferType, 2, false, true)
 CONSTANT_BUFFER_INFO(FVinetteBufferType, 2, false, true)
 CONSTANT_BUFFER_INFO(FXAABufferType, 2, false, true)
+CONSTANT_BUFFER_INFO(FDepthOfFieldBufferType, 2, false, true)
 CONSTANT_BUFFER_INFO(ColorBufferType, 3, true, true)   // b3 color
 CONSTANT_BUFFER_INFO(FPixelConstBufferType, 4, true, true) // GOURAUD에도 사용되므로 VS도 true
 CONSTANT_BUFFER_INFO(DecalBufferType, 6, true, true)

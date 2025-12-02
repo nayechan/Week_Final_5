@@ -109,6 +109,10 @@ enum class ERTVMode : uint32
     SceneColorTarget,
     SceneColorTargetWithoutDepth,
     SceneColorTargetWithId, //모델 그릴때만 사용, 후처리는 별도
+    DofCoCTarget,
+    DofBlurTarget,
+    DofNearTarget,
+    DofFarTarget
 };
 
 // RHI가 사용하는 텍스쳐들의 SRV
@@ -116,6 +120,10 @@ enum class RHI_SRV_Index : uint32
 {
 	SceneDepth,  // 장면 깊이
     SceneColorSource,
+    DofCocMap,
+    DofBlurMap,
+    DofNearMap,
+    DofFarMap,
 };
 
 enum class RHI_Sampler_Index : uint32
@@ -177,6 +185,8 @@ enum class EEngineShowFlags : uint64
 
     SF_Collision = 1ull << 21,    // Show/hide collision component debug shapes
     SF_CollisionBVH = 1ull << 22, // Show/hide collision BVH debug visualization
+
+    SF_DepthOfField = 1ull << 23,
 
     // Default enabled flags
     SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_SkeletalMeshes | SF_Grid | SF_Lighting | SF_Decals |

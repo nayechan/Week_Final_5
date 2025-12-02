@@ -1,11 +1,10 @@
 ﻿#pragma once
 #include "Frustum.h"
-
-// TODO : Post Processing 떼어내기, 전방선언으로라든지...
-#include "PostProcessing/FadeInOutPass.h"
-#include "PostProcessing/VignettePass.h"
-#include "PostProcessing/HeightFogPass.h"
-#include "PostProcessing/GammaPass.h"
+#include "FadeInOutPass.h"
+#include "VignettePass.h"
+#include "HeightFogPass.h"
+#include "GammaPass.h"
+#include "DepthOfFieldPass.h"
 
 // 전방 선언 (헤더 파일 의존성 최소화)
 class UWorld;
@@ -16,6 +15,7 @@ class D3D11RHI;
 class UPrimitiveComponent;
 class UDecalComponent;
 class UHeightFogComponent;
+class UDepthOfFieldComponent;
 class UAmbientLightComponent;
 class UDirectionalLightComponent;
 class UPointLightComponent;
@@ -63,6 +63,7 @@ struct FSceneGlobals
 	TArray<UDirectionalLightComponent*> DirectionalLights;
 	TArray<UAmbientLightComponent*> AmbientLights;
 	TArray<UHeightFogComponent*> Fogs;	// 첫 번째로 찾은 Fog를 사용함
+	TArray<UDepthOfFieldComponent*> DepthOfFields;	// DoF 컴포넌트들 (Priority/BlendWeight로 블렌딩)
 };
 
 /**
@@ -155,10 +156,10 @@ private:
 	// 타일 기반 라이트 컬링 시스템 (매 프레임 생성되고 소멸되어서 스마트 포인터로 설정)
 	std::unique_ptr<FTileLightCuller> TileLightCuller;
 
-	// TODO : 자동으로 등록되게 바꾸기!, bloom 빼고 다 stateless해서 걔네는 static(etc..) 등 하이브리도 구조로 바꾸기
 	// PostProcessing
 	FHeightFogPass HeightFogPass;
 	FFadeInOutPass FadeInOutPass;
 	FVignettePass VignettePass;
 	FGammaPass GammaPass;
+	FDepthOfFieldPass DepthOfFieldPass;
 };
