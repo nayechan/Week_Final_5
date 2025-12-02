@@ -83,12 +83,12 @@ void SPhysicsAssetEditorWindow::LoadToolbarIcons()
 {
 	if (!Device) return;
 
-	IconSave = UResourceManager::GetInstance().Load<UTexture>("Icons/Save.png");
-	IconSaveAs = UResourceManager::GetInstance().Load<UTexture>("Icons/SaveAs.png");
-	IconLoad = UResourceManager::GetInstance().Load<UTexture>("Icons/Load.png");
-	IconPlay = UResourceManager::GetInstance().Load<UTexture>("Icons/Play.png");
-	IconStop = UResourceManager::GetInstance().Load<UTexture>("Icons/Stop.png");
-	IconReset = UResourceManager::GetInstance().Load<UTexture>("Icons/Reset.png");
+	IconSave = UResourceManager::GetInstance().Load<UTexture>(GDataDir + "/Icon/Toolbar_Save.png");
+	IconSaveAs = UResourceManager::GetInstance().Load<UTexture>(GDataDir + "/Icon/Toolbar_SaveAs.png");
+	IconLoad = UResourceManager::GetInstance().Load<UTexture>(GDataDir + "/Icon/Toolbar_Load.png");
+	IconPlay = UResourceManager::GetInstance().Load<UTexture>(GDataDir + "/Icon/Toolbar_Play.png");
+	IconStop = UResourceManager::GetInstance().Load<UTexture>(GDataDir + "/Icon/Toolbar_Stop.png");
+	IconReset = UResourceManager::GetInstance().Load<UTexture>(GDataDir + "/Icon/Viewport_Toolbar_Rotate.png");
 }
 
 ViewerState* SPhysicsAssetEditorWindow::CreateViewerState(const char* Name, UEditorAssetPreviewContext* Context)
@@ -346,45 +346,104 @@ void SPhysicsAssetEditorWindow::RenderToolbar()
 {
 	PhysicsAssetEditorState* State = GetActivePhysicsState();
 
-	// 파일 버튼들
-	if (ImGui::Button("Save"))
+	const ImVec2 IconSize(20, 20);
+
+	// ========== 파일 버튼들 ==========
+	// Save 버튼
+	if (IconSave && IconSave->GetShaderResourceView())
 	{
-		SavePhysicsAsset();
+		if (ImGui::ImageButton("##SavePhysAsset", (void*)IconSave->GetShaderResourceView(), IconSize))
+			SavePhysicsAsset();
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Save");
+	}
+	else
+	{
+		if (ImGui::Button("Save"))
+			SavePhysicsAsset();
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Save As"))
+
+	// Save As 버튼
+	if (IconSaveAs && IconSaveAs->GetShaderResourceView())
 	{
-		SavePhysicsAssetAs();
+		if (ImGui::ImageButton("##SaveAsPhysAsset", (void*)IconSaveAs->GetShaderResourceView(), IconSize))
+			SavePhysicsAssetAs();
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Save As");
+	}
+	else
+	{
+		if (ImGui::Button("Save As"))
+			SavePhysicsAssetAs();
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Load"))
+
+	// Load 버튼
+	if (IconLoad && IconLoad->GetShaderResourceView())
 	{
-		LoadPhysicsAsset();
+		if (ImGui::ImageButton("##LoadPhysAsset", (void*)IconLoad->GetShaderResourceView(), IconSize))
+			LoadPhysicsAsset();
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Load");
+	}
+	else
+	{
+		if (ImGui::Button("Load"))
+			LoadPhysicsAsset();
 	}
 
 	ImGui::SameLine();
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 	ImGui::SameLine();
 
-	// 시뮬레이션 버튼들
+	// ========== 시뮬레이션 버튼들 ==========
 	if (State && State->bIsSimulating)
 	{
-		if (ImGui::Button("Stop"))
+		// Stop 버튼
+		if (IconStop && IconStop->GetShaderResourceView())
 		{
-			StopSimulation();
+			if (ImGui::ImageButton("##StopSim", (void*)IconStop->GetShaderResourceView(), IconSize))
+				StopSimulation();
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Stop Simulation");
+		}
+		else
+		{
+			if (ImGui::Button("Stop"))
+				StopSimulation();
 		}
 	}
 	else
 	{
-		if (ImGui::Button("Play"))
+		// Play 버튼
+		if (IconPlay && IconPlay->GetShaderResourceView())
 		{
-			StartSimulation();
+			if (ImGui::ImageButton("##PlaySim", (void*)IconPlay->GetShaderResourceView(), IconSize))
+				StartSimulation();
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Start Simulation");
+		}
+		else
+		{
+			if (ImGui::Button("Play"))
+				StartSimulation();
 		}
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Reset Pose"))
+
+	// Reset Pose 버튼
+	if (IconReset && IconReset->GetShaderResourceView())
 	{
-		ResetPose();
+		if (ImGui::ImageButton("##ResetPose", (void*)IconReset->GetShaderResourceView(), IconSize))
+			ResetPose();
+		if (ImGui::IsItemHovered())
+			ImGui::SetTooltip("Reset Pose");
+	}
+	else
+	{
+		if (ImGui::Button("Reset Pose"))
+			ResetPose();
 	}
 
 	ImGui::Separator();
