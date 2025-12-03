@@ -234,7 +234,12 @@ void UStaticMeshComponent::CreatePhysicsState()
 
 UBodySetup* UStaticMeshComponent::GetBodySetup()
 {
-	return StaticMesh->GetStaticMeshAsset()->BodySetup;
+	if (StaticMesh && StaticMesh->GetStaticMeshAsset())
+	{
+		return StaticMesh->GetStaticMeshAsset()->BodySetup;
+	}
+
+	return nullptr;
 }
 
 void UStaticMeshComponent::DuplicateSubObjects()
