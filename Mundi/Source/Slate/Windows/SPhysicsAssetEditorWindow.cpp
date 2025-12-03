@@ -1575,9 +1575,52 @@ void SPhysicsAssetEditorWindow::RebuildUnselectedBodyLines()
 	UPhysicsAsset* PhysAsset = State->EditingPhysicsAsset;
 	if (!PhysAsset) return;
 
-	const FLinearColor UnselectedColor(0.0f, 1.0f, 0.0f, 1.0f);  // 초록색
+	const FLinearColor UnselectedColor(0.0f, 1.0f, 0.0f, 1.0f);    // 초록색 (비연결)
+	const FLinearColor ConnectedColor(0.3f, 0.5f, 1.0f, 1.0f);     // 파란색 (연결됨)
 	const float CmToM = 0.01f;
 	const float Default = 1.0f;
+
+	// 선택된 바디와 Constraint로 연결된 바디 인덱스 수집
+	TSet<int32> ConnectedBodyIndices;
+	if (State->SelectedBodyIndex >= 0)
+	{
+		USkeletalBodySetup* SelectedBody = PhysAsset->GetBodySetup(State->SelectedBodyIndex);
+		if (SelectedBody)
+		{
+			FName SelectedBoneName = SelectedBody->BoneName;
+
+			// 모든 Constraint를 순회하여 연결된 바디 찾기
+			int32 ConstraintCount = PhysAsset->GetConstraintCount();
+			for (int32 ConstraintIdx = 0; ConstraintIdx < ConstraintCount; ++ConstraintIdx)
+			{
+				UPhysicsConstraintTemplate* Constraint = PhysAsset->ConstraintSetup[ConstraintIdx];
+				if (!Constraint) continue;
+
+				FName Bone1 = Constraint->GetBone1Name();
+				FName Bone2 = Constraint->GetBone2Name();
+
+				// 선택된 바디의 본과 연결된 Constraint인지 확인
+				if (Bone1 == SelectedBoneName)
+				{
+					// Bone2에 해당하는 바디 인덱스 찾기
+					int32 ConnectedIdx = PhysAsset->FindBodySetupIndex(Bone2);
+					if (ConnectedIdx >= 0)
+					{
+						ConnectedBodyIndices.Add(ConnectedIdx);
+					}
+				}
+				else if (Bone2 == SelectedBoneName)
+				{
+					// Bone1에 해당하는 바디 인덱스 찾기
+					int32 ConnectedIdx = PhysAsset->FindBodySetupIndex(Bone1);
+					if (ConnectedIdx >= 0)
+					{
+						ConnectedBodyIndices.Add(ConnectedIdx);
+					}
+				}
+			}
+		}
+	}
 
 	// 선택된 바디를 제외한 모든 바디 렌더링
 	int32 BodyCount = PhysAsset->GetBodySetupCount();
@@ -1596,22 +1639,25 @@ void SPhysicsAssetEditorWindow::RebuildUnselectedBodyLines()
 			BoneTM = *CachedTM;
 		}
 
+		// 연결된 바디인지에 따라 색상 선택
+		const FLinearColor& DrawColor = ConnectedBodyIndices.Contains(BodyIdx) ? ConnectedColor : UnselectedColor;
+
 		// Sphere Elements
 		for (const FKSphereElem& Elem : Body->AggGeom.SphereElems)
 		{
-			Elem.DrawElemWire(State->PDI, BoneTM, CmToM, UnselectedColor);
+			Elem.DrawElemWire(State->PDI, BoneTM, CmToM, DrawColor);
 		}
 
 		// Box Elements
 		for (const FKBoxElem& Elem : Body->AggGeom.BoxElems)
 		{
-			Elem.DrawElemWire(State->PDI, BoneTM, Default, UnselectedColor);
+			Elem.DrawElemWire(State->PDI, BoneTM, Default, DrawColor);
 		}
 
 		// Capsule (Sphyl) Elements
 		for (const FKSphylElem& Elem : Body->AggGeom.SphylElems)
 		{
-			Elem.DrawElemWire(State->PDI, BoneTM, CmToM, UnselectedColor);
+			Elem.DrawElemWire(State->PDI, BoneTM, CmToM, DrawColor);
 		}
 	}
 
