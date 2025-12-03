@@ -338,10 +338,10 @@ void FBodyInstance::SetAngularDamping(float InAngularDamping)
 
 void FBodyInstance::SetCollisionEnabled(bool bEnabled)
 {
-    if (!RigidActor || bEnabled == bCollisionEnabled) { return; }
+    if (bEnabled == bCollisionEnabled) { return; }
     bCollisionEnabled = bEnabled;
 
-    if (!CurrentScene) return;
+    if (!RigidActor || !CurrentScene) return;
 
     CurrentScene->EnqueueCommand([this]()
     {

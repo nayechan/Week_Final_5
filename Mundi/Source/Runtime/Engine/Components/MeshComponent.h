@@ -28,7 +28,10 @@ public:
     
     void DuplicateSubObjects() override;
     
-    bool CanSimulatingPhysics() const override { return true; }
+    bool CanSimulatingPhysics() const override { return !bIsStatic; }
+    
+    UPROPERTY(EditAnywhere, Category="Physics", Tooltip="움직이지 않는 메쉬인지 여부 (true 시 물리 객체 생성 X)")
+    bool bIsStatic = false;
 
 protected:
     void MarkWorldPartitionDirty();
