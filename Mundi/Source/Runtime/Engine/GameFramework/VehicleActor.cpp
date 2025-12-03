@@ -35,6 +35,7 @@ AVehicleActor::AVehicleActor()
 	SmokeParticleComponent->SetTemplate(ParticleSystem);
 	SmokeParticleComponent->SetupAttachment(RootComponent);
 	SmokeParticleComponent->SetRelativeLocation(FVector(-2.0f, 0, -0.5f));
+	UpdateDriftSmoke(0);
 }
 
 void AVehicleActor::Tick(float DeltaTime)
