@@ -276,6 +276,27 @@ static void SerializeProperty(void* Instance, const FProperty& Prop, bool bIsLoa
         }
         break;
     }
+    case EPropertyType::PhysicsAsset:
+    {
+        UPhysicsAsset** Value = Prop.GetValuePtr<UPhysicsAsset*>(Instance);
+        if (bIsLoading)
+        {
+            FString PhysAssetPath;
+            FJsonSerializer::ReadString(InOutJson, Prop.Name, PhysAssetPath);
+            if (!PhysAssetPath.empty())
+                *Value = UResourceManager::GetInstance().Load<UPhysicsAsset>(PhysAssetPath);
+            else
+                *Value = nullptr;
+        }
+        else
+        {
+            if (*Value)
+                InOutJson[Prop.Name] = (*Value)->GetFilePath().c_str();
+            else
+                InOutJson[Prop.Name] = "";
+        }
+        break;
+    }
     case EPropertyType::ParticleSystem:
     {
         UParticleSystem** Value = Prop.GetValuePtr<UParticleSystem*>(Instance);
