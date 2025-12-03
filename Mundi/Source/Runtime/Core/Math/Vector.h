@@ -1339,7 +1339,7 @@ struct FTransform
 	FTransform(const FMatrix& M);
 
 	FMatrix ToMatrix() const;
-
+	
 	// Child 로컬 좌표계의 점을 부모 좌표계 변환과 합성. 호출하는 Transform의 결과 좌표계로 변환
 	FTransform GetWorldTransform(const FTransform& ChildTransform) const
 	{
@@ -1594,28 +1594,37 @@ inline FMatrix FTransform::ToMatrix() const
 // FTransform 역변환
 inline FTransform FTransform::Inverse() const
 {
-	// InvScale
+	// 1. Scale 역변환
 	FVector InvScale(
-		(std::fabs(Scale3D.X) > KINDA_SMALL_NUMBER) ? 1.0f / Scale3D.X : 0.0f,
-		(std::fabs(Scale3D.Y) > KINDA_SMALL_NUMBER) ? 1.0f / Scale3D.Y : 0.0f,
-		(std::fabs(Scale3D.Z) > KINDA_SMALL_NUMBER) ? 1.0f / Scale3D.Z : 0.0f
+	   (std::fabs(Scale3D.X) > KINDA_SMALL_NUMBER) ? 1.0f / Scale3D.X : 0.0f,
+	   (std::fabs(Scale3D.Y) > KINDA_SMALL_NUMBER) ? 1.0f / Scale3D.Y : 0.0f,
+	   (std::fabs(Scale3D.Z) > KINDA_SMALL_NUMBER) ? 1.0f / Scale3D.Z : 0.0f
 	);
 
-	// InvRot = conjugate (단위 가정)
-	FQuat InvRot(-Rotation.X, -Rotation.Y, -Rotation.Z, Rotation.W);
+	// 2. Rotation 역변환 (Conjugate)
+	FQuat InvRot = Rotation.Inverse(); // 혹은 (-x, -y, -z, w)
 
-	//(SRT)^(-1) = T^(-1)R^(-1)S^(-1). Translation Factor : (0,0,0,1)*T^(-1)R^(-1)S^(-1)
-	//InvTrans = -InvScale(InvRotation(Translation))
-	FVector Rotated = InvRot.RotateVector(Translation);
-	FVector Scaled(Translation.X * InvScale.X,
-		Translation.Y * InvScale.Y,
-		Translation.Z * InvScale.Z);
-	FVector InvTrans(-Scaled);
+	// 3. Translation 역변환
+	// 공식: -( InvScale * ( InvRot * Translation ) )
+    
+	// 3-1. 먼저 Translation을 반대로 회전시킵니다.
+	FVector RotatedTranslation = InvRot.RotateVector(Translation);
+
+	// 3-2. 그 결과에 InvScale을 곱합니다. (수정된 부분: Translation 대신 RotatedTranslation 사용)
+	FVector ResultTrans(
+		RotatedTranslation.X * InvScale.X,
+		RotatedTranslation.Y * InvScale.Y,
+		RotatedTranslation.Z * InvScale.Z
+	);
+    
+	// 3-3. 부호를 반전시킵니다.
+	ResultTrans = -ResultTrans;
 
 	FTransform Out;
 	Out.Rotation = InvRot;
 	Out.Scale3D = InvScale;
-	Out.Translation = InvTrans;
+	Out.Translation = ResultTrans;
+
 	return Out;
 }
 

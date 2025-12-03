@@ -36,10 +36,10 @@ void USkeletalMeshComponent::BeginPlay()
 
     if (AnimInstance)
     {
-        AnimInstance->NativeUpdateAnimation(0.016f);  // 대략 60fps 기준
+        AnimInstance->NativeUpdateAnimation(0.0f);
         
         FPoseContext OutputPose;
-        OutputPose.Initialize(this, SkeletalMesh->GetSkeleton(), 0.016f);
+        OutputPose.Initialize(this, SkeletalMesh->GetSkeleton(), 0.0f);
         AnimInstance->EvaluateAnimation(OutputPose);
         
         CurrentLocalSpacePose = OutputPose.LocalSpacePose;
@@ -583,6 +583,17 @@ void USkeletalMeshComponent::InitPhysics()
     PhysicsBlendPoseSaved.SetNum(NumBones);
     PhysicsResultPose.SetNum(NumBones); 
 
+    const int32 TotalBones = Skeleton->Bones.Num();
+    BoneIndexToBodyCache.assign(TotalBones, nullptr);
+
+    for (FBodyInstance* Body : Bodies)
+    {
+        if (Body && Body->BoneIndex >= 0 && Body->BoneIndex < TotalBones)
+        {
+            BoneIndexToBodyCache[Body->BoneIndex] = Body;
+        }
+    }
+    
     UE_LOG("[Physics] InitPhysics completed: %d bodies, %d constraints using asset '%s'",
         Bodies.Num(), Constraints.Num(), TargetPhysAsset->GetName().c_str());
 }
@@ -832,48 +843,22 @@ void USkeletalMeshComponent::UpdateKinematicBonesToAnim()
 
 void USkeletalMeshComponent::BlendPhysicsBones()
 {
-    // 물리 Body 위치를 본 트랜스폼으로 동기화
-    if (!SkeletalMesh)
-    {
-        return;
-    }
+    if (!SkeletalMesh || BoneIndexToBodyCache.IsEmpty()) return; // 방어 코드 간소화
 
     const FSkeleton* Skeleton = SkeletalMesh->GetSkeleton();
-    if (!Skeleton)
-    {
-        return;
-    }
-
-    // 컴포넌트 월드 트랜스폼의 역행렬 (월드 → 컴포넌트 로컬 변환용)
     const FTransform ComponentWorldTM = GetWorldTransform();
-
-    // 본 인덱스 → Body 인스턴스 매핑 구축
-    TMap<int32, FBodyInstance*> BoneToBody;
-    for (FBodyInstance* Body : Bodies)
-    {
-        if (Body && Body->BoneIndex >= 0)
-        {
-            BoneToBody.Add(Body->BoneIndex, Body);
-        }
-    }
+    FTransform WorldToComponent = ComponentWorldTM.Inverse();
 
     // 루트부터 순회하며 ComponentSpace 트랜스폼 계산
     // (Body가 있는 본은 물리에서, 없는 본은 부모 기준 로컬 포즈 유지)
     for (int32 BoneIdx = 0; BoneIdx < Skeleton->Bones.Num(); ++BoneIdx)
     {
-        if (BoneIdx >= CurrentLocalSpacePose.Num() || BoneIdx >= CurrentComponentSpacePose.Num())
-        {
-            continue;
-        }
-
-        FBodyInstance** BodyPtr = BoneToBody.Find(BoneIdx);
-
-        if (BodyPtr && *BodyPtr)
+        FBodyInstance* Body = BoneIndexToBodyCache[BoneIdx];
+        if (Body)
         {
             // Body가 있는 본: 물리 시뮬레이션에서 트랜스폼 획득
-            FBodyInstance* Body = *BodyPtr;
             FTransform BodyWorldTM = Body->GetWorldTransform();
-            FTransform BodyComponentTM = ComponentWorldTM.GetRelativeTransform(BodyWorldTM);
+            FTransform BodyComponentTM = WorldToComponent * BodyWorldTM;
 
             // ComponentSpace 직접 설정
             CurrentComponentSpacePose[BoneIdx] = BodyComponentTM;
@@ -990,7 +975,4 @@ void USkeletalMeshComponent::BlendPhysicsPoses(float Alpha)
             Current.Scale3D = AnimPose.Scale3D;
         }
     }
-
-    // 포즈 재계산
-    ForceRecomputePose();
 }

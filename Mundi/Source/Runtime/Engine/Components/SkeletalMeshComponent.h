@@ -218,6 +218,7 @@ private:
     TArray<FBodyInstance*> Bodies;
     TArray<FConstraintInstance*> Constraints;
     TMap<FName, int32> BodyIndexMap;
+    TArray<FBodyInstance*> BoneIndexToBodyCache; // 크기는 전체 뼈 개수와 동일, Body가 없으면 nullptr
 
     // --- 블렌딩용 포즈 저장 ---
     TArray<FTransform> PhysicsBlendPoseSaved;  // Ragdoll 전환 전 애니메이션 포즈

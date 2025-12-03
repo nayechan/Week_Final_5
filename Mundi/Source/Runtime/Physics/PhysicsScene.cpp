@@ -137,9 +137,7 @@ void FPhysicsScene::FetchAndSync()
         TIME_PROFILE(PhysicsSyncTime)
         // 시뮬레이션 완료될 때까지 기다림
         mScene->fetchResults(true);
-    }
-
-    {
+        
         // 멀티스레드 렌더링 환경 등을 고려하여 락을 거는 것이 안전
         SCOPED_READ_LOCK(*mScene)
 
