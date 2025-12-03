@@ -4021,17 +4021,22 @@ void SPhysicsAssetEditorWindow::SavePhysicsAssetAs()
 {
 	PhysicsAssetEditorState* State = GetActivePhysicsState();
 	if (!State || !State->EditingPhysicsAsset) return;
+	
+	const FWideString BaseDir = UTF8ToWide(GDataDir) + L"/PhysicsAssets";
+	const FWideString Extension = L".physicsasset";
+	const FWideString Description = L"Physics Asset Files";
+	const FWideString DefaultFileName = L"";
 
 	std::filesystem::path SavePath = FPlatformProcess::OpenSaveFileDialog(
-		L"Data/PhysicsAssets",
-		L"physicsasset",
-		L"Physics Asset Files",
-		L""
+		BaseDir,
+		Extension,
+		Description,
+		DefaultFileName
 	);
 
 	if (!SavePath.empty())
 	{
-		FString FilePath = SavePath.string();
+		FString FilePath = ResolveAssetRelativePath(WideToUTF8(SavePath.wstring()), WideToUTF8(BaseDir));
 		State->CurrentFilePath = FilePath;
 
 		// 저장 전 SkeletalMeshPath 동기화 (Load 시 메시 복원에 필요)
@@ -4047,15 +4052,18 @@ void SPhysicsAssetEditorWindow::SavePhysicsAssetAs()
 
 void SPhysicsAssetEditorWindow::LoadPhysicsAsset()
 {
+	const FWideString BaseDir = UTF8ToWide(GDataDir) + L"/PhysicsAssets";
+	const FWideString Extension = L".physicsasset";
+	const FWideString Description = L"Physics Asset Files";
 	std::filesystem::path LoadPath = FPlatformProcess::OpenLoadFileDialog(
-		L"Data/PhysicsAssets",
-		L"physicsasset",
-		L"Physics Asset Files"
+		BaseDir,
+		Extension,
+		Description
 	);
 
 	if (!LoadPath.empty())
 	{
-		FString FilePath = LoadPath.string();
+		FString FilePath = ResolveAssetRelativePath(WideToUTF8(LoadPath.wstring()), WideToUTF8(BaseDir));
 		UEditorAssetPreviewContext* NewContext = NewObject<UEditorAssetPreviewContext>();
 		NewContext->ViewerType = EViewerType::PhysicsAsset;
 		NewContext->AssetPath = FilePath;

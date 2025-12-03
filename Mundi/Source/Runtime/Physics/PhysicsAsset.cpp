@@ -350,7 +350,7 @@ void UPhysicsAsset::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 void UPhysicsAsset::Load(const FString& InFilePath, ID3D11Device* InDevice)
 {
     // FString을 FWideString으로 변환
-    FWideString WidePath(InFilePath.begin(), InFilePath.end());
+    FWideString WidePath = UTF8ToWide(InFilePath);
 
     // 파일에서 JSON 로드
     JSON JsonHandle;
@@ -371,7 +371,7 @@ void UPhysicsAsset::Load(const FString& InFilePath, ID3D11Device* InDevice)
 void UPhysicsAsset::Save(const FString& InFilePath)
 {
     // FString을 FWideString으로 변환
-    FWideString WidePath(InFilePath.begin(), InFilePath.end());
+    FWideString WidePath = UTF8ToWide(InFilePath);
 
     JSON JsonData = JSON::Make(JSON::Class::Object);
     Serialize(false, JsonData);
