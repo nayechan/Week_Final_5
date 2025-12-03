@@ -11,29 +11,16 @@
 #include "DxContextManagerCallbackImpl.h"
 
 //#if USE_DX11
-DxContextManagerCallbackImpl::DxContextManagerCallbackImpl(ID3D11Device* InDevice, bool synchronizeResources)
+DxContextManagerCallbackImpl::DxContextManagerCallbackImpl(ID3D11Device* InDevice, ID3D11DeviceContext* InContext, bool synchronizeResources)
 	:
 	Device(InDevice),
+	Context(InContext),
 	mSynchronizeResources(synchronizeResources)
 {
-	Device->AddRef();
-	Device->GetImmediateContext(&Context);
+
 }
 DxContextManagerCallbackImpl::~DxContextManagerCallbackImpl()
 {
-	Context->Release();
-
-#if _DEBUG
-	ID3D11Debug* debugDevice;
-	Context->QueryInterface(&debugDevice);
-	if (debugDevice)
-	{
-		debugDevice->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-		debugDevice->Release();
-	}
-#endif
-
-	Context->Release();
 
 }
 

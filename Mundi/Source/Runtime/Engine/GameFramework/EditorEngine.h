@@ -5,6 +5,7 @@ class URenderer;
 class D3D11RHI;
 class UWorld;
 class FAudioDevice;
+class UClothManager;
 
 struct FWorldContext
 {
@@ -63,6 +64,7 @@ private:
 
     //디바이스 리소스 및 렌더러
     D3D11RHI RHIDevice; 
+    UClothManager* ClothManager;
     std::unique_ptr<URenderer> Renderer;
     
     //월드 핸들

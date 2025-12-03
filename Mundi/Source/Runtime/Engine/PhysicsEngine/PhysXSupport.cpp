@@ -54,6 +54,16 @@ bool InitGamePhys()
         return false;
     }
 
+    if (!PxInitVehicleSDK(*GPhysXSDK))
+    {
+        UE_LOG("[PhysX Error] PxInitVehicleSDK() 실행이 실패했습니다.");
+        return false;
+    }
+
+    PxVehicleSetBasisVectors(PxVec3(0, 0, 1), PxVec3(1, 0, 0));
+
+    PxVehicleSetUpdateMode(PxVehicleUpdateMode::eACCELERATION);
+
     if (!PxInitExtensions(*GPhysXSDK, GPhysXVisualDebugger))
     {
         UE_LOG("[PhysX Error] PxInitExtensions() 실행이 실패했습니다.");
@@ -103,6 +113,7 @@ void TermGamePhys()
     if (GPhysXSDK)            { PxCloseExtensions(); }
     if (GPhysXSDK)            { GPhysXSDK->release(); GPhysXSDK = nullptr; }
     if (GPhysicalMaterial)    { DeleteObject(GPhysicalMaterial); GPhysicalMaterial = nullptr; }
+    if (GPhysXSDK)            { PxCloseVehicleSDK(); }
 
     // PVD 연결 해제 후 transport 해제 (순서 중요)
     if (GPhysXVisualDebugger)

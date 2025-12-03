@@ -270,6 +270,29 @@ bool UPropertyRenderer::RenderProperty(const FProperty& Property, void* ObjectIn
 			// TArray<Struct> 렌더링 - 동적 배열 처리
 			bChanged = RenderStructArrayProperty(Property, ObjectInstance);
 			break;
+		case EPropertyType::FVector:
+		{
+			TArray<FVector>* Arr = Property.GetValuePtr<TArray<FVector>>(ObjectInstance);
+			if (Arr)
+			{
+				if (ImGui::TreeNode(Property.Name))
+				{
+					if (ImGui::Button("Add")) { Arr->Add(FVector(0,0,0)); bChanged = true; }
+					for (int i = 0; i < Arr->Num(); ++i)
+					{
+						ImGui::PushID(i);
+						FString label = "[" + std::to_string(i) + "]";
+						if (ImGui::DragFloat3(label.c_str(), &(*Arr)[i].X, 0.1f))
+							bChanged = true;
+						ImGui::SameLine();
+						if (ImGui::Button("X")) { Arr->RemoveAt(i); --i; bChanged = true; ImGui::PopID(); continue; }
+						ImGui::PopID();
+					}
+					ImGui::TreePop();
+				}
+			}
+		}
+		break;
 		default:
 			ImGui::Text("%s: [Unsupported Array Type]", Property.Name);
 			break;

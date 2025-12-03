@@ -1,102 +1,157 @@
 ﻿#include "pch.h"
 #include "ClothManager.h"
+#include "ClothMesh.h"
 
-IMPLEMENT_CLASS(UClothManager)
+UClothManager* UClothManager::Instance = nullptr;
 
-Range<physx::PxVec4> GetRange(TArray<PxVec4>& Arr)
+UClothManager::UClothManager()
 {
-    return Range<physx::PxVec4>(
-        Arr.data(),
-        Arr.data() + Arr.size());
+    Instance = this;
+}
+UClothManager::~UClothManager()
+{
+    Release();
 }
 
-
-
-void UClothManager::Init(ID3D11Device* InDevice)
+void UClothManager::InitClothManager(ID3D11Device* InDevice, ID3D11DeviceContext* InContext)
 {
-    //DX11 컨텍스트 설정 
-    GraphicsContextManager = new DxContextManagerCallbackImpl(InDevice);
-    Factory = NvClothCreateFactoryDX11(GraphicsContextManager);
+    Device = InDevice;
+    Context = InContext;
+    //GraphicsContextManager = new DxContextManagerCallbackImpl(InDevice, InContext);
+    // 1. 콜백 객체 생성
+    if (!Allocator)
+    {
+        Allocator = new NvClothAllocator();
+    }
+
+    if (!ErrorCallback)
+    {
+        ErrorCallback = new NvClothErrorCallback();
+    }
+
+    if (!AssertHandler)
+    {
+        AssertHandler = new NvClothAssertHandler();
+    }
+
+    // 2. NvCloth 초기화
+    nv::cloth::InitializeNvCloth(
+        Allocator,
+        ErrorCallback,
+        AssertHandler,
+        nullptr  // profiler (optional)
+    );
+    //Factory = NvClothCreateFactoryDX11(GraphicsContextManager);
+    Factory = NvClothCreateFactoryCPU();
     Solver = Factory->createSolver();
 
-    // 정점 생성
-    ClothWidth = 10;
-    ClothHeight = 10;
-    for (int y = 0; y < ClothWidth; y++) {
-        for (int x = 0; x < ClothHeight; x++) {
-            float posX = x * 0.1f;
-            float posY = 0.0f;
-            float posZ = y * 0.1f;
-            float invMass = 1.0f; // 역질량
-            Particles.push_back(physx::PxVec4(posX, posY, posZ, invMass));
-        }
-    }
+    TestCloth = new FClothMesh();
 
-    // 인덱스 생성
-    for (int y = 0; y < ClothHeight - 1; y++) {
-        for (int x = 0; x < ClothWidth - 1; x++) {
-            int topLeft = y * ClothWidth + x;
-            int topRight = topLeft + 1;
-            int bottomLeft = (y + 1) * ClothWidth + x;
-            int bottomRight = bottomLeft + 1;
-
-            Indices.push_back(topLeft);
-            Indices.push_back(bottomLeft);
-            Indices.push_back(topRight);
-
-            Indices.push_back(topRight);
-            Indices.push_back(bottomLeft);
-            Indices.push_back(bottomRight);
-        }
-    }
-
-
-    // ClothMeshDesc 설정
-    nv::cloth::ClothMeshDesc meshDesc;
-
-    // 정점 데이터
-    meshDesc.points.data = Particles.data();
-    meshDesc.points.count = static_cast<uint32_t>(Particles.size());
-    meshDesc.points.stride = sizeof(physx::PxVec4);
-
-    // 삼각형 인덱스
-    meshDesc.triangles.data = Indices.data();
-    meshDesc.triangles.count = static_cast<uint32_t>(Indices.size() / 3);
-    meshDesc.triangles.stride = sizeof(uint32_t) * 3;
-
-    // invMasses는 particles의 w 값 사용하므로 nullptr
-    meshDesc.invMasses.data = nullptr;
-    meshDesc.invMasses.count = 0;
-    meshDesc.invMasses.stride = 0;
-
-    // Fabric 생성
-    Fabric = NvClothCookFabricFromMesh(
-        Factory,
-        meshDesc,
-        physx::PxVec3(0, -1, 0),  // 중력 방향
-        nullptr,                   // phase config (nullptr = 자동)
-        false                      // use geodesic tether
-    );
-
-    // Cloth 생성
-    Cloth = Factory->createCloth(GetRange(Particles), *Fabric);
-    Solver->addCloth(Cloth);
-
-    // 물리 속성 설정
-    Cloth->setGravity(physx::PxVec3(0.0f, -9.81f, 0.0f));
-    Cloth->setDamping(physx::PxVec3(0.2f, 0.2f, 0.2f));
-    Cloth->setLinearInertia(physx::PxVec3(0.8f, 0.8f, 0.8f));
-    Cloth->setFriction(0.5f);
-
-
-    nv::cloth::MappedRange<physx::PxVec4> particles = Cloth->getCurrentParticles();
-    for (int i = 0; i < particles.size(); i++)
+    for (int z= 0; z<= 10; z++)
     {
-        //do something with particles[i]
-        //the xyz components are the current positions
-        //the w component is the invMass.
+        for (int x = 0; x <= 10; x++)
+        {
+            FVertexDynamic Vert;
+            Vert.Position = FVector(x, 0, -z);
+            Vert.Normal = FVector(0, 1, 0);
+            Vert.UV = FVector2D(x / 10.0f, z/ 10.0f);
+            TestCloth->OriginVertices.push_back(Vert);
+            float InvMass = (x == 0 || x == 5 || x == 10) && z == 0 ? 0 : 1.0f;
+            TestCloth->OriginParticles.push_back(physx::PxVec4(Vert.Position.X, Vert.Position.Y, Vert.Position.Z, InvMass));
+        }
     }
 
+    for (int y = 0; y < 10; y++)
+    {
+        for (int x = 0; x < 10; x++)
+        {
+            int CurIdx = x + y * 11;
+            TestCloth->OriginIndices.push_back(CurIdx);
+            TestCloth->OriginIndices.push_back(CurIdx + 12);
+            TestCloth->OriginIndices.push_back(CurIdx + 11);
+            TestCloth->OriginIndices.push_back(CurIdx);
+            TestCloth->OriginIndices.push_back(CurIdx + 1);
+            TestCloth->OriginIndices.push_back(CurIdx + 12);
+        }
+    }
+
+    nv::cloth::ClothMeshDesc meshDesc;
+    //Fill meshDesc with data
+    meshDesc.setToDefault();
+    meshDesc.points.data = TestCloth->OriginVertices.data();
+    meshDesc.points.stride = sizeof(FVertexDynamic);
+    meshDesc.points.count = TestCloth->OriginVertices.size();
+
+    meshDesc.triangles.data = TestCloth->OriginIndices.data();
+    meshDesc.triangles.stride = sizeof(uint32) * 3;
+    meshDesc.triangles.count = TestCloth->OriginIndices.size() / 3;
+
+    // InvMasses 설정 (중요!)
+    meshDesc.invMasses.data = TestCloth->OriginParticles.data();
+    meshDesc.invMasses.stride = sizeof(physx::PxVec4);
+    meshDesc.invMasses.count = TestCloth->OriginParticles.size();
+    //etc. for quads, triangles and invMasses
+
+    physx::PxVec3 gravity(0.0f, 0.0f, -9.8f);
+    Fabric* Fabric = NvClothCookFabricFromMesh(UClothManager::Instance->GetFactory(), meshDesc, gravity, &TestCloth->PhaseTypes);
+    TestCloth->OriginCloth = UClothManager::Instance->GetFactory()->createCloth(GetRange(TestCloth->OriginParticles), *Fabric);
+
+    // ===== Stiffness 설정 =====
+    // PhaseConfig 직접 생성
+    int numPhases = Fabric->getNumPhases();
+    std::vector<nv::cloth::PhaseConfig> phaseConfigs(numPhases);
+
+    for (int i = 0; i < numPhases; i++)
+    {
+        phaseConfigs[i].mPhaseIndex = i;
+        phaseConfigs[i].mStiffness = 1.0f;           // 0.0 ~ 1.0
+        phaseConfigs[i].mStiffnessMultiplier = 1.0f;
+        phaseConfigs[i].mCompressionLimit = 1.0f;
+        phaseConfigs[i].mStretchLimit = 1.0f;        // 늘어남 제한
+    }
+
+    nv::cloth::Range<nv::cloth::PhaseConfig> range(phaseConfigs.data(), phaseConfigs.data() + numPhases);
+    TestCloth->OriginCloth->setPhaseConfig(range);
+
+    // 2. Stretch 제한 (Tether Constraints)
+    TestCloth->OriginCloth->setTetherConstraintScale(1.0f);      // 늘어남 제한 비율
+    TestCloth->OriginCloth->setTetherConstraintStiffness(1.0f);  // 제한 강도
+
+    // Cloth 속성 설정 (자연스러운 움직임)
+    TestCloth->OriginCloth->setGravity(gravity);
+    TestCloth->OriginCloth->setDamping(physx::PxVec3(0.3f, 0.3f, 0.3f));  // 감쇠
+    TestCloth->OriginCloth->setFriction(0.5f);  // 마찰
+    TestCloth->OriginCloth->setLinearDrag(physx::PxVec3(0.2f, 0.2f, 0.2f));  // 공기 저항
+
+    Fabric->decRefCount();
+}
+
+void UClothManager::Release()
+{
+    delete TestCloth;
+
+    // Solver 정리
+    if (Solver)
+    {
+        NV_CLOTH_DELETE(Solver);
+        Solver = nullptr;
+    }
+
+    // Factory 정리
+    if (Factory)
+    {
+        NvClothDestroyFactory(Factory);
+        Factory = nullptr;
+    }
+
+    // 콜백 정리
+    delete Allocator;
+    delete ErrorCallback;
+    delete AssertHandler;
+
+    Allocator = nullptr;
+    ErrorCallback = nullptr;
+    AssertHandler = nullptr;
 }
 
 void UClothManager::Tick(float deltaTime)

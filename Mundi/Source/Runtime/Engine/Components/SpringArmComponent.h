@@ -106,11 +106,16 @@ public:
 	UPROPERTY(EditAnywhere, Category="Collision", Range="0.0, 100.0", Tooltip="충돌 테스트에 사용되는 프로브의 크기입니다.")
 	float ProbeSize;
 
+	UPROPERTY(EditAnywhere, Category="Collision", Tooltip="충돌 테스트 디버그 시각화를 활성화합니다.")
+	bool bDrawDebugCollision;
+
 	void SetDoCollisionTest(bool bEnable) { bDoCollisionTest = bEnable; }
 	bool GetDoCollisionTest() const { return bDoCollisionTest; }
 
 	void SetProbeSize(float Size) { ProbeSize = Size; }
 	float GetProbeSize() const { return ProbeSize; }
+
+	void SetDrawDebugCollision(bool bEnable) { bDrawDebugCollision = bEnable; }
 
 	// ────────────────────────────────────────────────
 	// Controller Rotation 연동

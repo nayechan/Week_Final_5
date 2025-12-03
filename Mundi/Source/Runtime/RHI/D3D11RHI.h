@@ -32,7 +32,6 @@ CreateConstantBuffer(&TYPE##Buffer, sizeof(TYPE));
 
 
 struct FLinearColor;
-class UClothManager;
 
 enum class EComparisonFunc
 {
@@ -80,16 +79,48 @@ public:
 	template<typename TVertex>
 	static HRESULT CreateVertexBuffer(ID3D11Device* device, const std::vector<FSkinnedVertex>& srcVertices, ID3D11Buffer** outBuffer);
 
-	static HRESULT CreateIndexBuffer(ID3D11Device* device, const FMeshData* meshData, ID3D11Buffer** outBuffer);
+	template<typename T>
+	static HRESULT CreateVerteBuffer(ID3D11Device* Device, const TArray<T>& Vertices, ID3D11Buffer** OutBuffer, D3D11_USAGE Usage = D3D11_USAGE::D3D11_USAGE_DEFAULT, UINT CpuAccessFlags = 0)
+	{
+		D3D11_BUFFER_DESC BufferDesc = {};
+		BufferDesc.Usage = Usage;
+		BufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		BufferDesc.CPUAccessFlags = CpuAccessFlags;
+		BufferDesc.ByteWidth = static_cast<UINT>(sizeof(T) * Vertices.size());
 
-	static HRESULT CreateIndexBuffer(ID3D11Device* device, const FStaticMesh* mesh, ID3D11Buffer** outBuffer);
-	
-	static HRESULT CreateIndexBuffer(ID3D11Device* Device, const FSkeletalMeshData* Mesh, ID3D11Buffer** OutBuffer);
+		D3D11_SUBRESOURCE_DATA InitData = {};
+		InitData.pSysMem = Vertices.data();
+
+		return Device->CreateBuffer(&BufferDesc, &InitData, OutBuffer);
+	}
+
+	static HRESULT CreateIndexBuffer(ID3D11Device * device, const FMeshData * meshData, ID3D11Buffer * *outBuffer);
+
+	static HRESULT CreateIndexBuffer(ID3D11Device * device, const FStaticMesh * mesh, ID3D11Buffer * *outBuffer);
+
+	static HRESULT CreateIndexBuffer(ID3D11Device * Device, const FSkeletalMeshData * Mesh, ID3D11Buffer * *OutBuffer);
+
+	static HRESULT CreateIndexBuffer(ID3D11Device * Device, const TArray<uint32>&Indices, ID3D11Buffer * *OutBuffer);
 
 	CONSTANT_BUFFER_LIST(DECLARE_UPDATE_CONSTANT_BUFFER_FUNC)
 	CONSTANT_BUFFER_LIST(DECLARE_SET_CONSTANT_BUFFER_FUNC)
 	CONSTANT_BUFFER_LIST(DECLARE_SET_UPDATE_CONSTANT_BUFFER_FUNC)
 	
+
+	template<typename T>
+	static void VertexBufferUpdate(ID3D11DeviceContext* Context, ID3D11Buffer* VertexBuffer, const TArray<T>& Data)
+	{
+		// 데이터가 없으면 맵/언맵을 시도하지 않습니다.
+		if (Data.empty()) { return; }
+
+		D3D11_MAPPED_SUBRESOURCE MSR;
+		Context->Map(VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MSR);
+
+		const size_t DataSizeInBytes = Data.size() * sizeof(T);
+		memcpy(MSR.pData, Data.data(), DataSizeInBytes);
+
+		Context->Unmap(VertexBuffer, 0);
+	}
 	template <typename TVertex>
 	void VertexBufferUpdate(ID3D11Buffer* VertexBuffer, const std::vector<TVertex>& Data)
 	{
@@ -231,8 +262,6 @@ private:
 	void SwapRenderTargets();
 
 private:
-	UClothManager* ClothManager;
-
 	//24
 	D3D11_VIEWPORT ViewportInfo{};
 

@@ -1,10 +1,10 @@
 ﻿#pragma once
-#include "ClothUtil.h"
+#include "ClothManager.h"
 //#if USE_DX11
 class DxContextManagerCallbackImpl : public nv::cloth::DxContextManagerCallback
 {
 public:
-	DxContextManagerCallbackImpl(ID3D11Device* InDevice, bool synchronizeResources = false);
+	DxContextManagerCallbackImpl(ID3D11Device* InDevice, ID3D11DeviceContext* InContext, bool synchronizeResources = false);
 	~DxContextManagerCallbackImpl();
 	virtual void acquireContext() override;
 	virtual void releaseContext() override;

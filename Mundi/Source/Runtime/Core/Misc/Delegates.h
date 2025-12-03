@@ -42,7 +42,7 @@ public:
                 [WeakInstance, Func](Args... args) {
                     if (auto Pinned = WeakInstance.Get()) (Pinned->*Func)(args...);
                 },
-                [WeakInstance]() { return WeakInstance.IsValid(); }
+                [WeakInstance] { return WeakInstance.IsValid(); }
             });
         }
         else

@@ -7,6 +7,8 @@
 #include "Actor.h"
 #include "Pawn.h"
 #include "Controller.h"
+#include "World.h"
+#include "PhysScene.h"
 
 // ────────────────────────────────────────────────────────────────────────────
 // 생성자 / 소멸자
@@ -16,7 +18,7 @@ USpringArmComponent::USpringArmComponent()
 	: TargetArmLength(3.0f)
 	, CurrentArmLength(3.0f)
 	, SocketOffset(FVector())
-	, TargetOffset(FVector())
+	, TargetOffset(FVector(0.0f, 0.0f, 0.5f))
 	, bEnableCameraLag(false)
 	, CameraLagSpeed(1.0f)
 	, CameraLagMaxDistance(0.0f)
@@ -26,7 +28,8 @@ USpringArmComponent::USpringArmComponent()
 	, CameraRotationLagSpeed(1.0f)
 	, PreviousDesiredRotation(FQuat::Identity())
 	, bDoCollisionTest(true)
-	, ProbeSize(1.20f)
+	, ProbeSize(0.12f)
+	, bDrawDebugCollision(false)
 	, bUsePawnControlRotation(false)
 	, SocketLocation(FVector())
 	, SocketRotation(FQuat::Identity())
@@ -193,19 +196,83 @@ bool USpringArmComponent::DoCollisionTest(const FVector& DesiredLocation, FVecto
 		return false;
 	}
 
-	// 간단한 Collision Test 구현
-	// 실제로는 World의 CollisionManager를 사용하여 Raycast 수행
-	// 여기서는 기본 구현만 제공
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		OutLocation = DesiredLocation;
+		return false;
+	}
 
+	FPhysScene* PhysScene = World->GetPhysicsScene();
+	if (!PhysScene)
+	{
+		OutLocation = DesiredLocation;
+		return false;
+	}
+
+	// 스윕 시작점: Owner 위치 + TargetOffset
+	FQuat OwnerRotation = OwnerActor->GetActorRotation();
 	FVector OwnerLocation = OwnerActor->GetActorLocation();
-	FVector Direction = DesiredLocation - OwnerLocation;
-	float Distance = Direction.Size();
+	FVector RotatedTargetOffset = OwnerRotation.RotateVector(TargetOffset);
+	FVector SweepStart = OwnerLocation + RotatedTargetOffset;
 
-	// TODO: Raycast 구현
-	// 현재는 단순히 DesiredLocation 반환
+	// 스윕 끝점: 원하는 카메라 위치
+	FVector SweepEnd = DesiredLocation;
+
+	// Sphere 스윕으로 충돌 검사
+	FHitResult HitResult;
+	bool bHit = PhysScene->SweepSingleSphere(SweepStart, SweepEnd, ProbeSize, HitResult, OwnerActor);
+
+	if (bHit && HitResult.bBlockingHit)
+	{
+		// 초기 겹침 (Distance가 너무 작음) - 무시
+		if (HitResult.Distance < 0.1f)
+		{
+			if (bDrawDebugCollision)
+			{
+				AActor* HitActor = HitResult.Actor.Get();
+				UE_LOG("[SpringArm] IGNORED (InitialOverlap) Dist:%.2f HitActor:%s",
+					HitResult.Distance,
+					HitActor ? HitActor->GetName().c_str() : "null");
+			}
+			OutLocation = DesiredLocation;
+			CurrentArmLength = TargetArmLength;
+			return false;
+		}
+
+		// Distance를 사용해서 충돌 위치 계산
+		FVector SweepDirection = (SweepEnd - SweepStart).GetNormalized();
+		FVector HitLocation = SweepStart + SweepDirection * HitResult.Distance;
+
+		// 충돌 위치를 카메라 위치로 사용
+		OutLocation = HitLocation;
+
+		// 현재 암 길이 업데이트
+		CurrentArmLength = HitResult.Distance;
+
+		// 디버그 로그
+		if (bDrawDebugCollision)
+		{
+			AActor* HitActor = HitResult.Actor.Get();
+			UE_LOG("[SpringArm] HIT! Dist:%.2f ArmLen:%.2f HitActor:%s",
+				HitResult.Distance,
+				CurrentArmLength,
+				HitActor ? HitActor->GetName().c_str() : "null");
+		}
+		return true;
+	}
+
+	// 충돌 없음 - 원래 위치 사용
 	OutLocation = DesiredLocation;
 	CurrentArmLength = TargetArmLength;
 
+	// 디버그 로그
+	if (bDrawDebugCollision)
+	{
+		UE_LOG("[SpringArm] NoHit Start:(%.2f,%.2f,%.2f) End:(%.2f,%.2f,%.2f)",
+			SweepStart.X, SweepStart.Y, SweepStart.Z,
+			OutLocation.X, OutLocation.Y, OutLocation.Z);
+	}
 	return false;
 }
 

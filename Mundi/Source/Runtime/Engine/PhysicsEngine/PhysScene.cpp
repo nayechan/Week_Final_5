@@ -77,6 +77,7 @@ void FPhysScene::StartFrame()
 {
     if (OwningWorld)
     {
+        FlushDeferredAdds();
         float DeltaTime = OwningWorld->GetDeltaTime(EDeltaTime::Game);
         TickPhysScene(DeltaTime);
     }
@@ -103,6 +104,61 @@ void FPhysScene::AddPendingCollisionNotify(FCollisionNotifyInfo&& NotifyInfo)
 {
     std::lock_guard<std::mutex> Lock(NotifyMutex);
     PendingCollisionNotifies.push_back(std::move(NotifyInfo));
+}
+
+void FPhysScene::DeferAddActor(PxActor* InActor)
+{
+    if (!InActor) { return; }
+
+    std::lock_guard<std::mutex> Lock(DeferredReleaseMutex);
+    DeferredAddQueue.Add(InActor);
+}
+
+void FPhysScene::FlushDeferredAdds()
+{
+    if (!PhysXScene) { return; }
+    
+    std::lock_guard<std::mutex> Lock(DeferredAddMutex);
+
+    {
+        SCOPED_SCENE_WRITE_LOCK(PhysXScene);
+
+        for (PxActor* Actor : DeferredAddQueue)
+        {
+            if (Actor)
+            {
+                PhysXScene->addActor(*Actor);
+            }
+        }
+    }
+
+    DeferredAddQueue.Empty();
+}
+
+void FPhysScene::DeferReleaseActor(PxActor* InActor)
+{
+    if (!InActor) { return; }
+
+    InActor->userData = nullptr;
+
+    std::lock_guard<std::mutex> Lock(DeferredReleaseMutex);
+    DeferredReleaseQueue.Add(InActor);
+}
+
+void FPhysScene::FlushDeferredReleases()
+{
+    if (!PhysXScene) { return; }
+    
+    std::lock_guard<std::mutex> Lock(DeferredReleaseMutex);
+
+    for (PxActor* Actor : DeferredReleaseQueue)
+    {
+        if (Actor)
+        {
+            Actor->release();
+        }
+    }
+    DeferredReleaseQueue.Empty();
 }
 
 void FPhysScene::InitPhysScene()
@@ -199,6 +255,8 @@ void FPhysScene::ProcessPhysScene()
     SyncComponentsToBodies();
 
     DispatchPhysNotifications_AssumesLocked();
+
+    FlushDeferredReleases();
 }
 
 void FPhysScene::SyncComponentsToBodies()
@@ -265,12 +323,11 @@ void FPhysScene::DispatchPhysNotifications_AssumesLocked()
 
     for (const FCollisionNotifyInfo& Notify : LocalNotifies)
     {
-        // @todo TWeakObjectPtr로 유효성 검증
-        AActor* Actor0 = Notify.Info0.Actor;
-        UPrimitiveComponent* Comp0 = Notify.Info0.Component;
+        AActor* Actor0 = Notify.Info0.Actor.Get();
+        UPrimitiveComponent* Comp0 = Notify.Info0.Component.Get();
 
-        AActor* Actor1 = Notify.Info1.Actor;
-        UPrimitiveComponent* Comp1 = Notify.Info1.Component;
+        AActor* Actor1 = Notify.Info1.Actor.Get();
+        UPrimitiveComponent* Comp1 = Notify.Info1.Component.Get();
 
         bool bIsValid0 = (Actor0 && Comp0);
         bool bIsValid1 = (Actor1 && Comp1);

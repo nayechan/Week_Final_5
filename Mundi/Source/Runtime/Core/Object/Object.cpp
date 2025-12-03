@@ -417,6 +417,36 @@ static void SerializeProperty(void* Instance, const FProperty& Prop, bool bIsLoa
             SerializePrimitiveArray<FString>(ArrayPtr, bIsLoading, ArrayJson);
             break;
         }
+        case EPropertyType::FVector:
+        {
+            TArray<FVector>* ArrayPtr = Prop.GetValuePtr<TArray<FVector>>(Instance);
+            if (bIsLoading)
+            {
+                ArrayPtr->Empty();
+                for (size_t i = 0; i < ArrayJson.size(); ++i)
+                {
+                    const JSON& Elem = ArrayJson.at(i);
+                    FVector ReadValue;
+                    if (Elem.JSONType() == JSON::Class::Array && Elem.size() == 3)
+                    {
+                        ReadValue = {
+                                static_cast<float>(Elem.at(0).ToFloat()),
+                                static_cast<float>(Elem.at(1).ToFloat()),
+                                static_cast<float>(Elem.at(2).ToFloat())
+                        };
+                        ArrayPtr->push_back(ReadValue);
+                    }
+                }
+            }
+            else
+            {
+                for (FVector Vector : *ArrayPtr)
+                {
+                    ArrayJson.append(FJsonSerializer::VectorToJson(Vector));
+                }
+            }
+            break;
+        }
         case EPropertyType::Sound:
         {
             TArray<USound*>* ArrayPtr = Prop.GetValuePtr<TArray<USound*>>(Instance);

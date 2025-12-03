@@ -319,16 +319,21 @@ void SPhysicalMaterialEditorWindow::SaveAsset()
     if (State->CurrentFilePath.empty())
     {
         SaveAssetAs();
+        return;  // SaveAssetAs에서 경로 설정 후 다시 SaveAsset 호출
     }
-    
+
     // 2. 저장 수행 (경로가 있으면 바로 저장)
     JSON JsonHandle;
     State->EditingAsset->Serialize(false, JsonHandle);
-    
+
     FWideString WidePath(State->CurrentFilePath.begin(), State->CurrentFilePath.end());
     if (FJsonSerializer::SaveJsonToFile(JsonHandle, WidePath))
     {
         State->bIsDirty = false;
+
+        // 3. 리소스 매니저에 등록 (다른 곳에서 Load로 불러올 수 있도록)
+        UResourceManager::GetInstance().AddOrReplace<UPhysicalMaterial>(State->CurrentFilePath, State->EditingAsset);
+
         UE_LOG("[PhysicalMaterialEditor] Saved: %s", State->CurrentFilePath.c_str());
     }
     else
@@ -341,7 +346,7 @@ void SPhysicalMaterialEditorWindow::SaveAssetAs()
 {
     PhysicalMaterialEditorState* State = GetActiveState();
     if (!State || !State->EditingAsset) return;
-    
+
     std::wstring widePath = FPlatformProcess::OpenSaveFileDialog(
         UTF8ToWide(GDataDir),
         L"phxmtl",
@@ -351,7 +356,10 @@ void SPhysicalMaterialEditorWindow::SaveAssetAs()
     if (widePath.empty()) return;
 
     State->CurrentFilePath = WideToUTF8(widePath);
-        
+
     std::filesystem::path fsPath(widePath);
     State->Name = WideToUTF8(fsPath.filename().wstring()).c_str();
+
+    // 경로 설정 후 실제 저장 수행
+    SaveAsset();
 }

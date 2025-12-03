@@ -21,11 +21,14 @@ void FRigidBodyCollisionInfo::SetFrom(FBodyInstance* BodyInst)
 
 bool FRigidBodyCollisionInfo::IsValid() const
 {
-    assert(false && "TWeakObjectPtr을 무조건 구현해야 함");
-    return false;
+    return Actor.IsValid() && Component.IsValid();
 }
 
 bool FCollisionNotifyInfo::IsValidForNotify() const
 {
+    if (Type == ECollisionNotifyType::Wake || Type == ECollisionNotifyType::Sleep)
+    {
+        return Info0.IsValid();
+    }
     return Info0.IsValid() && Info1.IsValid();
 }

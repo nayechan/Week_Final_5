@@ -1,0 +1,56 @@
+# Blender 4.5.2 LTS MTL File: 'Buggy.blend'
+# www.blender.org
+
+newmtl Mat
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd ve_Buggy_A_03_Frame_D.tga
+map_Bump -bm 1.000000 ve_Buggy_A_02_Frame_N.tga
+
+newmtl Mat.1
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd ve_Buggy_A_03_Base_D.tga
+map_Bump -bm 1.000000 ve_Buggy_A_02_Base_N.tga
+
+newmtl Mat.2
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd ve_buggy_lights_D.tga
+map_Ke ve_buggy_lights_Emmisive.tga
+
+newmtl Mat.3
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+illum 2
+map_Kd ve_Buggy_A_02_Fabric_D.tga
+map_d ve_Buggy_A_02_Fabric_D.tga
+map_Bump -bm 1.000000 ve_Buggy_A_02_Fabric_N.tga
+
+newmtl Mat.4
+Ns 200.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd ve_Buggy_A_03_Wheel_D.tga
+map_Bump -bm 1.000000 ve_Buggy_A_02_Wheel_N.tga

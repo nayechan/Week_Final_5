@@ -49,6 +49,14 @@ public:
 
 	void DuplicateSubObjects() override;
 
+	// ====================================================================
+
+	/** 임시 디버그용 */
+	// UBodySetup* BodySetup;
+
+	/** 임시 디버그용 */
+	// virtual UBodySetup* GetBodySetup() override { return BodySetup;} 
+
 protected:
 	void OnUpdateTransform(EUpdateTransformFlags UpdateTransformFlags, ETeleportType Teleport = ETeleportType::None) override;
 

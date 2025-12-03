@@ -172,7 +172,10 @@ void FSceneRenderer::Render()
 void FSceneRenderer::RenderLitPath()
 {
 	// 래스터라이저 상태를 Solid로 명시적으로 설정 (이전 렌더 패스의 와이어프레임 상태가 남지 않도록)
-	RHIDevice->RSSetState(ERasterizerMode::Solid);
+	RHIDevice->PSSetDefaultSampler(0);
+	RHIDevice->PSSetClampSampler(1);
+	RHIDevice->RSSetState(ERasterizerMode::Solid_NoCull); //(발표 8시간전...) 천을 백스페이스 컬링이 되지 않도록 하기위해 처리
+	//RHIDevice->RSSetState(ERasterizerMode::Solid);
 
 	// ViewProjBuffer 설정 (모든 셰이더가 View/Projection 행렬을 사용할 수 있도록)
 	FMatrix InvView = View->ViewMatrix.Inverse();

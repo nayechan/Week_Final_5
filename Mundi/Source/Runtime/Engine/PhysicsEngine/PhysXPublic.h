@@ -1,6 +1,8 @@
 #pragma once
 #include <PxPhysicsAPI.h>
 
+#include "WeakObjectPtr.h"
+
 class UPrimitiveComponent;
 struct FBodyInstance;
 using namespace physx;
@@ -164,10 +166,10 @@ struct FHitResult
     FVector ImpactNormal = FVector::Zero(); 
 
     /** 충돌한 액터 */
-    AActor* Actor = nullptr;
+    TWeakObjectPtr<AActor> Actor = nullptr;
 
     /** 충돌한 컴포넌트 */
-    UPrimitiveComponent* Component = nullptr;
+    TWeakObjectPtr<UPrimitiveComponent> Component = nullptr;
 
     /** 충돌한 본 이름 (헤드샷 판정 등에 필수) */
     FName BoneName;
@@ -194,10 +196,10 @@ struct FHitResult
 struct FRigidBodyCollisionInfo
 {
     /** 충돌한 액터 */
-    AActor* Actor;
+    TWeakObjectPtr<AActor> Actor;
 
     /** 충돌한 컴포넌트 */
-    UPrimitiveComponent* Component;
+    TWeakObjectPtr<UPrimitiveComponent> Component;
 
     /** PhysicsAsset 내의 바디 인덱스 */
     int32 BodyIndex = -1;

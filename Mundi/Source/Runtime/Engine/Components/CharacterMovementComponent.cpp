@@ -40,8 +40,8 @@ UCharacterMovementComponent::UCharacterMovementComponent()
 	, MaxStepHeight(45.0f)
 	// 경사면 미끄러짐 설정
 	, bEnableSlopeSliding(true)
-	, SlopeSlideSpeed(1.0f)
-	, SlopeFriction(0.3f)
+	, SlopeSlideSpeed(0.5f)
+	, SlopeFriction(0.6f)
 {
 	bCanEverTick = true;
 }
@@ -566,8 +566,8 @@ bool UCharacterMovementComponent::FindFloor(FFindFloorResult& OutFloorResult, fl
 		OutFloorResult.HitLocation = Hit.ImpactPoint;
 		OutFloorResult.FloorNormal = Hit.ImpactNormal;
 		OutFloorResult.FloorZ = Hit.ImpactPoint.Z;
-		OutFloorResult.HitActor = Hit.Actor;
-		OutFloorResult.HitComponent = Hit.Component;
+		OutFloorResult.HitActor = Hit.Actor.Get();
+		OutFloorResult.HitComponent = Hit.Component.Get();
 		OutFloorResult.bWalkableFloor = IsWalkable(Hit.ImpactNormal);
 
 		return true;

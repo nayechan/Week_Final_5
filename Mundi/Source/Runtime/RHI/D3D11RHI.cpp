@@ -2,7 +2,6 @@
 #include "StatsOverlayD2D.h"
 #include "GameUI/SGameHUD.h"
 #include "Color.h"
-#include "Source/Runtime/Engine/Cloth/ClothManager.h"
 
 void D3D11RHI::Initialize(HWND hWindow)
 {
@@ -23,8 +22,6 @@ void D3D11RHI::Initialize(HWND hWindow)
 
     // Initialize Game HUD
     SGameHUD::Get().Initialize(Device, DeviceContext, SwapChain);
-  /*  ClothManager = NewObject<UClothManager>();
-    ClothManager->Init(GetDevice());*/
 }
 
 void D3D11RHI::Release()
@@ -32,7 +29,6 @@ void D3D11RHI::Release()
     // Prevent double Release() calls
     if (bReleased) return;
     bReleased = true;
-
     // Game HUD 정리
     SGameHUD::Get().Shutdown();
 
@@ -292,53 +288,41 @@ void D3D11RHI::CreateSamplerState()
     HR = Device->CreateSamplerState(&VSMSamplerDesc, &VSMSamplerState);
 }
 
-HRESULT D3D11RHI::CreateIndexBuffer(ID3D11Device* device, const FMeshData* meshData, ID3D11Buffer** outBuffer)
-{
-    if (!meshData || meshData->Indices.empty())
-        return E_FAIL;
-
-    D3D11_BUFFER_DESC ibd = {};
-    ibd.Usage = D3D11_USAGE_DEFAULT;
-    ibd.ByteWidth = static_cast<UINT>(sizeof(uint32) * meshData->Indices.size());
-    ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    ibd.CPUAccessFlags = 0;
-
-    D3D11_SUBRESOURCE_DATA iinitData = {};
-    iinitData.pSysMem = meshData->Indices.data();
-
-    return device->CreateBuffer(&ibd, &iinitData, outBuffer);
-}
-
-HRESULT D3D11RHI::CreateIndexBuffer(ID3D11Device* device, const FStaticMesh* mesh, ID3D11Buffer** outBuffer)
-{
-    if (!mesh || mesh->Indices.empty())
-        return E_FAIL;
-
-    D3D11_BUFFER_DESC ibd = {};
-    ibd.Usage = D3D11_USAGE_DEFAULT;
-    ibd.ByteWidth = static_cast<UINT>(sizeof(uint32) * mesh->Indices.size());
-    ibd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    ibd.CPUAccessFlags = 0;
-
-    D3D11_SUBRESOURCE_DATA iinitData = {};
-    iinitData.pSysMem = mesh->Indices.data();
-
-    return device->CreateBuffer(&ibd, &iinitData, outBuffer);
-}
-
-HRESULT D3D11RHI::CreateIndexBuffer(ID3D11Device* Device, const FSkeletalMeshData* Mesh, ID3D11Buffer** OutBuffer)
+HRESULT D3D11RHI::CreateIndexBuffer(ID3D11Device* Device, const FMeshData* Mesh, ID3D11Buffer** OutBuffer)
 {
     if (!Mesh || Mesh->Indices.empty())
         return E_FAIL;
 
+    return CreateIndexBuffer(Device, Mesh->Indices, OutBuffer);
+}
+
+HRESULT D3D11RHI::CreateIndexBuffer(ID3D11Device* Device, const FStaticMesh* StaticMesh, ID3D11Buffer** OutBuffer)
+{
+    if (!StaticMesh || StaticMesh->Indices.empty())
+        return E_FAIL;
+    return CreateIndexBuffer(Device, StaticMesh->Indices, OutBuffer);
+}
+
+HRESULT D3D11RHI::CreateIndexBuffer(ID3D11Device* Device, const FSkeletalMeshData* SkeletalMesh, ID3D11Buffer** OutBuffer)
+{
+    if (!SkeletalMesh || SkeletalMesh->Indices.empty())
+        return E_FAIL;
+
+    return CreateIndexBuffer(Device, SkeletalMesh->Indices, OutBuffer);
+}
+HRESULT D3D11RHI::CreateIndexBuffer(ID3D11Device* Device, const TArray<uint32>& Indices, ID3D11Buffer** OutBuffer)
+{
+    if (Indices.size() == 0)
+        return E_FAIL;
+
     D3D11_BUFFER_DESC IndexBufferDesc = {};
     IndexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    IndexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(uint32) * Mesh->Indices.size());
+    IndexBufferDesc.ByteWidth = static_cast<UINT>(sizeof(uint32) * Indices.size());
     IndexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
     IndexBufferDesc.CPUAccessFlags = 0;
 
     D3D11_SUBRESOURCE_DATA InitData = {};
-    InitData.pSysMem = Mesh->Indices.data();
+    InitData.pSysMem = Indices.data();
 
     return Device->CreateBuffer(&IndexBufferDesc, &InitData, OutBuffer);
 }

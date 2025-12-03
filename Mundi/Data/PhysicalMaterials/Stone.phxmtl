@@ -1,0 +1,11 @@
+{
+  "Density" : 1100.000000,
+  "Friction" : 0.800000,
+  "FrictionCombineMode" : 0,
+  "Restitution" : 0.400000,
+  "RestitutionCombineMode" : 0,
+  "SleepLinearVelocityThreshold" : -1.000000,
+  "StaticFriction" : 0.700000,
+  "bOverrideFrictionCombineMode" : false,
+  "bOverrideRestitutionCombineMode" : false
+}

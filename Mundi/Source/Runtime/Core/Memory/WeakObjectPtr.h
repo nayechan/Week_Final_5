@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 constexpr uint32 INDEX_NONE = static_cast<uint32>(-1);
 
 /*-----------------------------------------------------------------------------
@@ -85,24 +87,23 @@ class TWeakObjectPtr
 public:
     using ElementType = T;
 
-    static_assert(std::is_base_of_v<UObject, T>);
-
     // --- 생성자 ---
 
     TWeakObjectPtr() = default;
     
-    TWeakObjectPtr(std::nullptr_t) : WeakPtr() {}
+    TWeakObjectPtr(std::nullptr_t) : WeakPtr(nullptr) {}
 
-    TWeakObjectPtr(T* InObject) : WeakPtr(InObject) {}
-
-    template <typename OtherT>
-    TWeakObjectPtr(const TWeakObjectPtr<OtherT>& Other) : WeakPtr(Other.GetWeakPtr()) {}
+    TWeakObjectPtr(T* InObject) : WeakPtr(InObject)
+    {
+        static_assert(std::is_base_of_v<UObject, T>, "T는 UObject의 파생클래스여야합니다.");
+    }
 
     // --- 대입 연산자 ---
 
     /** T* 대입 */
     TWeakObjectPtr& operator=(T* InObject)
     {
+        static_assert(std::is_base_of_v<UObject, T>, "T는 UObject의 파생클래스여야합니다.");
         WeakPtr = InObject;
         return *this;
     }
@@ -121,6 +122,7 @@ public:
      */
     T* Get() const
     {
+        static_assert(std::is_base_of_v<UObject, T>, "T는 UObject의 파생클래스여야합니다.");
         return static_cast<T*>(WeakPtr.Get());
     }
 

@@ -33,6 +33,8 @@ public:
 	// ────────────────────────────────────────────────
 
 	void BeginPlay() override;
+	void EndPlay() override;
+	void Tick(float DeltaSeconds) override;
 
 	// ────────────────────────────────────────────────
 	// 게임 라이프사이클
@@ -54,4 +56,7 @@ protected:
 
 	TSharedPtr<SButton> StartButton;
 	TSharedPtr<STextBlock> ScoreText;
+	TSharedPtr<STextBlock> SpeedText;
+	TSharedPtr<STextBlock> RpmText;
+	TSharedPtr<STextBlock> GearText;
 };
