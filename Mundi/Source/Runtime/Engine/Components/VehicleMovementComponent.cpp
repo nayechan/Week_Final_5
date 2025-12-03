@@ -225,6 +225,9 @@ void UVehicleMovementComponent::SetupWheelShape(physx::PxRigidDynamic* RigidActo
                 NewWheelShape->setQueryFilterData(QueryData);
                 NewWheelShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
                 NewWheelShape->setFlag(PxShapeFlag::eSCENE_QUERY_SHAPE, false);
+
+                NewWheelShape->setContactOffset(0.02f); 
+                NewWheelShape->setRestOffset(0.0f);
             }
         }
     }
@@ -329,6 +332,9 @@ void UVehicleMovementComponent::SetupDriveSimulationData(physx::PxRigidDynamic* 
     
     RigidActor->setLinearDamping(0.05f);
     RigidActor->setAngularDamping(0.05f);
+
+    RigidActor->setMaxDepenetrationVelocity(5.0f);
+    RigidActor->setSolverIterationCounts(12, 4);
 }
 
 // ====================================================================
