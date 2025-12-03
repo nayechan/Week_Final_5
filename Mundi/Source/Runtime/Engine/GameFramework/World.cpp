@@ -417,8 +417,7 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* InEditorWorld)
 		if (SourceActor->IsA(AGameModeBase::StaticClass()) ||
 			SourceActor->IsA(AGameStateBase::StaticClass()) ||
 			SourceActor->IsA(APlayerController::StaticClass()) ||
-			SourceActor->IsA(APawn::StaticClass()) ||
-			SourceActor->IsA(APlayerCameraManager::StaticClass()))
+			SourceActor->IsA(APawn::StaticClass()))
 		{
 			continue;
 		}
@@ -433,6 +432,8 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* InEditorWorld)
 
 		PIEWorld->AddActorToLevel(NewActor);
 	}
+
+	PIEWorld->PlayerCameraManager = PIEWorld->FindActor<APlayerCameraManager>();
 
 	return PIEWorld;
 }

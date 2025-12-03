@@ -12,7 +12,7 @@ UPrimitiveComponent::UPrimitiveComponent() : bGenerateOverlapEvents(true)
 void UPrimitiveComponent::BeginPlay()
 {
     Super::BeginPlay();
-    CreatePhysicsState();
+    if (bIsEditable) { CreatePhysicsState(); }
 }
 
 void UPrimitiveComponent::EndPlay()
