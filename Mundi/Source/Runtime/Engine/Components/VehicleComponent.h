@@ -26,6 +26,7 @@ public:
 	void DuplicateSubObjects() override;
 	void PostPhysicsTick(float DeltaTime) override;
 	void OnTransformUpdated() override;
+	void SyncByPhysics(const FTransform& NewTransform) override;
 
 	bool CanSimulatingPhysics() const  override { return true; }
 
@@ -67,4 +68,6 @@ private:
 	// 차량이 특정 재질의 지면(예: 아스팔트, 흙, 얼음) 위를 주행할 때 발생하는 마찰력을 시뮬레이션하는 데 필수적입니다.
 	// 이를 통해 차량의 가속, 제동, 선회 시 미끄러짐 정도가 결정됩니다.
 	PxVehicleDrivableSurfaceToTireFrictionPairs* FrictionPairs = nullptr;
+
+	PxWheelQueryResult WheelQueryResults[PX_MAX_NB_WHEELS];
 };

@@ -7,6 +7,7 @@
 #include "PhysicsSystem.h"
 #include "PhysicsScene.h"
 #include "SnippetVehicleSceneQuery.h"
+#include "VehicleActor.h"
 
 namespace
 {
@@ -130,6 +131,7 @@ namespace
 			PxShape* WheelShape = PxRigidActorExt::createExclusiveShape(*VehActor, Geom, *WheelMaterials[i]);
 			WheelShape->setQueryFilterData(WheelQryFilterData);
 			WheelShape->setSimulationFilterData(WheelSimFilterData);
+			WheelShape->setFlag(PxShapeFlag::eSIMULATION_SHAPE, false);
 			WheelShape->setLocalPose(PxTransform(PxIdentity));
 		}
 
@@ -424,6 +426,7 @@ void UVehicleComponent::EndPlay()
 void UVehicleComponent::TickComponent(float DeltaTime)
 {
 	Super::TickComponent(DeltaTime);
+
 }
 
 void UVehicleComponent::DuplicateSubObjects()
@@ -447,10 +450,41 @@ void UVehicleComponent::PostPhysicsTick(float DeltaTime)
 	{
 		// 1. 입력 상태 수집 (이 부분은 게임의 입력 시스템에 따라 달라집니다.)
 		// 예시: 가상의 입력 값
-		PxF32 Accel = 1.0f;    // 가속 (0.0 ~ 1.0)
+		PxF32 Accel = 0.0f;    // 가속 (0.0 ~ 1.0)
 		PxF32 Brake = 0.0f;    // 브레이크 (0.0 ~ 1.0)
-		PxF32 Steer = 0.0f;    // 스티어링 (-1.0 ~ 1.0)
+		PxF32 LeftSteer = 0.0f;    // 스티어링 (-1.0 ~ 1.0)
+		PxF32 RightSteer = 0.0f;    // 스티어링 (-1.0 ~ 1.0)
 		PxF32 HandBrake = 0.0f; // 핸드브레이크 (0.0 ~ 1.0)
+
+		if (UInputManager::GetInstance().IsKeyDown('W'))
+		{
+			PhysXVehicle->mDriveDynData.setCurrentGear(PxVehicleGearsData::eFIRST);
+			Accel = 1.0f;
+		}
+
+		if (UInputManager::GetInstance().IsKeyDown('D'))
+		{
+			LeftSteer = 1.0f;
+		}
+
+		if (UInputManager::GetInstance().IsKeyDown('A'))
+		{
+			RightSteer = 1.0f;
+		}
+
+		if (UInputManager::GetInstance().IsKeyDown('S'))
+		{
+			PhysXVehicle->mDriveDynData.setCurrentGear(PxVehicleGearsData::eREVERSE);
+			Accel = 1.0f;
+			//Brake = 1.0f;
+		}
+
+		if (UInputManager::GetInstance().IsKeyDown(' '))
+		{
+			PhysXVehicle->mDriveDynData.setCurrentGear(PxVehicleGearsData::eNEUTRAL);
+			Brake = 1.0f;
+			HandBrake = 1.0f;
+		}
 
 		// TODO: 실제 사용자 입력을 받아 Accel, Brake, Steer, HandBrake 변수에 할당합니다.
 		// 예를 들어, GetWorld()->GetInputManager()->GetAccelInput(); 와 같은 함수를 사용할 수 있습니다.
@@ -464,13 +498,13 @@ void UVehicleComponent::PostPhysicsTick(float DeltaTime)
 		// 가속 및 브레이크 입력 설정
 		PhysXVehicle->mDriveDynData.setAnalogInput(PxVehicleDrive4WControl::eANALOG_INPUT_ACCEL, Accel);
 		PhysXVehicle->mDriveDynData.setAnalogInput(PxVehicleDrive4WControl::eANALOG_INPUT_BRAKE, Brake);
-		PhysXVehicle->mDriveDynData.setAnalogInput(PxVehicleDrive4WControl::eANALOG_INPUT_STEER_LEFT, Steer);
-		PhysXVehicle->mDriveDynData.setAnalogInput(PxVehicleDrive4WControl::eANALOG_INPUT_STEER_RIGHT, Steer);
+		PhysXVehicle->mDriveDynData.setAnalogInput(PxVehicleDrive4WControl::eANALOG_INPUT_STEER_LEFT, LeftSteer);
+		PhysXVehicle->mDriveDynData.setAnalogInput(PxVehicleDrive4WControl::eANALOG_INPUT_STEER_RIGHT, RightSteer);
 		PhysXVehicle->mDriveDynData.setAnalogInput(PxVehicleDrive4WControl::eANALOG_INPUT_HANDBRAKE, HandBrake);
 
 		// 기어 명령 설정
-		PhysXVehicle->mDriveDynData.setCurrentGear(PxVehicleGearsData::eFIRST);
 		//PhysXVehicle->mDriveDynData.mUseAutoGears = true;
+
 	}
 }
 
@@ -481,6 +515,25 @@ void UVehicleComponent::OnTransformUpdated()
 	{
 		PxTransform PxWorldTransform = PhysXConvert::ToPx(GetWorldTransform());
 		PhysXVehicle->getRigidDynamicActor()->setGlobalPose(PxWorldTransform);
+	}
+}
+
+void UVehicleComponent::SyncByPhysics(const FTransform& NewTransform)
+{
+	Super::SyncByPhysics(NewTransform);
+
+	if (AVehicleActor* VehicleActor = Cast<AVehicleActor>(Owner))
+	{
+		for (int WheelIndex = 0; WheelIndex < VehicleData.NumWheels; WheelIndex++)
+		{
+			PxTransform WheelPxTransform = WheelQueryResults[WheelIndex].localPose;
+			FTransform WheelTransform = PhysXConvert::FromPx(WheelPxTransform);
+			VehicleActor->UpdateWheelsTransform(WheelIndex, WheelTransform.Translation, WheelTransform.Rotation);
+
+			//float Degree = PhysXVehicle->mWheelsDynData.getWheelRotationAngle(WheelIndex) / TWO_PI * 360.0f;
+			//FQuat VehicleWheelQuat = FQuat::MakeFromEulerZYX(FVector(Degree, 0, 0));
+			//VehicleActor->UpdateWheelsTransform(WheelIndex, FVector::One(), VehicleWheelQuat);
+		}
 	}
 }
 
@@ -496,7 +549,6 @@ void UVehicleComponent::Simulate(float DeltaTime)
 
 		//Vehicle update.
 		const PxVec3 Grav = GetWorld()->GetPhysicsScene()->GetPxScene()->getGravity();
-		PxWheelQueryResult WheelQueryResults[PX_MAX_NB_WHEELS];
 		PxVehicleWheelQueryResult VehicleQueryResults[1] = { {WheelQueryResults, PhysXVehicle->mWheelsSimData.getNbWheels()} };
 		PxVehicleUpdates(DeltaTime, Grav, *FrictionPairs, 1, Vehicles, VehicleQueryResults);
 	}
