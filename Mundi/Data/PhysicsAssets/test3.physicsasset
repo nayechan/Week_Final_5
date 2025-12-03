@@ -1,14 +1,15 @@
 {
   "BodySetups" : [{
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [0.170252, -0.444809, 0.846058],
+            "X" : 13.485986,
+            "Y" : 13.068157,
+            "Z" : 16.822887
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [0.170252, -0.444809, 0.846058],
-            "Length" : 6.673803,
-            "Radius" : 13.485986
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:Hips",
       "CollisionResponse" : 0,
@@ -17,14 +18,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [2.112664, -0.199823, 3.803623],
+            "X" : 4.884244,
+            "Y" : 12.444264,
+            "Z" : 16.237938
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [2.112664, -0.199823, 3.803623],
-            "Length" : 7.587347,
-            "Radius" : 12.444264
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:Spine",
       "CollisionResponse" : 0,
@@ -33,14 +35,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [1.697040, -0.443315, -4.820117],
+            "X" : 17.733479,
+            "Y" : 12.992535,
+            "Z" : 17.212437
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [1.697040, -0.443315, -4.820117],
-            "Length" : 1.042084,
-            "Radius" : 17.212437
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:Spine1",
       "CollisionResponse" : 0,
@@ -49,14 +52,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [1.104726, 0.418695, 5.956699],
+            "X" : 14.017437,
+            "Y" : 14.808150,
+            "Z" : 19.001490
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [1.104726, 0.418695, 5.956699],
-            "Length" : 8.386679,
-            "Radius" : 14.808150
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:Spine2",
       "CollisionResponse" : 0,
@@ -65,14 +69,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [4.607147, -0.000064, 10.723146],
+            "X" : 14.705670,
+            "Y" : 10.628387,
+            "Z" : 15.920173
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [4.607147, -0.000064, 10.723146],
-            "Length" : 2.429005,
-            "Radius" : 14.705670
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:Head",
       "CollisionResponse" : 0,
@@ -81,14 +86,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [1.233796, -0.014568, 12.940813],
+            "X" : 8.380035,
+            "Y" : 8.529956,
+            "Z" : 17.042503
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [1.233796, -0.014568, 12.940813],
-            "Length" : 17.025095,
-            "Radius" : 8.529956
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:LeftArm",
       "CollisionResponse" : 0,
@@ -97,14 +103,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [-0.665931, -0.406768, 13.114544],
+            "X" : 4.992536,
+            "Y" : 4.973817,
+            "Z" : 12.126200
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [-0.665931, -0.406768, 13.114544],
-            "Length" : 14.267328,
-            "Radius" : 4.992536
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:LeftForeArm",
       "CollisionResponse" : 0,
@@ -113,14 +120,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [0.675609, 1.041858, 9.060981],
+            "X" : 7.974689,
+            "Y" : 3.006622,
+            "Z" : 9.305486
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [0.675609, 1.041858, 9.060981],
-            "Length" : 2.661592,
-            "Radius" : 7.974689
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:LeftHand",
       "CollisionResponse" : 0,
@@ -129,14 +137,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [1.975704, -0.249564, 12.966543],
+            "X" : 8.130272,
+            "Y" : 9.033493,
+            "Z" : 16.708754
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [1.975704, -0.249564, 12.966543],
-            "Length" : 15.350521,
-            "Radius" : 9.033493
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:RightArm",
       "CollisionResponse" : 0,
@@ -145,14 +154,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [-0.462075, 0.350245, 13.106833],
+            "X" : 4.759397,
+            "Y" : 5.465203,
+            "Z" : 12.121255
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [-0.462075, 0.350245, 13.106833],
-            "Length" : 13.312103,
-            "Radius" : 5.465203
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:RightForeArm",
       "CollisionResponse" : 0,
@@ -161,14 +171,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [0.619758, -1.014645, 9.064076],
+            "X" : 7.971517,
+            "Y" : 2.981088,
+            "Z" : 9.305490
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [0.619758, -1.014645, 9.064076],
-            "Length" : 2.667946,
-            "Radius" : 7.971517
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:RightHand",
       "CollisionResponse" : 0,
@@ -177,14 +188,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [-0.339546, -0.959387, 17.009941],
+            "X" : 10.687096,
+            "Y" : 9.472795,
+            "Z" : 25.732483
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [-0.339546, -0.959387, 17.009941],
-            "Length" : 30.090775,
-            "Radius" : 10.687096
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:LeftUpLeg",
       "CollisionResponse" : 0,
@@ -193,14 +205,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [-0.676960, 0.393451, 20.729034],
+            "X" : 8.073784,
+            "Y" : 6.469630,
+            "Z" : 19.761423
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [-0.676960, 0.393451, 20.729034],
-            "Length" : 23.375278,
-            "Radius" : 8.073784
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:LeftLeg",
       "CollisionResponse" : 0,
@@ -209,14 +222,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [-1.088414, 0.863121, 11.438104],
+            "X" : 7.756594,
+            "Y" : 4.709648,
+            "Z" : 14.895572
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [-1.088414, 0.863121, 11.438104],
-            "Length" : 14.277955,
-            "Radius" : 7.756594
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:LeftFoot",
       "CollisionResponse" : 0,
@@ -225,14 +239,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [0.061917, 1.311265, 16.931160],
+            "X" : 10.763900,
+            "Y" : 9.880306,
+            "Z" : 26.023750
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [0.061917, 1.311265, 16.931160],
-            "Length" : 30.519701,
-            "Radius" : 10.763900
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:RightUpLeg",
       "CollisionResponse" : 0,
@@ -241,14 +256,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [-0.833161, 0.016153, 21.181198],
+            "X" : 7.717260,
+            "Y" : 6.763378,
+            "Z" : 19.935791
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [-0.833161, 0.016153, 21.181198],
-            "Length" : 24.437061,
-            "Radius" : 7.717260
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:RightLeg",
       "CollisionResponse" : 0,
@@ -257,14 +273,15 @@
       "PhysicsType" : 0
     }, {
       "AggGeom" : {
-        "BoxElems" : [],
+        "BoxElems" : [{
+            "Center" : [-1.018910, 0.180088, 11.562977],
+            "X" : 7.759890,
+            "Y" : 4.724974,
+            "Z" : 14.900459
+          }],
         "ConvexElems" : [],
         "SphereElems" : [],
-        "SphylElems" : [{
-            "Center" : [-1.018910, 0.180088, 11.562977],
-            "Length" : 14.281139,
-            "Radius" : 7.759890
-          }]
+        "SphylElems" : []
       },
       "BoneName" : "mixamorig6:RightFoot",
       "CollisionResponse" : 0,

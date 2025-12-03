@@ -272,67 +272,7 @@
       "PhysMaterial" : "",
       "PhysicsType" : 0
     }],
-  "CollisionDisableTable" : [{
-      "Index1" : 0,
-      "Index2" : 18
-    }, {
-      "Index1" : 0,
-      "Index2" : 15
-    }, {
-      "Index1" : 0,
-      "Index2" : 1
-    }, {
-      "Index1" : 1,
-      "Index2" : 2
-    }, {
-      "Index1" : 2,
-      "Index2" : 3
-    }, {
-      "Index1" : 3,
-      "Index2" : 11
-    }, {
-      "Index1" : 3,
-      "Index2" : 4
-    }, {
-      "Index1" : 3,
-      "Index2" : 7
-    }, {
-      "Index1" : 4,
-      "Index2" : 5
-    }, {
-      "Index1" : 5,
-      "Index2" : 6
-    }, {
-      "Index1" : 7,
-      "Index2" : 8
-    }, {
-      "Index1" : 8,
-      "Index2" : 9
-    }, {
-      "Index1" : 9,
-      "Index2" : 10
-    }, {
-      "Index1" : 11,
-      "Index2" : 12
-    }, {
-      "Index1" : 12,
-      "Index2" : 13
-    }, {
-      "Index1" : 13,
-      "Index2" : 14
-    }, {
-      "Index1" : 15,
-      "Index2" : 16
-    }, {
-      "Index1" : 16,
-      "Index2" : 17
-    }, {
-      "Index1" : 18,
-      "Index2" : 19
-    }, {
-      "Index1" : 19,
-      "Index2" : 20
-    }],
+  "CollisionDisableTable" : [],
   "ConstraintSetup" : [],
   "Constraints" : [{
       "Bone1" : "mixamorig6:Hips",
@@ -685,7 +625,7 @@
         "ConstraintBone1" : "mixamorig6:LeftUpLeg",
         "ConstraintBone2" : "mixamorig6:LeftLeg",
         "JointName" : "None",
-        "LinearLimit" : 0.000000,
+        "LinearLimit" : 1.000000,
         "LinearXMotion" : 2,
         "LinearYMotion" : 2,
         "LinearZMotion" : 2,
@@ -696,7 +636,7 @@
       },
       "DisableCollision" : true,
       "JointName" : "None",
-      "LinearLimit" : 0.000000,
+      "LinearLimit" : 1.000000,
       "LinearXMotion" : 2,
       "LinearYMotion" : 2,
       "LinearZMotion" : 2,

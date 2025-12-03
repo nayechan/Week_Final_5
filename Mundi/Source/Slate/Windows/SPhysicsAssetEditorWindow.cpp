@@ -3152,6 +3152,9 @@ void SPhysicsAssetEditorWindow::SavePhysicsAssetAs()
 
 		PhysicsAssetEditorBootstrap::SavePhysicsAsset(State->EditingPhysicsAsset, FilePath);
 		State->bIsDirty = false;
+
+		// 리소스 캐시 무효화 (새 에셋이 PropertyRenderer 목록에 나타나도록)
+		UPropertyRenderer::ClearResourcesCache();
 	}
 }
 
