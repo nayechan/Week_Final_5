@@ -353,8 +353,6 @@ void UEditorEngine::MainLoop()
 
 void UEditorEngine::Shutdown()
 {
-    delete ClothManager;
-    ClothManager = nullptr;
 
     // 월드부터 삭제해야 DeleteAll 때 문제가 없음
     for (FWorldContext WorldContext : WorldContexts)
@@ -379,7 +377,8 @@ void UEditorEngine::Shutdown()
 
     // AudioDevice 종료
     FAudioDevice::Shutdown();
-
+    delete ClothManager;
+    ClothManager = nullptr;
     // PhysX 종료
     TermGamePhys();
      

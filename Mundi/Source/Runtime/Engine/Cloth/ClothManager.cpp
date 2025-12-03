@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "ClothManager.h"
+#include "ClothMesh.h"
 
 UClothManager* UClothManager::Instance = nullptr;
 
@@ -43,14 +44,92 @@ void UClothManager::InitClothManager(ID3D11Device* InDevice, ID3D11DeviceContext
     //Factory = NvClothCreateFactoryDX11(GraphicsContextManager);
     Factory = NvClothCreateFactoryCPU();
     Solver = Factory->createSolver();
+
+    TestCloth = new FClothMesh();
+
+    for (int y = 0; y <= 10; y++)
+    {
+        for (int x = 0; x <= 10; x++)
+        {
+            FVertexDynamic Vert;
+            Vert.Position = FVector(x, y, 0);
+            Vert.Normal = FVector(0, 0, 1);
+            Vert.UV = FVector2D(x / 10.0f, y / 10.0f);
+            TestCloth->OriginVertices.push_back(Vert);
+            float InvMass = x == 0 && y == 0 ? 0 : 1.0f;
+            TestCloth->OriginParticles.push_back(physx::PxVec4(Vert.Position.X, Vert.Position.Y, Vert.Position.Z, InvMass));
+        }
+    }
+
+    for (int y = 0; y < 10; y++)
+    {
+        for (int x = 0; x < 10; x++)
+        {
+            int CurIdx = x + y * 11;
+            TestCloth->OriginIndices.push_back(CurIdx);
+            TestCloth->OriginIndices.push_back(CurIdx + 12);
+            TestCloth->OriginIndices.push_back(CurIdx + 11);
+            TestCloth->OriginIndices.push_back(CurIdx);
+            TestCloth->OriginIndices.push_back(CurIdx + 1);
+            TestCloth->OriginIndices.push_back(CurIdx + 12);
+        }
+    }
+
+    nv::cloth::ClothMeshDesc meshDesc;
+    //Fill meshDesc with data
+    meshDesc.setToDefault();
+    meshDesc.points.data = TestCloth->OriginVertices.data();
+    meshDesc.points.stride = sizeof(FVertexDynamic);
+    meshDesc.points.count = TestCloth->OriginVertices.size();
+
+    meshDesc.triangles.data = TestCloth->OriginIndices.data();
+    meshDesc.triangles.stride = sizeof(uint32) * 3;
+    meshDesc.triangles.count = TestCloth->OriginIndices.size() / 3;
+
+    // InvMasses 설정 (중요!)
+    meshDesc.invMasses.data = TestCloth->OriginParticles.data();
+    meshDesc.invMasses.stride = sizeof(physx::PxVec4);
+    meshDesc.invMasses.count = TestCloth->OriginParticles.size();
+    //etc. for quads, triangles and invMasses
+
+    physx::PxVec3 gravity(0.0f, 0.0f, -9.8f);
+    Fabric* Fabric = NvClothCookFabricFromMesh(UClothManager::Instance->GetFactory(), meshDesc, gravity, &TestCloth->PhaseTypes);
+    TestCloth->OriginCloth = UClothManager::Instance->GetFactory()->createCloth(GetRange(TestCloth->OriginParticles), *Fabric);
+
+    // ===== Stiffness 설정 =====
+    // PhaseConfig 직접 생성
+    int numPhases = Fabric->getNumPhases();
+    std::vector<nv::cloth::PhaseConfig> phaseConfigs(numPhases);
+
+    for (int i = 0; i < numPhases; i++)
+    {
+        phaseConfigs[i].mPhaseIndex = i;
+        phaseConfigs[i].mStiffness = 1.0f;           // 0.0 ~ 1.0
+        phaseConfigs[i].mStiffnessMultiplier = 1.0f;
+        phaseConfigs[i].mCompressionLimit = 1.0f;
+        phaseConfigs[i].mStretchLimit = 1.0f;        // 늘어남 제한
+    }
+
+    nv::cloth::Range<nv::cloth::PhaseConfig> range(phaseConfigs.data(), phaseConfigs.data() + numPhases);
+    TestCloth->OriginCloth->setPhaseConfig(range);
+
+    // 2. Stretch 제한 (Tether Constraints)
+    TestCloth->OriginCloth->setTetherConstraintScale(1.0f);      // 늘어남 제한 비율
+    TestCloth->OriginCloth->setTetherConstraintStiffness(1.0f);  // 제한 강도
+
+    // Cloth 속성 설정 (자연스러운 움직임)
+    TestCloth->OriginCloth->setGravity(gravity);
+    TestCloth->OriginCloth->setDamping(physx::PxVec3(0.3f, 0.3f, 0.3f));  // 감쇠
+    TestCloth->OriginCloth->setFriction(0.5f);  // 마찰
+    TestCloth->OriginCloth->setLinearDrag(physx::PxVec3(0.2f, 0.2f, 0.2f));  // 공기 저항
+
+    Fabric->decRefCount();
 }
 
 void UClothManager::Release()
 {
-    //UE_LOG(LogTemp, Log, TEXT("Shutting down NvCloth..."));
+    delete TestCloth;
 
-  /*  delete GraphicsContextManager;
-    GraphicsContextManager = nullptr;*/
     // Solver 정리
     if (Solver)
     {
@@ -74,6 +153,7 @@ void UClothManager::Release()
     ErrorCallback = nullptr;
     AssertHandler = nullptr;
 }
+
 void UClothManager::Tick(float deltaTime)
 {
     Solver->beginSimulation(deltaTime);

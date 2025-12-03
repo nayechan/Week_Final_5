@@ -298,6 +298,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\$(Configuration)\*.dll" "$(OutDir
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimStateMachineInstance.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Animation\AnimSequencePlayer.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Cloth\ClothManager.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Cloth\ClothMesh.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Cloth\DxContextManagerCallbackImpl.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Cloth\NvClothEnvironment.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\CharacterMovementComponent.cpp" />
@@ -965,7 +966,9 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\$(Configuration)\*.dll" "$(OutDir
     <ClInclude Include="Source\Runtime\Engine\Audio\Sound.h" />
     <ClInclude Include="Source\Runtime\Engine\Cloth\ClothAllocatorUtil.h" />
     <ClInclude Include="Source\Runtime\Engine\Cloth\ClothManager.h" />
+    <ClInclude Include="Source\Runtime\Engine\Cloth\ClothMesh.h" />
     <ClInclude Include="Source\Runtime\Engine\Cloth\ClothTest.h" />
+    <ClInclude Include="Source\Runtime\Engine\Cloth\ClothUtil.h" />
     <ClInclude Include="Source\Runtime\Engine\Cloth\DxContextManagerCallbackImpl.h" />
     <ClInclude Include="Source\Runtime\Engine\Cloth\NvClothEnvironment.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\AudioComponent.h" />

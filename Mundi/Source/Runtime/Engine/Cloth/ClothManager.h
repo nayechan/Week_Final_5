@@ -1,19 +1,11 @@
 ﻿#pragma once
 #include "Object.h"
-#include "d3d11.h"
-#include <NvCloth/Factory.h>
-#include <NvCloth/Solver.h>
-#include <NvCloth/Cloth.h>
-#include <NvCloth/Fabric.h>
-#include <foundation/PxVec3.h>
-#include <foundation/PxVec4.h>
-#include <NvCloth/extensions/ClothFabricCooker.h> 
-#include <NvCloth/DxContextManagerCallback.h>
+#include "ClothUtil.h"
 #include "DxContextManagerCallbackImpl.h"
 #include "NvClothEnvironment.h"
 
-using namespace nv::cloth;
-using namespace physx;
+
+struct FClothMesh;
 
 class UClothManager
 {
@@ -32,14 +24,21 @@ public:
     ID3D11Device* GetDevice() { return Device; }
     ID3D11DeviceContext* GetContext() { return Context; }
 
+    FClothMesh* GetTestCloth() { return TestCloth; }
 
 private:
+    void CopySettings(Cloth* Source, Cloth* Target);
+
+private:
+
+    FClothMesh* TestCloth = nullptr;
+
     DxContextManagerCallback* GraphicsContextManager = nullptr;
     Factory* Factory = nullptr;
     Solver* Solver = nullptr;
 
-    ID3D11Device* Device;
-    ID3D11DeviceContext* Context;
+    ID3D11Device* Device = nullptr;
+    ID3D11DeviceContext* Context = nullptr;
 
     // NvCloth 초기화에 필요한 콜백들
     NvClothAllocator* Allocator = nullptr;
