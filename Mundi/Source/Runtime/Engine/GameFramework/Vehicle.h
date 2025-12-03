@@ -29,11 +29,9 @@ public:
     // ====================================================================
     
     /** 차체 메쉬 (물리 시뮬레이션의 주체, Root) */
-    UPROPERTY(EditAnywhere, Category = "Vehicle")
     UStaticMeshComponent* ChassisMesh;
 
     /** 바퀴 메쉬 배열 (시각적 표현용, 0:FL, 1:FR, 2:RL, 3:RR) */
-    UPROPERTY(EditAnywhere, Category = "Vehicle")
     TArray<UStaticMeshComponent*> WheelMeshes;
 
     /** 차량 물리 이동 로직 담당 */
