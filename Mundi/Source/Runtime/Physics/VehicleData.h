@@ -23,9 +23,9 @@ public:
 	int NumWheels = 4;
 
 	UPROPERTY(EditAnywhere, Category = "VehicleData")
-	float EnginePeakTorque = 500.0f;    // 최대 토크 (Nm)
+	float EnginePeakTorque = 1000.0f;    // 최대 토크 (Nm)
 	UPROPERTY(EditAnywhere, Category = "VehicleData")
-	float EngineMaxRPM = 6000.0f;       // 최대 회전수
+	float EngineMaxRPM = 12000.0f;       // 최대 회전수
 	// 토크 커브 (0~1 정규화된 RPM에 대한 토크 비율)
 	// 실제로는 CurveFloat 등을 사용하겠지만, 여기선 단순화
 

@@ -1,0 +1,380 @@
+{
+  "Emitters" : [{
+      "LODLevels" : [{
+          "Level" : 0,
+          "Modules" : [{
+              "EmitterDelay" : 0.000000,
+              "EmitterDelayLow" : 0.000000,
+              "EmitterDuration" : 0.000000,
+              "EmitterDurationLow" : 0.000000,
+              "EmitterLoops" : 0,
+              "EmitterName" : "Emitter",
+              "EmitterOrigin" : [0.000000, 0.000000, 0.000000],
+              "EmitterRotation" : [0.000000, 0.000000, 0.000000],
+              "Material" : "",
+              "MaterialShader" : "Shaders/Particle/ParticleSprite.hlsl",
+              "MaterialTexture" : "Data/Textures/T_Smoke_A.PNG",
+              "ScreenAlignment" : 0,
+              "SortMode" : 0,
+              "SubImages_Horizontal" : 8,
+              "SubImages_Vertical" : 8,
+              "SubUV_MaxElements" : 64,
+              "Type" : "UParticleModuleRequired",
+              "bDelayFirstLoopOnly" : false,
+              "bEnabled" : true,
+              "bOrientZAxisTowardCamera" : false,
+              "bSpawnModule" : false,
+              "bUpdateModule" : false
+            }, {
+              "BurstList" : [],
+              "BurstScale" : {
+                "ConstantCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "ConstantValue" : 1.000000,
+                "MaxCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MaxValue" : 1.000000,
+                "MinCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MinValue" : 1.000000,
+                "ParameterDefaultValue" : 1.000000,
+                "ParameterName" : "",
+                "Type" : 0
+              },
+              "SpawnRate" : {
+                "ConstantCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "ConstantValue" : 500.000000,
+                "MaxCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MaxValue" : 0.000000,
+                "MinCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MinValue" : 0.000000,
+                "ParameterDefaultValue" : 0.000000,
+                "ParameterName" : "",
+                "Type" : 0
+              },
+              "Type" : "UParticleModuleSpawn",
+              "bEnabled" : true,
+              "bSpawnModule" : true,
+              "bUpdateModule" : false
+            }, {
+              "Type" : "UParticleModuleTypeDataSprite",
+              "bEnabled" : true,
+              "bSpawnModule" : false,
+              "bUpdateModule" : false
+            }, {
+              "Lifetime" : {
+                "ConstantCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "ConstantValue" : 1.000000,
+                "MaxCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MaxValue" : 1.000000,
+                "MinCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MinValue" : 1.000000,
+                "ParameterDefaultValue" : 1.000000,
+                "ParameterName" : "",
+                "Type" : 0
+              },
+              "Type" : "UParticleModuleLifetime",
+              "bEnabled" : true,
+              "bSpawnModule" : true,
+              "bUpdateModule" : false
+            }, {
+              "SizeOverLife" : {
+                "ConstantCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "ConstantValue" : [0.000000, 0.000000, 0.000000],
+                "MaxCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MaxValue" : [1.100000, 1.100000, 1.100000],
+                "MinCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MinValue" : [1.000000, 1.000000, 1.000000],
+                "ParameterDefaultValue" : [0.000000, 0.000000, 0.000000],
+                "ParameterName" : "",
+                "Type" : 1
+              },
+              "Type" : "UParticleModuleSize",
+              "bEnabled" : true,
+              "bSpawnModule" : true,
+              "bUpdateModule" : true
+            }, {
+              "StartVelocity" : {
+                "ConstantCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "ConstantValue" : [0.000000, 0.000000, 0.000000],
+                "MaxCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MaxValue" : [-3.000000, 2.000000, 2.000000],
+                "MinCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MinValue" : [-5.000000, -2.000000, 0.000000],
+                "ParameterDefaultValue" : [0.000000, 0.000000, 0.000000],
+                "ParameterName" : "",
+                "Type" : 1
+              },
+              "Type" : "UParticleModuleVelocity",
+              "VelocityDamping" : 0.000000,
+              "bEnabled" : true,
+              "bSpawnModule" : true,
+              "bUpdateModule" : true
+            }, {
+              "ColorOverLife" : {
+                "Alpha" : {
+                  "ConstantCurve" : {
+                    "LoopKeyOffset" : 0.000000,
+                    "Points" : [],
+                    "bIsLooped" : false
+                  },
+                  "ConstantValue" : 0.513000,
+                  "MaxCurve" : {
+                    "LoopKeyOffset" : 0.000000,
+                    "Points" : [{
+                        "ArriveTangent" : 0.000000,
+                        "InVal" : 0.000000,
+                        "InterpMode" : 0,
+                        "LeaveTangent" : 0.000000,
+                        "OutVal" : 0.000000
+                      }],
+                    "bIsLooped" : false
+                  },
+                  "MaxValue" : 1.000000,
+                  "MinCurve" : {
+                    "LoopKeyOffset" : 0.000000,
+                    "Points" : [{
+                        "ArriveTangent" : 0.000000,
+                        "InVal" : -0.001241,
+                        "InterpMode" : 2,
+                        "LeaveTangent" : 1.311614,
+                        "OutVal" : -0.003644
+                      }, {
+                        "ArriveTangent" : 0.213516,
+                        "InVal" : 0.998626,
+                        "InterpMode" : 2,
+                        "LeaveTangent" : 0.000000,
+                        "OutVal" : -0.000450
+                      }],
+                    "bIsLooped" : false
+                  },
+                  "MinValue" : 1.000000,
+                  "ParameterDefaultValue" : 0.000000,
+                  "ParameterName" : "",
+                  "Type" : 3
+                },
+                "RGB" : {
+                  "ConstantCurve" : {
+                    "LoopKeyOffset" : 1.000000,
+                    "Points" : [{
+                        "ArriveTangent" : [0.262202, 0.000000, 0.000000],
+                        "InVal" : 1.099726,
+                        "InterpMode" : 2,
+                        "LeaveTangent" : [0.000000, 0.000000, 0.000000],
+                        "OutVal" : [0.851151, 0.846025, 0.517942]
+                      }],
+                    "bIsLooped" : false
+                  },
+                  "ConstantValue" : [0.976834, 0.976834, 0.976834],
+                  "MaxCurve" : {
+                    "LoopKeyOffset" : 0.000000,
+                    "Points" : [],
+                    "bIsLooped" : false
+                  },
+                  "MaxValue" : [1.000000, 1.000000, 1.000000],
+                  "MinCurve" : {
+                    "LoopKeyOffset" : 0.000000,
+                    "Points" : [],
+                    "bIsLooped" : false
+                  },
+                  "MinValue" : [0.000000, 0.000000, 0.000000],
+                  "ParameterDefaultValue" : [0.000000, 0.000000, 0.000000],
+                  "ParameterName" : "",
+                  "Type" : 0
+                }
+              },
+              "Type" : "UParticleModuleColor",
+              "bEnabled" : true,
+              "bSpawnModule" : true,
+              "bUpdateModule" : true
+            }, {
+              "RotationOverLife" : {
+                "ConstantCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "ConstantValue" : 0.000000,
+                "MaxCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MaxValue" : 360.000000,
+                "MinCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MinValue" : 0.000000,
+                "ParameterDefaultValue" : 0.000000,
+                "ParameterName" : "",
+                "Type" : 1
+              },
+              "Type" : "UParticleModuleRotation",
+              "bEnabled" : true,
+              "bSpawnModule" : true,
+              "bUpdateModule" : true
+            }, {
+              "BoxExtent" : {
+                "ConstantCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "ConstantValue" : [0.000000, 0.000000, 0.000000],
+                "MaxCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MaxValue" : [0.000000, 0.000000, 0.000000],
+                "MinCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MinValue" : [0.000000, 0.000000, 0.000000],
+                "ParameterDefaultValue" : [0.000000, 0.000000, 0.000000],
+                "ParameterName" : "",
+                "Type" : 0
+              },
+              "CylinderHeight" : {
+                "ConstantCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "ConstantValue" : 100.000000,
+                "MaxCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MaxValue" : 100.000000,
+                "MinCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MinValue" : 100.000000,
+                "ParameterDefaultValue" : 100.000000,
+                "ParameterName" : "",
+                "Type" : 0
+              },
+              "DistributionShape" : 0,
+              "SphereRadius" : {
+                "ConstantCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "ConstantValue" : 100.000000,
+                "MaxCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MaxValue" : 100.000000,
+                "MinCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MinValue" : 100.000000,
+                "ParameterDefaultValue" : 100.000000,
+                "ParameterName" : "",
+                "Type" : 0
+              },
+              "StartLocation" : {
+                "ConstantCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "ConstantValue" : [0.000000, 0.000000, 0.000000],
+                "MaxCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MaxValue" : [0.000000, 1.000000, 0.000000],
+                "MinCurve" : {
+                  "LoopKeyOffset" : 0.000000,
+                  "Points" : [],
+                  "bIsLooped" : false
+                },
+                "MinValue" : [0.000000, -1.000000, 0.000000],
+                "ParameterDefaultValue" : [0.000000, 0.000000, 0.000000],
+                "ParameterName" : "",
+                "Type" : 1
+              },
+              "Type" : "UParticleModuleLocation",
+              "bEnabled" : true,
+              "bSpawnModule" : true,
+              "bSurfaceOnly" : false,
+              "bUpdateModule" : false
+            }],
+          "bEnabled" : true
+        }]
+    }],
+  "LODDistances" : [],
+  "bUseLOD" : false
+}

@@ -2,6 +2,7 @@
 #include "VehicleActor.h"
 #include "VehicleComponent.h"
 #include "StaticMeshComponent.h"
+#include "ParticleSystemComponent.h"
 
 static FName VehicleBodyKey = "VehicleBody";	// 바꾸면 안됨 하드코딩됨
 
@@ -13,8 +14,7 @@ AVehicleActor::AVehicleActor()
 	// 루트 교체
 	RootComponent = VehicleComponent;
 
-	VehicleBodyComponent = CreateDefaultSubobject<UStaticMeshComponent>("VehicleBodyComponent");
-	VehicleBodyComponent->ObjectName = VehicleBodyKey;
+	VehicleBodyComponent = CreateDefaultSubobject<UStaticMeshComponent>(VehicleBodyKey);
 	VehicleBodyComponent->SetStaticMesh(GDataDir + "/Model/Vehicles/SportsCar_Body.fbx");
 	VehicleBodyComponent->SetupAttachment(RootComponent);
 	VehicleBodyComponent->bIsStatic = true;
@@ -29,6 +29,12 @@ AVehicleActor::AVehicleActor()
 		VehicleWheelComponent->bIsStatic = true;
 		VehicleWheelComponents.Add(VehicleWheelComponent);
 	}
+
+	SmokeParticleComponent = CreateDefaultSubobject<UParticleSystemComponent>("SmokeParticle");
+	UParticleSystem* ParticleSystem = UResourceManager::GetInstance().Load<UParticleSystem>(GDataDir + "/Particles/CarSmoke.particle");
+	SmokeParticleComponent->SetTemplate(ParticleSystem);
+	SmokeParticleComponent->SetupAttachment(RootComponent);
+	SmokeParticleComponent->SetRelativeLocation(FVector(-2.0f, 0, -0.5f));
 }
 
 void AVehicleActor::Tick(float DeltaTime)
@@ -101,6 +107,10 @@ void AVehicleActor::DuplicateSubObjects()
 		{
 			VehicleWheelComponents.Add(VehicleComp);
 		}
+		else if (UParticleSystemComponent* Particle = Cast<UParticleSystemComponent>(Component))
+		{
+			SmokeParticleComponent = Particle;
+		}
 	}
 }
 
@@ -124,6 +134,10 @@ void AVehicleActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 			{
 				VehicleWheelComponents.Add(VehicleComp);
 			}
+			else if (UParticleSystemComponent* Particle = Cast<UParticleSystemComponent>(Component))
+			{
+				SmokeParticleComponent = Particle;
+			}
 		}
 	}
 }
@@ -144,5 +158,14 @@ void AVehicleActor::UpdateWheelsTransform(int32 WheelIndex, FVector Translation,
 				VehicleWheelComponents[WheelIndex]->AddLocalRotation(FQuat::MakeFromEulerZYX(FVector(0, 0, -90)));
 			}
 		}
+	}
+}
+
+void AVehicleActor::UpdateDriftSmoke(float Value)
+{
+	if (SmokeParticleComponent)
+	{
+		// NOTE: 시간 없어서 일단 하드코딩으로 파티클 양 조절
+		SmokeParticleComponent->Template->GetEmitter(0)->GetLODLevel(0)->SpawnModule->SpawnRate = FDistributionFloat(1000.0f * Value);
 	}
 }

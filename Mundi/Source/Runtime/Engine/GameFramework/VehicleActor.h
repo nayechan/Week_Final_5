@@ -30,10 +30,12 @@ public:
 	void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
 	void UpdateWheelsTransform(int32 WheelIndex, FVector Translation, FQuat Rotation);
+	void UpdateDriftSmoke(float Value);
 
 protected:
 	UVehicleComponent* VehicleComponent;
 	UStaticMeshComponent* VehicleBodyComponent;
 	TArray<UStaticMeshComponent*> VehicleWheelComponents;
+	UParticleSystemComponent* SmokeParticleComponent;
 };
 

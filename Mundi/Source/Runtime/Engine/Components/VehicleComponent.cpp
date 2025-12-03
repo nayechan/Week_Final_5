@@ -465,12 +465,12 @@ void UVehicleComponent::PostPhysicsTick(float DeltaTime)
 
 		if (UInputManager::GetInstance().IsKeyDown('D'))
 		{
-			LeftSteer = 0.5f;
+			LeftSteer = 1.0f;
 		}
 
 		if (UInputManager::GetInstance().IsKeyDown('A'))
 		{
-			RightSteer = 0.5f;
+			RightSteer = 1.0f;
 		}
 
 		if (UInputManager::GetInstance().IsKeyDown('S'))
@@ -480,12 +480,19 @@ void UVehicleComponent::PostPhysicsTick(float DeltaTime)
 			//Brake = 1.0f;
 		}
 
+		if (UInputManager::GetInstance().IsKeyDown('F'))
+		{
+			HandBrake = 1.0f;
+		}
+
 		if (UInputManager::GetInstance().IsKeyDown(' '))
 		{
 			PhysXVehicle->mDriveDynData.setCurrentGear(PxVehicleGearsData::eNEUTRAL);
 			Brake = 1.0f;
 			HandBrake = 1.0f;
 		}
+
+		UpdateDriftEffects();
 
 		// TODO: 실제 사용자 입력을 받아 Accel, Brake, Steer, HandBrake 변수에 할당합니다.
 		// 예를 들어, GetWorld()->GetInputManager()->GetAccelInput(); 와 같은 함수를 사용할 수 있습니다.
@@ -506,6 +513,41 @@ void UVehicleComponent::PostPhysicsTick(float DeltaTime)
 		// 기어 명령 설정
 		//PhysXVehicle->mDriveDynData.mUseAutoGears = true;
 
+	}
+}
+
+void UVehicleComponent::UpdateDriftEffects()
+{
+	if (!PhysXVehicle) return;
+
+	// 설정값 (나중에 FVehicleData 등으로 빼는 것을 권장)
+	const float DriftThreshold = 0.3f;   // 드리프트(횡) 연기 발생 기준 
+
+	float TotalSlip = 0.0f;
+	int RearWheelStart = 2; // 뒷바퀴 기준 (후륜구동/4륜구동 가정)
+	if (VehicleData.NumWheels < 4)
+		RearWheelStart = 0;
+
+	for (int i = RearWheelStart; i < VehicleData.NumWheels; ++i)
+	{
+		// 슬립 데이터 가져오기
+		float LatSlip = PxAbs(WheelQueryResults[i].lateralSlip);
+
+		// A. 횡 슬립 (Lateral): 드리프트
+		// 0.3 rad(약 17도) 이상 미끄러질 때만 유효값으로 인정
+		float EffectiveLat = (LatSlip > DriftThreshold) ? LatSlip : 0.0f;
+
+		TotalSlip += EffectiveLat;
+	}
+
+	float AvgSlip = TotalSlip / (float)(VehicleData.NumWheels - RearWheelStart);
+
+	// 강도 계산 (0.0 ~ 1.0)
+	float SmokeIntensity = PxClamp(AvgSlip, 0.0f, 1.0f);
+
+	if (AVehicleActor* VehicleActor = Cast<AVehicleActor>(Owner))
+	{
+		VehicleActor->UpdateDriftSmoke(SmokeIntensity);
 	}
 }
 

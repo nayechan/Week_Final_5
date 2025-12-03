@@ -41,6 +41,7 @@ public:
 	snippetvehicle::VehicleSceneQueryData* GetVehicleQueryData() const { return VehicleQueryData; }
 	PxBatchQuery* GetBatchQuery() const { return BatchQuery; }
 	PxVehicleDrivableSurfaceToTireFrictionPairs* GetFrictionPairs() const { return FrictionPairs; }
+	void UpdateDriftEffects();
 
 protected:
 	void CreatePhysicsState() override;
