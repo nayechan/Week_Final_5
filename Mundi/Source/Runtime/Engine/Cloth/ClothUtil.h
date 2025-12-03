@@ -28,15 +28,14 @@ public:
         for (int i = 0; i < numPhases; i++)
         {
             phaseConfigs[i].mPhaseIndex = i;
-            phaseConfigs[i].mStiffness = 1.0f;           // 0.0 ~ 1.0
+            phaseConfigs[i].mStiffness = 0.7f;           // 0.0 ~ 1.0
             phaseConfigs[i].mStiffnessMultiplier = 1.0f;
             phaseConfigs[i].mCompressionLimit = 1.0f;
-            phaseConfigs[i].mStretchLimit = 1.0f;        // 늘어남 제한
+            phaseConfigs[i].mStretchLimit = 1.3f;        // 늘어남 제한
         }
 
         nv::cloth::Range<nv::cloth::PhaseConfig> range(phaseConfigs.data(), phaseConfigs.data() + numPhases);
         Target->setPhaseConfig(range);
-
         // 기본 물리 설정
         Target->setGravity(Source->getGravity());
         Target->setDamping(Source->getDamping());
@@ -62,8 +61,8 @@ public:
 
         // Wind 설정
         Target->setWindVelocity(Source->getWindVelocity());
-        //Target->setWindDrag(Source->getWindDrag());
-        //Target->setWindLift(Source->getWindLift());
+        Target->setDragCoefficient(0.2f);   // wind drag
+        Target->setLiftCoefficient(0.1f);   // upward force due to wind
 
         // Sleep 설정
         Target->setSleepThreshold(Source->getSleepThreshold());
@@ -71,3 +70,8 @@ public:
 
 
 };
+
+inline PxVec3 ToPxVec(const FVector& Vt3)
+{
+    return PxVec3(Vt3.X, Vt3.Y, Vt3.Z);
+}

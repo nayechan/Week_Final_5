@@ -30,9 +30,6 @@ public:
     void UnRegisterCloth(Cloth* InCloth) { Solver->removeCloth(InCloth); }
 
 private:
-    void CopySettings(Cloth* Source, Cloth* Target);
-
-private:
 
     FClothMesh* TestCloth = nullptr;
 

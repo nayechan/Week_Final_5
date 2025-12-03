@@ -12,6 +12,7 @@ public:
 	UClothComponent();
 	~UClothComponent();
 
+	FVector GetWorldVector(const FVector& Vector);
 	void BeginPlay() override;
 	void TickComponent(float DeltaSeconds) override;
 	void EndPlay() override;
@@ -27,6 +28,17 @@ public:
 	float Gravity = 9.8f;
 
 	UPROPERTY(EditAnywhere, DisplayName = "Cloth")
-	TArray<FVector> Winds;
+	FVector Wind;
 
+	UPROPERTY(EditAnywhere, DisplayName = "Cloth")
+	FVector WindAmplitude;
+
+	UPROPERTY(EditAnywhere, DisplayName = "Cloth")
+	FVector InvWindFrequency;
+
+	UPROPERTY(EditAnywhere, DisplayName = "Cloth", Range = "0.0, 1.0")
+	float Stiffness = 1.0f;
+
+private:
+	float ElapsedTime = 0.0f;
 };

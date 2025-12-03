@@ -47,31 +47,32 @@ void UClothManager::InitClothManager(ID3D11Device* InDevice, ID3D11DeviceContext
 
     TestCloth = new FClothMesh();
 
-    for (int z= 0; z<= 10; z++)
+    for (int z= 0; z<= 30; z++)
     {
-        for (int x = 0; x <= 10; x++)
+        for (int x = 0; x <= 30; x++)
         {
             FVertexDynamic Vert;
-            Vert.Position = FVector(x, 0, -z);
+            Vert.Position = FVector(x / 3.0f, 0, -z / 3.0f);
             Vert.Normal = FVector(0, 1, 0);
-            Vert.UV = FVector2D(x / 10.0f, z/ 10.0f);
+            Vert.UV = FVector2D(x / 30.0f, z/ 30.0f);
             TestCloth->OriginVertices.push_back(Vert);
-            float InvMass = (x == 0 || x == 5 || x == 10) && z == 0 ? 0 : 1.0f;
+            float InvMass = (x == 0 || x == 15 || x == 30) && z == 0 ? 0 : 1.0f;
+            
             TestCloth->OriginParticles.push_back(physx::PxVec4(Vert.Position.X, Vert.Position.Y, Vert.Position.Z, InvMass));
         }
     }
 
-    for (int y = 0; y < 10; y++)
+    for (int y = 0; y < 30; y++)
     {
-        for (int x = 0; x < 10; x++)
+        for (int x = 0; x < 30; x++)
         {
-            int CurIdx = x + y * 11;
+            int CurIdx = x + y * 31;
             TestCloth->OriginIndices.push_back(CurIdx);
-            TestCloth->OriginIndices.push_back(CurIdx + 12);
-            TestCloth->OriginIndices.push_back(CurIdx + 11);
+            TestCloth->OriginIndices.push_back(CurIdx + 32);
+            TestCloth->OriginIndices.push_back(CurIdx + 31);
             TestCloth->OriginIndices.push_back(CurIdx);
             TestCloth->OriginIndices.push_back(CurIdx + 1);
-            TestCloth->OriginIndices.push_back(CurIdx + 12);
+            TestCloth->OriginIndices.push_back(CurIdx + 32);
         }
     }
 
@@ -96,6 +97,10 @@ void UClothManager::InitClothManager(ID3D11Device* InDevice, ID3D11DeviceContext
     Fabric* Fabric = NvClothCookFabricFromMesh(UClothManager::Instance->GetFactory(), meshDesc, gravity, &TestCloth->PhaseTypes);
     TestCloth->OriginCloth = UClothManager::Instance->GetFactory()->createCloth(GetRange(TestCloth->OriginParticles), *Fabric);
 
+    // 2. Stretch 제한 (Tether Constraints)
+    TestCloth->OriginCloth->setTetherConstraintStiffness(0.5f); // 덜 강하게 원위치로 복귀
+    TestCloth->OriginCloth->setTetherConstraintScale(1.5f);
+
     // ===== Stiffness 설정 =====
     // PhaseConfig 직접 생성
     int numPhases = Fabric->getNumPhases();
@@ -104,18 +109,15 @@ void UClothManager::InitClothManager(ID3D11Device* InDevice, ID3D11DeviceContext
     for (int i = 0; i < numPhases; i++)
     {
         phaseConfigs[i].mPhaseIndex = i;
-        phaseConfigs[i].mStiffness = 1.0f;           // 0.0 ~ 1.0
+        phaseConfigs[i].mStiffness = 0.1f;           // 0.0 ~ 1.0
         phaseConfigs[i].mStiffnessMultiplier = 1.0f;
         phaseConfigs[i].mCompressionLimit = 1.0f;
-        phaseConfigs[i].mStretchLimit = 1.0f;        // 늘어남 제한
+        phaseConfigs[i].mStretchLimit = 5.0f;        // 늘어남 제한
     }
 
     nv::cloth::Range<nv::cloth::PhaseConfig> range(phaseConfigs.data(), phaseConfigs.data() + numPhases);
     TestCloth->OriginCloth->setPhaseConfig(range);
 
-    // 2. Stretch 제한 (Tether Constraints)
-    TestCloth->OriginCloth->setTetherConstraintScale(1.0f);      // 늘어남 제한 비율
-    TestCloth->OriginCloth->setTetherConstraintStiffness(1.0f);  // 제한 강도
 
     // Cloth 속성 설정 (자연스러운 움직임)
     TestCloth->OriginCloth->setGravity(gravity);
