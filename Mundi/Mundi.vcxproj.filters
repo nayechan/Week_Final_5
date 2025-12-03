@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <ItemGroup>
     <FxCompile Include="Shaders\Materials\Fireball.hlsl" />
@@ -1453,6 +1453,9 @@
     </ClInclude>
     <ClInclude Include="Source\Runtime\Engine\Cloth\NvClothEnvironment.h" />
     <ClInclude Include="Source\Runtime\Engine\Cloth\ClothAllocatorUtil.h" />
+    <ClInclude Include="Generated\APlayerGameMode.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="BuildTools\CodeGenerator\generate.py" />
