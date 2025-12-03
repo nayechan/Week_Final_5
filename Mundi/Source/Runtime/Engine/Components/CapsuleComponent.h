@@ -48,6 +48,8 @@ public:
 	UPROPERTY(EditAnywhere, Category="CapsuleHalfHeight")
 	float CapsuleHalfHeight = 2.0f;
 
+	void OnPropertyChanged(const FProperty& Prop) override;
+
 	/**
 	 * Capsule 크기를 설정합니다.
 	 */

@@ -162,7 +162,6 @@ void FBodyInstance::SetWorldTransform(const FTransform& NewTransform, bool bTele
         Scale3D = NewScale;
         if (OwnerComponent)
         {
-            // 컴포넌트한테 "나 다시 만들어줘!" 요청
             // (내부적으로 TermBody() -> InitBody() 호출)
             OwnerComponent->RecreatePhysicsState();
         }
@@ -339,8 +338,8 @@ void FBodyInstance::SetAngularDamping(float InAngularDamping)
 
 void FBodyInstance::SetCollisionEnabled(bool bEnabled)
 {
-    bCollisionEnabled = bEnabled;
     if (!RigidActor || bEnabled == bCollisionEnabled) { return; }
+    bCollisionEnabled = bEnabled;
 
     if (!CurrentScene) return;
 

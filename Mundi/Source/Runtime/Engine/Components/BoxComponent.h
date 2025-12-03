@@ -43,6 +43,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="BoxExtent")
 	FVector BoxExtent = FVector(0.50f, 0.50f, 0.50f);
 
+	void OnPropertyChanged(const FProperty& Prop) override;
 	/**
 	 * Box 크기를 설정합니다 (로컬 스페이스).
 	 */

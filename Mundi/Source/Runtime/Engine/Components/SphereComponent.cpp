@@ -35,6 +35,17 @@ void USphereComponent::DuplicateSubObjects()
 // Sphere 속성 함수
 // ────────────────────────────────────────────────────────────────────────────
 
+void USphereComponent::OnPropertyChanged(const FProperty& Prop)
+{
+	Super::OnPropertyChanged(Prop);
+
+	// SphereRadius 프로퍼티가 변경되면 다시 생성
+	if (strcmp(Prop.Name, "SphereRadius") == 0)
+	{
+		RecreatePhysicsState();
+	}
+}
+
 void USphereComponent::SetSphereRadius(float InRadius, bool bUpdateBoundsNow)
 {
 	if (SphereRadius - InRadius <= 0.0001f)

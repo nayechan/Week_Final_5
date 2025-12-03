@@ -23,6 +23,8 @@ void UStaticMeshComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	GetOwner()->OnComponentHit.AddDynamic(this, &UStaticMeshComponent::OnHit);
+
+	BodyInstance.AddImpulse(10000.0f);
 }
 
 void UStaticMeshComponent::OnHit(UPrimitiveComponent* This, UPrimitiveComponent* Other, FHitResult HitResult)

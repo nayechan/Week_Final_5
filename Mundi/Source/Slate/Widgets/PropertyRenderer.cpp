@@ -46,6 +46,8 @@ TArray<FString> UPropertyRenderer::CachedParticleSystemPaths;
 TArray<FString> UPropertyRenderer::CachedParticleSystemItems;
 TArray<FString> UPropertyRenderer::CachedPhysicsAssetPaths;
 TArray<FString> UPropertyRenderer::CachedPhysicsAssetItems;
+TArray<FString> UPropertyRenderer::CachedPhysicalMaterialPaths;
+TArray<FString> UPropertyRenderer::CachedPhysicalMaterialItems;
 
 static bool ItemsGetter(void* Data, int Index, const char** CItem)
 {
@@ -638,6 +640,34 @@ void UPropertyRenderer::CacheResources()
 			}
 		}
 	}
+	
+	// 8. PhysicalMaterial (.physicalmaterial) - 파일 시스템 스캔
+	if (CachedPhysicalMaterialPaths.IsEmpty() && CachedPhysicalMaterialItems.IsEmpty())
+	{
+		// "None" 항목 추가
+		CachedPhysicalMaterialPaths.Add("");
+		CachedPhysicalMaterialItems.Add("None");
+
+		// Data/ 디렉토리 전체 스캔 (PhysicsAsset은 여러 곳에 있을 수 있음)
+		const FString DataDir = GDataDir + "/";
+		if (fs::exists(UTF8ToWide(DataDir)) && fs::is_directory(UTF8ToWide(DataDir)))
+		{
+			for (const auto& Entry : fs::recursive_directory_iterator(UTF8ToWide(DataDir)))
+			{
+				if (Entry.is_regular_file())
+				{
+					FString Ext = WideToUTF8(Entry.path().extension().wstring());
+					std::ranges::transform(Ext, Ext.begin(), ::tolower);
+					if (Ext == ".physicalmaterial")
+					{
+						FString Path = NormalizePath(WideToUTF8(Entry.path().wstring()));
+						CachedPhysicalMaterialPaths.Add(Path);
+						CachedPhysicalMaterialItems.Add(WideToUTF8(Entry.path().filename().wstring()));
+					}
+				}
+			}
+		}
+	}
 }
 
 void UPropertyRenderer::ClearResourcesCache()
@@ -660,6 +690,8 @@ void UPropertyRenderer::ClearResourcesCache()
 	CachedParticleSystemItems.Empty();
 	CachedPhysicsAssetPaths.Empty();
 	CachedPhysicsAssetItems.Empty();
+	CachedPhysicalMaterialPaths.Empty();
+	CachedPhysicalMaterialItems.Empty();
 }
 
 // ===== 타입별 렌더링 구현 =====
@@ -3819,8 +3851,6 @@ bool UPropertyRenderer::RenderBodyInstanceProperty(const FProperty& Prop, void* 
 	
 	FBodyInstance* BodyInstance = Prop.GetValuePtr<FBodyInstance>(Instance);
 	if (!BodyInstance) { return false; }
-	// IsValidBodyInstance() 체크 제거 - 실제 물리 바디가 없어도 프로퍼티 편집 가능
-	// SkeletalMeshComponent는 per-bone PhysicsAsset을 사용하므로 컴포넌트 레벨 BodyInstance가 없음
 
 	bool bChanged = false;
 	ImGuiStorage* storage = ImGui::GetStateStorage();
@@ -3857,6 +3887,208 @@ bool UPropertyRenderer::RenderBodyInstanceProperty(const FProperty& Prop, void* 
 			BodyInstance->SetCollisionEnabled(bCollisionEnabled);
 			bChanged = true;
 		}
+		// --- 물리 재질 설정 ---
+		ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.2f, 1.0f), "물리 재질");
+		ImGui::Separator();
+		{
+			UPhysicalMaterial* SelectedPhysicalMaterial = BodyInstance->PhysMaterialOverride;
+			CacheResources();
+
+			if (CachedPhysicalMaterialPaths.empty())
+			{
+				ImGui::Text("<No Physics Materials Available>");
+			}
+			else
+			{
+				// 현재 선택 인덱스 찾기
+				int SelectedIdx = 0;
+				FString CurrentPath = SelectedPhysicalMaterial ? SelectedPhysicalMaterial->GetFilePath() : "";
+
+				for (int i = 0; i < static_cast<int>(CachedPhysicalMaterialPaths.size()); ++i)
+				{
+					if (CachedPhysicalMaterialPaths[i] == CurrentPath)
+					{
+						SelectedIdx = i;
+						break;
+					}
+				}
+
+				// const char* 배열로 변환
+				TArray<const char*> ItemsPtr;
+				ItemsPtr.reserve(CachedPhysicalMaterialItems.size());
+				for (const FString& item : CachedPhysicalMaterialItems)
+				{
+					ItemsPtr.push_back(item.c_str());
+				}
+
+				ImGui::SetNextItemWidth(240);
+				if (ImGui::Combo("##PhysMatSelect", &SelectedIdx, ItemsPtr.data(), static_cast<int>(ItemsPtr.size())))
+				{
+					if (SelectedIdx >= 0 && SelectedIdx < static_cast<int>(CachedPhysicalMaterialPaths.size()))
+					{
+						// 선택된 Material 로드
+						UPhysicalMaterial* LoadedMaterial = RESOURCE.Load<UPhysicalMaterial>(CachedPhysicalMaterialPaths[SelectedIdx]);
+						BodyInstance->PhysMaterialOverride = LoadedMaterial;
+						bChanged = true;
+					}
+				}
+
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::BeginTooltip();
+					if (CurrentPath.empty())
+					{
+						ImGui::Text("None");
+					}
+					else
+					{
+						ImGui::TextUnformatted(CurrentPath.c_str());
+					}
+					ImGui::EndTooltip();
+				}
+			}
+
+			ImGui::SameLine();
+
+			// --- New 버튼 ---
+			if (ImGui::Button("New", ImVec2(60, 0)))
+			{
+				const FWideString BaseDir = UTF8ToWide(GDataDir) + L"/PhysicalMaterials";
+				const FWideString Extension = L".physicalmaterial";
+				const FWideString Description = L"Physical Material Files";
+				const FWideString DefaultFileName = L"NewPhysicalMaterial";
+
+				// 파일 저장 다이얼로그 열기
+				std::filesystem::path SavePath = FPlatformProcess::OpenSaveFileDialog(BaseDir, Extension, Description, DefaultFileName);
+				
+				if (!SavePath.empty())
+				{
+					FString MaterialPath = ResolveAssetRelativePath(WideToUTF8(SavePath.wstring()), WideToUTF8(BaseDir));
+					// 새 PhysicalMaterial 생성
+					UPhysicalMaterial* NewMaterial = NewObject<UPhysicalMaterial>();
+					NewMaterial->Save(MaterialPath);
+					NewMaterial->CreateMaterial();
+					RESOURCE.Add<UPhysicalMaterial>(NewMaterial->GetFilePath(), NewMaterial);
+
+					CachedPhysicalMaterialPaths.AddUnique(MaterialPath);
+					CachedPhysicalMaterialItems.AddUnique(WideToUTF8(SavePath.filename().wstring()));
+
+					// 새로 생성된 Material 선택
+					BodyInstance->PhysMaterialOverride = NewMaterial;
+					bChanged = true;
+				}
+			}
+
+			ImGui::SameLine();
+
+			// --- Save 버튼 (선택된 Material이 있을 때만 활성화) ---
+			bool bCanSave = SelectedPhysicalMaterial != nullptr;
+			if (!bCanSave)
+				ImGui::BeginDisabled();
+
+			if (ImGui::Button("Save", ImVec2(60, 0)))
+			{
+				if (SelectedPhysicalMaterial)
+				{
+					SelectedPhysicalMaterial->Release();
+					SelectedPhysicalMaterial->CreateMaterial();
+					SelectedPhysicalMaterial->Save(SelectedPhysicalMaterial->GetFilePath());
+
+					bChanged = true;
+				}
+			}
+
+			if (!bCanSave)
+				ImGui::EndDisabled();
+
+			// --- 속성 패널 (선택된 Material이 있을 때만 표시) ---
+			if (BodyInstance->PhysMaterialOverride)
+			{
+				UPhysicalMaterial* Material = BodyInstance->PhysMaterialOverride;
+				ImGui::Spacing();
+				ImGui::Separator();
+				ImGui::TextColored(ImVec4(0.7f, 0.9f, 0.7f, 1.0f), "속성");
+
+				// 토글: 마찰력 속성
+				static bool bShowFriction = true;
+				if (ImGui::CollapsingHeader("마찰력##Friction", &bShowFriction, ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ImGui::Indent();
+
+					// 정지 마찰력
+					float StaticFriction = Material->StaticFriction;
+					if (ImGui::SliderFloat("정지 마찰력##StaticFriction", &StaticFriction, 0.0f, 2.0f))
+					{
+						Material->StaticFriction = StaticFriction;
+						bChanged = true;
+					}
+
+					// 운동 마찰력
+					float DynamicFriction = Material->DynamicFriction;
+					if (ImGui::SliderFloat("운동 마찰력##DynamicFriction", &DynamicFriction, 0.0f, 2.0f))
+					{
+						Material->DynamicFriction = DynamicFriction;
+						bChanged = true;
+					}
+
+					// 마찰력 합산 방식
+					int FrictionMode = static_cast<int>(Material->FrictionCombineMode);
+					const char* FrictionModes[] = {"Average", "Min", "Multiply", "Max"};
+					if (ImGui::Combo("마찰력 합산 방식##FrictionMode", &FrictionMode, FrictionModes,
+					                 IM_ARRAYSIZE(FrictionModes)))
+					{
+						Material->FrictionCombineMode = static_cast<EFrictionCombineMode>(FrictionMode);
+						bChanged = true;
+					}
+
+					ImGui::Unindent();
+				}
+
+				// 토글: 탄성 속성
+				static bool bShowRestitution = true;
+				if (ImGui::CollapsingHeader("탄성##Restitution", &bShowRestitution, ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ImGui::Indent();
+
+					// 반발 계수
+					float Restitution = Material->Restitution;
+					if (ImGui::SliderFloat("반발 계수##Restitution", &Restitution, 0.0f, 1.0f))
+					{
+						Material->Restitution = Restitution;
+						bChanged = true;
+					}
+
+					// 탄성 합산 방식
+					int RestitutionMode = static_cast<int>(Material->RestitutionCombineMode);
+					const char* RestitutionModes[] = {"Average", "Min", "Multiply", "Max"};
+					if (ImGui::Combo("탄성 합산 방식##RestitutionMode", &RestitutionMode, RestitutionModes,
+					                 IM_ARRAYSIZE(RestitutionModes)))
+					{
+						Material->RestitutionCombineMode = static_cast<EFrictionCombineMode>(RestitutionMode);
+						bChanged = true;
+					}
+
+					ImGui::Unindent();
+				}
+
+				// 토글: 일반 속성
+				static bool bShowGeneral = true;
+				if (ImGui::CollapsingHeader("일반##General", &bShowGeneral, ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					ImGui::Indent();
+
+					// 밀도
+					float Density = Material->Density;
+					if (ImGui::SliderFloat("밀도 (kg/m³)##Density", &Density, 1.0f, 10000.0f))
+					{
+						Material->Density = Density;
+						bChanged = true;
+					}
+
+					ImGui::Unindent();
+				}
+			}
+		}
 	}
 
 	ImGui::Spacing();
@@ -3889,13 +4121,16 @@ bool UPropertyRenderer::RenderBodyInstanceProperty(const FProperty& Prop, void* 
 		}
 		ImGui::EndDisabled();
 
-		// 현재 질량 정보 표시 (읽기 전용)
-		ImGui::BeginDisabled(true);
+		if (GWorld->bPie)
 		{
-			float BodyMass = BodyInstance->GetBodyMass();
-			ImGui::DragFloat("현재 질량##CurrentMass", &BodyMass, 0.0f, 0.0f, 0.0f, "%.2f");
+			// 현재 질량 정보 표시 (읽기 전용)
+			ImGui::BeginDisabled(true);
+			{
+				float BodyMass = BodyInstance->GetBodyMass();
+				ImGui::DragFloat("현재 질량##CurrentMass", &BodyMass, 0.0f, 0.0f, 0.0f, "%.2f");
+			}
+			ImGui::EndDisabled();
 		}
-		ImGui::EndDisabled();
 	}
 
 	ImGui::Spacing();

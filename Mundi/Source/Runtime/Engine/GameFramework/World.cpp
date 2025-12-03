@@ -635,6 +635,7 @@ void UWorld::SetLevel(std::unique_ptr<ULevel> InLevel)
 	}
 
 	// 파티클 이벤트 매니저 생성 (Preview World 제외)
+	ParticleEventManager = FindActor<AParticleEventManager>();
 	if (!IsPreviewWorld() && ParticleEventManager == nullptr)
 	{
 		ParticleEventManager = SpawnActor<AParticleEventManager>();

@@ -284,6 +284,8 @@ EResourceType UResourceManager::GetResourceType()
         return EResourceType::ParticleSystem;
     if (T::StaticClass() == UPhysicsAsset::StaticClass())
         return EResourceType::PhysicsAsset;
+    if (T::StaticClass() == UPhysicalMaterial::StaticClass())
+        return EResourceType::PhysicalMaterial;
 
     return EResourceType::None;
 }

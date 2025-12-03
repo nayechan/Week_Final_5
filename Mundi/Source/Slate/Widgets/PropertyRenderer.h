@@ -100,4 +100,6 @@ private:
 	static TArray<FString> CachedParticleSystemItems;
 	static TArray<FString> CachedPhysicsAssetPaths;
 	static TArray<FString> CachedPhysicsAssetItems;
+	static TArray<FString> CachedPhysicalMaterialPaths;
+	static TArray<FString> CachedPhysicalMaterialItems;
 };

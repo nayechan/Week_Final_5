@@ -9,6 +9,7 @@ ADancingCharacter::ADancingCharacter()
 	if (MeshComponent)
 	{
 		MeshComponent->SetSkeletalMesh(GDataDir + "/SillyDancing.fbx");
+		MeshComponent->PhysicsAsset = RESOURCE.Load<UPhysicsAsset>(GDataDir + "/PhysicsAssets/TestPhysicsAsset.physicsasset");
 	}
 
 	SorrySound = UResourceManager::GetInstance().Load<USound>(GDataDir + "/Audio/Die.wav");

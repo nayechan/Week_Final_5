@@ -3,24 +3,6 @@
 #include "ResourceBase.h"
 #include "UPhysicalMaterial.generated.h"
 
-// 표면 타입 (발소리, 파티클 효과 등에 사용)
-UENUM()
-enum class ESurfaceType : uint8
-{
-    Default,
-    Metal,
-    Wood,
-    Stone,
-    Grass,
-    Dirt,
-    Water,
-    Glass,
-    Flesh,
-    Custom1,
-    Custom2,
-    Custom3
-};
-
 // 마찰/반발력 합산 방식
 UENUM()
 enum class EFrictionCombineMode : uint8
@@ -60,17 +42,6 @@ public:
     UPROPERTY(EditAnywhere, Category="Advanced")
     EFrictionCombineMode RestitutionCombineMode = EFrictionCombineMode::Average;
 
-    // --- 표면 타입 ---
-    UPROPERTY(EditAnywhere, Category="Surface")
-    ESurfaceType SurfaceType = ESurfaceType::Default;
-
-    // --- 고급 설정 ---
-    UPROPERTY(EditAnywhere, Category="Advanced")
-    bool bOverrideFrictionCombineMode = false;
-
-    UPROPERTY(EditAnywhere, Category="Advanced")
-    bool bOverrideRestitutionCombineMode = false;
-
     // --- 생성자/소멸자 ---
     UPhysicalMaterial() = default;
     ~UPhysicalMaterial() override { Release(); }
@@ -83,6 +54,10 @@ public:
 
     // 해제 함수
     void Release();
+
+    // --- 리소스 로드/저장 ---
+    void Load(const FString& InFilePath, ID3D11Device* InDevice = nullptr);
+    void Save(const FString& InFilePath);
 
     // --- 프리셋 생성 함수 ---
     static UPhysicalMaterial* CreateDefaultMaterial();

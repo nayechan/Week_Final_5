@@ -145,8 +145,9 @@ void UBodySetup::CreatePhysicsShapes(FBodyInstance* BodyInstance, const FVector&
     // 사용할 재질 결정
     PxMaterial* Material = System->GetDefaultMaterial();
     UPhysicalMaterial* UsedMat = InMaterial ? InMaterial : PhysMaterial;
-    if (UsedMat && UsedMat->MatHandle)
+    if (UsedMat)
     {
+        if (!UsedMat->MatHandle) { UsedMat->CreateMaterial(); }
         Material = UsedMat->MatHandle;
     }
     void* BoneNameUserData = (void*)&this->BoneName;

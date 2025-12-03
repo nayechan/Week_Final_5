@@ -299,6 +299,27 @@ static void SerializeProperty(void* Instance, const FProperty& Prop, bool bIsLoa
         }
         break;
     }
+    case EPropertyType::PhysicalMaterial:
+    {
+        UPhysicalMaterial** Value = Prop.GetValuePtr<UPhysicalMaterial*>(Instance);
+        if (bIsLoading)
+        {
+            FString PhysicalMaterialPath;
+            FJsonSerializer::ReadString(InOutJson, Prop.Name, PhysicalMaterialPath);
+            if (!PhysicalMaterialPath.empty())
+                *Value = UResourceManager::GetInstance().Load<UPhysicalMaterial>(PhysicalMaterialPath);
+            else
+                *Value = nullptr;
+        }
+        else
+        {
+            if (*Value)
+                InOutJson[Prop.Name] = (*Value)->GetFilePath().c_str();
+            else
+                InOutJson[Prop.Name] = "";
+        }
+        break;
+    }
     case EPropertyType::Sound:
     {
         USound** Value = Prop.GetValuePtr<USound*>(Instance);
@@ -736,6 +757,10 @@ static void SerializeProperty(void* Instance, const FProperty& Prop, bool bIsLoa
             float SleepThresholdMultiplier = 1.0f;
             if (FJsonSerializer::ReadFloat(BodyJson, "SleepThresholdMultiplier", SleepThresholdMultiplier))
                 BodyInstance->SetSleepThresholdMultiplier(SleepThresholdMultiplier);
+            
+            FString PhysicalMaterialPath;
+            if (FJsonSerializer::ReadString(BodyJson, "PhysicalMaterial", PhysicalMaterialPath))
+                BodyInstance->PhysMaterialOverride = UResourceManager::GetInstance().Load<UPhysicalMaterial>(PhysicalMaterialPath);
         }
         else
         {
@@ -789,7 +814,11 @@ static void SerializeProperty(void* Instance, const FProperty& Prop, bool bIsLoa
             
             // Sleep Threshold Multiplier
             BodyJson["SleepThresholdMultiplier"] = BodyInstance->GetSleepThresholdMultiplier();
-            
+
+            if (BodyInstance->PhysMaterialOverride)
+            {
+                BodyJson["PhysicalMaterial"] = BodyInstance->PhysMaterialOverride->GetFilePath();
+            }
             InOutJson[Prop.Name] = BodyJson;
         }
         break;

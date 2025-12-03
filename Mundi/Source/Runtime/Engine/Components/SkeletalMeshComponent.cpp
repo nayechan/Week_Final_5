@@ -10,6 +10,8 @@
 
 // Ragdoll Physics
 #include "BodyInstance.h"
+#include "CapsuleComponent.h"
+#include "Character.h"
 #include "ConstraintInstance.h"
 #include "PhysicsAsset.h"
 #include "PhysicsScene.h"
@@ -65,7 +67,7 @@ void USkeletalMeshComponent::TickComponent(float DeltaTime)
     
     UInputManager& Input = UInputManager::GetInstance();
 
-    // R키: 래그돌 토글
+    // R키: 래그돌 토글    
     if (Input.IsKeyPressed('R'))
     {
         if (PhysicsBlendState == EPhysicsBlendState::Disabled)
@@ -714,13 +716,20 @@ void USkeletalMeshComponent::SetSimulatePhysics(bool bSimulate, bool bBlend)
         UpdateKinematicBonesToAnim();
         ForceRecomputePose();
 
+        FVector ComponentVel = BodyInstance.GetLinearVelocity();
+                
+        ACharacter* Character = Cast<ACharacter>(GetOwner());
+        if (Character)
+        {
+            ComponentVel = Character->GetVelocity();
+            Character->GetCapsuleComponent()->BodyInstance.SetCollisionEnabled(false);
+        }
         // Kinematic -> Dynamic 전환
         for (FBodyInstance* Body : Bodies)
         {
             if (Body)
             {
                 Body->SetSimulatePhysics(true);
-                FVector ComponentVel = BodyInstance.GetLinearVelocity();
                 Body->SetLinearVelocity(ComponentVel); // 관성 유지
                 Body->WakeUp();
             }

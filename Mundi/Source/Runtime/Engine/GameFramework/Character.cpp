@@ -31,6 +31,7 @@ ACharacter::ACharacter()
 	if (CapsuleComponent)
 	{
 		SetRootComponent(CapsuleComponent);
+		CapsuleComponent->SetSimulatePhysics(false);
 	}
 
 	// SkeletalMeshComponent 생성 (애니메이션)
@@ -79,14 +80,7 @@ void ACharacter::BeginPlay()
 void ACharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	// 카메라 위치 로그
-	if (CameraComponent)
-	{
-		FVector CamPos = CameraComponent->GetWorldLocation();
-		UE_LOG("[Character::Tick] Camera Position: (%.2f, %.2f, %.2f)", CamPos.X, CamPos.Y, CamPos.Z);
-	}
-
+	
 	// 쿼터뷰 카메라 업데이트
 	UpdateQuarterViewCamera(DeltaSeconds);
 }

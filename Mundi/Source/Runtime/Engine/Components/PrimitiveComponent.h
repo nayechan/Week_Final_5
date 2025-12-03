@@ -61,6 +61,10 @@ public:
     {
         return BodyInstance.IsSimulatePhysics();
     }
+    void SetSimulatePhysics(bool bSimulate)
+    {
+        BodyInstance.SetSimulatePhysics(bSimulate);
+    }
 
     // ───── 물리 관련 ──────────────────────────── 
     bool IsOverlappingActor(const AActor* Other) const;
