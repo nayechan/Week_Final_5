@@ -36,6 +36,17 @@ void UBoxComponent::DuplicateSubObjects()
 // Box 속성 함수
 // ────────────────────────────────────────────────────────────────────────────
 
+void UBoxComponent::OnPropertyChanged(const FProperty& Prop)
+{
+	Super::OnPropertyChanged(Prop);
+
+	// BoxExtent 프로퍼티가 변경되면 다시 생성
+	if (strcmp(Prop.Name, "BoxExtent") == 0)
+	{
+		RecreatePhysicsState();
+	}
+}
+
 void UBoxComponent::SetBoxExtent(const FVector& InExtent, bool bUpdateBoundsNow)
 {
 	if (BoxExtent.Equals(InExtent))

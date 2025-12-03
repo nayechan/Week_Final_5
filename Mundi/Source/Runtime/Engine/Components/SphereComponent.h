@@ -43,6 +43,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="SphereRadius")
 	float SphereRadius = 1.0f;
 
+	void OnPropertyChanged(const FProperty& Prop) override;
 	/**
 	 * Sphere 반지름을 설정합니다.
 	 */

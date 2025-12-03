@@ -34,6 +34,17 @@ void UCapsuleComponent::DuplicateSubObjects()
 // Capsule 속성 함수
 // ────────────────────────────────────────────────────────────────────────────
 
+void UCapsuleComponent::OnPropertyChanged(const FProperty& Prop)
+{
+	Super::OnPropertyChanged(Prop);
+
+	// CapsuleRadius, CapsuleHalfHeight 프로퍼티가 변경되면 다시 생성
+	if (strcmp(Prop.Name, "CapsuleRadius") == 0 || strcmp(Prop.Name, "CapsuleHalfHeight") == 0)
+	{
+		RecreatePhysicsState();
+	}
+}
+
 void UCapsuleComponent::SetCapsuleSize(float InRadius, float InHalfHeight, bool bUpdateBoundsNow)
 {
 	CapsuleRadius = InRadius;

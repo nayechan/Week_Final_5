@@ -4121,13 +4121,16 @@ bool UPropertyRenderer::RenderBodyInstanceProperty(const FProperty& Prop, void* 
 		}
 		ImGui::EndDisabled();
 
-		// 현재 질량 정보 표시 (읽기 전용)
-		ImGui::BeginDisabled(true);
+		if (GWorld->bPie)
 		{
-			float BodyMass = BodyInstance->GetBodyMass();
-			ImGui::DragFloat("현재 질량##CurrentMass", &BodyMass, 0.0f, 0.0f, 0.0f, "%.2f");
+			// 현재 질량 정보 표시 (읽기 전용)
+			ImGui::BeginDisabled(true);
+			{
+				float BodyMass = BodyInstance->GetBodyMass();
+				ImGui::DragFloat("현재 질량##CurrentMass", &BodyMass, 0.0f, 0.0f, 0.0f, "%.2f");
+			}
+			ImGui::EndDisabled();
 		}
-		ImGui::EndDisabled();
 	}
 
 	ImGui::Spacing();
