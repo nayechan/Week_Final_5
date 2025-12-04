@@ -87,6 +87,7 @@ SViewportWindow::~SViewportWindow()
 	IconShadowAA = nullptr;
 	IconGPUSkinning = nullptr;
 	IconParticles = nullptr;
+	IconPhysicsAssets = nullptr;
 	IconDepthOfField = nullptr;
 
 	IconSingleToMultiViewport = nullptr;
@@ -472,6 +473,9 @@ void SViewportWindow::LoadToolbarIcons(ID3D11Device* Device)
 
 	IconParticles = NewObject<UTexture>();
 	IconParticles->Load(GDataDir + "/Icon/ParticleSystemIcon.png", Device);
+
+	IconPhysicsAssets = NewObject<UTexture>();
+	IconPhysicsAssets->Load(GDataDir + "/Icon/Viewport_PhysicsAsset.png", Device);
 
 	IconDepthOfField = NewObject<UTexture>();
 	IconDepthOfField->Load(GDataDir + "/Icon/Viewport_DepthOfField.png", Device);
@@ -1713,6 +1717,24 @@ void SViewportWindow::RenderShowFlagDropdownMenu()
 		if (ImGui::IsItemHovered())
 		{
 			ImGui::SetTooltip("파티클 시스템 렌더링을 표시합니다.");
+		}
+
+		// Physics Asset
+		bool bPhysicsAssets = RenderSettings.IsShowFlagEnabled(EEngineShowFlags::SF_PhysicsAsset);
+		if (ImGui::Checkbox("##PhysicsAssets", &bPhysicsAssets))
+		{
+			RenderSettings.ToggleShowFlag(EEngineShowFlags::SF_PhysicsAsset);
+		}
+		ImGui::SameLine();
+		if (IconPhysicsAssets && IconPhysicsAssets->GetShaderResourceView())
+		{
+			ImGui::Image((void*)IconPhysicsAssets->GetShaderResourceView(), IconSize);
+			ImGui::SameLine(0, 4);
+		}
+		ImGui::Text(" Physics Assets");
+		if (ImGui::IsItemHovered())
+		{
+			ImGui::SetTooltip("Show Physics Assets");
 		}
 
 		// Billboard

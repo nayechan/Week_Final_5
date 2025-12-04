@@ -26,12 +26,7 @@ USkeletalMeshComponent::USkeletalMeshComponent()
 {
     // Keep constructor lightweight for editor/viewer usage.
     // Load a simple default test mesh if available; viewer UI can override.
-    SetSkeletalMesh(GDataDir + "/DancingRacer.fbx");
-    // TODO - 애니메이션 나중에 써먹으세요    
-    
-	UAnimationAsset* AnimationAsset = UResourceManager::GetInstance().Get<UAnimSequence>("Data/DancingRacer_mixamo.com");
-    PlayAnimation(AnimationAsset, true, 1.f);
-    
+    SetSkeletalMesh(GDataDir + "/DancingRacer.fbx");    
 }
 
 USkeletalMeshComponent::~USkeletalMeshComponent()
@@ -42,7 +37,12 @@ USkeletalMeshComponent::~USkeletalMeshComponent()
 void USkeletalMeshComponent::BeginPlay()
 {
     Super::BeginPlay();
-    
+
+    if (GetWorld()->bPie)
+    {
+        UAnimationAsset* AnimationAsset = UResourceManager::GetInstance().Get<UAnimSequence>("Data/DancingRacer_mixamo.com");
+        PlayAnimation(AnimationAsset, true, 1.f);
+    }
     if (AnimInstance)
     {
         AnimInstance->NativeUpdateAnimation(0.0f);

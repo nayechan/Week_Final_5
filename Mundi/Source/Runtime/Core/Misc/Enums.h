@@ -183,11 +183,12 @@ enum class EEngineShowFlags : uint64
     SF_GPUSkinning = 1ull << 19,  // Enable/disable GPU skinning (CPU skinning when disabled)
 
     SF_Particles = 1ull << 20,    // Show/hide particle systems
+    SF_PhysicsAsset = 1ull << 21,    // Show/hide PhysicsAsset
 
-    SF_Collision = 1ull << 21,    // Show/hide collision component debug shapes
-    SF_CollisionBVH = 1ull << 22, // Show/hide collision BVH debug visualization
+    SF_Collision = 1ull << 22,    // Show/hide collision component debug shapes
+    SF_CollisionBVH = 1ull << 23, // Show/hide collision BVH debug visualization
 
-    SF_DepthOfField = 1ull << 23,
+    SF_DepthOfField = 1ull << 24,
 
     // Default enabled flags
     SF_DefaultEnabled = SF_Primitives | SF_StaticMeshes | SF_SkeletalMeshes | SF_Grid | SF_Lighting | SF_Decals |
