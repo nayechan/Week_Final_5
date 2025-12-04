@@ -599,6 +599,10 @@ void USlateManager::Render()
             Window->OnRender();
         }
     }
+
+    // 모달 다이얼로그 렌더링 (항상 최상단에, ImGui 프레임 내에서 호출)
+    FModalDialog::Get().Render();
+
     // 참고: PendingCloseWindows는 RenderAfterUI()에서 처리됨 (ImGui::EndFrame() 이후)
 }
 
@@ -610,9 +614,6 @@ void USlateManager::RenderAfterUI()
         CloseDetachedWindow(Window);
     }
     PendingCloseWindows.Empty();
-
-    // 모달 다이얼로그 렌더링 (항상 최상단에)
-    FModalDialog::Get().Render();
 }
 
 void USlateManager::Update(float DeltaSeconds)

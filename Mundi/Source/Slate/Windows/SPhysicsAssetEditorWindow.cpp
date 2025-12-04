@@ -458,9 +458,14 @@ void SPhysicsAssetEditorWindow::OnRender()
 
 		float splitterWidth = 4.0f; // 분할선 두께
 
-		float leftWidth = totalWidth * LeftPanelRatio;
-		float rightWidth = totalWidth * RightPanelRatio;
-		float centerWidth = totalWidth - leftWidth - rightWidth - (splitterWidth * 2);
+		// 시뮬레이션 중에는 좌/우 패널 숨김
+		PhysicsAssetEditorState* PhysState = GetActivePhysicsState();
+		bool bHidePanels = PhysState && PhysState->bSimulating;
+
+		float leftWidth = bHidePanels ? 0.0f : totalWidth * LeftPanelRatio;
+		float rightWidth = bHidePanels ? 0.0f : totalWidth * RightPanelRatio;
+		float numSplitters = bHidePanels ? 0.0f : 2.0f;
+		float centerWidth = totalWidth - leftWidth - rightWidth - (splitterWidth * numSplitters);
 
 		// 중앙 패널이 음수가 되지 않도록 보정 (안전장치)
 		if (centerWidth < 0.0f)
@@ -471,37 +476,40 @@ void SPhysicsAssetEditorWindow::OnRender()
 		// Remove spacing between panels
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0));
 
-		// Left panel - Skeleton Tree & Bodies
-		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
-		ImGui::BeginChild("LeftPanel", ImVec2(leftWidth, totalHeight), true, ImGuiWindowFlags_NoScrollbar);
-		ImGui::PopStyleVar();
-		RenderLeftPanel(leftWidth);
-		ImGui::EndChild();
-
-		ImGui::SameLine(0, 0); // No spacing between panels
-
-		// Left splitter (드래그 가능한 분할선)
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 0.5f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.4f, 0.4f, 0.7f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.5f, 0.9f));
-		ImGui::Button("##LeftSplitter", ImVec2(splitterWidth, totalHeight));
-		ImGui::PopStyleColor(3);
-
-		if (ImGui::IsItemHovered())
-			ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-
-		if (ImGui::IsItemActive())
+		// Left panel - Skeleton Tree & Bodies (시뮬레이션 중에는 숨김)
+		if (!bHidePanels)
 		{
-			float delta = ImGui::GetIO().MouseDelta.x;
-			if (delta != 0.0f)
-			{
-				float newLeftRatio = LeftPanelRatio + delta / totalWidth;
-				float maxLeftRatio = 1.0f - RightPanelRatio - (splitterWidth * 2) / totalWidth;
-				LeftPanelRatio = std::max(0.1f, std::min(newLeftRatio, maxLeftRatio));
-			}
-		}
+			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
+			ImGui::BeginChild("LeftPanel", ImVec2(leftWidth, totalHeight), true, ImGuiWindowFlags_NoScrollbar);
+			ImGui::PopStyleVar();
+			RenderLeftPanel(leftWidth);
+			ImGui::EndChild();
 
-		ImGui::SameLine(0, 0);
+			ImGui::SameLine(0, 0); // No spacing between panels
+
+			// Left splitter (드래그 가능한 분할선)
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 0.5f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.4f, 0.4f, 0.7f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.5f, 0.9f));
+			ImGui::Button("##LeftSplitter", ImVec2(splitterWidth, totalHeight));
+			ImGui::PopStyleColor(3);
+
+			if (ImGui::IsItemHovered())
+				ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+
+			if (ImGui::IsItemActive())
+			{
+				float delta = ImGui::GetIO().MouseDelta.x;
+				if (delta != 0.0f)
+				{
+					float newLeftRatio = LeftPanelRatio + delta / totalWidth;
+					float maxLeftRatio = 1.0f - RightPanelRatio - (splitterWidth * 2) / totalWidth;
+					LeftPanelRatio = std::max(0.1f, std::min(newLeftRatio, maxLeftRatio));
+				}
+			}
+
+			ImGui::SameLine(0, 0);
+		}
 
 		// Center panel (viewport area)
 		if (centerWidth > 0.0f)
@@ -595,35 +603,39 @@ void SPhysicsAssetEditorWindow::OnRender()
 			CenterRect.UpdateMinMax();
 		}
 
-		// Right splitter (드래그 가능한 분할선)
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 0.5f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.4f, 0.4f, 0.7f));
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.5f, 0.9f));
-		ImGui::Button("##RightSplitter", ImVec2(splitterWidth, totalHeight));
-		ImGui::PopStyleColor(3);
-
-		if (ImGui::IsItemHovered())
-			ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-
-		if (ImGui::IsItemActive())
+		// Right splitter and panel (시뮬레이션 중에는 숨김)
+		if (!bHidePanels)
 		{
-			float delta = ImGui::GetIO().MouseDelta.x;
-			if (delta != 0.0f)
+			// Right splitter (드래그 가능한 분할선)
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.3f, 0.3f, 0.5f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.4f, 0.4f, 0.4f, 0.7f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.5f, 0.5f, 0.5f, 0.9f));
+			ImGui::Button("##RightSplitter", ImVec2(splitterWidth, totalHeight));
+			ImGui::PopStyleColor(3);
+
+			if (ImGui::IsItemHovered())
+				ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+
+			if (ImGui::IsItemActive())
 			{
-				float newRightRatio = RightPanelRatio - delta / totalWidth;
-				float maxRightRatio = 1.0f - LeftPanelRatio - (splitterWidth * 2) / totalWidth;
-				RightPanelRatio = std::max(0.1f, std::min(newRightRatio, maxRightRatio));
+				float delta = ImGui::GetIO().MouseDelta.x;
+				if (delta != 0.0f)
+				{
+					float newRightRatio = RightPanelRatio - delta / totalWidth;
+					float maxRightRatio = 1.0f - LeftPanelRatio - (splitterWidth * 2) / totalWidth;
+					RightPanelRatio = std::max(0.1f, std::min(newRightRatio, maxRightRatio));
+				}
 			}
+
+			ImGui::SameLine(0, 0);
+
+			// Right panel - Properties
+			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
+			ImGui::BeginChild("RightPanel", ImVec2(rightWidth, totalHeight), true);
+			ImGui::PopStyleVar();
+			RenderRightPanel();
+			ImGui::EndChild();
 		}
-
-		ImGui::SameLine(0, 0);
-
-		// Right panel - Properties
-		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 8.0f);
-		ImGui::BeginChild("RightPanel", ImVec2(rightWidth, totalHeight), true);
-		ImGui::PopStyleVar();
-		RenderRightPanel();
-		ImGui::EndChild();
 
 		// Pop the ItemSpacing style
 		ImGui::PopStyleVar();
@@ -696,9 +708,9 @@ void SPhysicsAssetEditorWindow::OnUpdate(float DeltaSeconds)
 	if (State)
 	{
 		// ─────────────────────────────────────────────────
-		// 기즈모 연동: 선택된 바디의 트랜스폼 편집
+		// 기즈모 연동: 선택된 바디의 트랜스폼 편집 (시뮬레이션 중에는 비활성화)
 		// ─────────────────────────────────────────────────
-		if (State->bBodySelectionMode && State->HasPrimitiveSelection() && State->World)
+		if (!State->bSimulating && State->bBodySelectionMode && State->HasPrimitiveSelection() && State->World)
 		{
 			AGizmoActor* Gizmo = State->World->GetGizmoActor();
 			bool bCurrentlyDragging = Gizmo && Gizmo->GetbIsDragging();
@@ -732,9 +744,9 @@ void SPhysicsAssetEditorWindow::OnUpdate(float DeltaSeconds)
 		}
 
 		// ─────────────────────────────────────────────────
-		// 기즈모 연동: 선택된 Constraint의 Frame 편집
+		// 기즈모 연동: 선택된 Constraint의 Frame 편집 (시뮬레이션 중에는 비활성화)
 		// ─────────────────────────────────────────────────
-		if (!State->bBodySelectionMode && State->SelectedConstraintIndex >= 0 && State->World)
+		if (!State->bSimulating && !State->bBodySelectionMode && State->SelectedConstraintIndex >= 0 && State->World)
 		{
 			AGizmoActor* Gizmo = State->World->GetGizmoActor();
 			bool bCurrentlyDragging = Gizmo && Gizmo->GetbIsDragging();
@@ -1339,7 +1351,8 @@ void SPhysicsAssetEditorWindow::RenderToolbar()
 	PhysicsAssetEditorState* State = GetActivePhysicsState();
 	if (!State) return;
 
-	// 파일 관련 버튼
+	// 파일 관련 버튼 (시뮬레이션 중에는 비활성화)
+	if (State->bSimulating) ImGui::BeginDisabled();
 	if (ImGui::Button("Save"))
 	{
 		SavePhysicsAsset();
@@ -1356,6 +1369,7 @@ void SPhysicsAssetEditorWindow::RenderToolbar()
 	{
 		LoadPhysicsAsset();
 	}
+	if (State->bSimulating) ImGui::EndDisabled();
 	ImGui::SameLine();
 
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
@@ -1381,7 +1395,7 @@ void SPhysicsAssetEditorWindow::RenderToolbar()
 	ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
 	ImGui::SameLine();
 
-	// 표시 옵션
+	// 표시 옵션 (Bodies, Constraints는 시뮬레이션 중 비활성화)
 	if (ImGui::Checkbox("Meshes", &State->bShowMesh))
 	{
 		// 메시 가시성 토글
@@ -1391,6 +1405,7 @@ void SPhysicsAssetEditorWindow::RenderToolbar()
 		}
 	}
 	ImGui::SameLine();
+	if (State->bSimulating) ImGui::BeginDisabled();
 	if (ImGui::Checkbox("Bodies", &State->bShowBodies))
 	{
 		if (State->BodyPreviewLineComponent)
@@ -1410,6 +1425,7 @@ void SPhysicsAssetEditorWindow::RenderToolbar()
 		if (State->ConstraintMeshComponent)
 			State->ConstraintMeshComponent->SetMeshVisible(State->bShowConstraints);
 	}
+	if (State->bSimulating) ImGui::EndDisabled();
 	ImGui::SameLine();
 	ImGui::Checkbox("Stats", &State->bShowStats);
 }
@@ -2422,6 +2438,20 @@ void SPhysicsAssetEditorWindow::OnMouseDown(FVector2D MousePos, uint32 Button)
 	{
 		FVector2D LocalPos = MousePos - FVector2D(CenterRect.Left, CenterRect.Top);
 
+		// 시뮬레이션 중에는 피킹 비활성화 (기즈모 피킹 포함)
+		PhysicsAssetEditorState* State = GetActivePhysicsState();
+		if (State && State->bSimulating)
+		{
+			// 우클릭(카메라 조작)만 허용
+			if (Button == 1)
+			{
+				UInputManager::GetInstance().SetCursorVisible(false);
+				UInputManager::GetInstance().LockCursor();
+				bRightMousePressed = true;
+			}
+			return;
+		}
+
 		// ─────────────────────────────────────────────
 		// 타이밍 측정 시작
 		// ─────────────────────────────────────────────
@@ -2435,7 +2465,6 @@ void SPhysicsAssetEditorWindow::OnMouseDown(FVector2D MousePos, uint32 Button)
 		// 좌클릭: 바디 피킹
 		if (Button == 0)
 		{
-			PhysicsAssetEditorState* State = GetActivePhysicsState();
 			if (State && State->EditingAsset && State->PreviewActor && State->Client && State->World)
 			{
 				// 기즈모가 선택되었는지 확인
