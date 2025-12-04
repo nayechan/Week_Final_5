@@ -16,7 +16,7 @@ class STextBlock;
  *
  * SGameHUD를 사용하여 게임 UI를 구성하는 예제 게임 모드입니다.
  */
-UCLASS(DisplayName="HUD 예제 게임 모드", Description="SGameHUD 사용 예제 게임 모드입니다.")
+UCLASS(DisplayName="예제 게임 모드", Description="예제 게임 모드입니다.")
 class APlayerGameMode : public AGameModeBase
 {
 public:
