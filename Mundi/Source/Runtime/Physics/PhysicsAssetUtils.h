@@ -85,4 +85,11 @@ namespace FPhysicsAssetUtils
 	 * @param PhysAsset 대상 Physics Asset
 	 */
 	void RemoveAllConstraints(UPhysicsAsset* PhysAsset);
+
+	
+	// PhysX D6 Joint의 Twist 축(X축)을 뼈의 길이 방향으로 정렬하는 회전 계산
+	physx::PxQuat ComputeJointFrameRotation(const physx::PxVec3& Direction);
+	
+	// ===== Frame 계산 함수 (PhysX 기반) =====
+	void CalculateConstraintFramesFromPhysX(FConstraintInstance& Instance, const physx::PxTransform& ParentGlobalPose, const physx::PxTransform& ChildGlobalPose);
 }

@@ -58,6 +58,18 @@ struct FConstraintInstance
     // 두 번째 본 (자식)
     UPROPERTY(EditAnywhere, Category="Constraint")
     FName ConstraintBone2 = "None";
+    
+    // [저장 데이터] 부모 바디 기준 조인트 위치/회전
+    UPROPERTY(EditAnywhere, Category="Transform")
+    FVector Frame1Loc;
+    UPROPERTY(EditAnywhere, Category="Transform")
+    FVector Frame1Rot;
+
+    // [저장 데이터] 자식 바디 기준 조인트 위치/회전
+    UPROPERTY(EditAnywhere, Category="Transform")
+    FVector Frame2Loc;
+    UPROPERTY(EditAnywhere, Category="Transform")
+    FVector Frame2Rot;
 
     // --- 선형 제한 (Linear Limits) ---
 
@@ -138,14 +150,11 @@ struct FConstraintInstance
      * PxD6Joint 생성 및 초기화 (수동 Frame 지정)
      * @param Body1 - 첫 번째 바디 (부모)
      * @param Body2 - 두 번째 바디 (자식)
-     * @param Frame1 - Body1 로컬 기준 조인트 프레임
-     * @param Frame2 - Body2 로컬 기준 조인트 프레임
      */
     void InitConstraintWithFrames(
         struct FBodyInstance* Body1,
         struct FBodyInstance* Body2,
-        const FTransform& Frame1,
-        const FTransform& Frame2
+        UPrimitiveComponent* InOwnerComponent = nullptr
     );
 
     /**

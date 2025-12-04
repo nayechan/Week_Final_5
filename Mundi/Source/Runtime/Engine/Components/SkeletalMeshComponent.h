@@ -91,7 +91,7 @@ public:
     /**
      * @brief 기즈모를 렌더링하기 위해 특정 뼈의 월드 트랜스폼을 계산
      */
-    FTransform GetBoneWorldTransform(int32 BoneIndex);
+    FTransform GetBoneWorldTransform(int32 BoneIndex) const;
 
     /**
      * @brief 애니메이션 포즈 위에 추가적인(additive) 트랜스폼을 적용 (by 사용자 조작)
@@ -188,6 +188,10 @@ public:
     void AddImpulse(const FVector& Impulse, FName BoneName = FName(), bool bVelChange = false);
     /** 특정 본의 물리 바디에 힘 적용 */
     void AddForce(const FVector& Force, FName BoneName = FName(), bool bAccelChange = false);
+
+    // --- 디버그 렌더링 ---
+    /** PhysicsAsset의 Body Shape를 와이어프레임으로 렌더링 */
+    void RenderPhysicsAssetDebug(class URenderer* Renderer) const;
 
 protected:
     /** Ragdoll 상태 업데이트 (TickComponent에서 호출) */

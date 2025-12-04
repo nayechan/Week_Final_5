@@ -21,6 +21,7 @@
 #include "InputManager.h"
 #include "VehicleActor.h"
 #include "VehicleComponent.h"
+#include "Renderer.h"
 
 USkeletalMeshComponent::USkeletalMeshComponent()
 {
@@ -387,7 +388,7 @@ FTransform USkeletalMeshComponent::GetBoneLocalTransform(int32 BoneIndex) const
     return FTransform();
 }
 
-FTransform USkeletalMeshComponent::GetBoneWorldTransform(int32 BoneIndex)
+FTransform USkeletalMeshComponent::GetBoneWorldTransform(int32 BoneIndex) const
 {
     if (CurrentLocalSpacePose.Num() > BoneIndex && BoneIndex >= 0)
     {
@@ -718,7 +719,7 @@ void USkeletalMeshComponent::CreatePhysicsConstraints()
 
         // Joint 초기화 (동적 Frame 계산 사용)
         // Twist 축(X축)이 부모→자식 뼈 방향으로 자동 정렬됨
-        Constraint->InitConstraint(Body1, Body2, this);
+        Constraint->InitConstraintWithFrames(Body1, Body2, this);
         Constraints.Add(Constraint);
     }
 
@@ -860,6 +861,192 @@ void USkeletalMeshComponent::AddForce(const FVector& Force, FName BoneName, bool
     }
 }
 
+void USkeletalMeshComponent::RenderPhysicsAssetDebug(URenderer* Renderer) const
+{
+    if (!Renderer || !PhysicsAsset || !SkeletalMesh) return;
+
+    const FSkeleton* Skeleton = SkeletalMesh->GetSkeleton();
+    if (!Skeleton) return;
+
+    const float CmToM = 0.01f;
+    const float Default = 1.0f;
+    const FVector4 LineColor(0.0f, 1.0f, 0.5f, 1.0f);  // 청록색
+    const int32 NumSegments = 16;
+
+    // 모든 BodySetup 순회
+    int32 BodyCount = PhysicsAsset->GetBodySetupCount();
+    for (int32 BodyIdx = 0; BodyIdx < BodyCount; ++BodyIdx)
+    {
+        USkeletalBodySetup* Body = PhysicsAsset->GetBodySetup(BodyIdx);
+        if (!Body) continue;
+
+        // 본 인덱스 찾기
+        auto it = Skeleton->BoneNameToIndex.find(Body->BoneName.ToString());
+        if (it == Skeleton->BoneNameToIndex.end()) continue;
+
+        int32 BoneIndex = it->second;
+        FTransform BoneTM = GetBoneWorldTransform(BoneIndex);
+
+        // Sphere Elements
+        for (const FKSphereElem& Elem : Body->AggGeom.SphereElems)
+        {
+            FVector WorldCenter = BoneTM.TransformPosition(Elem.Center);
+            float ScaledRadius = Elem.Radius * CmToM;
+
+            // XY 평면 원
+            for (int32 i = 0; i < NumSegments; ++i)
+            {
+                float Angle1 = (float(i) / NumSegments) * 2.0f * PI;
+                float Angle2 = (float((i + 1) % NumSegments) / NumSegments) * 2.0f * PI;
+                FVector P1 = WorldCenter + FVector(cos(Angle1) * ScaledRadius, sin(Angle1) * ScaledRadius, 0.0f);
+                FVector P2 = WorldCenter + FVector(cos(Angle2) * ScaledRadius, sin(Angle2) * ScaledRadius, 0.0f);
+                Renderer->AddLine(P1, P2, LineColor);
+            }
+            // XZ 평면 원
+            for (int32 i = 0; i < NumSegments; ++i)
+            {
+                float Angle1 = (float(i) / NumSegments) * 2.0f * PI;
+                float Angle2 = (float((i + 1) % NumSegments) / NumSegments) * 2.0f * PI;
+                FVector P1 = WorldCenter + FVector(cos(Angle1) * ScaledRadius, 0.0f, sin(Angle1) * ScaledRadius);
+                FVector P2 = WorldCenter + FVector(cos(Angle2) * ScaledRadius, 0.0f, sin(Angle2) * ScaledRadius);
+                Renderer->AddLine(P1, P2, LineColor);
+            }
+            // YZ 평면 원
+            for (int32 i = 0; i < NumSegments; ++i)
+            {
+                float Angle1 = (float(i) / NumSegments) * 2.0f * PI;
+                float Angle2 = (float((i + 1) % NumSegments) / NumSegments) * 2.0f * PI;
+                FVector P1 = WorldCenter + FVector(0.0f, cos(Angle1) * ScaledRadius, sin(Angle1) * ScaledRadius);
+                FVector P2 = WorldCenter + FVector(0.0f, cos(Angle2) * ScaledRadius, sin(Angle2) * ScaledRadius);
+                Renderer->AddLine(P1, P2, LineColor);
+            }
+        }
+
+        // Box Elements (Scale = 1.0f, 이미 미터 단위)
+        for (const FKBoxElem& Elem : Body->AggGeom.BoxElems)
+        {
+            // Box의 World Transform (BoneTM 기준)
+            FVector WorldCenter = BoneTM.TransformPosition(Elem.Center);
+            FQuat WorldRotation = BoneTM.Rotation * Elem.Rotation;
+
+            // Box Half Extent (X, Y, Z는 cm 단위 전체 크기이므로 절반 + 미터 변환)
+            FVector Extent(Elem.X * CmToM, Elem.Y * CmToM, Elem.Z * CmToM);
+
+            // 로컬 꼭지점
+            FVector LocalV[8] = {
+                FVector(-Extent.X, -Extent.Y, -Extent.Z),
+                FVector(+Extent.X, -Extent.Y, -Extent.Z),
+                FVector(+Extent.X, +Extent.Y, -Extent.Z),
+                FVector(-Extent.X, +Extent.Y, -Extent.Z),
+                FVector(-Extent.X, -Extent.Y, +Extent.Z),
+                FVector(+Extent.X, -Extent.Y, +Extent.Z),
+                FVector(+Extent.X, +Extent.Y, +Extent.Z),
+                FVector(-Extent.X, +Extent.Y, +Extent.Z),
+            };
+
+            // 월드 변환
+            FVector Corners[8];
+            for (int32 i = 0; i < 8; ++i)
+            {
+                Corners[i] = WorldCenter + WorldRotation.RotateVector(LocalV[i]);
+            }
+
+            // 12개 에지
+            Renderer->AddLine(Corners[0], Corners[1], LineColor);
+            Renderer->AddLine(Corners[1], Corners[2], LineColor);
+            Renderer->AddLine(Corners[2], Corners[3], LineColor);
+            Renderer->AddLine(Corners[3], Corners[0], LineColor);
+            Renderer->AddLine(Corners[4], Corners[5], LineColor);
+            Renderer->AddLine(Corners[5], Corners[6], LineColor);
+            Renderer->AddLine(Corners[6], Corners[7], LineColor);
+            Renderer->AddLine(Corners[7], Corners[4], LineColor);
+            Renderer->AddLine(Corners[0], Corners[4], LineColor);
+            Renderer->AddLine(Corners[1], Corners[5], LineColor);
+            Renderer->AddLine(Corners[2], Corners[6], LineColor);
+            Renderer->AddLine(Corners[3], Corners[7], LineColor);
+        }
+
+        // Capsule (Sphyl) Elements
+        for (const FKSphylElem& Elem : Body->AggGeom.SphylElems)
+        {
+            // Capsule의 World Transform (BoneTM 기준)
+            FVector WorldCenter = BoneTM.TransformPosition(Elem.Center);
+            FQuat WorldRotation = BoneTM.Rotation * Elem.Rotation;
+
+            float Radius = Elem.Radius * CmToM;
+            float HalfHeight = Elem.Length * 0.5f * CmToM;
+
+            // 캡슐 축
+            FVector XAxis = WorldRotation.RotateVector(FVector(1, 0, 0));
+            FVector YAxis = WorldRotation.RotateVector(FVector(0, 1, 0));
+            FVector ZAxis = WorldRotation.RotateVector(FVector(0, 0, 1));
+
+            FVector TopCenter = WorldCenter + ZAxis * HalfHeight;
+            FVector BottomCenter = WorldCenter - ZAxis * HalfHeight;
+
+            // 상단/하단 원
+            for (int32 i = 0; i < NumSegments; ++i)
+            {
+                float Angle1 = (float(i) / NumSegments) * 2.0f * PI;
+                float Angle2 = (float((i + 1) % NumSegments) / NumSegments) * 2.0f * PI;
+                FVector Offset1 = XAxis * cos(Angle1) * Radius + YAxis * sin(Angle1) * Radius;
+                FVector Offset2 = XAxis * cos(Angle2) * Radius + YAxis * sin(Angle2) * Radius;
+                Renderer->AddLine(TopCenter + Offset1, TopCenter + Offset2, LineColor);
+                Renderer->AddLine(BottomCenter + Offset1, BottomCenter + Offset2, LineColor);
+            }
+
+            // 4개 세로선
+            Renderer->AddLine(TopCenter + XAxis * Radius, BottomCenter + XAxis * Radius, LineColor);
+            Renderer->AddLine(TopCenter - XAxis * Radius, BottomCenter - XAxis * Radius, LineColor);
+            Renderer->AddLine(TopCenter + YAxis * Radius, BottomCenter + YAxis * Radius, LineColor);
+            Renderer->AddLine(TopCenter - YAxis * Radius, BottomCenter - YAxis * Radius, LineColor);
+
+            // 상단 반구 (XZ, YZ 평면 반원)
+            int32 HalfSegments = NumSegments / 2;
+            float AngleStep = PI / static_cast<float>(HalfSegments);
+
+            // 상단 반구 - XZ 평면 반원
+            FVector PrevTop = TopCenter + XAxis * Radius;
+            for (int32 i = 1; i <= HalfSegments; ++i)
+            {
+                float Angle = AngleStep * i;
+                FVector CurrTop = TopCenter + XAxis * (Radius * std::cos(Angle)) + ZAxis * (Radius * std::sin(Angle));
+                Renderer->AddLine(PrevTop, CurrTop, LineColor);
+                PrevTop = CurrTop;
+            }
+
+            // 상단 반구 - YZ 평면 반원
+            PrevTop = TopCenter + YAxis * Radius;
+            for (int32 i = 1; i <= HalfSegments; ++i)
+            {
+                float Angle = AngleStep * i;
+                FVector CurrTop = TopCenter + YAxis * (Radius * std::cos(Angle)) + ZAxis * (Radius * std::sin(Angle));
+                Renderer->AddLine(PrevTop, CurrTop, LineColor);
+                PrevTop = CurrTop;
+            }
+
+            // 하단 반구 - XZ 평면 반원
+            FVector PrevBottom = BottomCenter + XAxis * Radius;
+            for (int32 i = 1; i <= HalfSegments; ++i)
+            {
+                float Angle = AngleStep * i;
+                FVector CurrBottom = BottomCenter + XAxis * (Radius * std::cos(Angle)) - ZAxis * (Radius * std::sin(Angle));
+                Renderer->AddLine(PrevBottom, CurrBottom, LineColor);
+                PrevBottom = CurrBottom;
+            }
+
+            // 하단 반구 - YZ 평면 반원
+            PrevBottom = BottomCenter + YAxis * Radius;
+            for (int32 i = 1; i <= HalfSegments; ++i)
+            {
+                float Angle = AngleStep * i;
+                FVector CurrBottom = BottomCenter + YAxis * (Radius * std::cos(Angle)) - ZAxis * (Radius * std::sin(Angle));
+                Renderer->AddLine(PrevBottom, CurrBottom, LineColor);
+                PrevBottom = CurrBottom;
+            }
+        }
+    }
+}
 
 void USkeletalMeshComponent::UpdateKinematicBonesToAnim()
 {

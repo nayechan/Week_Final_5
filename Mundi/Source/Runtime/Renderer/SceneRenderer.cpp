@@ -51,6 +51,7 @@
 #include "CollisionManager.h"
 #include "ShapeComponent.h"
 #include "SkinnedMeshComponent.h"
+#include "SkeletalMeshComponent.h"
 #include "ParticleSystemComponent.h"
 #include "ParticleStats.h"
 #include "ParticleEmitterInstance.h"
@@ -1518,6 +1519,26 @@ void FSceneRenderer::RenderDebugPass()
 				if (ShapeComp && !ShapeComp->IsPendingDestroy())
 				{
 					ShapeComp->RenderDebugVolume(OwnerRenderer);
+				}
+			}
+		}
+	}
+
+	// Physics Asset Debug draw
+	// SF_PhysicsAsset 플래그가 켜져있을 때 모든 SkeletalMeshComponent의 PhysicsAsset Body 렌더링
+	if (World->GetRenderSettings().IsShowFlagEnabled(EEngineShowFlags::SF_PhysicsAsset))
+	{
+		for (AActor* Actor : World->GetActors())
+		{
+			if (!Actor || Actor->IsPendingDestroy()) continue;
+
+			// 소유 컴포넌트에서 SkeletalMeshComponent 찾기
+			for (UActorComponent* Comp : Actor->GetOwnedComponents())
+			{
+				USkeletalMeshComponent* SkelComp = dynamic_cast<USkeletalMeshComponent*>(Comp);
+				if (SkelComp && SkelComp->PhysicsAsset)
+				{
+					SkelComp->RenderPhysicsAssetDebug(OwnerRenderer);
 				}
 			}
 		}

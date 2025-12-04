@@ -506,3 +506,69 @@ void FPhysicsAssetUtils::RemoveAllConstraints(UPhysicsAsset* PhysAsset)
 		PhysAsset->RemoveConstraint(0);
 	}
 }
+
+physx::PxQuat FPhysicsAssetUtils::ComputeJointFrameRotation(const physx::PxVec3& Direction)
+{
+	PxVec3 DefaultAxis(1, 0, 0);  // PhysX D6 Joint의 기본 Twist 축
+	PxVec3 Dir = Direction.getNormalized();
+
+	float Dot = DefaultAxis.dot(Dir);
+
+	// 이미 정렬됨 (같은 방향)
+	if (Dot > 0.9999f)
+	{
+		return PxQuat(PxIdentity);
+	}
+
+	// 반대 방향
+	if (Dot < -0.9999f)
+	{
+		return PxQuat(PxPi, PxVec3(0, 1, 0));
+	}
+
+	// 두 벡터 사이의 회전 축과 각도 계산
+	PxVec3 Axis = DefaultAxis.cross(Dir).getNormalized();
+	float Angle = std::acos(Dot);
+	return PxQuat(Angle, Axis);
+}
+
+void FPhysicsAssetUtils::CalculateConstraintFramesFromPhysX(FConstraintInstance& Instance,
+const physx::PxTransform& ParentGlobalPose, 
+const physx::PxTransform& ChildGlobalPose)
+{
+	// 1. Joint 위치: 자식 Body의 위치 (일반적인 Ragdoll 관례)
+	PxVec3 JointWorldPos = ChildGlobalPose.p;
+
+	// 2. 본 방향 계산: 부모 → 자식
+	PxVec3 BoneDirection = (ChildGlobalPose.p - ParentGlobalPose.p);
+    
+	// 예외 처리: 위치가 겹쳐있거나 너무 가까우면 부모의 X축 등을 사용
+	if (BoneDirection.magnitude() < 1e-4f) // KINDA_SMALL_NUMBER
+	{
+		// 뼈 길이가 0이면 그냥 부모의 회전을 따라가거나 기본값 사용
+		BoneDirection = ParentGlobalPose.q.getBasisVector0(); 
+	}
+	else
+	{
+		BoneDirection.normalize();
+	}
+
+	// 3. Joint Frame 회전: X축을 뼈 방향(Twist Axis)으로 정렬
+	// (ComputeJointFrameRotation 함수는 PxVec3를 받아 PxQuat를 리턴한다고 가정)
+	PxQuat JointRotation = ComputeJointFrameRotation(BoneDirection); 
+
+	// 4. World -> Local 변환 (핵심 로직 - 이건 아주 정확함)
+	// Frame1: 부모 기준에서 본 Joint 위치/회전
+	PxTransform LocalFrame1 = ParentGlobalPose.getInverse() * PxTransform(JointWorldPos, JointRotation);
+    
+	// Frame2: 자식 기준에서 본 Joint 위치/회전
+	// (보통 위치는 (0,0,0)에 가깝고, 회전만 남게 됨)
+	PxTransform LocalFrame2 = ChildGlobalPose.getInverse() * PxTransform(JointWorldPos, JointRotation);
+
+	// 5. 결과 저장 (PhysX -> Unreal 변환)
+	Instance.Frame1Loc = PhysXConvert::FromPx(LocalFrame1.p);
+	Instance.Frame1Rot = PhysXConvert::FromPx(LocalFrame1.q).ToEulerZYXDeg();
+
+	Instance.Frame2Loc = PhysXConvert::FromPx(LocalFrame2.p);
+	Instance.Frame2Rot = PhysXConvert::FromPx(LocalFrame2.q).ToEulerZYXDeg();
+}

@@ -34,152 +34,94 @@ static PxQuat ComputeJointFrameRotation(const PxVec3& Direction)
     return PxQuat(Angle, Axis);
 }
 
-// ===== 동적 Frame 계산 방식 (권장) =====
+// ===== 1. 동적 Frame 계산 방식 (자동 계산기) =====
 void FConstraintInstance::InitConstraint(
     FBodyInstance* Body1,
     FBodyInstance* Body2,
     UPrimitiveComponent* InOwnerComponent)
 {
-    // 기존 Joint 해제
-    TermConstraint();
-
-    // 유효성 검사
-    if (!Body1 || !Body2)
-    {
-        UE_LOG("[FConstraintInstance] InitConstraint failed: Body is null");
-        return;
-    }
-
+    // 유효성 검사 (기존 동일)
+    if (!Body1 || !Body2) return;
     PxRigidDynamic* Parent = Body1->RigidActor ? Body1->RigidActor->is<PxRigidDynamic>() : nullptr;
     PxRigidDynamic* Child = Body2->RigidActor ? Body2->RigidActor->is<PxRigidDynamic>() : nullptr;
+    if (!Parent || !Child) return;
 
-    if (!Parent || !Child)
-    {
-        UE_LOG("[FConstraintInstance] InitConstraint failed: RigidDynamic is null");
-        return;
-    }
-
-    // PhysX Physics 획득
-    FPhysicsSystem* PhysSystem = GEngine.GetPhysicsSystem();
-    if (!PhysSystem || !PhysSystem->GetPhysics())
-    {
-        UE_LOG("[FConstraintInstance] InitConstraint failed: PhysicsSystem is null");
-        return;
-    }
-
-    OwnerComponent = InOwnerComponent;
-
-    // ===== Joint Frame 계산 (뼈 방향 기반) =====
+    // --- 계산 로직 (기존 동일) ---
     PxTransform ParentGlobalPose = Parent->getGlobalPose();
     PxTransform ChildGlobalPose = Child->getGlobalPose();
-
-    // Joint 위치: 자식 Body의 위치 (관절점)
     PxVec3 JointWorldPos = ChildGlobalPose.p;
 
-    // 본 방향: 부모→자식 (Twist 축으로 사용)
     PxVec3 BoneDirection = (ChildGlobalPose.p - ParentGlobalPose.p);
-    if (BoneDirection.magnitude() < KINDA_SMALL_NUMBER)
-    {
-        BoneDirection = PxVec3(1, 0, 0);  // 거리가 너무 가까우면 기본값 사용
-    }
+    if (BoneDirection.magnitude() < 1e-4f) BoneDirection = PxVec3(1, 0, 0);
 
-    // Joint Frame 회전: 본 방향을 Twist 축(X)으로 정렬
     PxQuat JointRotation = ComputeJointFrameRotation(BoneDirection);
 
-    // 부모/자식 로컬 좌표계에서의 Joint Frame
     PxTransform LocalFrame1 = ParentGlobalPose.getInverse() * PxTransform(JointWorldPos, JointRotation);
     PxTransform LocalFrame2 = ChildGlobalPose.getInverse() * PxTransform(JointWorldPos, JointRotation);
 
-    // D6 Joint 생성
-    PxD6Joint* D6Joint = PxD6JointCreate(
-        *PhysSystem->GetPhysics(),
-        Parent, LocalFrame1,
-        Child, LocalFrame2
-    );
+    // --- [수정됨] 저장 로직 (복붙 실수 수정 완료) ---
+    // PhysX Transform -> Engine Transform 변환 및 저장
+    Frame1Loc = PhysXConvert::FromPx(LocalFrame1.p);
+    Frame1Rot = PhysXConvert::FromPx(LocalFrame1.q).ToEulerZYXDeg(); // Quaternion -> Euler
 
-    if (!D6Joint)
-    {
-        UE_LOG("[FConstraintInstance] InitConstraint failed: PxD6JointCreate returned null");
-        return;
-    }
+    Frame2Loc = PhysXConvert::FromPx(LocalFrame2.p); // p (위치) 사용
+    Frame2Rot = PhysXConvert::FromPx(LocalFrame2.q).ToEulerZYXDeg(); // q (회전) 사용
 
-    // 제한 설정 적용
-    ConfigureLinearLimits(D6Joint);
-    ConfigureAngularLimits(D6Joint);
-
-    // 충돌 설정: bDisableCollision = true면 연결된 두 Body 간 충돌 비활성화
-    D6Joint->setConstraintFlag(PxConstraintFlag::eCOLLISION_ENABLED, !bDisableCollision);
-
-    // userData에 이 인스턴스 포인터 저장
-    D6Joint->userData = this;
-
-    // Joint 저장
-    PxJoint = D6Joint;
+    // --- [핵심] 실제 생성은 아래 함수에게 위임 ---
+    // 여기서 또 CreateJoint 하지 말고, 저장된 데이터로 만들어달라고 요청
+    InitConstraintWithFrames(Body1, Body2, InOwnerComponent);
 }
 
-// ===== 수동 Frame 지정 방식 (기존 호환) =====
+// ===== 2. 수동 Frame 지정 방식 (실제 생성기) =====
 void FConstraintInstance::InitConstraintWithFrames(
     FBodyInstance* Body1,
     FBodyInstance* Body2,
-    const FTransform& Frame1,
-    const FTransform& Frame2)
+    UPrimitiveComponent* InOwnerComponent)
 {
-    // 유효성 검사
-    if (!Body1 || !Body2)
-    {
-        UE_LOG("[FConstraintInstance] InitConstraintWithFrames failed: Body is null");
-        return;
-    }
-
-    if (!Body1->RigidActor || !Body2->RigidActor)
-    {
-        UE_LOG("[FConstraintInstance] InitConstraintWithFrames failed: RigidActor is null");
-        return;
-    }
-
-    // 기존 Joint 해제
+    // 1. 유효성 검사 및 초기화
+    if (!Body1 || !Body2 || !Body1->RigidActor || !Body2->RigidActor) return;
     TermConstraint();
 
-    // PhysX Physics 획득
     FPhysicsSystem* PhysSystem = GEngine.GetPhysicsSystem();
-    if (!PhysSystem)
-    {
-        UE_LOG("[FConstraintInstance] InitConstraintWithFrames failed: PhysicsSystem is null");
-        return;
-    }
+    if (!PhysSystem || !PhysSystem->GetPhysics()) return;
 
-    PxPhysics* Physics = PhysSystem->GetPhysics();
-    if (!Physics)
-    {
-        UE_LOG("[FConstraintInstance] InitConstraintWithFrames failed: PxPhysics is null");
-        return;
-    }
+    OwnerComponent = InOwnerComponent; // Owner 등록
 
-    // 프레임 변환 (프로젝트 좌표계 → PhysX 좌표계)
-    PxTransform PxFrame1 = PhysXConvert::ToPx(Frame1);
-    PxTransform PxFrame2 = PhysXConvert::ToPx(Frame2);
+    // 2. 데이터 복원 (Engine -> PhysX)
+    // 저장된 Loc/Rot를 다시 PxTransform으로 변환
+    // Euler -> Quaternion 복원 시 순서(ZYX) 주의 (저장할 때랑 맞아야 함)
+    PxTransform PxFrame1 = PxTransform(
+        PhysXConvert::ToPx(Frame1Loc), 
+        PhysXConvert::ToPx(FQuat::MakeFromEulerZYX(Frame1Rot)) // 엔진 내부 함수 사용 가정
+    );
 
-    // D6Joint 생성
+    PxTransform PxFrame2 = PxTransform(
+        PhysXConvert::ToPx(Frame2Loc), 
+        PhysXConvert::ToPx(FQuat::MakeFromEulerZYX(Frame2Rot))
+    );
+
+    // 3. 조인트 생성 (Local Frame 그대로 사용)
     PxD6Joint* D6Joint = PxD6JointCreate(
-        *Physics,
+        *PhysSystem->GetPhysics(),
         Body1->RigidActor, PxFrame1,
         Body2->RigidActor, PxFrame2
     );
 
     if (!D6Joint)
     {
-        UE_LOG("[FConstraintInstance] InitConstraintWithFrames failed: PxD6JointCreate returned null");
+        UE_LOG("PxD6JointCreate failed");
         return;
     }
 
-    // 제한 설정 적용
+    // 4. 설정 적용
     ConfigureLinearLimits(D6Joint);
     ConfigureAngularLimits(D6Joint);
-
-    // 충돌 설정
     D6Joint->setConstraintFlag(PxConstraintFlag::eCOLLISION_ENABLED, !bDisableCollision);
+    
+    // [수정됨] 누락되었던 userData 추가
+    D6Joint->userData = this; 
 
-    // Joint 저장
+    // 5. 최종 저장
     PxJoint = D6Joint;
 }
 
