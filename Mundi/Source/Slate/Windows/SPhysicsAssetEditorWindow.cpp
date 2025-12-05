@@ -4453,34 +4453,26 @@ void SPhysicsAssetEditorWindow::RenderToolsPanel()
             {
                 if (bSimulateInEditor)
                 {
-                    // Week_Final_5 시뮬레이션 시작
                     // 이전 시뮬레이션 상태가 남아있을 수 있으므로 먼저 정리
                     if (PreviewComp->bRagdollInitialized)
                     {
                         PreviewComp->TermRagdoll();
                     }
 
-                    PreviewComp->ResetToRefPose();       // 본 포즈 초기화
+                    PreviewComp->ResetToRefPose();
                     PreviewComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
-                    // PhysicsAsset 설정 (이미 같은 에셋이면 조기 반환하지만 문제 없음)
-                    PreviewComp->SetPhysicsAsset(PhysState->EditingAsset);
+                    // PhysicsAsset 강제 재설정 (같은 에셋이라도)
+                    UPhysicsAsset* AssetToSet = PhysState->EditingAsset;
+                    PreviewComp->PhysicsAsset = nullptr;
+                    PreviewComp->SetPhysicsAsset(AssetToSet);
 
                     FPhysScene* PhysScene = PhysState->World->GetPhysicsScene();
                     if (PhysScene)
                     {
-                        // 이전 시뮬레이션에서 DeferReleaseActor로 큐에 쌓인 액터들을
-                        // 새 시뮬레이션 시작 전에 완전히 해제
                         PhysScene->FlushDeferredReleases();
-
                         PreviewComp->InitRagdoll(PhysScene);
                         PreviewComp->SetPhysicsMode(EPhysicsMode::Ragdoll);
-                        UE_LOG("[PhysicsAssetEditor] 시뮬레이션 시작: %d bodies, %d constraints",
-                               PreviewComp->Bodies.Num(), PreviewComp->Constraints.Num());
-                    }
-                    else
-                    {
-                        UE_LOG("[PhysicsAssetEditor] 시뮬레이션 실패: PhysScene이 없습니다");
                     }
                 }
                 else
@@ -4492,8 +4484,6 @@ void SPhysicsAssetEditorWindow::RenderToolsPanel()
 
                     // 본 라인 캐시 리셋
                     ActiveState->bBoneLinesDirty = true;
-
-                    UE_LOG("[PhysicsAssetEditor] 시뮬레이션 중지, 포즈 복원");
                 }
             }
         }

@@ -133,8 +133,9 @@ void FBodyInstance::InitBody(UBodySetup* Setup, const FTransform& Transform, UPr
 
         // 에디터 모드에서는 bTickInEditor가 true가 아니면 시뮬레이션 비활성화 (Kinematic으로 설정)
         // PIE 모드이거나 bTickInEditor가 true인 경우에만 실제 시뮬레이션 수행
+        // 단, 래그돌 바디는 에디터에서도 시뮬레이션 허용 (Physics Asset Editor 등에서 사용)
 #ifdef _EDITOR
-        if (!bShouldBeKinematic && Component)
+        if (!bShouldBeKinematic && Component && !bIsRagdollBody)
         {
             UWorld* World = Component->GetWorld();
             bool bIsPIE = (World && World->bPie) || GEngine.IsPIEActive();

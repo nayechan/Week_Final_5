@@ -663,8 +663,6 @@ void USkeletalMeshComponent::InitRagdoll(FPhysScene* InPhysScene)
     }
 
     bRagdollInitialized = true;
-    UE_LOG("[Ragdoll] Initialized with %d bodies and %d constraints",
-           PhysicsAsset->Bodies.Num(), Constraints.Num());
 }
 
 void USkeletalMeshComponent::TermRagdoll()
@@ -704,8 +702,6 @@ void USkeletalMeshComponent::TermRagdoll()
 
     bRagdollInitialized = false;
     PhysScene = nullptr;
-
-    UE_LOG("[Ragdoll] Terminated");
 }
 
 FBodyInstance* USkeletalMeshComponent::GetBodyInstance(int32 BoneIndex) const
@@ -1437,6 +1433,4 @@ void USkeletalMeshComponent::SetupInitialOverlapFilters()
             }
         }
     }
-
-    UE_LOG("[Ragdoll] SetupInitialOverlapFilters: Found %d overlapping body pairs", OverlapCount);
 }
