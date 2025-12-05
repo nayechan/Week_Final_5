@@ -27,14 +27,14 @@ void UDecalComponent::DuplicateSubObjects()
 	SpriteComponent = nullptr;
 }
 
-void UDecalComponent::StartFadeIn(float Duration, float Delay, int InFadeStyle)
+void UDecalComponent::StartFadeIn(float Duration, float Delay, EDecalFadeStyle InFadeStyle)
 {
 	FadeProperty.FadeInDuration = Duration;
 	FadeProperty.FadeInStartDelay = Delay;
 	FadeProperty.StartFadeIn(InFadeStyle);
 }
 
-void UDecalComponent::StartFadeOut(float Duration, float Delay, bool bDestroyOwner, int InFadeStyle)
+void UDecalComponent::StartFadeOut(float Duration, float Delay, bool bDestroyOwner, EDecalFadeStyle InFadeStyle)
 {
 	FadeProperty.FadeOutDuration = Duration;
 	FadeProperty.FadeStartDelay = Delay;
@@ -44,21 +44,6 @@ void UDecalComponent::StartFadeOut(float Duration, float Delay, bool bDestroyOwn
 
 void UDecalComponent::TickComponent(float DeltaTime)
 {
-	// Public 멤버를 Internal FadeProperty에 동기화
-	FadeProperty.FadeSpeed = FadeSpeed;
-	FadeProperty.FadeInDuration = FadeInDuration;
-	FadeProperty.FadeInStartDelay = FadeInStartDelay;
-	FadeProperty.FadeOutDuration = FadeOutDuration;
-	FadeProperty.FadeStartDelay = FadeStartDelay;
-	FadeProperty.bDestroyedAfterFade = bDestroyedAfterFade;
-
-	// FadeStyle은 StartFadeIn/Out에서 설정되므로 덮어쓰지 않음
-	// (페이드가 진행 중이 아닐 때만 public 멤버에서 동기화)
-	if (!FadeProperty.bIsFadingIn && !FadeProperty.bIsFadingOut)
-	{
-		FadeProperty.FadeStyle = FadeStyle;
-	}
-
 	// FadeProperty 업데이트
 	if (FadeProperty.Update(DeltaTime))
 	{
@@ -72,8 +57,6 @@ void UDecalComponent::TickComponent(float DeltaTime)
 		}
 	}
 
-	// 업데이트된 FadeStyle을 에디터에 표시
-	FadeStyle = FadeProperty.FadeStyle;
 }
 
 void UDecalComponent::OnRegister(UWorld* InWorld)

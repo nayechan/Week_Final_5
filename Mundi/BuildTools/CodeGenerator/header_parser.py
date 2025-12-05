@@ -562,13 +562,19 @@ class HeaderParser:
         enums = []
 
         # UENUM() 다음에 enum class 패턴 찾기
-        # 예: UENUM()\n enum class EAnimationMode : uint8 { ... };
-        pattern = r'UENUM\s*\([^)]*\)\s*enum\s+class\s+(\w+)\s*:\s*(\w+)\s*\{([^}]+)\}'
+        # 예: UENUM(DisplayName="...", Description="...")\n enum class EAnimationMode : uint8 { ... };
+        pattern = r'UENUM\s*\(([^)]*)\)\s*enum\s+class\s+(\w+)\s*:\s*(\w+)\s*\{([^}]+)\}'
 
         for match in re.finditer(pattern, content, re.DOTALL):
-            enum_name = match.group(1)
-            underlying_type = match.group(2)
-            enum_body = match.group(3)
+            uenum_metadata = match.group(1)
+            enum_name = match.group(2)
+            underlying_type = match.group(3)
+            enum_body = match.group(4)
+
+            # UENUM 메타데이터 파싱
+            metadata_dict = self._parse_metadata(uenum_metadata)
+            display_name = metadata_dict.get('DisplayName', enum_name)
+            description = metadata_dict.get('Description', '')
 
             # enum 값들 파싱
             values = {}
@@ -605,7 +611,9 @@ class HeaderParser:
                 name=enum_name,
                 header_file=header_path,
                 values=values,
-                underlying_type=underlying_type
+                underlying_type=underlying_type,
+                display_name=display_name,
+                description=description
             )
             enums.append(enum_info)
 

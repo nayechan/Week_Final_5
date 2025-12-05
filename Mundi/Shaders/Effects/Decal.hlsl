@@ -165,7 +165,7 @@ float4 mainPS(PS_INPUT input) : SV_TARGET
     }
 
     // 3. 픽셀의 3D 위치를 X축에서 바라보고 2D 평면(YZ)에 투사하여 UV 생성
-    float2 uv = localPos.yz * float2(-1.0f, -1.0f) + 0.5f;
+    float2 uv = localPos.yz * float2(1.0f, -1.0f) + 0.5f;
     uv += UVScrollSpeed * UVScrollTime;
 
     float4 decalTexture = g_DecalTexColor.Sample(g_Sample, uv);

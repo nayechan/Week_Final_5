@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug_StandAlone|x64">
@@ -786,6 +786,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClCompile Include="Generated\FKConvexElem.generated.cpp" />
     <ClCompile Include="Generated\APlayerGameMode.generated.cpp" />
     <ClCompile Include="Generated\UClothComponent.generated.cpp" />
+    <ClCompile Include="Generated\FDecalFadeProperty.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Common\LightingBuffers.hlsl">
@@ -985,6 +986,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClInclude Include="Source\Runtime\Engine\Components\CapsuleComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\CharacterMovementComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\ClothComponent.h" />
+    <ClInclude Include="Source\Runtime\Engine\Components\DecalFadeTypes.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\DOFComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\EPhysicsMode.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\InputComponent.h" />
@@ -1412,6 +1414,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClInclude Include="Generated\FKConvexElem.generated.h" />
     <ClInclude Include="Generated\APlayerGameMode.generated.h" />
     <ClInclude Include="Generated\UClothComponent.generated.h" />
+    <ClInclude Include="Generated\FDecalFadeProperty.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BuildTools\CodeGenerator\generate.py" />
