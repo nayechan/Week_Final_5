@@ -66,8 +66,6 @@ void USpringArmComponent::TickComponent(float DeltaSeconds)
 	SocketRotation = DesiredSocketRotation;
 
 	// 자식 컴포넌트(카메라)를 Socket 위치로 이동
-	// SetWorldLocation/SetWorldRotation을 따로 호출하면 GetWorldTransform()에서
-	// 부모(SpringArm)의 회전이 섞여 떨림이 발생하므로, 한 번에 설정
 	for (USceneComponent* Child : GetAttachChildren())
 	{
 		if (Child)
