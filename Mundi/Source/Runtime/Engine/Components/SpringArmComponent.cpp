@@ -70,8 +70,7 @@ void USpringArmComponent::TickComponent(float DeltaSeconds)
 	{
 		if (Child)
 		{
-			Child->SetWorldLocation(SocketLocation);
-			Child->SetWorldRotation(SocketRotation);
+			Child->SetWorldLocationAndRotation(SocketLocation, SocketRotation);
 		}
 	}
 }
@@ -124,10 +123,10 @@ void USpringArmComponent::UpdateDesiredArmLocation(float DeltaTime, FVector& Out
 		}
 	}
 
-	// 기본 위치: Owner의 위치 + TargetOffset (Owner의 로컬 좌표계 기준)
+	// 기본 위치: Owner의 위치 + TargetOffset (월드 좌표계 기준, 회전 적용 안 함)
+	// TargetOffset은 캐릭터 머리 위치 등 고정 오프셋으로 사용
 	FVector OwnerLocation = OwnerActor->GetActorLocation();
-	FVector RotatedTargetOffset = OwnerRotation.RotateVector(TargetOffset);
-	FVector TargetLocation = OwnerLocation + RotatedTargetOffset;
+	FVector TargetLocation = OwnerLocation + TargetOffset;
 
 	// Spring Arm 방향 계산 (뒤쪽)
 	FVector ArmDirection = OwnerRotation.GetForwardVector() * -1.0f; // Backward direction
@@ -139,30 +138,32 @@ void USpringArmComponent::UpdateDesiredArmLocation(float DeltaTime, FVector& Out
 	FVector UnlaggedDesiredLocation = TargetLocation + ArmDirection * TargetArmLength + RotatedSocketOffset;
 
 	// Camera Lag 적용
+	// 캐릭터 "이동"에만 래그를 적용하고, 마우스 "회전"으로 인한 위치 변화에는 래그 적용 안 함
+	// 이렇게 해야 마우스 회전 시 카메라가 즉시 따라가고, 캐릭터 이동 시에만 부드럽게 따라감
 	if (bEnableCameraLag)
 	{
 		// 이전 위치가 초기값이면 즉시 설정
-		if (PreviousDesiredLocation.IsZero())
+		if (PreviousActorLocation.IsZero())
 		{
-			PreviousDesiredLocation = UnlaggedDesiredLocation;
 			PreviousActorLocation = OwnerLocation;
 		}
 
-		// Lag 적용
-		FVector LagVector = UnlaggedDesiredLocation - PreviousDesiredLocation;
-		float LagDistance = LagVector.Size();
+		// 캐릭터 위치에만 래그 적용
+		FVector LaggedOwnerLocation = FVector::Lerp(PreviousActorLocation, OwnerLocation,
+		                                            FMath::Min(1.0f, DeltaTime * CameraLagSpeed));
 
 		// MaxDistance 제한
-		if (CameraLagMaxDistance > 0.0f && LagDistance > CameraLagMaxDistance)
+		FVector LagVector = OwnerLocation - LaggedOwnerLocation;
+		if (CameraLagMaxDistance > 0.0f && LagVector.Size() > CameraLagMaxDistance)
 		{
-			PreviousDesiredLocation = UnlaggedDesiredLocation - LagVector.GetNormalized() * CameraLagMaxDistance;
+			LaggedOwnerLocation = OwnerLocation - LagVector.GetNormalized() * CameraLagMaxDistance;
 		}
 
-		// Lerp
-		OutDesiredLocation = FVector::Lerp(PreviousDesiredLocation, UnlaggedDesiredLocation,
-		                                   FMath::Min(1.0f, DeltaTime * CameraLagSpeed));
-		PreviousDesiredLocation = OutDesiredLocation;
-		PreviousActorLocation = OwnerLocation;
+		PreviousActorLocation = LaggedOwnerLocation;
+
+		// 래그가 적용된 캐릭터 위치로 최종 위치 계산 (회전은 현재 값 그대로 사용)
+		FVector LaggedTargetLocation = LaggedOwnerLocation + TargetOffset;
+		OutDesiredLocation = LaggedTargetLocation + ArmDirection * TargetArmLength + RotatedSocketOffset;
 	}
 	else
 	{

@@ -13,6 +13,8 @@
 AController::AController()
 	: PossessedPawn(nullptr)
 	, ControlRotation(FQuat::Identity())
+	, ControlPitch(0.0f)
+	, ControlYaw(0.0f)
 {
 }
 
