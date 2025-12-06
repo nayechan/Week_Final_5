@@ -12,9 +12,22 @@ void UAnimStateMachineInstance::NativeUpdateAnimation(float DeltaSeconds)
     const FSkeleton* Skeleton = Mesh ? Mesh->GetSkeleton() : nullptr;
     if (!Skeleton) return;
 
+    // 현재 상태의 시간 저장 (Notify용)
+    const int32 CurrIdx = StateMachine.GetCurrentStateIndex();
+    float CurrentTime = (CurrIdx >= 0) ? StateMachine.GetStateTime(CurrIdx) : 0.f;
+
+    // StateMachine 업데이트
     FAnimationBaseContext Ctx;
     Ctx.Initialize(Comp, Skeleton, DeltaSeconds);
     StateMachine.Update(Ctx);
+
+    // Notify 트리거 (현재 상태만)
+    if (CurrIdx >= 0)
+    {
+        float NewTime = StateMachine.GetStateTime(CurrIdx);
+        TriggerNotifiesForState(CurrIdx, PreviousTime, NewTime);
+        PreviousTime = NewTime;
+    }
 }
 
 void UAnimStateMachineInstance::EvaluateAnimation(FPoseContext& Output)
@@ -31,7 +44,7 @@ void UAnimStateMachineInstance::Clear()
 
 int32 UAnimStateMachineInstance::Lua_AddState(const FString& Name, const FString& AssetPath, float Rate, bool bLooping)
 {
-    UAnimSequence* Seq = UResourceManager::GetInstance().Get<UAnimSequence>(AssetPath);
+    UAnimSequence* Seq = UResourceManager::GetInstance().Load<UAnimSequence>(AssetPath);
     if (!Seq)
     {
         const auto& AllAnims = UResourceManager::GetInstance().GetAnimations();
@@ -107,4 +120,39 @@ void UAnimStateMachineInstance::Lua_SetStateTime(const FString& Name, float Time
 {
     const int32 Idx = FindStateByName(Name);
     if (Idx >= 0) SetStateTime(Idx, TimeSeconds);
+}
+
+float UAnimStateMachineInstance::Lua_GetStateLength(const FString& Name) const
+{
+    const int32 Idx = FindStateByName(Name);
+    return (Idx >= 0) ? StateMachine.GetStateLength(Idx) : 0.f;
+}
+
+void UAnimStateMachineInstance::TriggerNotifiesForState(int32 StateIndex, float PrevTime, float CurrTime)
+{
+    const FAnimState* State = StateMachine.GetStateChecked(StateIndex);
+    if (!State) return;
+
+    UAnimSequence* Seq = Cast<UAnimSequence>(State->Player.GetSequence());
+    if (!Seq) return;
+
+    USkeletalMeshComponent* Comp = GetOwningComponent();
+    if (!Comp) return;
+
+    // 루핑 처리: 시간이 되돌아갔으면 0부터 다시 체크
+    if (CurrTime < PrevTime)
+    {
+        PrevTime = 0.f;
+    }
+
+    for (const FNotifyTrack& Track : Seq->GetNotifyTracks())
+    {
+        for (const FAnimNotifyEvent& Notify : Track.Notifies)
+        {
+            if (Notify.TriggerTime > PrevTime && Notify.TriggerTime <= CurrTime)
+            {
+                Comp->TriggerAnimNotify(Notify);
+            }
+        }
+    }
 }

@@ -26,6 +26,17 @@ public:
     void SetIndexCount(uint32 Cnt) { IndexCount = Cnt; }
     uint32 GetVertexStride() const { return VertexStride; };
 
+    // 외부에서 직접 버퍼 설정 (스카이박스 등 절차적 메시용)
+    void SetBuffers(ID3D11Buffer* InVertexBuffer, ID3D11Buffer* InIndexBuffer,
+                    uint32 InVertexCount, uint32 InIndexCount, uint32 InVertexStride)
+    {
+        VertexBuffer = InVertexBuffer;
+        IndexBuffer = InIndexBuffer;
+        VertexCount = InVertexCount;
+        IndexCount = InIndexCount;
+        VertexStride = InVertexStride;
+    }
+
 	const FString& GetAssetPathFileName() const { return StaticMeshAsset ? StaticMeshAsset->PathFileName : FilePath; }
     void SetStaticMeshAsset(FStaticMesh* InStaticMesh) { StaticMeshAsset = InStaticMesh; }
 	FStaticMesh* GetStaticMeshAsset() const { return StaticMeshAsset; }

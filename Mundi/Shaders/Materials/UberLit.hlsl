@@ -23,6 +23,10 @@ struct FMaterial
     uint IlluminationModel;     // illum - 조명 모델
     float3 TransmissionFilter;  // Tf - 투과 필터 색상
     float Padding;              // 정렬을 위한 패딩
+    // UV Tiling
+    float TileU;
+    float TileV;
+    float2 TilePadding;         // 16바이트 정렬
 };
 
 // --- 상수 버퍼 (Constant Buffers) ---
@@ -303,8 +307,12 @@ PS_OUTPUT mainPS(PS_INPUT Input)
         }
     }
 
-    // UV 스크롤링 적용 (활성화된 경우)
+    // UV 타일링 적용
     float2 uv = Input.TexCoord;
+    if (bHasMaterial)
+    {
+        uv *= float2(Material.TileU, Material.TileV);
+    }
     //if (bHasMaterial && bHasTexture)
     //{
     //    uv += UVScrollSpeed * UVScrollTime;

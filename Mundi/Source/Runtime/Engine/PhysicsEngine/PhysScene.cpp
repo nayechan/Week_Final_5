@@ -542,17 +542,34 @@ public:
             return PxQueryHitType::eBLOCK;
         }
 
-        // userData에서 BodyInstance를 가져와서 OwnerComponent의 Owner 확인
         void* UserData = actor->userData;
         if (UserData)
         {
-            FBodyInstance* BodyInstance = static_cast<FBodyInstance*>(UserData);
-            if (BodyInstance && BodyInstance->OwnerComponent)
+            // FPhysicsUserData 기반의 타입 안전한 캐스팅 사용
+            // PhysicsUserDataCast는 Type 멤버를 검사하여 올바른 타입인 경우에만 캐스팅
+
+            // FBodyInstance인지 확인 (일반 물리 바디)
+            if (FBodyInstance* BodyInstance = PhysicsUserDataCast<FBodyInstance>(UserData))
             {
-                AActor* HitActor = BodyInstance->OwnerComponent->GetOwner();
-                if (HitActor == IgnoreActor)
+                if (BodyInstance->OwnerComponent)
                 {
-                    return PxQueryHitType::eNONE;  // 무시
+                    AActor* HitActor = BodyInstance->OwnerComponent->GetOwner();
+                    if (HitActor == IgnoreActor)
+                    {
+                        return PxQueryHitType::eNONE;  // 무시
+                    }
+                }
+            }
+            // FControllerInstance인지 확인 (CCT - Character Controller)
+            else if (FControllerInstance* ControllerInst = PhysicsUserDataCast<FControllerInstance>(UserData))
+            {
+                if (ControllerInst->OwnerComponent)
+                {
+                    AActor* HitActor = ControllerInst->OwnerComponent->GetOwner();
+                    if (HitActor == IgnoreActor)
+                    {
+                        return PxQueryHitType::eNONE;  // CCT 무시
+                    }
                 }
             }
         }

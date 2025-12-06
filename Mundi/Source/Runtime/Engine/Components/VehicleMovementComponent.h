@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "MovementComponent.h"
 #include "Vehicle/VehicleWheel.h"
 #include "VehicleDefinitions.h"
@@ -180,4 +180,23 @@ private:
 
     /** Scene 등록 후 FilterData 설정 */
     void FinalizeShapeFilterData();
+
+    // ====================================================================
+    // 수동 자동변속 로직 (PhysX AutoBox 대체)
+    // ====================================================================
+
+    /** 수동 자동변속 업데이트 */
+    void UpdateManualAutoGearBox(float DeltaTime);
+
+    /** 마지막 변속 후 경과 시간 */
+    float GearSwitchTimer = 0.0f;
+
+    /** 변속 쿨다운 시간 */
+    float GearSwitchCooldown = 0.3f;
+
+    /** 상향 변속 RPM 비율 (MaxRPM 대비) */
+    float UpShiftRatio = 0.85f;
+
+    /** 하향 변속 RPM 비율 (MaxRPM 대비) */
+    float DownShiftRatio = 0.35f;
 };

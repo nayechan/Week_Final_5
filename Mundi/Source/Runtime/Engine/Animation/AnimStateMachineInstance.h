@@ -59,11 +59,18 @@ public:
     UFUNCTION(LuaBind, DisplayName="SetStateTime")
     void Lua_SetStateTime(const FString& Name, float TimeSeconds);
 
+    UFUNCTION(LuaBind, DisplayName="GetStateLength")
+    float Lua_GetStateLength(const FString& Name) const;
+
     // UAnimInstance overrides
     void NativeUpdateAnimation(float DeltaSeconds) override;
     void EvaluateAnimation(FPoseContext& Output) override;
     bool IsPlaying() const override { return StateMachine.IsActive(); }
 
 private:
+    void TriggerNotifiesForState(int32 StateIndex, float PrevTime, float CurrTime);
+
+private:
     FAnimNode_StateMachine StateMachine;
+    float PreviousTime = 0.f;  // Notify 체크용
 };

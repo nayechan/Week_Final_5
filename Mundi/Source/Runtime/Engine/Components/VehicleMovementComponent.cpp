@@ -12,6 +12,7 @@ static const PxU32 VEHICLE_SURFACE_TYPE_CHASSIS = 0xffff;
 static const float VEHICLE_MASS = 1500.0f;
 static const uint32 MAX_WHEELS = 4;
 
+
 /** 레이캐스트가 닿은 물체가 차량 자신이면 무시하기위한 필터 */
 static PxQueryHitType::Enum WheelRaycastPreFilter(
     PxFilterData filterData0, // Ray (바퀴)
@@ -289,13 +290,14 @@ void UVehicleMovementComponent::SetupWheelSimulationData(physx::PxRigidDynamic* 
         }
     }
 
-    PxVehicleComputeSprungMasses(ValidWheelIndices.Num(), WheelOffsets, BodyCMOffset, TotalMass, 2, SprungMasses);
+    // 마지막 파라미터: 1 = Y-up (PhysX 좌표계), 2 = Z-up
+    PxVehicleComputeSprungMasses(ValidWheelIndices.Num(), WheelOffsets, BodyCMOffset, TotalMass, 1, SprungMasses);
 
-    for (int32 i = 0; i < MAX_WHEELS; i++)
+    for (int32 i = 0; i < ValidWheelIndices.Num(); i++)
     {
         int32 WheelIndex = ValidWheelIndices[i];
-        VehicleWheels[i]->SprungMass = SprungMasses[i];
-        PWheelsSimData->setSuspensionData(WheelIndex, VehicleWheels[i]->GetPxSuspensionData());
+        VehicleWheels[WheelIndex]->SprungMass = SprungMasses[i];
+        PWheelsSimData->setSuspensionData(WheelIndex, VehicleWheels[WheelIndex]->GetPxSuspensionData());
     }
 
     for (int32 i = 0; i < MAX_WHEELS; i++)
@@ -303,13 +305,17 @@ void UVehicleMovementComponent::SetupWheelSimulationData(physx::PxRigidDynamic* 
         if (VehicleWheels[i])
         {
             PWheelsSimData->setWheelData(i, VehicleWheels[i]->GetPxWheelData());
-            PWheelsSimData->setTireData(i, PxVehicleTireData());
             PWheelsSimData->setSuspensionData(i, VehicleWheels[i]->GetPxSuspensionData());
 
+            // 타이어 데이터
+            PxVehicleTireData TireData;
+            PWheelsSimData->setTireData(i, TireData);
+
             PxVec3 Offset = U2PVector(WheelSetups[i].BoneOffset);
-            PWheelsSimData->setWheelCentreOffset(i, Offset); 
-            // PhysX Y-up 좌표계: 서스펜션 방향 = -Y
+            PWheelsSimData->setWheelCentreOffset(i, Offset);
+            // 서스펜션 레이캐스트 방향: 아래로 (-Y)
             PWheelsSimData->setSuspTravelDirection(i, PxVec3(0, -1, 0));
+            // 힘 적용 지점은 휠 중심
             PWheelsSimData->setSuspForceAppPointOffset(i, Offset);
             PWheelsSimData->setTireForceAppPointOffset(i, Offset);
             PWheelsSimData->setWheelShapeMapping(i, WheelShapeStartIndex + i);
@@ -328,10 +334,23 @@ void UVehicleMovementComponent::SetupDriveSimulationData(physx::PxRigidDynamic* 
     DriveSimData.setClutchData(ClutchData);
 
     PxVehicleAutoBoxData AutoBoxData;
-    AutoBoxData.setDownRatios(PxVehicleGearsData::eFIRST, 0.5f);
+    // 변속 지연 시간 (기본값 2초는 너무 김)
+    AutoBoxData.setLatency(0.2f);
+    // 상향 변속 비율 (엔진 최대 RPM 대비 이 비율 이상이면 상위 기어로)
     AutoBoxData.setUpRatios(PxVehicleGearsData::eFIRST, 0.65f);
+    AutoBoxData.setUpRatios(PxVehicleGearsData::eSECOND, 0.65f);
+    AutoBoxData.setUpRatios(PxVehicleGearsData::eTHIRD, 0.65f);
+    AutoBoxData.setUpRatios(PxVehicleGearsData::eFOURTH, 0.65f);
+    AutoBoxData.setUpRatios(PxVehicleGearsData::eFIFTH, 0.65f);
+    // 하향 변속 비율 (이 비율 이하면 하위 기어로)
+    AutoBoxData.setDownRatios(PxVehicleGearsData::eSECOND, 0.5f);
+    AutoBoxData.setDownRatios(PxVehicleGearsData::eTHIRD, 0.5f);
+    AutoBoxData.setDownRatios(PxVehicleGearsData::eFOURTH, 0.5f);
+    AutoBoxData.setDownRatios(PxVehicleGearsData::eFIFTH, 0.5f);
+    AutoBoxData.setDownRatios(PxVehicleGearsData::eSIXTH, 0.5f);
     DriveSimData.setAutoBoxData(AutoBoxData);
     
+    // 4륜 구동 디퍼런셜 설정
     PxVehicleDifferential4WData DiffData;
     DiffData.mType = PxVehicleDifferential4WData::eDIFF_TYPE_LS_4WD;
     DriveSimData.setDiffData(DiffData);
@@ -366,8 +385,8 @@ void UVehicleMovementComponent::SetupDriveSimulationData(physx::PxRigidDynamic* 
             return;
         }
 
+        // 자동 기어 사용 (PhysX 기본값)
         PVehicleDrive->mDriveDynData.setUseAutoGears(true);
-        PVehicleDrive->mDriveDynData.forceGearChange(PxVehicleGearsData::eFIRST);
     }
 
     RigidActor->setRigidBodyFlag(PxRigidBodyFlag::eKINEMATIC, false);
@@ -521,9 +540,12 @@ void UVehicleMovementComponent::TickComponent(float DeltaSeconds)
         return;
     }
 
+    ProcessVehicleInput(DeltaSeconds);
+
     UpdateVehicleSimulation(DeltaSeconds);
 
-    ProcessVehicleInput(DeltaSeconds);
+    // PhysX AutoBox가 작동하지 않아 수동 변속 로직 사용
+    UpdateManualAutoGearBox(DeltaSeconds);
 
     // @note 디버그용 (불필요할 시 주석처리 혹은 삭제할 것)
     if (PVehicleDrive)
@@ -532,10 +554,14 @@ void UVehicleMovementComponent::TickComponent(float DeltaSeconds)
         float RPM = PVehicleDrive->mDriveDynData.getEngineRotationSpeed() * 9.55f;
         // 현재 기어
         int32 Gear = PVehicleDrive->mDriveDynData.getCurrentGear();
+        // 타겟 기어
+        int32 TargetGear = PVehicleDrive->mDriveDynData.getTargetGear();
+        // 자동 기어 사용 여부
+        bool bAutoGears = PVehicleDrive->mDriveDynData.getUseAutoGears();
         // 실제 바퀴 회전 속도 (첫번째 바퀴)
         float WheelSpeed = PVehicleDrive->mWheelsDynData.getWheelRotationSpeed(0);
-    
-        UE_LOG("RPM: %.1f | Gear: %d | WheelSpeed: %.1f", RPM, Gear, WheelSpeed);
+
+        UE_LOG("RPM: %.1f | Gear: %d | Target: %d | Auto: %d | WheelSpeed: %.1f", RPM, Gear, TargetGear, bAutoGears, WheelSpeed);
     }
 }
 
@@ -596,7 +622,8 @@ void UVehicleMovementComponent::UpdateVehicleSimulation(float DeltaTime)
     PerformSuspensionRaycasts(DeltaTime);
 
     PxScene* Scene = PVehicleDrive->getRigidDynamicActor()->getScene();
-    PxVec3 Gravity = Scene ? Scene->getGravity() : PxVec3(0, 0, -9.81f);
+    // PhysX Y-up 좌표계: 중력은 -Y 방향
+    PxVec3 Gravity = Scene ? Scene->getGravity() : PxVec3(0, -9.81f, 0);
 
     if (!FrictionPairs)
     {
@@ -628,7 +655,8 @@ void UVehicleMovementComponent::SetThrottleInput(float Throttle)
 
 void UVehicleMovementComponent::SetSteeringInput(float Steering)
 {
-    if (PInputData) PInputData->setAnalogSteer(Steering);
+    // 좌표계 변환으로 좌우가 반전되므로 입력 반전
+    if (PInputData) PInputData->setAnalogSteer(-Steering);
 }
 
 void UVehicleMovementComponent::SetBrakeInput(float Brake)
@@ -645,6 +673,7 @@ float UVehicleMovementComponent::GetForwardSpeed() const
 {
     if (PVehicleDrive)
     {
+        // 차량 전용 변환으로 좌표계가 정렬되었으므로 정상 속도
         return PVehicleDrive->computeForwardSpeed();
     }
     return 0.0f;
@@ -665,11 +694,13 @@ int32 UVehicleMovementComponent::GetCurrentGear() const
     if (PVehicleDrive)
     {
         int32 Gear = PVehicleDrive->mDriveDynData.getCurrentGear();
-        // PhysX: 0=Reverse, 1=Neutral, 2+=Forward gears
-        // 사용자 친화적 변환: -1=R, 0=N, 1+=전진기어
+        // 차량 전용 변환으로 좌표계가 정렬되었으므로 정상 기어 매핑
+        // PhysX eREVERSE(0) = 후진(-1)
+        // PhysX eNEUTRAL(1) = 중립(0)
+        // PhysX eFIRST+(2+) = 전진(1+)
         if (Gear == 0) return -1;      // Reverse
         if (Gear == 1) return 0;       // Neutral
-        return Gear - 1;               // Forward gears (1, 2, 3...)
+        return Gear - 1;               // Forward gears (eFIRST=2 → 1, eSECOND=3 → 2, etc.)
     }
     return 0;
 }
@@ -681,7 +712,8 @@ void UVehicleMovementComponent::ApplyBoostForce(float BoostStrength)
     PxRigidDynamic* Actor = PVehicleDrive->getRigidDynamicActor();
     if (!Actor) return;
 
-    // 차량의 전진 방향 (PhysX 로컬 -Z축 = 엔진 X축)
+    // 차량의 전진 방향 (PhysX 로컬 -Z축 = 엔진 +X축)
+    // PxVehicleSetBasisVectors로 forward=-Z 설정됨
     PxTransform Pose = Actor->getGlobalPose();
     PxVec3 ForwardDir = Pose.q.rotate(PxVec3(0.0f, 0.0f, -1.0f));
 
@@ -694,11 +726,21 @@ void UVehicleMovementComponent::SetGearToDrive()
 {
     if (PVehicleDrive)
     {
-        if (PVehicleDrive->mDriveDynData.getCurrentGear() < physx::PxVehicleGearsData::eFIRST)
-        {
-            PVehicleDrive->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eFIRST);
-            PVehicleDrive->mDriveDynData.setUseAutoGears(true); 
-        }
+        const PxU32 CurrentGear = PVehicleDrive->mDriveDynData.getCurrentGear();
+        const PxU32 TargetGear = PVehicleDrive->mDriveDynData.getTargetGear();
+
+        // PhysX autobox 비활성화 (수동 변속 로직 사용)
+        PVehicleDrive->mDriveDynData.setUseAutoGears(false);
+
+        // 변속 중이면 대기
+        if (CurrentGear != TargetGear) return;
+
+        // 이미 전진 기어면 수동 변속 로직에 맡김
+        if (CurrentGear >= physx::PxVehicleGearsData::eFIRST) return;
+
+        // 후진/중립일 때만 1단으로 변경
+        PVehicleDrive->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eFIRST);
+        GearSwitchTimer = 0.0f; // 변속 쿨다운 리셋
     }
 }
 
@@ -706,11 +748,9 @@ void UVehicleMovementComponent::SetGearToReverse()
 {
     if (PVehicleDrive)
     {
-        if (PVehicleDrive->mDriveDynData.getCurrentGear() != physx::PxVehicleGearsData::eREVERSE)
-        {
-            PVehicleDrive->mDriveDynData.setUseAutoGears(false);
-            PVehicleDrive->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eREVERSE);
-        }
+        // 후진 기어는 수동 유지 (자동 변속 시 후진으로 안 바뀜)
+        PVehicleDrive->mDriveDynData.setUseAutoGears(false);
+        PVehicleDrive->mDriveDynData.forceGearChange(physx::PxVehicleGearsData::eREVERSE);
     }
 }
 
@@ -742,4 +782,40 @@ FTransform UVehicleMovementComponent::GetWheelTransform(int32 WheelIndex) const
     }
 
     return FTransform();
+}
+
+void UVehicleMovementComponent::UpdateManualAutoGearBox(float DeltaTime)
+{
+    if (!PVehicleDrive) return;
+
+    const PxU32 CurrentGear = PVehicleDrive->mDriveDynData.getCurrentGear();
+    const PxU32 TargetGear = PVehicleDrive->mDriveDynData.getTargetGear();
+
+    // 변속 중이면 대기
+    if (CurrentGear != TargetGear) return;
+
+    // 전진 기어가 아니면 처리 안 함 (중립, 후진)
+    if (CurrentGear < physx::PxVehicleGearsData::eFIRST) return;
+
+    // 변속 쿨다운 타이머
+    GearSwitchTimer += DeltaTime;
+    if (GearSwitchTimer < GearSwitchCooldown) return;
+
+    // 현재 엔진 RPM 비율 계산
+    const float EngineOmega = PVehicleDrive->mDriveDynData.getEngineRotationSpeed();
+    const float MaxOmega = EngineSetup.MaxRPM * (PxPi / 30.0f);
+    const float RPMRatio = EngineOmega / MaxOmega;
+
+    // 상향 변속: RPM이 UpShiftRatio 이상이고 최대 기어가 아닐 때
+    if (RPMRatio >= UpShiftRatio && CurrentGear < physx::PxVehicleGearsData::eFIFTH)
+    {
+        PVehicleDrive->mDriveDynData.forceGearChange(CurrentGear + 1);
+        GearSwitchTimer = 0.0f;
+    }
+    // 하향 변속: RPM이 DownShiftRatio 이하이고 1단이 아닐 때
+    else if (RPMRatio <= DownShiftRatio && CurrentGear > physx::PxVehicleGearsData::eFIRST)
+    {
+        PVehicleDrive->mDriveDynData.forceGearChange(CurrentGear - 1);
+        GearSwitchTimer = 0.0f;
+    }
 }

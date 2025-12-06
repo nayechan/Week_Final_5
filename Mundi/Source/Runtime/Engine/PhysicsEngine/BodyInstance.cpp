@@ -11,7 +11,8 @@ extern UEditorEngine GEngine;
 #endif
 
 FBodyInstance::FBodyInstance()
-    : OwnerComponent(nullptr)
+    : FPhysicsUserData(EPhysicsUserDataType::BodyInstance)
+    , OwnerComponent(nullptr)
     , BodySetup(nullptr)
     , PhysScene(nullptr)
     , RigidActor(nullptr)
@@ -26,7 +27,8 @@ FBodyInstance::FBodyInstance()
 }
 
 FBodyInstance::FBodyInstance(const FBodyInstance& Other)
-    : OwnerComponent(nullptr)   // 런타임 포인터는 복사하지 않음
+    : FPhysicsUserData(EPhysicsUserDataType::BodyInstance)
+    , OwnerComponent(nullptr)   // 런타임 포인터는 복사하지 않음
     , BodySetup(nullptr)        // InitBody에서 새로 설정됨
     , PhysScene(nullptr)        // InitBody에서 새로 설정됨
     , RigidActor(nullptr)       // InitBody에서 새로 생성됨

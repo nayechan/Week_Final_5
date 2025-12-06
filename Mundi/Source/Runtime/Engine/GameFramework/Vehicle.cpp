@@ -88,6 +88,8 @@ void AVehicle::Tick(float DeltaSeconds)
         }
         else
         {
+            // 키를 떼도 기어 유지 (중립으로 변경되지 않도록)
+            VehicleMovement->SetGearToDrive();
             VehicleMovement->SetThrottleInput(0.0f);
             VehicleMovement->SetBrakeInput(0.0f);
         }

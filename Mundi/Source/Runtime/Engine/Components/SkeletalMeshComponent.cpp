@@ -31,10 +31,10 @@ USkeletalMeshComponent::USkeletalMeshComponent()
 
     // Keep constructor lightweight for editor/viewer usage.
     // Load a simple default test mesh if available; viewer UI can override.
-    SetSkeletalMesh(GDataDir + "/DancingRacer.fbx");
+    SetSkeletalMesh(GDataDir + "/X Bot.fbx");
 
     // 기본 PhysicsAsset 설정
-    PhysicsAsset = UResourceManager::GetInstance().Load<UPhysicsAsset>("Data/Physics/Dancing.physicsasset");
+    PhysicsAsset = UResourceManager::GetInstance().Load<UPhysicsAsset>("Data/Physics/xBot.physicsasset");
 }
 
 
@@ -523,6 +523,13 @@ void USkeletalMeshComponent::InitRagdoll(FPhysScene* InPhysScene)
     const int32 NumBones = Skeleton->Bones.Num();
     const int32 NumBodySetups = PhysicsAsset->Bodies.Num();
 
+    // 래그돌 초기화 시점의 본 스케일 저장 (시뮬레이션 중 유지)
+    OriginalBoneScales.SetNum(NumBones);
+    for (int32 i = 0; i < NumBones; ++i)
+    {
+        OriginalBoneScales[i] = GetBoneWorldTransform(i).Scale3D;
+    }
+
     // Bodies 배열 초기화 (본 개수만큼, nullptr로)
     Bodies.SetNum(NumBones);
     for (int32 i = 0; i < NumBones; ++i)
@@ -602,8 +609,8 @@ void USkeletalMeshComponent::InitRagdoll(FPhysScene* InPhysScene)
         PhysScene->GetPxScene()->addAggregate(*Aggregate);
     }
 
-    // 초기 포즈에서 겹치는 바디 쌍 검출 및 충돌 무시 설정
-    SetupInitialOverlapFilters();
+    // Note: 부모-자식 충돌 필터링은 Constraint의 bDisableCollision=true가 처리
+    // 비인접 본(예: 왼쪽다리-오른쪽다리)은 충돌해야 하므로 별도 필터링 불필요
 
     // Constraints 생성 (본 이름 기반)
     for (const FConstraintInstance& AssetCI : PhysicsAsset->Constraints)
@@ -689,6 +696,9 @@ void USkeletalMeshComponent::TermRagdoll()
     }
     Bodies.Empty();
 
+    // 원래 본 스케일 정리
+    OriginalBoneScales.Empty();
+
     // Aggregate 해제
     if (Aggregate)
     {
@@ -715,6 +725,19 @@ FBodyInstance* USkeletalMeshComponent::GetBodyInstance(int32 BoneIndex) const
 
 const TArray<FBodyInstance*>& USkeletalMeshComponent::GetBodies()
 {
+    // 이미 초기화되었으면 바로 반환 (매 프레임 재초기화 방지)
+    if (bRagdollInitialized)
+    {
+        return Bodies;
+    }
+
+    // 시뮬레이션이 비활성화되어 있으면 lazy 초기화하지 않음
+    // (Physics Asset Editor에서 시뮬레이션 끄면 PVD에도 안 보여야 함)
+    if (!bSimulatePhysics)
+    {
+        return Bodies;
+    }
+
     UWorld* MyWorld = GetWorld();
 
     // 에디터 모드 + PIE 비활성일 때만 lazy 초기화
@@ -741,10 +764,7 @@ const TArray<FBodyInstance*>& USkeletalMeshComponent::GetBodies()
             FPhysScene* Scene = MyWorld->GetPhysicsScene();
             if (Scene)
             {
-                bool bPrevSimulate = bSimulatePhysics;
-                bSimulatePhysics = false;
                 InitRagdoll(Scene);
-                bSimulatePhysics = bPrevSimulate;
             }
         }
     }
@@ -855,7 +875,15 @@ void USkeletalMeshComponent::SyncBonesFromPhysics()
         if (Body && Body->IsValidBodyInstance())
         {
             BodyWorldTransforms[BoneIndex] = Body->GetUnrealWorldTransform();
-            BodyWorldTransforms[BoneIndex].Scale3D *= 0.01;
+            // 스케일은 래그돌 초기화 시점의 원래 본 스케일 유지
+            if (BoneIndex < OriginalBoneScales.Num())
+            {
+                BodyWorldTransforms[BoneIndex].Scale3D = OriginalBoneScales[BoneIndex];
+            }
+            else
+            {
+                BodyWorldTransforms[BoneIndex].Scale3D = GetWorldScale();
+            }
         }
         else
         {
@@ -1214,6 +1242,13 @@ void USkeletalMeshComponent::RenderDebugVolume(URenderer* Renderer) const
 
 void USkeletalMeshComponent::OnCreatePhysicsState()
 {
+    // 물리 시뮬레이션이 비활성화되어 있으면 생성하지 않음
+    // (Physics Asset Editor에서 수동 제어 시 자동 생성 방지)
+    if (!bSimulatePhysics)
+    {
+        return;
+    }
+
     // NoCollision이면 물리 상태 생성하지 않음
     if (CollisionEnabled == ECollisionEnabled::NoCollision)
     {
@@ -1318,118 +1353,6 @@ void USkeletalMeshComponent::OnUpdateTransform(EUpdateTransformFlags UpdateTrans
             {
                 FTransform BoneWorldTransform = GetBoneWorldTransform(BoneIndex);
                 Body->SetBodyTransform(BoneWorldTransform, bIsTeleport);
-            }
-        }
-    }
-}
-
-void USkeletalMeshComponent::SetupInitialOverlapFilters()
-{
-    if (!PhysScene || !PhysScene->GetPxScene() || !PhysicsAsset)
-    {
-        return;
-    }
-
-    PxScene* Scene = PhysScene->GetPxScene();
-
-    // 유효한 바디 인스턴스 목록 수집
-    TArray<FBodyInstance*> ValidBodies;
-    TArray<int32> ValidBodyIndices;
-    for (int32 i = 0; i < Bodies.Num(); ++i)
-    {
-        if (Bodies[i] && Bodies[i]->RigidActor)
-        {
-            ValidBodies.Add(Bodies[i]);
-            ValidBodyIndices.Add(i);
-        }
-    }
-
-    // 먼저 각 바디의 Shape에 자신의 인덱스를 word3에 설정
-    for (int32 i = 0; i < ValidBodies.Num(); ++i)
-    {
-        PxRigidActor* Actor = ValidBodies[i]->RigidActor;
-        PxU32 NumShapes = Actor->getNbShapes();
-        TArray<PxShape*> Shapes(NumShapes);
-        Actor->getShapes(Shapes.GetData(), NumShapes);
-
-        for (PxU32 s = 0; s < NumShapes; ++s)
-        {
-            PxFilterData FilterData = Shapes[s]->getSimulationFilterData();
-            FilterData.word3 = i;  // 자신의 바디 인덱스 저장
-            Shapes[s]->setSimulationFilterData(FilterData);
-        }
-    }
-
-    int32 OverlapCount = 0;
-
-    // 모든 바디 쌍에 대해 겹침 검사
-    for (int32 i = 0; i < ValidBodies.Num(); ++i)
-    {
-        for (int32 j = i + 1; j < ValidBodies.Num(); ++j)
-        {
-            FBodyInstance* BodyA = ValidBodies[i];
-            FBodyInstance* BodyB = ValidBodies[j];
-
-            PxRigidActor* ActorA = BodyA->RigidActor;
-            PxRigidActor* ActorB = BodyB->RigidActor;
-
-            // 각 Shape 쌍에 대해 겹침 검사
-            bool bOverlapping = false;
-
-            PxU32 NumShapesA = ActorA->getNbShapes();
-            PxU32 NumShapesB = ActorB->getNbShapes();
-
-            TArray<PxShape*> ShapesA(NumShapesA);
-            TArray<PxShape*> ShapesB(NumShapesB);
-
-            ActorA->getShapes(ShapesA.GetData(), NumShapesA);
-            ActorB->getShapes(ShapesB.GetData(), NumShapesB);
-
-            for (PxU32 sa = 0; sa < NumShapesA && !bOverlapping; ++sa)
-            {
-                for (PxU32 sb = 0; sb < NumShapesB && !bOverlapping; ++sb)
-                {
-                    PxShape* ShapeA = ShapesA[sa];
-                    PxShape* ShapeB = ShapesB[sb];
-
-                    PxTransform PoseA = ActorA->getGlobalPose() * ShapeA->getLocalPose();
-                    PxTransform PoseB = ActorB->getGlobalPose() * ShapeB->getLocalPose();
-
-                    // PxGeometryQuery::overlap으로 겹침 검사
-                    PxGeometryHolder GeomA = ShapeA->getGeometry();
-                    PxGeometryHolder GeomB = ShapeB->getGeometry();
-
-                    if (PxGeometryQuery::overlap(GeomA.any(), PoseA, GeomB.any(), PoseB))
-                    {
-                        bOverlapping = true;
-                    }
-                }
-            }
-
-            // 겹치는 경우 충돌 무시 설정
-            if (bOverlapping)
-            {
-                OverlapCount++;
-
-                // FilterData.word2에 충돌 무시할 바디 인덱스 비트 설정
-                for (PxU32 sa = 0; sa < NumShapesA; ++sa)
-                {
-                    PxShape* Shape = ShapesA[sa];
-                    PxFilterData FilterData = Shape->getSimulationFilterData();
-                    FilterData.word2 |= (1 << j);  // j번 바디와 충돌 무시
-                    Shape->setSimulationFilterData(FilterData);
-                }
-                for (PxU32 sb = 0; sb < NumShapesB; ++sb)
-                {
-                    PxShape* Shape = ShapesB[sb];
-                    PxFilterData FilterData = Shape->getSimulationFilterData();
-                    FilterData.word2 |= (1 << i);  // i번 바디와 충돌 무시
-                    Shape->setSimulationFilterData(FilterData);
-                }
-
-                // 필터링 재설정
-                Scene->resetFiltering(*ActorA);
-                Scene->resetFiltering(*ActorB);
             }
         }
     }

@@ -62,6 +62,7 @@
 #include "Modules/ParticleModuleTypeDataRibbon.h"
 #include "DOFComponent.h"
 #include "RagdollDebugRenderer.h"
+#include "SkyboxComponent.h"
 
 FSceneRenderer::FSceneRenderer(UWorld* InWorld, FSceneView* InView, URenderer* InOwnerRenderer)
 	: World(InWorld)
@@ -199,6 +200,9 @@ void FSceneRenderer::RenderLitPath()
         RHIDevice->GetDeviceContext()->ClearRenderTargetView(RHIDevice->GetCurrentTargetRTV(), bg);
         RHIDevice->ClearDepthBuffer(1.0f, 0);
     }
+
+	// Skybox Pass - 배경색 대신 스카이박스 렌더링 (스카이박스가 있는 경우)
+	RenderSkyboxPass();
 
 	// Base Pass (GPU 타이머는 DrawMeshBatches 내에서 스켈레탈 메시만 측정)
 	RHIDevice->OMSetDepthStencilState(EComparisonFunc::LessEqual);  // 불투명: 깊이 쓰기 ON
@@ -835,6 +839,11 @@ void FSceneRenderer::GatherVisibleProxies()
 					else if (UDOFComponent* DOFComp = Cast<UDOFComponent>(Component); DOFComp && bDrawDOF)
 					{
 						SceneGlobals.DOFs.Add(DOFComp);
+					}
+
+					else if (USkyboxComponent* SkyboxComp = Cast<USkyboxComponent>(Component); SkyboxComp && SkyboxComp->bEnabled)
+					{
+						SceneGlobals.Skyboxes.Add(SkyboxComp);
 					}
 
 					else if (UDirectionalLightComponent* LightComponent = Cast<UDirectionalLightComponent>(Component); LightComponent && bDrawLight)
@@ -2106,4 +2115,88 @@ void FSceneRenderer::CompositeToBackBuffer()
 
 	// 7. 모든 작업이 성공했으므로 Commit
 	SwapGuard.Commit();
+}
+
+//====================================================================================
+// 스카이박스 렌더링 패스
+//====================================================================================
+void FSceneRenderer::RenderSkyboxPass()
+{
+	// 스카이박스가 없으면 스킵
+	if (SceneGlobals.Skyboxes.IsEmpty())
+	{
+		return;
+	}
+
+	// 첫 번째 스카이박스 사용
+	USkyboxComponent* Skybox = SceneGlobals.Skyboxes[0];
+	if (!Skybox || !Skybox->bEnabled)
+	{
+		return;
+	}
+
+	UShader* SkyboxShader = Skybox->GetShader();
+	UStaticMesh* SkyboxMesh = Skybox->GetMesh();
+	if (!SkyboxShader || !SkyboxMesh)
+	{
+		return;
+	}
+
+	// 상태 설정 - 깊이 테스트/쓰기 모두 비활성화 (배경으로 항상 뒤에 그려짐)
+	RHIDevice->OMSetDepthStencilState(EComparisonFunc::Disable);
+	RHIDevice->OMSetBlendState(false);
+	RHIDevice->RSSetState(ERasterizerMode::Solid_NoCull);  // 양면 그리기
+
+	// 셰이더 준비
+	RHIDevice->PrepareShader(SkyboxShader, SkyboxShader);
+
+	// 메시 바인딩
+	ID3D11Buffer* VertexBuffer = SkyboxMesh->GetVertexBuffer();
+	ID3D11Buffer* IndexBuffer = SkyboxMesh->GetIndexBuffer();
+	uint32 Stride = SkyboxMesh->GetVertexStride();
+	uint32 Offset = 0;
+
+	RHIDevice->GetDeviceContext()->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &Offset);
+	RHIDevice->GetDeviceContext()->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// 스카이박스 파라미터 설정
+	struct alignas(16) FSkyboxParams
+	{
+		FLinearColor Color;  // RGB = tint, A = intensity
+		uint32 FaceIndex;
+		float Padding[3];
+	};
+
+	// 6면 각각 렌더링
+	const ESkyboxFace Faces[] = {
+		ESkyboxFace::Front, ESkyboxFace::Back,
+		ESkyboxFace::Top, ESkyboxFace::Bottom,
+		ESkyboxFace::Right, ESkyboxFace::Left
+	};
+
+	for (int32 i = 0; i < 6; ++i)
+	{
+		UTexture* FaceTexture = Skybox->GetTexture(Faces[i]);
+		if (!FaceTexture)
+		{
+			continue;
+		}
+
+		// 텍스처 바인딩
+		ID3D11ShaderResourceView* SRV = FaceTexture->GetShaderResourceView();
+		RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &SRV);
+
+		// 상수 버퍼 설정
+		FSkyboxParams Params;
+		Params.Color = FLinearColor(1.0f, 1.0f, 1.0f, Skybox->Intensity);
+		Params.FaceIndex = i;
+		RHIDevice->SetAndUpdateConstantBuffer(ColorBufferType{Params.Color, 0, FVector(0, 0, 0)});
+
+		// 해당 면만 그리기 (6개 인덱스씩)
+		RHIDevice->GetDeviceContext()->DrawIndexed(6, i * 6, 0);
+	}
+
+	// 상태 복원
+	RHIDevice->RSSetState(ERasterizerMode::Solid);
 }

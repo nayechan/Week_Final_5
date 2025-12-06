@@ -144,11 +144,13 @@ void UWorld::BeginPlay()
 	AGameModeBase* GameMode = nullptr;
 	if (GameModeClass)
 	{
+		UE_LOG("[info] World::BeginPlay - GameModeClass: %s", GameModeClass->Name);
 		AActor* GameModeActor = SpawnActor(GameModeClass);
 		GameMode = Cast<AGameModeBase>(GameModeActor);
 	}
 	else
 	{
+		UE_LOG("[warning] World::BeginPlay - GameModeClass is nullptr, using default AGameModeBase");
 		// 기본 GameMode 생성
 		GameMode = SpawnActor<AGameModeBase>();
 	}

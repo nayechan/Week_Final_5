@@ -82,7 +82,8 @@ void FCCTSettings::SetFromComponents(UCapsuleComponent* Capsule, UCharacterMovem
 // ==================================================================================
 
 FControllerInstance::FControllerInstance()
-    : Controller(nullptr)
+    : FPhysicsUserData(EPhysicsUserDataType::ControllerInstance)
+    , Controller(nullptr)
     , OwnerComponent(nullptr)
     , MovementComponent(nullptr)
     , PhysScene(nullptr)
@@ -157,6 +158,14 @@ void FControllerInstance::InitController(UCapsuleComponent* InCapsule, UCharacte
     {
         UE_LOG("[PhysX CCT] PxController 생성 실패");
         return;
+    }
+
+    // CCT 내부 Actor의 userData에 FControllerInstance 설정
+    // 이를 통해 스윕/레이캐스트에서 CCT를 Owner로 식별하여 무시할 수 있음
+    PxRigidDynamic* CCTActor = Controller->getActor();
+    if (CCTActor)
+    {
+        CCTActor->userData = this;
     }
 
     // QueryFilter 생성

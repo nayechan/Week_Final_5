@@ -22,8 +22,9 @@ public:
 	/**
 	 * 파일에서 애니메이션 로드
 	 * @param InFilePath 애니메이션 파일 경로
+	 * @param InDevice DirectX 디바이스 (사용하지 않지만 ResourceManager 호환성 위해 필요)
 	 */
-	void Load(const FString& InFilePath);
+	void Load(const FString& InFilePath, ID3D11Device* InDevice = nullptr);
 
 	/**
 	 * 특정 시간의 본 포즈 가져오기

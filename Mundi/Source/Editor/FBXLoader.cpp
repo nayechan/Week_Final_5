@@ -118,7 +118,9 @@ void UFbxLoader::PreLoad()
 
 	size_t LoadedCount = 0;
 	std::unordered_set<FString> ProcessedFiles; // 중복 로딩 방지
+	TArray<FString> AnimationOnlyFbxFiles; // 메시 없는 애니메이션 전용 FBX 파일 리스트
 
+	// ===== 첫 번째 패스: 메시 있는 FBX 로드 (스켈레톤 확보) =====
 	for (const auto& Entry : fs::recursive_directory_iterator(DataDir))
 	{
 		if (!Entry.is_regular_file())
@@ -137,10 +139,19 @@ void UFbxLoader::PreLoad()
 			{
 				ProcessedFiles.insert(PathStr);
 
-				// 1. FBX 메시 로드
+				// 0. 먼저 FBX에 메시가 있는지 확인 (ResourceManager에 빈 메시 등록 방지)
+				if (!FbxLoader.HasMeshInFbx(PathStr))
+				{
+					// 메시 없음 → 애니메이션 전용 FBX일 수 있음
+					AnimationOnlyFbxFiles.Add(PathStr);
+					++LoadedCount;
+					continue;
+				}
+
+				// 1. FBX 메시 로드 (메시가 있는 경우에만)
 				USkeletalMesh* SkeletalMesh = FbxLoader.LoadFbxMesh(PathStr);
 
-				// 2. 애니메이션 로드 (메시가 성공적으로 로드되고 스켈레톤이 있는 경우)
+				// 2. 메시 로드 성공하고 스켈레톤이 있는 경우: 애니메이션도 로드
 				if (SkeletalMesh)
 				{
 					const FSkeleton* Skeleton = SkeletalMesh->GetSkeleton();
@@ -166,6 +177,11 @@ void UFbxLoader::PreLoad()
 								AnimStackNames.Num(), PathStr.c_str());
 						}
 					}
+					else
+					{
+						// 메시는 있지만 스켈레톤이 없음 (스태틱 메시?)
+						UE_LOG("UFbxLoader::PreLoad: Mesh loaded but no skeleton in '%s'", PathStr.c_str());
+					}
 				}
 
 				++LoadedCount;
@@ -173,14 +189,59 @@ void UFbxLoader::PreLoad()
 		}
 		else if (Extension == ".dds" || Extension == ".jpg" || Extension == ".png")
 		{
-			UResourceManager::GetInstance().Load<UTexture>(WideToUTF8(Path.wstring())); // 데칼 텍스쳐를 ui에서 고를 수 있게 하기 위해 임시로 만듬.
+			UResourceManager::GetInstance().Load<UTexture>(WideToUTF8(Path.wstring()));
 		}
+	}
+
+	// ===== 두 번째 패스: 메시 없는 FBX에서 애니메이션만 로드 =====
+	size_t AnimOnlyLoadedCount = 0;
+	for (const FString& PathStr : AnimationOnlyFbxFiles)
+	{
+		// 1. 애니메이션 스택 확인
+		TArray<FString> AnimStackNames = FbxLoader.GetAnimationStackNames(PathStr);
+		if (AnimStackNames.IsEmpty())
+		{
+			UE_LOG("UFbxLoader::PreLoad: No animations in '%s', skipping", PathStr.c_str());
+			continue;
+		}
+
+		// 2. FBX에서 스켈레톤만 추출
+		FSkeleton* TempSkeleton = FbxLoader.LoadSkeletonOnly(PathStr);
+		if (!TempSkeleton)
+		{
+			UE_LOG("UFbxLoader::PreLoad: Failed to extract skeleton from '%s'", PathStr.c_str());
+			continue;
+		}
+
+		// 3. 호환되는 스켈레톤 찾기
+		const FSkeleton* CompatibleSkeleton = FbxLoader.FindCompatibleSkeleton(TempSkeleton);
+		if (!CompatibleSkeleton)
+		{
+			UE_LOG("UFbxLoader::PreLoad: No compatible skeleton found for '%s'", PathStr.c_str());
+			delete TempSkeleton;
+			continue;
+		}
+
+		// 4. 호환 스켈레톤으로 애니메이션 로드
+		for (const FString& AnimStackName : AnimStackNames)
+		{
+			UAnimSequence* AnimSequence = FbxLoader.LoadFbxAnimation(PathStr, CompatibleSkeleton, AnimStackName);
+			if (AnimSequence)
+			{
+				UE_LOG("UFbxLoader::PreLoad: Loaded animation-only '%s' from '%s' (using skeleton: '%s')",
+					AnimStackName.c_str(), PathStr.c_str(), CompatibleSkeleton->Name.c_str());
+				AnimOnlyLoadedCount++;
+			}
+		}
+
+		delete TempSkeleton;
 	}
 
 	RESOURCE.SetSkeletalMeshs();
 	RESOURCE.SetAnimations();
 
-	UE_LOG("UFbxLoader::Preload: Loaded %zu .fbx files from %s", LoadedCount, WideToUTF8(DataDir.wstring()).c_str());
+	UE_LOG("UFbxLoader::Preload: Loaded %zu .fbx files (%zu animation-only) from %s",
+		LoadedCount, AnimOnlyLoadedCount, WideToUTF8(DataDir.wstring()).c_str());
 }
 
 
@@ -1905,5 +1966,326 @@ UAnimSequence* UFbxLoader::LoadFbxAnimation(const FString& FilePath, const struc
 	}
 
 	return AnimSequence;
+}
+
+bool UFbxLoader::HasMeshInFbx(const FString& FilePath)
+{
+	FString NormalizedPath = NormalizePath(FilePath);
+
+	FbxImporter* Importer = FbxImporter::Create(SdkManager, "");
+	if (!Importer->Initialize(NormalizedPath.c_str(), -1, SdkManager->GetIOSettings()))
+	{
+		Importer->Destroy();
+		return false;
+	}
+
+	FbxScene* Scene = FbxScene::Create(SdkManager, "TempScene");
+	Importer->Import(Scene);
+	Importer->Destroy();
+
+	FbxNode* RootNode = Scene->GetRootNode();
+	bool bHasMesh = RootNode ? HasMeshInScene(RootNode) : false;
+
+	Scene->Destroy();
+
+	return bHasMesh;
+}
+
+bool UFbxLoader::HasMeshInScene(FbxNode* Node)
+{
+	if (!Node)
+		return false;
+
+	// 현재 노드에서 메시 속성 확인
+	for (int Index = 0; Index < Node->GetNodeAttributeCount(); Index++)
+	{
+		FbxNodeAttribute* Attribute = Node->GetNodeAttributeByIndex(Index);
+		if (Attribute && Attribute->GetAttributeType() == FbxNodeAttribute::eMesh)
+		{
+			FbxMesh* Mesh = static_cast<FbxMesh*>(Attribute);
+			// 실제 정점이 있는 메시인지 확인
+			if (Mesh->GetControlPointsCount() > 0)
+			{
+				return true;
+			}
+		}
+	}
+
+	// 자식 노드 재귀 검색
+	for (int Index = 0; Index < Node->GetChildCount(); Index++)
+	{
+		if (HasMeshInScene(Node->GetChild(Index)))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void UFbxLoader::LoadSkeletonFromScene(FbxNode* Node, FSkeleton& OutSkeleton, int32 ParentIndex, TMap<FbxNode*, int32>& BoneToIndex)
+{
+	if (!Node)
+		return;
+
+	int32 BoneIndex = ParentIndex;
+
+	for (int Index = 0; Index < Node->GetNodeAttributeCount(); Index++)
+	{
+		FbxNodeAttribute* Attribute = Node->GetNodeAttributeByIndex(Index);
+		if (!Attribute)
+			continue;
+
+		if (Attribute->GetAttributeType() == FbxNodeAttribute::eSkeleton)
+		{
+			FBone BoneInfo{};
+			BoneInfo.Name = FString(Node->GetName());
+			BoneInfo.ParentIndex = ParentIndex;
+
+			OutSkeleton.Bones.Add(BoneInfo);
+			BoneIndex = OutSkeleton.Bones.Num() - 1;
+			OutSkeleton.BoneNameToIndex.Add(BoneInfo.Name, BoneIndex);
+			BoneToIndex.Add(Node, BoneIndex);
+			break;
+		}
+	}
+
+	for (int Index = 0; Index < Node->GetChildCount(); Index++)
+	{
+		LoadSkeletonFromScene(Node->GetChild(Index), OutSkeleton, BoneIndex, BoneToIndex);
+	}
+}
+
+FSkeleton* UFbxLoader::LoadSkeletonOnly(const FString& FilePath)
+{
+	FString NormalizedPath = NormalizePath(FilePath);
+
+	UE_LOG("UFbxLoader::LoadSkeletonOnly: Loading skeleton from '%s'", NormalizedPath.c_str());
+
+#ifdef USE_OBJ_CACHE
+	// 1. 캐시 파일 경로 설정
+	FString CachePathStr = ConvertDataPathToCachePath(NormalizedPath);
+	FString SkeletonCacheFileName = CachePathStr + ".skel.bin";
+
+	// 캐시 디렉토리 생성
+	std::filesystem::path CacheFileDirPath(UTF8ToWide(SkeletonCacheFileName));
+	if (CacheFileDirPath.has_parent_path())
+	{
+		std::filesystem::create_directories(CacheFileDirPath.parent_path());
+	}
+
+	// 2. 캐시 유효성 검사
+	bool bShouldRegenerate = true;
+	if (std::filesystem::exists(UTF8ToWide(SkeletonCacheFileName)))
+	{
+		try
+		{
+			auto binTime = std::filesystem::last_write_time(UTF8ToWide(SkeletonCacheFileName));
+			auto fbxTime = std::filesystem::last_write_time(UTF8ToWide(NormalizedPath));
+
+			if (fbxTime <= binTime)
+			{
+				bShouldRegenerate = false;
+			}
+		}
+		catch (const std::filesystem::filesystem_error& e)
+		{
+			UE_LOG("UFbxLoader::LoadSkeletonOnly: Filesystem error: %s", e.what());
+			bShouldRegenerate = true;
+		}
+	}
+
+	// 3. 캐시에서 로드 시도
+	if (!bShouldRegenerate)
+	{
+		try
+		{
+			FSkeleton* CachedSkeleton = new FSkeleton();
+
+			FWindowsBinReader Reader(SkeletonCacheFileName);
+			if (!Reader.IsOpen())
+			{
+				throw std::runtime_error("Failed to open skeleton cache file");
+			}
+
+			// 스켈레톤 이름
+			Serialization::ReadString(Reader, CachedSkeleton->Name);
+
+			// 본 개수
+			int32 BoneCount = 0;
+			Reader << BoneCount;
+
+			CachedSkeleton->Bones.Reserve(BoneCount);
+			for (int32 i = 0; i < BoneCount; ++i)
+			{
+				FBone Bone;
+				Serialization::ReadString(Reader, Bone.Name);
+				Reader << Bone.ParentIndex;
+				CachedSkeleton->Bones.Add(Bone);
+				CachedSkeleton->BoneNameToIndex.Add(Bone.Name, i);
+			}
+
+			Reader.Close();
+
+			UE_LOG("UFbxLoader::LoadSkeletonOnly: Loaded skeleton from cache (%d bones)", BoneCount);
+			return CachedSkeleton;
+		}
+		catch (const std::exception& e)
+		{
+			UE_LOG("UFbxLoader::LoadSkeletonOnly: Cache load failed: %s", e.what());
+			std::filesystem::remove(UTF8ToWide(SkeletonCacheFileName));
+		}
+	}
+#endif
+
+	// 4. FBX 파일에서 스켈레톤 파싱
+	FbxImporter* Importer = FbxImporter::Create(SdkManager, "");
+	if (!Importer->Initialize(NormalizedPath.c_str(), -1, SdkManager->GetIOSettings()))
+	{
+		UE_LOG("UFbxLoader::LoadSkeletonOnly: Failed to initialize importer");
+		return nullptr;
+	}
+
+	FbxScene* Scene = FbxScene::Create(SdkManager, "TempScene");
+	Importer->Import(Scene);
+	Importer->Destroy();
+
+	// 축 변환
+	FbxAxisSystem UnrealImportAxis(FbxAxisSystem::eZAxis, FbxAxisSystem::eParityEven, FbxAxisSystem::eLeftHanded);
+	FbxAxisSystem SourceSetup = Scene->GetGlobalSettings().GetAxisSystem();
+	FbxSystemUnit::m.ConvertScene(Scene);
+	if (SourceSetup != UnrealImportAxis)
+	{
+		UnrealImportAxis.DeepConvertScene(Scene);
+	}
+
+	FSkeleton* Skeleton = new FSkeleton();
+
+	// 파일명에서 스켈레톤 이름 추출
+	std::filesystem::path p(UTF8ToWide(NormalizedPath));
+	Skeleton->Name = WideToUTF8(p.stem().wstring());
+
+	FbxNode* RootNode = Scene->GetRootNode();
+	TMap<FbxNode*, int32> BoneToIndex;
+
+	if (RootNode)
+	{
+		for (int Index = 0; Index < RootNode->GetChildCount(); Index++)
+		{
+			LoadSkeletonFromScene(RootNode->GetChild(Index), *Skeleton, -1, BoneToIndex);
+		}
+	}
+
+	Scene->Destroy();
+
+	if (Skeleton->Bones.IsEmpty())
+	{
+		UE_LOG("UFbxLoader::LoadSkeletonOnly: No skeleton found in '%s'", NormalizedPath.c_str());
+		delete Skeleton;
+		return nullptr;
+	}
+
+	UE_LOG("UFbxLoader::LoadSkeletonOnly: Extracted skeleton with %d bones", Skeleton->Bones.Num());
+
+#ifdef USE_OBJ_CACHE
+	// 5. 캐시 저장
+	try
+	{
+		FWindowsBinWriter Writer(SkeletonCacheFileName);
+
+		// 스켈레톤 이름
+		Serialization::WriteString(Writer, Skeleton->Name);
+
+		// 본 개수
+		int32 BoneCount = Skeleton->Bones.Num();
+		Writer << BoneCount;
+
+		// 각 본 정보
+		for (const FBone& Bone : Skeleton->Bones)
+		{
+			Serialization::WriteString(Writer, Bone.Name);
+			int32 ParentIndex = Bone.ParentIndex;
+			Writer << ParentIndex;
+		}
+
+		Writer.Close();
+
+		UE_LOG("UFbxLoader::LoadSkeletonOnly: Saved skeleton cache to '%s'", SkeletonCacheFileName.c_str());
+	}
+	catch (const std::exception& e)
+	{
+		UE_LOG("UFbxLoader::LoadSkeletonOnly: Failed to save cache: %s", e.what());
+	}
+#endif
+
+	return Skeleton;
+}
+
+const FSkeleton* UFbxLoader::FindCompatibleSkeleton(const FSkeleton* SourceSkeleton)
+{
+	if (!SourceSkeleton || SourceSkeleton->Bones.IsEmpty())
+	{
+		return nullptr;
+	}
+
+	const FSkeleton* BestMatch = nullptr;
+	int32 BestMatchScore = 0;
+
+	// 이미 로드된 모든 SkeletalMesh에서 호환되는 스켈레톤 찾기
+	for (TObjectIterator<USkeletalMesh> It; It; ++It)
+	{
+		USkeletalMesh* Mesh = *It;
+		if (!Mesh)
+			continue;
+
+		const FSkeleton* MeshSkeleton = Mesh->GetSkeleton();
+		if (!MeshSkeleton || MeshSkeleton->Bones.IsEmpty())
+			continue;
+
+		// 본 이름 매칭 점수 계산
+		int32 MatchScore = 0;
+		for (const FBone& SourceBone : SourceSkeleton->Bones)
+		{
+			if (MeshSkeleton->BoneNameToIndex.Contains(SourceBone.Name))
+			{
+				MatchScore++;
+			}
+		}
+
+		// 완벽 매치 또는 더 높은 점수인 경우 업데이트
+		if (MatchScore > BestMatchScore)
+		{
+			BestMatchScore = MatchScore;
+			BestMatch = MeshSkeleton;
+
+			// 모든 본이 매치되면 즉시 반환
+			if (MatchScore == SourceSkeleton->Bones.Num())
+			{
+				UE_LOG("UFbxLoader::FindCompatibleSkeleton: Found perfect match (skeleton: '%s', %d/%d bones)",
+					MeshSkeleton->Name.c_str(), MatchScore, SourceSkeleton->Bones.Num());
+				return BestMatch;
+			}
+		}
+	}
+
+	if (BestMatch)
+	{
+		float MatchRatio = static_cast<float>(BestMatchScore) / static_cast<float>(SourceSkeleton->Bones.Num());
+		UE_LOG("UFbxLoader::FindCompatibleSkeleton: Best match (skeleton: '%s', %d/%d bones, %.1f%%)",
+			BestMatch->Name.c_str(), BestMatchScore, SourceSkeleton->Bones.Num(), MatchRatio * 100.0f);
+
+		// 최소 50% 이상 매치해야 호환으로 인정
+		if (MatchRatio < 0.5f)
+		{
+			UE_LOG("UFbxLoader::FindCompatibleSkeleton: Match ratio too low, rejecting");
+			return nullptr;
+		}
+	}
+	else
+	{
+		UE_LOG("UFbxLoader::FindCompatibleSkeleton: No compatible skeleton found");
+	}
+
+	return BestMatch;
 }
 

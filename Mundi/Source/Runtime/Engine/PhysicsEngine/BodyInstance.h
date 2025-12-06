@@ -1,11 +1,12 @@
 #pragma once
 #include "BodySetup.h"
 #include "ECollisionChannel.h"
+#include "PhysicsUserData.h"
 
 #include "FBodyInstance.generated.h"
 
 USTRUCT()
-struct FBodyInstance
+struct FBodyInstance : public FPhysicsUserData
 {
     GENERATED_REFLECTION_BODY()
 

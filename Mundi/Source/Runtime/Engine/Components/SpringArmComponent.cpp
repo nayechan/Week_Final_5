@@ -70,8 +70,7 @@ void USpringArmComponent::TickComponent(float DeltaSeconds)
 	{
 		if (Child)
 		{
-			Child->SetWorldLocation(SocketLocation);
-			Child->SetWorldRotation(SocketRotation);
+			Child->SetWorldLocationAndRotation(SocketLocation, SocketRotation);
 		}
 	}
 }
@@ -124,10 +123,10 @@ void USpringArmComponent::UpdateDesiredArmLocation(float DeltaTime, FVector& Out
 		}
 	}
 
-	// 기본 위치: Owner의 위치 + TargetOffset (Owner의 로컬 좌표계 기준)
+	// 기본 위치: Owner의 위치 + TargetOffset (월드 좌표계 기준, 회전 적용 안 함)
+	// TargetOffset은 캐릭터 머리 위치 등 고정 오프셋으로 사용
 	FVector OwnerLocation = OwnerActor->GetActorLocation();
-	FVector RotatedTargetOffset = OwnerRotation.RotateVector(TargetOffset);
-	FVector TargetLocation = OwnerLocation + RotatedTargetOffset;
+	FVector TargetLocation = OwnerLocation + TargetOffset;
 
 	// Spring Arm 방향 계산 (뒤쪽)
 	FVector ArmDirection = OwnerRotation.GetForwardVector() * -1.0f; // Backward direction
@@ -139,30 +138,32 @@ void USpringArmComponent::UpdateDesiredArmLocation(float DeltaTime, FVector& Out
 	FVector UnlaggedDesiredLocation = TargetLocation + ArmDirection * TargetArmLength + RotatedSocketOffset;
 
 	// Camera Lag 적용
+	// 캐릭터 "이동"에만 래그를 적용하고, 마우스 "회전"으로 인한 위치 변화에는 래그 적용 안 함
+	// 이렇게 해야 마우스 회전 시 카메라가 즉시 따라가고, 캐릭터 이동 시에만 부드럽게 따라감
 	if (bEnableCameraLag)
 	{
 		// 이전 위치가 초기값이면 즉시 설정
-		if (PreviousDesiredLocation.IsZero())
+		if (PreviousActorLocation.IsZero())
 		{
-			PreviousDesiredLocation = UnlaggedDesiredLocation;
 			PreviousActorLocation = OwnerLocation;
 		}
 
-		// Lag 적용
-		FVector LagVector = UnlaggedDesiredLocation - PreviousDesiredLocation;
-		float LagDistance = LagVector.Size();
+		// 캐릭터 위치에만 래그 적용
+		FVector LaggedOwnerLocation = FVector::Lerp(PreviousActorLocation, OwnerLocation,
+		                                            FMath::Min(1.0f, DeltaTime * CameraLagSpeed));
 
 		// MaxDistance 제한
-		if (CameraLagMaxDistance > 0.0f && LagDistance > CameraLagMaxDistance)
+		FVector LagVector = OwnerLocation - LaggedOwnerLocation;
+		if (CameraLagMaxDistance > 0.0f && LagVector.Size() > CameraLagMaxDistance)
 		{
-			PreviousDesiredLocation = UnlaggedDesiredLocation - LagVector.GetNormalized() * CameraLagMaxDistance;
+			LaggedOwnerLocation = OwnerLocation - LagVector.GetNormalized() * CameraLagMaxDistance;
 		}
 
-		// Lerp
-		OutDesiredLocation = FVector::Lerp(PreviousDesiredLocation, UnlaggedDesiredLocation,
-		                                   FMath::Min(1.0f, DeltaTime * CameraLagSpeed));
-		PreviousDesiredLocation = OutDesiredLocation;
-		PreviousActorLocation = OwnerLocation;
+		PreviousActorLocation = LaggedOwnerLocation;
+
+		// 래그가 적용된 캐릭터 위치로 최종 위치 계산 (회전은 현재 값 그대로 사용)
+		FVector LaggedTargetLocation = LaggedOwnerLocation + TargetOffset;
+		OutDesiredLocation = LaggedTargetLocation + ArmDirection * TargetArmLength + RotatedSocketOffset;
 	}
 	else
 	{
@@ -211,13 +212,36 @@ bool USpringArmComponent::DoCollisionTest(const FVector& DesiredLocation, FVecto
 	}
 
 	// 스윕 시작점: Owner 위치 + TargetOffset
+	// UpdateDesiredArmLocation과 동일한 회전을 사용해야 함
 	FQuat OwnerRotation = OwnerActor->GetActorRotation();
+	if (bUsePawnControlRotation)
+	{
+		if (APawn* Pawn = Cast<APawn>(OwnerActor))
+		{
+			if (AController* Controller = Pawn->GetController())
+			{
+				OwnerRotation = Controller->GetControlRotation();
+			}
+		}
+	}
 	FVector OwnerLocation = OwnerActor->GetActorLocation();
 	FVector RotatedTargetOffset = OwnerRotation.RotateVector(TargetOffset);
 	FVector SweepStart = OwnerLocation + RotatedTargetOffset;
 
 	// 스윕 끝점: 원하는 카메라 위치
 	FVector SweepEnd = DesiredLocation;
+
+	// 디버그 로그: 스윕 정보 출력
+	if (bDrawDebugCollision)
+	{
+		FVector SweepDir = (SweepEnd - SweepStart).GetNormalized();
+		float SweepDist = (SweepEnd - SweepStart).Size();
+		UE_LOG("[SpringArm] Sweep Start:(%.2f,%.2f,%.2f) End:(%.2f,%.2f,%.2f) Dir:(%.2f,%.2f,%.2f) Dist:%.2f",
+			SweepStart.X, SweepStart.Y, SweepStart.Z,
+			SweepEnd.X, SweepEnd.Y, SweepEnd.Z,
+			SweepDir.X, SweepDir.Y, SweepDir.Z,
+			SweepDist);
+	}
 
 	// Sphere 스윕으로 충돌 검사
 	FHitResult HitResult;
@@ -240,15 +264,14 @@ bool USpringArmComponent::DoCollisionTest(const FVector& DesiredLocation, FVecto
 			return false;
 		}
 
-		// Distance를 사용해서 충돌 위치 계산
-		FVector SweepDirection = (SweepEnd - SweepStart).GetNormalized();
-		FVector HitLocation = SweepStart + SweepDirection * HitResult.Distance;
+		// PhysX에서 반환된 충돌 위치를 직접 사용 (P2UVector 좌표 변환이 적용됨)
+		FVector HitLocation = HitResult.ImpactPoint;
 
 		// 충돌 위치를 카메라 위치로 사용
 		OutLocation = HitLocation;
 
-		// 현재 암 길이 업데이트
-		CurrentArmLength = HitResult.Distance;
+		// 현재 암 길이 업데이트 (엔진 좌표계에서 실제 거리 계산)
+		CurrentArmLength = (HitLocation - SweepStart).Size();
 
 		// 디버그 로그
 		if (bDrawDebugCollision)

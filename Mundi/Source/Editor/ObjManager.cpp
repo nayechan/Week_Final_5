@@ -7,6 +7,7 @@
 #include "Enums.h"
 #include "WindowsBinReader.h"
 #include "WindowsBinWriter.h"
+#include "FBXLoader.h"
 #include <filesystem>
 #include <unordered_set>
 
@@ -246,6 +247,17 @@ void FObjManager::Preload()
 			if (ProcessedFiles.find(PathStr) == ProcessedFiles.end())
 			{
 				ProcessedFiles.insert(PathStr);
+
+				// FBX 파일인 경우 메시가 있는지 먼저 확인 (애니메이션 전용 FBX 제외)
+				if (Extension == ".fbx")
+				{
+					if (!UFbxLoader::GetInstance().HasMeshInFbx(PathStr))
+					{
+						// 메시 없는 FBX는 StaticMesh로 로드하지 않음
+						continue;
+					}
+				}
+
 				LoadObjStaticMesh(PathStr);
 				++LoadedCount;
 			}

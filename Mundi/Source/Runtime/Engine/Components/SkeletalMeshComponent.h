@@ -266,11 +266,6 @@ protected:
      */
     void SyncPhysicsFromAnimation();
 
-    /**
-     * @brief 초기 포즈에서 겹치는 바디 쌍을 검출하여 충돌 무시 설정
-     */
-    void SetupInitialOverlapFilters();
-
 public:
     
     /** 연결된 물리 에셋 */
@@ -282,6 +277,9 @@ public:
 
     /** 본별 바디 인스턴스 (BoneIndex -> FBodyInstance) */
     TArray<FBodyInstance*> Bodies;
+
+    /** 래그돌 초기화 시점의 원래 본 스케일 (시뮬레이션 중 유지) */
+    TArray<FVector> OriginalBoneScales;
 
     /** 제약 조건 인스턴스 */
     TArray<FConstraintInstance*> Constraints;

@@ -6,7 +6,7 @@
           "CascadedAreaColorDebugValue" : 0.000000,
           "CascadedAreaShadowDebugValue" : -1,
           "CascadedCount" : 6,
-          "CascadedLinearBlendingValue" : 0.150000,
+          "CascadedLinearBlendingValue" : 0.010000,
           "CascadedOverlapValue" : 0.500000,
           "Id" : 1269,
           "Intensity" : 0.600000,
@@ -18,7 +18,7 @@
           "RelativeRotationEuler" : [-23.090000, 2.937000, -38.834904],
           "RelativeScale" : [1.000000, 1.000000, 1.000000],
           "ShadowBias" : 0.000100,
-          "ShadowResolutionScale" : 2048,
+          "ShadowResolutionScale" : 4096,
           "ShadowSharpen" : 0.500000,
           "ShadowSlopeBias" : 0.000100,
           "Temperature" : 6500.000000,
@@ -624,13 +624,13 @@
               "ParentPath" : "Part654Mtl",
               "Type" : "UMaterialInstanceDynamic"
             }],
-          "Mobility" : 1,
+          "Mobility" : 0,
           "ObjectName" : "UStaticMeshComponent_5",
           "ParentId" : 0,
           "PhysicalMaterial" : "",
-          "RelativeLocation" : [-10.888172, 8.084798, 9.910119],
+          "RelativeLocation" : [-10.888173, 8.084798, 5.213355],
           "RelativeRotationEuler" : [0.000000, 90.000000, -0.000000],
-          "RelativeScale" : [0.010000, 0.010000, 0.010000],
+          "RelativeScale" : [0.005000, 0.005000, 0.005000],
           "StaticMesh" : "Data/Model/FireStation/fire_station.fbx",
           "Type" : "UStaticMeshComponent",
           "bBlockComponent" : false,
@@ -764,10 +764,10 @@
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     },
-    "1340" : {
+    "1327" : {
       "ObjectName" : "AParticleEventManager_12",
       "OwnedComponents" : [{
-          "Id" : 1341,
+          "Id" : 1328,
           "Mobility" : 1,
           "ObjectName" : "USceneComponent_13",
           "ParentId" : 0,
@@ -781,23 +781,46 @@
           "bTickEnabled" : true,
           "bTickInEditor" : false
         }],
-      "RootComponentId" : 1341,
+      "RootComponentId" : 1328,
+      "Tag" : "",
+      "Type" : "AParticleEventManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1343" : {
+      "ObjectName" : "AParticleEventManager_13",
+      "OwnedComponents" : [{
+          "Id" : 1344,
+          "Mobility" : 1,
+          "ObjectName" : "USceneComponent_14",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1344,
       "Tag" : "",
       "Type" : "AParticleEventManager",
       "bActorHiddenInGame" : false,
       "bActorIsActive" : true
     }
   },
-  "NextUUID" : 1520,
+  "NextUUID" : 2020,
   "PerspectiveCamera" : {
     "FOV" : [60.000000],
-    "FarClip" : [801.000000],
-    "Location" : [-135.219589, 23.837034, 20.392815],
+    "FarClip" : [802.000000],
+    "Location" : [-81.637146, 13.444123, 13.058619],
     "NearClip" : [0.500000],
-    "Rotation" : [0.000000, 2.199710, -1.298126]
+    "Rotation" : [0.000000, 4.999781, -2.099105]
   },
   "Version" : 1,
   "WorldSettings" : {
-    "GameModeClass" : "AHudExampleGameMode"
+    "GameModeClass" : "APlayerGameMode"
   }
 }

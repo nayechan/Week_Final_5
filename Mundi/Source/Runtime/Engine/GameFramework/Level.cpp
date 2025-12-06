@@ -12,6 +12,11 @@
 #include "World.h"
 #include "JsonSerializer.h"
 #include "SceneComponent.h"
+#include "GameModeBase.h"
+#include "GameStateBase.h"
+#include "PlayerController.h"
+#include "Pawn.h"
+#include "PlayerCameraManager.h"
 
 static inline FString RemoveObjExtension(const FString& FileName)
 {
@@ -77,7 +82,12 @@ void ULevel::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 
             // 클래스 이름으로 UClass 찾기
             if (!GameModeClassName.empty())
+            {
                 GWorld->GameModeClass = UClass::FindClass(GameModeClassName);
+                UE_LOG("[info] Level::Serialize - GameModeClass '%s' -> %s",
+                    GameModeClassName.c_str(),
+                    GWorld->GameModeClass ? GWorld->GameModeClass->Name : "NOT FOUND");
+            }
         }
 
         // 카메라 정보
@@ -132,6 +142,17 @@ void ULevel::Serialize(const bool bInIsLoading, JSON& InOutHandle)
                 {
                     UE_LOG("SpawnActor failed: Invalid class provided.");
                     return;
+                }
+
+                // 게임플레이 관련 액터는 로드하지 않음 (World::BeginPlay에서 GameMode가 새로 생성함)
+                // PIE의 DuplicateWorldForPIE와 동일한 필터링 적용
+                if (NewClass->IsChildOf(AGameModeBase::StaticClass()) ||
+                    NewClass->IsChildOf(AGameStateBase::StaticClass()) ||
+                    NewClass->IsChildOf(APlayerController::StaticClass()) ||
+                    NewClass->IsChildOf(APawn::StaticClass()) ||
+                    NewClass->IsChildOf(APlayerCameraManager::StaticClass()))
+                {
+                    continue;
                 }
 
                 // ObjectFactory를 통해 UClass*로부터 객체 인스턴스 생성

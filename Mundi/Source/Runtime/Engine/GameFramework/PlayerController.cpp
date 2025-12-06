@@ -50,6 +50,19 @@ void APlayerController::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	// Shift + F1: InputMode 토글 (GameOnly <-> GameAndUI)
+	if (InputManager && InputManager->IsKeyPressed(VK_F1) && InputManager->IsKeyDown(VK_SHIFT))
+	{
+		if (CurrentInputMode == EInputMode::GameOnly)
+		{
+			SetInputMode(EInputMode::GameAndUI);
+		}
+		else
+		{
+			SetInputMode(EInputMode::GameOnly);
+		}
+	}
+
 	// 입력 처리
 	if (bInputEnabled)
 	{

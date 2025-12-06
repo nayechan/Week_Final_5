@@ -29,6 +29,8 @@
 #include "PhysicalMaterial.h"
 #include "BodySetup.h"
 #include "ConvexElem.h"
+#include <algorithm>
+#include <utility>
 
 // 정적 멤버 변수 초기화
 TArray<FString> UPropertyRenderer::CachedSkeletalMeshPaths;
@@ -42,7 +44,7 @@ TArray<FString> UPropertyRenderer::CachedPhysicalMaterialItems;
 TArray<FString> UPropertyRenderer::CachedShaderPaths;
 TArray<const char*> UPropertyRenderer::CachedShaderItems;
 TArray<FString> UPropertyRenderer::CachedTexturePaths;
-TArray<const char*> UPropertyRenderer::CachedTextureItems;
+TArray<FString> UPropertyRenderer::CachedTextureItems;
 TArray<FString> UPropertyRenderer::CachedSoundPaths;
 TArray<const char*> UPropertyRenderer::CachedSoundItems;
 TArray<FString> UPropertyRenderer::CachedScriptPaths;
@@ -51,6 +53,8 @@ TArray<FString> UPropertyRenderer::CachedParticleSystemPaths;
 TArray<FString> UPropertyRenderer::CachedParticleSystemItems;
 TArray<FString> UPropertyRenderer::CachedPhysicsAssetPaths;
 TArray<FString> UPropertyRenderer::CachedPhysicsAssetItems;
+char UPropertyRenderer::TextureSearchFilter[256] = "";
+char UPropertyRenderer::StaticMeshSearchFilter[256] = "";
 
 static bool ItemsGetter(void* Data, int Index, const char** CItem)
 {
@@ -496,12 +500,34 @@ void UPropertyRenderer::CacheResources()
 	if (CachedStaticMeshPaths.IsEmpty() && CachedStaticMeshItems.IsEmpty())
 	{
 		CachedStaticMeshPaths = ResMgr.GetAllFilePaths<UStaticMesh>();
+
+		// 경로와 아이템을 함께 정렬하기 위해 페어 배열 생성
+		TArray<std::pair<FString, FString>> PathItemPairs;
 		for (const FString& path : CachedStaticMeshPaths)
 		{
-			// 파일명만 추출해서 표시
 			std::filesystem::path fsPath(UTF8ToWide(path));
-			CachedStaticMeshItems.push_back(WideToUTF8(fsPath.filename().wstring()));
+			FString itemName = WideToUTF8(fsPath.filename().wstring());
+			PathItemPairs.push_back({ path, itemName });
 		}
+
+		// 아이템 이름으로 정렬 (대소문자 무시)
+		std::sort(PathItemPairs.begin(), PathItemPairs.end(),
+			[](const auto& a, const auto& b) {
+				FString aLower = a.second;
+				FString bLower = b.second;
+				std::transform(aLower.begin(), aLower.end(), aLower.begin(), ::tolower);
+				std::transform(bLower.begin(), bLower.end(), bLower.begin(), ::tolower);
+				return aLower < bLower;
+			});
+
+		// 정렬된 결과를 캐시에 저장
+		CachedStaticMeshPaths.clear();
+		for (const auto& pair : PathItemPairs)
+		{
+			CachedStaticMeshPaths.push_back(pair.first);
+			CachedStaticMeshItems.push_back(pair.second);
+		}
+
 		CachedStaticMeshPaths.Insert("", 0);
 		CachedStaticMeshItems.Insert("None", 0);
 	}
@@ -557,11 +583,33 @@ void UPropertyRenderer::CacheResources()
 	// 4. 텍스처
 	if (CachedTexturePaths.IsEmpty() && CachedTextureItems.IsEmpty())
 	{
-		CachedTexturePaths = ResMgr.GetAllFilePaths<UTexture>();
-		CachedTextureItems.Add("None");
-		for (const FString& path : CachedTexturePaths)
+		TArray<FString> TempPaths = ResMgr.GetAllFilePaths<UTexture>();
+
+		// 경로와 파일명을 함께 정렬하기 위해 페어 배열 생성
+		TArray<std::pair<FString, FString>> PathItemPairs;
+		for (const FString& path : TempPaths)
 		{
-			CachedTextureItems.push_back(path.c_str());
+			std::filesystem::path fsPath(UTF8ToWide(path));
+			FString itemName = WideToUTF8(fsPath.filename().wstring());
+			PathItemPairs.push_back({ path, itemName });
+		}
+
+		// 아이템 이름으로 정렬 (대소문자 무시)
+		std::sort(PathItemPairs.begin(), PathItemPairs.end(),
+			[](const auto& a, const auto& b) {
+				FString aLower = a.second;
+				FString bLower = b.second;
+				std::transform(aLower.begin(), aLower.end(), aLower.begin(), ::tolower);
+				std::transform(bLower.begin(), bLower.end(), bLower.begin(), ::tolower);
+				return aLower < bLower;
+			});
+
+		// 정렬된 결과를 캐시에 저장
+		CachedTextureItems.Add("None");
+		for (const auto& pair : PathItemPairs)
+		{
+			CachedTexturePaths.push_back(pair.first);
+			CachedTextureItems.push_back(pair.second);
 		}
 	}
 
@@ -1983,31 +2031,69 @@ bool UPropertyRenderer::RenderStaticMeshProperty(const FProperty& Prop, void* In
 		}
 	}
 
-	// TArray<FString>을 const char* 배열로 변환
-	TArray<const char*> ItemsPtr;
-	ItemsPtr.reserve(CachedStaticMeshItems.size());
-	for (const FString& item : CachedStaticMeshItems)
-	{
-		ItemsPtr.push_back(item.c_str());
-	}
+	bool bChanged = false;
+
+	// 현재 선택된 항목의 텍스트
+	const char* PreviewText = (SelectedIdx >= 0) ? CachedStaticMeshItems[SelectedIdx].c_str() : "None";
 
 	ImGui::SetNextItemWidth(240);
-	if (ImGui::Combo(Prop.Name, &SelectedIdx, ItemsPtr.data(), static_cast<int>(ItemsPtr.size())))
+	if (ImGui::BeginCombo(Prop.Name, PreviewText))
 	{
-		if (SelectedIdx >= 0 && SelectedIdx < static_cast<int>(CachedStaticMeshPaths.size()))
+		// --- 검색 필터 입력 ---
+		ImGui::SetNextItemWidth(-FLT_MIN);
+		if (ImGui::IsWindowAppearing())
 		{
-			// 컴포넌트별 Setter 호출
-			UObject* Object = static_cast<UObject*>(Instance);
-			if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Object))
-			{
-				StaticMeshComponent->SetStaticMesh(CachedStaticMeshPaths[SelectedIdx]);
-			}
-			else
-			{
-				*MeshPtr = UResourceManager::GetInstance().Load<UStaticMesh>(CachedStaticMeshPaths[SelectedIdx]);
-			}
-			return true;
+			ImGui::SetKeyboardFocusHere();
 		}
+		ImGui::InputTextWithHint("##StaticMeshSearch", "Search...", StaticMeshSearchFilter, IM_ARRAYSIZE(StaticMeshSearchFilter));
+		ImGui::Separator();
+
+		// 검색 필터를 소문자로 변환
+		FString FilterLower = StaticMeshSearchFilter;
+		std::transform(FilterLower.begin(), FilterLower.end(), FilterLower.begin(), ::tolower);
+
+		for (int i = 0; i < static_cast<int>(CachedStaticMeshItems.size()); ++i)
+		{
+			// 검색 필터 적용 (None은 항상 표시)
+			if (i > 0 && !FilterLower.empty())
+			{
+				FString ItemLower = CachedStaticMeshItems[i];
+				std::transform(ItemLower.begin(), ItemLower.end(), ItemLower.begin(), ::tolower);
+				if (ItemLower.find(FilterLower) == FString::npos)
+				{
+					continue;
+				}
+			}
+
+			bool is_selected = (SelectedIdx == i);
+			if (ImGui::Selectable(CachedStaticMeshItems[i].c_str(), is_selected))
+			{
+				if (i >= 0 && i < static_cast<int>(CachedStaticMeshPaths.size()))
+				{
+					// 컴포넌트별 Setter 호출
+					UObject* Object = static_cast<UObject*>(Instance);
+					if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Object))
+					{
+						StaticMeshComponent->SetStaticMesh(CachedStaticMeshPaths[i]);
+					}
+					else
+					{
+						*MeshPtr = UResourceManager::GetInstance().Load<UStaticMesh>(CachedStaticMeshPaths[i]);
+					}
+					bChanged = true;
+				}
+			}
+			if (is_selected)
+			{
+				ImGui::SetItemDefaultFocus();
+			}
+		}
+		ImGui::EndCombo();
+	}
+
+	if (bChanged)
+	{
+		return true;
 	}
 
 	// 닫힌 콤보박스 '텍스트' 부분에 마우스를 올렸을 때 전체 경로 툴팁
@@ -2395,7 +2481,7 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 			for (int j = 0; j < (int)CachedTexturePaths.size(); ++j)
 			{
 				const FString& Path = CachedTexturePaths[j];
-				const char* DisplayName = CachedTextureItems[j + 1];
+				const char* DisplayName = CachedTextureItems[j + 1].c_str();
 				bool bIsSelected = (CurrentTexturePath == Path);
 
 				if (ImGui::Selectable(DisplayName, bIsSelected))
@@ -2648,6 +2734,24 @@ bool UPropertyRenderer::RenderSingleMaterialSlot(const char* Label, UMaterialInt
 			bElementChanged = true;
 		}
 
+		// TileU (UV Tiling X)
+		TempFloat = Info.TileU;
+		FString TileULabel = "Tile U##" + FString(Label);
+		if (ImGui::DragFloat(TileULabel.c_str(), &TempFloat, 0.1f, 0.01f, 100.0f))
+		{
+			MeshComponent->SetMaterialScalarByUser(MaterialIndex, "TileU", TempFloat);
+			bElementChanged = true;
+		}
+
+		// TileV (UV Tiling Y)
+		TempFloat = Info.TileV;
+		FString TileVLabel = "Tile V##" + FString(Label);
+		if (ImGui::DragFloat(TileVLabel.c_str(), &TempFloat, 0.1f, 0.01f, 100.0f))
+		{
+			MeshComponent->SetMaterialScalarByUser(MaterialIndex, "TileV", TempFloat);
+			bElementChanged = true;
+		}
+
 		// --- Ints (IlluminationModel) ---
 		int TempInt = Info.IlluminationModel;
 		FString IllumModelLabel = "Illum Model##" + FString(Label);
@@ -2809,23 +2913,48 @@ bool UPropertyRenderer::RenderTextureSelectionCombo(const char* Label, UTexture*
 
 	// 3. 커스텀 콤보박스 시작
 	// 콤보박스에 표시될 텍스트 (현재 선택된 항목의 텍스트)
-	const char* PreviewText = CachedTextureItems[SelectedTextureIdx];
+	const char* PreviewText = CachedTextureItems[SelectedTextureIdx].c_str();
 
 	// SetNextItemWidth를 썸네일 크기만큼 보정
 	ImGui::SetNextItemWidth(220.0f - ThumbnailSize - ImGui::GetStyle().ItemSpacing.x);
 
 	if (ImGui::BeginCombo(Label, PreviewText))
 	{
+		// --- 검색 필터 입력 ---
+		ImGui::SetNextItemWidth(-FLT_MIN);
+		if (ImGui::IsWindowAppearing())
+		{
+			ImGui::SetKeyboardFocusHere();
+		}
+		ImGui::InputTextWithHint("##TextureSearch", "Search...", TextureSearchFilter, IM_ARRAYSIZE(TextureSearchFilter));
+		ImGui::Separator();
+
 		// --- 콤보박스 드롭다운 리스트 렌더링 ---
 
 		// 드롭다운 리스트 내부의 아이템 간 수직 간격 설정
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(ImGui::GetStyle().ItemSpacing.x, 1.0f));
 
+		// 검색 필터를 소문자로 변환
+		FString FilterLower = TextureSearchFilter;
+		std::transform(FilterLower.begin(), FilterLower.end(), FilterLower.begin(), ::tolower);
+
 		// 텍스처 리스트 (미리보기 포함) - "None" 옵션(i=0)을 루프에 포함
 		for (int i = 0; i < (int)CachedTextureItems.size(); ++i)
 		{
+			const char* ItemText = CachedTextureItems[i].c_str();
+
+			// 검색 필터 적용 (None은 항상 표시)
+			if (i > 0 && !FilterLower.empty())
+			{
+				FString ItemLower = CachedTextureItems[i];
+				std::transform(ItemLower.begin(), ItemLower.end(), ItemLower.begin(), ::tolower);
+				if (ItemLower.find(FilterLower) == FString::npos)
+				{
+					continue;
+				}
+			}
+
 			bool is_selected = (SelectedTextureIdx == i);
-			const char* ItemText = CachedTextureItems[i];
 
 			UTexture* previewTexture = nullptr;
 			FString TexturePath = "None";

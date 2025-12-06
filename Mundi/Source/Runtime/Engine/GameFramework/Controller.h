@@ -136,4 +136,13 @@ protected:
 
 	/** Controller의 회전 (Controller가 보고 있는 방향) */
 	FQuat ControlRotation;
+
+	/** Control Pitch (도 단위, -89 ~ 89) */
+	float ControlPitch;
+
+	/** Control Yaw (도 단위, 0 ~ 360) */
+	float ControlYaw;
+
+	/** Pitch/Yaw로부터 ControlRotation 쿼터니언 업데이트 */
+	void UpdateControlRotation();
 };

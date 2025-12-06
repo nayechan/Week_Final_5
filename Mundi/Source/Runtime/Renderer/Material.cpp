@@ -421,6 +421,14 @@ const FMaterialInfo& UMaterialInstanceDynamic::GetMaterialInfo() const
 				// IlluminationModel은 int32 이므로 float에서 캐스팅
 				CachedMaterialInfo.IlluminationModel = static_cast<int32>(Pair.second);
 			}
+			else if (Pair.first == "TileU")
+			{
+				CachedMaterialInfo.TileU = Pair.second;
+			}
+			else if (Pair.first == "TileV")
+			{
+				CachedMaterialInfo.TileV = Pair.second;
+			}
 		}
 
 		// 3. 이 인스턴스에 덮어쓴 벡터 파라미터로 캐시를 수정합니다.

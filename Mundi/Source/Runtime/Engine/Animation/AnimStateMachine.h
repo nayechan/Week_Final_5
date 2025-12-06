@@ -53,6 +53,7 @@ struct FAnimNode_StateMachine : public FAnimNode_Base
     bool SetStateLooping(int32 Index, bool bInLooping);
     float GetStateTime(int32 Index) const;
     bool SetStateTime(int32 Index, float TimeSeconds);
+    float GetStateLength(int32 Index) const;
 
     // FAnimNode_Base overrides
     void Update(FAnimationBaseContext& Context) override;
@@ -60,8 +61,10 @@ struct FAnimNode_StateMachine : public FAnimNode_Base
 
     bool IsActive() const { return (Runtime.CurrentState != -1) || (Runtime.NextState != -1); }
 
-private:
+    // State 접근 (Notify 트리거 등에서 사용)
     const FAnimState* GetStateChecked(int32 Index) const;
+
+private:
     const FAnimTransition* FindTransition(int32 FromIndex, int32 ToIndex) const;
     void EnsureTransitionBuckets();
 

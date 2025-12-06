@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "PhysXSupport.h"
 #include "ECollisionChannel.h"
+#include "PhysicsUserData.h"
 
 // Forward declarations
 class UCapsuleComponent;
@@ -50,7 +51,7 @@ struct FCCTSettings
  * PhysX Character Controller(CCT)의 래퍼 클래스
  * CapsuleComponent가 소유하며, CCT의 생성/해제/이동을 담당
  */
-struct FControllerInstance
+struct FControllerInstance : public FPhysicsUserData
 {
     /** PhysX Controller 인스턴스 */
     PxController* Controller = nullptr;

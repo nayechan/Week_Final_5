@@ -32,6 +32,7 @@ class FTileLightCuller;
 class ULineComponent;
 class UTriangleMeshComponent;
 class UParticleSystemComponent;
+class USkyboxComponent;
 
 struct FCandidateDrawable;
 
@@ -68,6 +69,7 @@ struct FSceneGlobals
 	TArray<UAmbientLightComponent*> AmbientLights;
 	TArray<UHeightFogComponent*> Fogs;	// 첫 번째로 찾은 Fog를 사용함
 	TArray<UDOFComponent*> DOFs;
+	TArray<USkyboxComponent*> Skyboxes;	// 첫 번째로 찾은 Skybox를 사용함
 };
 
 /**
@@ -114,6 +116,9 @@ private:
 	void RenderTranslucentPass(EViewMode InRenderViewMode);
 
 	void DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, bool bClearListAfterDraw);
+
+	/** @brief 스카이박스를 렌더링하는 패스입니다. (배경 대체) */
+	void RenderSkyboxPass();
 
 	/** @brief 데칼(Decal)을 렌더링하는 패스입니다. */
 	void RenderDecalPass();

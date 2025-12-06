@@ -37,7 +37,7 @@ struct FVehicleTransmissionData
 {
     float FinalRatio       = 4.0f;
     float ReverseGearRatio = 4.0f;
-    float GearSwitchTime   = 0.5f;
+    float GearSwitchTime   = 0.1f;  // 변속 시간 (짧아야 자동변속이 잘 됨)
 
     // 기어비 예시 (일반적인 승용차 비율)
     float FirstGearRatio  = 2.66f;
@@ -50,8 +50,9 @@ struct FVehicleTransmissionData
     {
         physx::PxVehicleGearsData Data;
         Data.mSwitchTime                                  = GearSwitchTime;
-        Data.mFinalRatio                                  = FinalRatio; 
-        Data.mRatios[physx::PxVehicleGearsData::eREVERSE] = -ReverseGearRatio; 
+        Data.mFinalRatio                                  = FinalRatio;
+        Data.mNbRatios                                    = 7; // Reverse + Neutral + 5 forward gears
+        Data.mRatios[physx::PxVehicleGearsData::eREVERSE] = ReverseGearRatio;
         Data.mRatios[physx::PxVehicleGearsData::eNEUTRAL] = 0.0f;
         Data.mRatios[physx::PxVehicleGearsData::eFIRST]   = FirstGearRatio;
         Data.mRatios[physx::PxVehicleGearsData::eSECOND]  = SecondGearRatio;

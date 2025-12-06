@@ -10,7 +10,7 @@ UAnimSequence::UAnimSequence()
 {
 }
 
-void UAnimSequence::Load(const FString& InFilePath)
+void UAnimSequence::Load(const FString& InFilePath, ID3D11Device* /*InDevice*/)
 {
 	// TODO: FBX 로딩은 Phase 3에서 구현
 	SetFilePath(InFilePath);

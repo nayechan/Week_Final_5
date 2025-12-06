@@ -209,6 +209,7 @@ void AGameModeBase::InitPlayer()
 
 	if (!PlayerController)
 	{
+		UE_LOG("[error] GameModeBase::InitPlayer - Failed to spawn PlayerController");
 		return;
 	}
 
@@ -219,7 +220,17 @@ void AGameModeBase::InitPlayer()
 	SpawnTransform.Scale3D = FVector(1.0f, 1.0f, 1.0f);
 
 	// 3. Pawn 스폰 및 빙의
+	UE_LOG("[info] GameModeBase::InitPlayer - DefaultPawnClass: %s", DefaultPawnClass ? DefaultPawnClass->Name : "nullptr");
 	APawn* SpawnedPawn = SpawnDefaultPawnFor(PlayerController, SpawnTransform);
+
+	if (!SpawnedPawn)
+	{
+		UE_LOG("[error] GameModeBase::InitPlayer - Failed to spawn DefaultPawn");
+	}
+	else
+	{
+		UE_LOG("[info] GameModeBase::InitPlayer - Spawned Pawn: %s", SpawnedPawn->GetClass()->Name);
+	}
 }
 
 APlayerController* AGameModeBase::SpawnPlayerController()

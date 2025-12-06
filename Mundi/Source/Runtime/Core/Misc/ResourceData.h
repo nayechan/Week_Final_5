@@ -26,6 +26,10 @@ struct FMaterialInfo
     float SpecularExponent = 32.0f; // Ns
     float BumpMultiplier = 1.0f; // map_Bump -bm
 
+    // UV Tiling
+    float TileU = 1.0f;
+    float TileV = 1.0f;
+
     FString MaterialName;
 
     friend FArchive& operator<<(FArchive& Ar, FMaterialInfo& Info)
@@ -61,6 +65,10 @@ struct FMaterialInfo
         Ar << Info.OpticalDensity;
         Ar << Info.Transparency;
         Ar << Info.SpecularExponent;
+
+        // UV Tiling
+        Ar << Info.TileU;
+        Ar << Info.TileV;
 
         if (Ar.IsSaving())
             Serialization::WriteString(Ar, Info.MaterialName);
