@@ -277,10 +277,9 @@ void UStaticMeshComponent::RenderDebugVolume(URenderer* Renderer) const
 		Colors);
 
 	// 라인 렌더링 (삼각형 edge 추출)
+	// SceneRenderer에서 이미 BeginLineBatch를 호출했으므로, AddLine만 호출
 	if (Vertices.Num() > 0 && Indices.Num() >= 3)
 	{
-		Renderer->BeginLineBatch();
-
 		// 각 삼각형의 3개 edge를 라인으로 추가
 		for (int32 i = 0; i + 2 < Indices.Num(); i += 3)
 		{
@@ -295,7 +294,5 @@ void UStaticMeshComponent::RenderDebugVolume(URenderer* Renderer) const
 			// Edge 2-0
 			Renderer->AddLine(Vertices[Idx2], Vertices[Idx0], DebugColor);
 		}
-
-		Renderer->EndLineBatchAlwaysOnTop(FMatrix::Identity());
 	}
 }
