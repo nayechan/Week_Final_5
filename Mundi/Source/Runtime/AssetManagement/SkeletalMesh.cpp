@@ -75,6 +75,7 @@ void USkeletalMesh::UpdateVertexBuffer(const TArray<FNormalVertex>& SkinnedVerti
 void USkeletalMesh::CreateGPUSkinnedVertexBuffer(ID3D11Buffer** InVertexBuffer)
 {
     if (!Data) { return; }
+    if (Data->Vertices.empty()) { return; }  // 빈 버텍스 데이터 처리
     ID3D11Device* Device = GEngine.GetRHIDevice()->GetDevice();
 
     // FSkinnedVertex를 그대로 사용하는 버텍스 버퍼 생성

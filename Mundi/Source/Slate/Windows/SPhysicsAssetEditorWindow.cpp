@@ -1177,8 +1177,61 @@ void SPhysicsAssetEditorWindow::RenderLeftPanel(float PanelWidth)
 {
     if (!ActiveState) return;
 
-    // Asset Browser 섹션 (부모 클래스에서 가져옴)
-    // RenderAssetBrowser(PanelWidth);  // Week_Final_5에 없음
+    PhysicsAssetEditorState* PhysState = GetPhysicsState();
+    if (!PhysState) return;
+
+    // ===== SELECT MESH 섹션 =====
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
+    ImGui::Text("SELECT MESH");
+    ImGui::Dummy(ImVec2(0, 4));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, 4));
+
+    // 현재 선택된 메시 표시
+    FString CurrentMeshName = PhysState->LoadedMeshPath.empty() ? "(None)" : ExtractFileName(PhysState->LoadedMeshPath);
+    ImGui::Text("Current: %s", CurrentMeshName.c_str());
+    ImGui::Dummy(ImVec2(0, 4));
+
+    // 메시 목록 스크롤 영역
+    float meshListHeight = 100.0f;
+    ImGui::BeginChild("MeshList", ImVec2(0, meshListHeight), true);
+
+    // SkeletalMesh 목록 (ResourceManager에서 가져오기)
+    TArray<FString> MeshPaths = UResourceManager::GetInstance().GetAllFilePaths<USkeletalMesh>();
+
+    if (MeshPaths.IsEmpty())
+    {
+        ImGui::TextDisabled("No skeletal meshes loaded");
+        ImGui::TextDisabled("Load FBX files first");
+    }
+    else
+    {
+        for (const FString& Path : MeshPaths)
+        {
+            bool bSelected = (PhysState->LoadedMeshPath == Path);
+            FString DisplayName = ExtractFileName(Path);
+
+            if (ImGui::Selectable(DisplayName.c_str(), bSelected))
+            {
+                if (!bSelected)
+                {
+                    LoadMeshForPhysicsAsset(Path);
+                }
+            }
+
+            // 툴팁으로 전체 경로 표시
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::SetTooltip("%s", Path.c_str());
+            }
+        }
+    }
+
+    ImGui::EndChild();
+
+    ImGui::Dummy(ImVec2(0, 8));
+    ImGui::Separator();
+    ImGui::Dummy(ImVec2(0, 8));
 
     // Display Options 섹션
     RenderDisplayOptions(PanelWidth);
@@ -3909,6 +3962,19 @@ void SPhysicsAssetEditorWindow::RemoveBody(int32 BodyIndex)
     if (!PhysState || !PhysState->EditingAsset) return;
     if (BodyIndex < 0 || BodyIndex >= PhysState->EditingAsset->Bodies.Num()) return;
 
+    // 시뮬레이션 여부와 관계없이 래그돌 해제 (렌더러가 stale 포인터 참조 방지)
+    if (PhysState->PreviewActor)
+    {
+        if (USkeletalMeshComponent* MeshComp = PhysState->PreviewActor->GetSkeletalMeshComponent())
+        {
+            if (MeshComp->bRagdollInitialized)
+            {
+                MeshComp->TermRagdoll();
+            }
+        }
+    }
+    bSimulateInEditor = false;
+
     UBodySetup* Body = PhysState->EditingAsset->Bodies[BodyIndex];
     if (!Body) return;
 
@@ -3928,6 +3994,8 @@ void SPhysicsAssetEditorWindow::RemoveBody(int32 BodyIndex)
         }
     }
 
+    // UBodySetup 삭제
+    ObjectFactory::DeleteObject(Body);
     PhysState->EditingAsset->Bodies.RemoveAt(BodyIndex);
     ClearSelection();
     PhysState->bIsDirty = true;
@@ -4412,6 +4480,21 @@ void SPhysicsAssetEditorWindow::RenderToolsPanel()
 
         ImGui::Spacing();
 
+        // 최소/최대 본 크기 설정
+        ImGui::DragFloat("Min Bone Size", &GenerateMinBoneSize, 0.001f, 0.001f, 1.0f, "%.3f");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Bones smaller than this will be skipped (except Hand/Head)");
+        }
+
+        ImGui::DragFloat("Max Bone Size", &GenerateMaxBoneSize, 0.01f, 0.01f, 2.0f, "%.2f");
+        if (ImGui::IsItemHovered())
+        {
+            ImGui::SetTooltip("Bone size will be clamped to this maximum");
+        }
+
+        ImGui::Spacing();
+
         // FBX가 로드되어 있어야 버튼 활성화
         bool bCanGenerate = PhysState->CurrentMesh != nullptr;
 
@@ -4482,7 +4565,11 @@ void SPhysicsAssetEditorWindow::RenderToolsPanel()
                     PreviewComp->SetPhysicsMode(EPhysicsMode::Animation);
                     PreviewComp->ResetToRefPose();
 
-                    // 본 라인 캐시 리셋
+                    // 본 라인 캐시 완전 리셋 (RefPose로 다시 그리기 위해)
+                    if (PhysState->PreviewActor)
+                    {
+                        PhysState->PreviewActor->ResetBoneLinesCache();
+                    }
                     ActiveState->bBoneLinesDirty = true;
                 }
             }
@@ -4653,8 +4740,8 @@ void SPhysicsAssetEditorWindow::AdjustShapeForBoneType(UBodySetup* Body, const F
         BoneLength = HeadBoneSize;
     }
 
-    // 클램프
-    float ClampedLength = std::min(std::max(BoneLength, MinBoneSize), MaxBoneSize);
+    // 클램프 - UI에서 조절 가능한 값 사용
+    float ClampedLength = std::min(std::max(BoneLength, GenerateMinBoneSize), GenerateMaxBoneSize);
 
     // 비율 결정
     float EffectiveRadiusRatio = RadiusRatio;
@@ -4906,6 +4993,19 @@ void SPhysicsAssetEditorWindow::DoGenerateAllBodies()
     const FSkeleton* Skeleton = PhysState->CurrentMesh->GetSkeleton();
     if (!Skeleton || Skeleton->Bones.empty()) return;
 
+    // 시뮬레이션 중이면 먼저 종료 (BodySetup 삭제 전에 래그돌 해제 필수)
+    if (bSimulateInEditor && PhysState->PreviewActor)
+    {
+        if (USkeletalMeshComponent* MeshComp = PhysState->PreviewActor->GetSkeletalMeshComponent())
+        {
+            if (MeshComp->bRagdollInitialized)
+            {
+                MeshComp->TermRagdoll();
+            }
+        }
+        bSimulateInEditor = false;
+    }
+
     UPhysicsAsset* Asset = PhysState->EditingAsset;
 
     // 기존 데이터 클리어 (UObject는 ObjectFactory로 삭제)
@@ -4954,14 +5054,14 @@ void SPhysicsAssetEditorWindow::DoGenerateAllBodies()
             BoneLength = HeadBoneSize;
         }
 
-        // 너무 작은 본은 스킵 (Hand, Head 제외)
-        if (BoneLength < MinBoneSize && !bIsHandBone && !bIsHeadBone)
+        // 너무 작은 본은 스킵 (Hand, Head 제외) - UI에서 조절 가능
+        if (BoneLength < GenerateMinBoneSize && !bIsHandBone && !bIsHeadBone)
         {
             continue;
         }
 
-        // 클램프
-        float ClampedLength = std::min(BoneLength, MaxBoneSize);
+        // 클램프 - UI에서 조절 가능
+        float ClampedLength = std::min(BoneLength, GenerateMaxBoneSize);
 
         // 비율 결정
         float EffectiveRadiusRatio = RadiusRatio;
@@ -5133,4 +5233,78 @@ void SPhysicsAssetEditorWindow::RefreshPhysicsAssetInWorld(UPhysicsAsset* Asset)
     if (!PhysState || PhysState->CurrentFilePath.empty()) return;
 
     UE_LOG("[PhysicsAsset] RefreshPhysicsAssetInWorld - Week_Final_5: 자동 갱신 비활성화");
+}
+
+// ============================================================================
+// FBX 메시 선택 및 로드
+// ============================================================================
+
+FString SPhysicsAssetEditorWindow::ExtractFileName(const FString& Path)
+{
+    size_t lastSlash = Path.find_last_of("/\\");
+    FString FileName = (lastSlash != FString::npos) ? Path.substr(lastSlash + 1) : Path;
+
+    // 확장자 제거
+    size_t dotPos = FileName.find_last_of('.');
+    if (dotPos != FString::npos)
+    {
+        FileName = FileName.substr(0, dotPos);
+    }
+
+    return FileName;
+}
+
+void SPhysicsAssetEditorWindow::LoadMeshForPhysicsAsset(const FString& MeshPath)
+{
+    PhysicsAssetEditorState* State = GetPhysicsState();
+    if (!State || !State->PreviewActor) return;
+
+    USkeletalMesh* Mesh = UResourceManager::GetInstance().Load<USkeletalMesh>(MeshPath);
+    if (Mesh)
+    {
+        // 기존 래그돌 정리
+        if (USkeletalMeshComponent* MeshComp = State->PreviewActor->GetSkeletalMeshComponent())
+        {
+            if (MeshComp->bRagdollInitialized)
+            {
+                MeshComp->TermRagdoll();
+            }
+        }
+
+        // 기존 본 라인 클리어
+        if (ULineComponent* LineComp = State->PreviewActor->GetBoneLineComponent())
+        {
+            LineComp->ClearLines();
+        }
+
+        // 메시 설정
+        State->PreviewActor->SetSkeletalMesh(MeshPath);
+        State->CurrentMesh = Mesh;  // CurrentMesh 업데이트 (중요!)
+        State->LoadedMeshPath = MeshPath;
+
+        // MeshPathBuffer 업데이트
+        size_t copyLen = std::min(MeshPath.size(), sizeof(State->MeshPathBuffer) - 1);
+        memcpy(State->MeshPathBuffer, MeshPath.c_str(), copyLen);
+        State->MeshPathBuffer[copyLen] = '\0';
+
+        // 새 Physics Asset 생성
+        State->EditingAsset = NewObject<UPhysicsAsset>();
+        State->EditingAsset->SkeletalMeshPath = MeshPath;
+        State->CurrentFilePath.clear();
+        State->bIsDirty = false;
+
+        // 상태 초기화 - 선택 해제
+        State->SelectedBodyIndex = -1;
+        State->SelectedConstraintIndex = -1;
+        State->SelectedShapeIndex = -1;
+        State->SelectedShapeType = EShapeType::None;
+
+        // 라인 재구성 요청
+        State->bShapesDirty = true;
+        State->bConstraintsDirty = true;
+        State->bBoneLinesDirty = true;
+
+        // 스켈레탈 메시 로드 콜백
+        OnSkeletalMeshLoaded(State, MeshPath);
+    }
 }

@@ -42,6 +42,9 @@ void ASkeletalMeshActor::SetSkeletalMesh(const FString& PathFileName)
     if (SkeletalMeshComponent)
     {
         SkeletalMeshComponent->SetSkeletalMesh(PathFileName);
+        // 메시 변경 시 본 라인 캐시 리셋 (새 스켈레톤으로 재구성 필요)
+        bBoneLinesInitialized = false;
+        BoneLinesCache.Empty();
     }
 }
 
@@ -134,12 +137,14 @@ void ASkeletalMeshActor::RebuildBoneLines(int32 SelectedBoneIndex)
         CachedSelected = SelectedBoneIndex;
     }
 
-    // Update transforms based on whether animation is playing
+    // Update transforms based on whether animation is playing or ragdoll is active
     const bool bIsAnimationPlaying = SkeletalMeshComponent && SkeletalMeshComponent->IsPlayingAnimation();
+    const bool bIsRagdollActive = SkeletalMeshComponent && SkeletalMeshComponent->bRagdollInitialized &&
+                                   SkeletalMeshComponent->GetPhysicsMode() == EPhysicsMode::Ragdoll;
 
-    if (bIsAnimationPlaying)
+    if (bIsAnimationPlaying || bIsRagdollActive)
     {
-        // During animation, update all bone transforms (root bone subtree = entire skeleton)
+        // During animation or ragdoll, update all bone transforms (root bone subtree = entire skeleton)
         UpdateBoneSubtreeTransforms(0);
     }
     else if (SelectedBoneIndex >= 0 && SelectedBoneIndex < BoneCount)
@@ -223,6 +228,14 @@ void ASkeletalMeshActor::Serialize(const bool bInIsLoading, JSON& InOutHandle)
     {
         SkeletalMeshComponent = Cast<USkeletalMeshComponent>(RootComponent);
     }
+}
+
+void ASkeletalMeshActor::ResetBoneLinesCache()
+{
+    bBoneLinesInitialized = false;
+    BoneLinesCache.Empty();
+    BoneChildren.Empty();
+    CachedSelected = -1;
 }
 
 void ASkeletalMeshActor::BuildBoneLinesCache()

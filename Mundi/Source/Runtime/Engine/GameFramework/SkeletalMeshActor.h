@@ -48,6 +48,9 @@ public:
     void DuplicateSubObjects() override;
     void Serialize(const bool bInIsLoading, JSON& InOutHandle) override;
 
+    // Reset bone lines cache (forces rebuild from current pose)
+    void ResetBoneLinesCache();
+
 protected:
     // 스켈레탈 메시를 실제로 렌더링하는 컴포넌트 (미리뷰/프리뷰 액터의 루트로 사용)
     USkeletalMeshComponent* SkeletalMeshComponent = nullptr;

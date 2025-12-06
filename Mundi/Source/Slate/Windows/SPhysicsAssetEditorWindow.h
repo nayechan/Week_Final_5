@@ -163,9 +163,17 @@ private:
     EShapeType SelectedPrimitiveType = EShapeType::Capsule;
     bool bShowGenerateConfirmPopup = false;
 
+    // Body 생성 파라미터 (UI에서 조절 가능)
+    float GenerateMinBoneSize = 0.03f;  // 이 크기 미만의 본은 스킵
+    float GenerateMaxBoneSize = 0.50f;  // 본 크기 상한 클램프
+
     // ===== 에디터 시뮬레이션 =====
     bool bSimulateInEditor = false;  // 시뮬레이션 활성화 여부
 
     // 에디터 월드의 SkeletalMeshComponent들에 PhysicsAsset 새로고침
     void RefreshPhysicsAssetInWorld(UPhysicsAsset* Asset);
+
+    // FBX 메시 선택 및 로드
+    void LoadMeshForPhysicsAsset(const FString& MeshPath);
+    static FString ExtractFileName(const FString& Path);
 };
