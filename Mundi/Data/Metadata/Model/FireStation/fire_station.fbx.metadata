@@ -1,17 +1,20 @@
 {
   "AggGeom" : {
     "BoxElems" : [],
-    "ConvexElems" : [{
+    "ConvexElems" : [],
+    "SphereElems" : [],
+    "SphylElems" : [],
+    "TriangleMeshElems" : [{
         "Center" : [0.000000, 0.000000, 0.000000],
         "Rotation" : [0.000000, 0.000000, 0.000000, 1.000000],
         "Source" : "Mesh"
-      }],
-    "SphereElems" : [],
-    "SphylElems" : [],
-    "TriangleMeshElems" : []
+      }]
   },
+  "AngularDamping" : 0.050000,
   "BoneIndex" : -1,
   "BoneName" : "None",
-  "CollisionComplexity" : "UseSimple",
+  "CollisionComplexity" : "UseComplexAsSimple",
+  "LinearDamping" : 0.010000,
+  "MassInKg" : 1.000000,
   "PhysicalMaterial" : ""
 }

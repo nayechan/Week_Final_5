@@ -91,7 +91,7 @@ private:
 	static TArray<FString> CachedShaderPaths;
 	static TArray<const char*> CachedShaderItems;
 	static TArray<FString> CachedTexturePaths;
-	static TArray<const char*> CachedTextureItems;
+	static TArray<FString> CachedTextureItems;
 	static TArray<FString> CachedSoundPaths;
 	static TArray<const char*> CachedSoundItems;
 	static TArray<FString> CachedScriptPaths;
@@ -100,4 +100,8 @@ private:
 	static TArray<FString> CachedParticleSystemItems;
 	static TArray<FString> CachedPhysicsAssetPaths;
 	static TArray<FString> CachedPhysicsAssetItems;
+
+	// 검색 필터 버퍼
+	static char TextureSearchFilter[256];
+	static char StaticMeshSearchFilter[256];
 };

@@ -167,6 +167,12 @@ struct FMaterialInPs
 
     FVector TransmissionFilter; // Tf
     float dummy; // 4 bytes padding
+
+    // UV Tiling
+    float TileU;
+    float TileV;
+    float TilePadding[2]; // 16 bytes alignment
+
     FMaterialInPs() = default;
     FMaterialInPs(const FMaterialInfo& MaterialInfo)
         :DiffuseColor(MaterialInfo.DiffuseColor),
@@ -178,8 +184,11 @@ struct FMaterialInPs
         EmissiveColor(MaterialInfo.EmissiveColor),
         IlluminationModel(MaterialInfo.IlluminationModel),
         TransmissionFilter(MaterialInfo.TransmissionFilter),
-        dummy(0)
-    { 
+        dummy(0),
+        TileU(MaterialInfo.TileU),
+        TileV(MaterialInfo.TileV),
+        TilePadding{0, 0}
+    {
 
     }
 };

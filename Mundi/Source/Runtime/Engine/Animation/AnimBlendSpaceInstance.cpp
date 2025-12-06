@@ -30,7 +30,7 @@ void UAnimBlendSpaceInstance::Lua_Clear()
 
 int32 UAnimBlendSpaceInstance::Lua_AddSample(float X, float Y, const FString& AssetPath, float Rate, bool bLooping)
 {
-    UAnimSequence* Seq = UResourceManager::GetInstance().Get<UAnimSequence>(AssetPath);
+    UAnimSequence* Seq = UResourceManager::GetInstance().Load<UAnimSequence>(AssetPath);
     if (!Seq)
     {
         const auto& AllAnims = UResourceManager::GetInstance().GetAnimations();

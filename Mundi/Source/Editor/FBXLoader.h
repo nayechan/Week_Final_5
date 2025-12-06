@@ -24,6 +24,27 @@ public:
 	TArray<FString> GetAnimationStackNames(const FString& FilePath);
 
 	/**
+	 * FBX 파일에 메시가 포함되어 있는지 확인
+	 * @param FilePath FBX 파일 경로
+	 * @return 메시가 있으면 true, 없으면 false
+	 */
+	bool HasMeshInFbx(const FString& FilePath);
+
+	/**
+	 * FBX 파일에서 스켈레톤만 추출 (메시 없는 애니메이션 전용 FBX용)
+	 * @param FilePath FBX 파일 경로
+	 * @return 추출된 스켈레톤 (실패 시 nullptr)
+	 */
+	FSkeleton* LoadSkeletonOnly(const FString& FilePath);
+
+	/**
+	 * 이미 로드된 스켈레톤 중에서 호환되는 스켈레톤 찾기
+	 * @param SourceSkeleton 매칭할 소스 스켈레톤
+	 * @return 호환되는 스켈레톤 (없으면 nullptr)
+	 */
+	const FSkeleton* FindCompatibleSkeleton(const FSkeleton* SourceSkeleton);
+
+	/**
 	 * FBX 파일에서 애니메이션 로드
 	 * @param FilePath FBX 파일 경로
 	 * @param TargetSkeleton 대상 스켈레톤 (본 인덱스 매칭용)
@@ -54,6 +75,16 @@ private:
 	FbxString GetAttributeTypeName(FbxNodeAttribute* InAttribute);
 
 	void EnsureSingleRootBone(FSkeletalMeshData& MeshData);
+
+	/**
+	 * FBX Scene에 메시가 있는지 확인
+	 */
+	bool HasMeshInScene(FbxNode* Node);
+
+	/**
+	 * 스켈레톤만 추출하는 헬퍼 (Scene에서 직접 추출)
+	 */
+	void LoadSkeletonFromScene(FbxNode* Node, FSkeleton& OutSkeleton, int32 ParentIndex, TMap<FbxNode*, int32>& BoneToIndex);
 
 	/**
 	 * 파일 시스템에 안전한 이름으로 변환 (특수문자 제거)
