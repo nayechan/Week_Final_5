@@ -1,0 +1,15 @@
+{
+  "FrameRate" : 30.000000,
+  "NotifyTracks" : [{
+      "Name" : "Track 0",
+      "Notifies" : [{
+          "Color" : [1.000000, 1.000000, 1.000000, 1.000000],
+          "Duration" : 0.000000,
+          "NotifyName" : "EndPickUp",
+          "SoundPath" : "",
+          "TriggerTime" : 0.969900
+        }]
+    }],
+  "NumberOfFrames" : 35,
+  "SourceFilePath" : "Data/firefighter/Firefighter_Without_Cloth_Picking_Up_Object_mixamo.com"
+}

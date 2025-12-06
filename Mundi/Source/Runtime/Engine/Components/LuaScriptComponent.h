@@ -33,6 +33,7 @@ public:
 	void OnBeginOverlap(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp);
 	void OnEndOverlap(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp);
 	void OnHit(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp);
+	void OnAnimNotify(const FString& NotifyName);
 
 	bool Call(const char* FuncName, sol::variadic_args VarArgs); // 다른 클래스가 날 호출할 때 씀
 
@@ -50,6 +51,7 @@ protected:
 	sol::protected_function FuncOnEndOverlap{};
 	sol::protected_function FuncOnHit{};
 	sol::protected_function FuncEndPlay{};
+	sol::protected_function FuncOnAnimNotify{};
 
 	FDelegateHandle BeginHandleLua{};
 	FDelegateHandle EndHandleLua{};

@@ -261,15 +261,58 @@ void UAnimSequence::Serialize(const bool bInIsLoading, JSON& InOutHandle)
 	if (bInIsLoading)
 	{
 		// === 로드 ===
-		// ResourceKey (SourceFilePath)만 로드
-		// 실제 애니메이션 데이터는 ResourceManager에서 참조
-		// NotifyTracks는 OnLoad에서 직접 처리
+		// ResourceKey (SourceFilePath) 로드
 		FString SourcePath;
 		FJsonSerializer::ReadString(InOutHandle, "SourceFilePath", SourcePath, "", false);
 
 		if (!SourcePath.empty())
 		{
 			SetFilePath(SourcePath);
+		}
+
+		// NotifyTracks 로드
+		NotifyTracks.Empty();
+		if (InOutHandle.hasKey("NotifyTracks"))
+		{
+			const JSON& TracksArray = InOutHandle.at("NotifyTracks");
+			if (TracksArray.JSONType() == JSON::Class::Array)
+			{
+				for (size_t i = 0; i < TracksArray.size(); ++i)
+				{
+					const JSON& TrackJson = TracksArray.at(i);
+					FNotifyTrack Track;
+					FJsonSerializer::ReadString(TrackJson, "Name", Track.Name, "Track", false);
+
+					if (TrackJson.hasKey("Notifies"))
+					{
+						const JSON& NotifiesArray = TrackJson.at("Notifies");
+						if (NotifiesArray.JSONType() == JSON::Class::Array)
+						{
+							for (size_t j = 0; j < NotifiesArray.size(); ++j)
+							{
+								const JSON& NotifyJson = NotifiesArray.at(j);
+								FAnimNotifyEvent Notify;
+								FJsonSerializer::ReadFloat(NotifyJson, "TriggerTime", Notify.TriggerTime, 0.f, false);
+								FJsonSerializer::ReadFloat(NotifyJson, "Duration", Notify.Duration, 0.f, false);
+
+								FString NotifyNameStr;
+								FJsonSerializer::ReadString(NotifyJson, "NotifyName", NotifyNameStr, "", false);
+								Notify.NotifyName = FName(NotifyNameStr);
+
+								FJsonSerializer::ReadString(NotifyJson, "SoundPath", Notify.SoundPath, "", false);
+
+								FVector4 ColorVec;
+								FJsonSerializer::ReadVector4(NotifyJson, "Color", ColorVec, FVector4(1, 1, 1, 1), false);
+								Notify.Color = FLinearColor(ColorVec.X, ColorVec.Y, ColorVec.Z, ColorVec.W);
+
+								Track.Notifies.Add(Notify);
+							}
+						}
+					}
+					NotifyTracks.Add(Track);
+				}
+				UE_LOG("[UAnimSequence] Loaded %d NotifyTracks", NotifyTracks.Num());
+			}
 		}
 	}
 	else

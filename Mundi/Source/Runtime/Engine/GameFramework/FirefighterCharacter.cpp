@@ -9,6 +9,8 @@
 #include "PlayerController.h"
 #include "Controller.h"
 #include "InputComponent.h"
+#include "LuaScriptComponent.h"
+#include "CharacterMovementComponent.h"
 
 AFirefighterCharacter::AFirefighterCharacter()
 	: bOrientRotationToMovement(true)
@@ -27,7 +29,14 @@ AFirefighterCharacter::AFirefighterCharacter()
 	{
 		MeshComponent->SetupAttachment(CapsuleComponent);
 		MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -1.25f));
-		MeshComponent->SetSkeletalMesh(GDataDir + "/X Bot.fbx");
+		MeshComponent->SetSkeletalMesh(GDataDir + "/firefighter/Firefighter_Without_Cloth.fbx");
+	}
+
+	// LuaScriptComponent 생성 (애니메이션 제어용)
+	LuaScript = CreateDefaultSubobject<ULuaScriptComponent>("LuaScript");
+	if (LuaScript)
+	{
+		LuaScript->ScriptFilePath = "Data/Scripts/FirefighterController.lua";
 	}
 
 	// SpringArmComponent 생성 (3인칭 카메라용)
@@ -57,18 +66,7 @@ AFirefighterCharacter::~AFirefighterCharacter()
 void AFirefighterCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	UAnimSequence* AnimToPlay = UResourceManager::GetInstance().Get<UAnimSequence>(GDataDir + "/Animation/BSH_Walk Forward_mixamo.com");
-
-	if (AnimToPlay && GetMesh())
-	{
-		MeshComponent->PlayAnimation(AnimToPlay, true);
-		UE_LOG("AFirefighterCharacter: Started playing animation.");
-	}
-	else
-	{
-		UE_LOG("AFirefighterCharacter: Failed to find animation to play");
-	}
+	// 애니메이션은 LuaScriptComponent(FirefighterController.lua)에서 처리
 }
 
 void AFirefighterCharacter::PossessedBy(AController* NewController)
@@ -86,24 +84,20 @@ void AFirefighterCharacter::HandleAnimNotify(const FAnimNotifyEvent& NotifyEvent
 {
 	Super::HandleAnimNotify(NotifyEvent);
 
-	//UE_LOG("AFirefighterCharacter: Notify Triggered!");
-	//
-	//FString NotifyName = NotifyEvent.NotifyName.ToString();
-	//
-	//if (NotifyName == "Sorry" && SorrySound)
-	//{
-	//	FAudioDevice::PlaySound3D(SorrySound, GetActorLocation());
-	//}
-	//else if (NotifyName == "Hit" && HitSound)
-	//{
-	//	FAudioDevice::PlaySound3D(HitSound, GetActorLocation());
-	//}
+	// Lua 스크립트에 AnimNotify 전달
+	if (LuaScript)
+	{
+		FString NotifyName = NotifyEvent.NotifyName.ToString();
+		LuaScript->OnAnimNotify(NotifyName);
+	}
 }
 
 void AFirefighterCharacter::Tick(float DeltaSeconds)
 {
 	// 이동 방향으로 캐릭터 회전 (Super::Tick 전에 처리해야 SpringArm이 올바른 회전을 사용)
-	if (bOrientRotationToMovement && CurrentMovementDirection.SizeSquared() > 0.01f)
+	// MaxWalkSpeed가 0이면 (PickUp 등) 회전도 비활성화
+	const bool bCanRotate = CharacterMovement && CharacterMovement->MaxWalkSpeed > 0.01f;
+	if (bOrientRotationToMovement && bCanRotate && CurrentMovementDirection.SizeSquared() > 0.01f)
 	{
 		// 이동 방향에서 목표 회전 계산 (Yaw만 사용)
 		FVector Direction = CurrentMovementDirection.GetNormalized();

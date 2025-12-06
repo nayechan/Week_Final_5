@@ -1,8 +1,9 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "AnimStateMachineInstance.h"
 #include "SkeletalMeshComponent.h"
 #include "AnimSequence.h"
 #include "ResourceManager.h"
+#include <filesystem>
 
 void UAnimStateMachineInstance::NativeUpdateAnimation(float DeltaSeconds)
 {
@@ -57,6 +58,22 @@ int32 UAnimStateMachineInstance::Lua_AddState(const FString& Name, const FString
         }
         return -1;
     }
+
+    // .animsequence 파일에서 NotifyTracks 로드 시도
+    // AssetPath에서 파일명 추출하여 Data/Animations/ 폴더에서 .animsequence 파일 검색
+    std::filesystem::path FbxPath(AssetPath);
+    FString AnimName = FbxPath.stem().string();  // 확장자 제외한 파일명
+    FString AnimSequencePath = "Data/Animations/" + AnimName + ".animsequence";
+
+    if (std::filesystem::exists(AnimSequencePath))
+    {
+        if (Seq->LoadAnimSequenceFile(AnimSequencePath))
+        {
+            UE_LOG("[AnimStateMachine] Loaded .animsequence file: %s (NotifyTracks: %d)\n",
+                AnimSequencePath.c_str(), Seq->GetNotifyTracks().Num());
+        }
+    }
+
     UE_LOG("[AnimStateMachine] Adding state '%s' with asset '%s', PlayLength=%.2f\n", Name.c_str(), AssetPath.c_str(), Seq->GetPlayLength());
     FAnimState StateDesc; StateDesc.Name = Name; StateDesc.PlayRate = Rate; StateDesc.bLooping = bLooping;
     int32 Index = AddState(StateDesc, Seq);
@@ -78,7 +95,7 @@ void UAnimStateMachineInstance::Lua_SetState(const FString& Name, float BlendTim
     const int32 Idx = FindStateByName(Name);
     if (Idx >= 0)
     {
-        UE_LOG("[AnimStateMachine] Setting current state to '%s' (index %d) with blend time %.2f\n", Name.c_str(), Idx, BlendTime);
+        //UE_LOG("[AnimStateMachine] Setting current state to '%s' (index %d) with blend time %.2f\n", Name.c_str(), Idx, BlendTime);
         SetCurrentState(Idx, BlendTime);
     }
     else
