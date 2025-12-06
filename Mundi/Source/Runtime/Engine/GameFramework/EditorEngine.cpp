@@ -335,6 +335,11 @@ void UEditorEngine::MainLoop()
             GWorld->GetLightManager()->SetDirtyFlag();
             SLATE.SetPIEWorld(GWorld);
 
+            // 에디터 모드로 InputMode 복원
+            INPUT.SetInputMode(EInputMode::GameAndUI);
+            INPUT.SetCursorVisible(true);
+            INPUT.ReleaseCursor();
+
             bPIEActive = false;
             UE_LOG("[info] END PIE");
 

@@ -4,7 +4,7 @@
 // ────────────────────────────────────────────────────────────────────────────
 #include "pch.h"
 #include "HudExampleGameMode.h"
-#include "DancingCharacter.h"
+#include "FirefighterCharacter.h"
 #include "Vehicle.h"
 
 #include "GameUI/SGameHUD.h"
@@ -18,7 +18,7 @@
 
 AHudExampleGameMode::AHudExampleGameMode()
 {
-	// DefaultPawnClass = ADancingCharacter::StaticClass();
+	// DefaultPawnClass = AFirefighterCharacter::StaticClass();
 	DefaultPawnClass = AVehicle::StaticClass();
 }
 

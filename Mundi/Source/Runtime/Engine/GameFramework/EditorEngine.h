@@ -34,6 +34,7 @@ public:
     void StartPIE();
     void EndPIE();
     bool IsPIEActive() const { return bPIEActive; }
+    bool IsPlayActive() const { return bPIEActive; }  // GameEngine과 통일된 인터페이스
     
     HWND GetHWND() const { return HWnd; }
     

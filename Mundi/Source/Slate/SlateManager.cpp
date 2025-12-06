@@ -962,8 +962,8 @@ void USlateManager::OnMouseDown(FVector2D MousePos, uint32 Button)
 
 void USlateManager::OnMouseUp(FVector2D MousePos, uint32 Button)
 {
-    // 우클릭 해제 시 커서 복원 (ActiveViewport와 무관하게 처리)
-    if (Button == 1 && INPUT.IsCursorLocked())
+    // 우클릭 해제 시 커서 복원 (GameOnly 모드가 아닐 때만)
+    if (Button == 1 && INPUT.IsCursorLocked() && INPUT.GetInputMode() != EInputMode::GameOnly)
     {
         INPUT.SetCursorVisible(true);
         INPUT.ReleaseCursor();

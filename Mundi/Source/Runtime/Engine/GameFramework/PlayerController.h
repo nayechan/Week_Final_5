@@ -8,10 +8,12 @@
 #include "APlayerController.generated.h"
 
 // 전방 선언
-class UInputManager;
 class UInputComponent;
 class APlayerCameraManager;
 class UCameraComponent;
+
+// EInputMode는 InputManager.h에 정의됨
+#include "InputManager.h"
 
 /**
  * APlayerController
@@ -124,6 +126,46 @@ public:
 	 */
 	float GetMouseSensitivity() const { return MouseSensitivity; }
 
+	/**
+	 * 카메라 회전에 마우스 버튼이 필요한지 설정합니다.
+	 * false로 설정하면 마우스 버튼 없이도 카메라가 회전합니다.
+	 *
+	 * @param bRequired - true면 마우스 버튼 필요, false면 항상 회전
+	 */
+	void SetRequireMouseButtonForRotation(bool bRequired) { bRequireMouseButtonForRotation = bRequired; }
+
+	/**
+	 * 카메라 회전에 마우스 버튼이 필요한지 반환합니다.
+	 */
+	bool IsMouseButtonRequiredForRotation() const { return bRequireMouseButtonForRotation; }
+
+	// ────────────────────────────────────────────────
+	// Input Mode
+	// ────────────────────────────────────────────────
+
+	/**
+	 * 입력 모드를 설정합니다.
+	 * - GameOnly: 커서 숨김, 마우스 잠금, 게임 입력만
+	 * - UIOnly: 커서 표시, 마우스 잠금 해제, UI 입력만
+	 * - GameAndUI: 커서 표시, 마우스 잠금 해제, 둘 다
+	 */
+	void SetInputMode(EInputMode NewMode);
+
+	/**
+	 * 현재 입력 모드를 반환합니다.
+	 */
+	EInputMode GetInputMode() const { return CurrentInputMode; }
+
+	/**
+	 * 게임 입력을 받을 수 있는 모드인지 확인합니다.
+	 */
+	bool CanReceiveGameInput() const { return CurrentInputMode == EInputMode::GameOnly || CurrentInputMode == EInputMode::GameAndUI; }
+
+	/**
+	 * UI 입력을 받을 수 있는 모드인지 확인합니다.
+	 */
+	bool CanReceiveUIInput() const { return CurrentInputMode == EInputMode::UIOnly || CurrentInputMode == EInputMode::GameAndUI; }
+
 	// ────────────────────────────────────────────────
 	// 카메라 관리
 	// ────────────────────────────────────────────────
@@ -172,6 +214,12 @@ protected:
 
 	/** 마우스 감도 */
 	float MouseSensitivity;
+
+	/** 카메라 회전에 마우스 버튼이 필요한지 여부 (false면 항상 회전) */
+	bool bRequireMouseButtonForRotation;
+
+	/** 현재 입력 모드 */
+	EInputMode CurrentInputMode;
 
 	/** 카메라 매니저 (PIE 모드에서만 사용) */
 	APlayerCameraManager* PlayerCameraManager;

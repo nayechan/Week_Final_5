@@ -31,16 +31,8 @@ ACharacter::ACharacter()
 	if (CapsuleComponent)
 	{
 		SetRootComponent(CapsuleComponent);
-		CapsuleComponent->SetCapsuleSize(0.25f, 1.0f);
 	}
 
-	// SkeletalMeshComponent 생성 (애니메이션)
-	MeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>("MeshComponent");
-	if (MeshComponent && CapsuleComponent)
-	{
-		MeshComponent->SetupAttachment(CapsuleComponent);
-		MeshComponent->SetRelativeLocation(FVector(0.0f, 0.0f, -1.25f));
-	}
 
 	// CharacterMovementComponent 생성
 	CharacterMovement = CreateDefaultSubobject<UCharacterMovementComponent>("CharacterMovement");
@@ -50,25 +42,6 @@ ACharacter::ACharacter()
 	{
 		CapsuleComponent->SetLinkedMovementComponent(CharacterMovement);
 		CapsuleComponent->SetUseCCT(true);
-	}
-
-	// SpringArmComponent 생성 (3인칭 카메라용)
-	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("SpringArm");
-	if (SpringArmComponent && CapsuleComponent)
-	{
-		SpringArmComponent->SetupAttachment(CapsuleComponent);
-		SpringArmComponent->SetTargetArmLength(10.0f);
-		SpringArmComponent->SetSocketOffset(FVector(0.0f, 0.0f, 0.0f));
-		SpringArmComponent->SetEnableCameraLag(true);
-		SpringArmComponent->SetCameraLagSpeed(10.0f);
-		SpringArmComponent->SetUsePawnControlRotation(true);  // Controller 회전 사용
-	}
-
-	// CameraComponent 생성 (SpringArm 끝에 부착)
-	CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera");
-	if (CameraComponent && SpringArmComponent)
-	{
-		CameraComponent->SetupAttachment(SpringArmComponent);
 	}
 }
 

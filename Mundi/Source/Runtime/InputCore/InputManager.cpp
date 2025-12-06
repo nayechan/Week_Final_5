@@ -117,14 +117,20 @@ void UInputManager::ProcessMessage(HWND hWnd, UINT message, WPARAM wParam, LPARA
 {
     bool IsUIHover = false;
     bool IsKeyBoardCapture = false;
-    
-    if (ImGui::GetCurrentContext() != nullptr)
+
+    // GameOnly 모드에서는 ImGui 입력 체크를 무시
+    if (CurrentInputMode == EInputMode::GameOnly)
+    {
+        IsUIHover = false;
+        IsKeyBoardCapture = false;
+    }
+    else if (ImGui::GetCurrentContext() != nullptr)
     {
         // ImGui가 입력을 사용 중인지 확인
         ImGuiIO& io = ImGui::GetIO();
         static bool once = false;
         if (!once) { io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; once = true; }
-        
+
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         bool bAnyItemHovered = ImGui::IsAnyItemHovered();
         IsUIHover = bAnyItemHovered;
@@ -316,6 +322,31 @@ void UInputManager::ProcessMessage(HWND hWnd, UINT message, WPARAM wParam, LPARA
             }
         }
         break;
+
+    case WM_ACTIVATEAPP:
+        if (wParam == TRUE)
+        {
+            // 포커스 획득: 이전 InputMode 복원
+            bWindowHasFocus = true;
+            if (InputModeBeforeFocusLost == EInputMode::GameOnly)
+            {
+                SetInputMode(EInputMode::GameOnly);
+                SetCursorVisible(false);
+                LockCursor();
+            }
+        }
+        else
+        {
+            // 포커스 잃음: 현재 InputMode 저장 후 커서 표시
+            bWindowHasFocus = false;
+            InputModeBeforeFocusLost = CurrentInputMode;
+            if (CurrentInputMode == EInputMode::GameOnly)
+            {
+                SetCursorVisible(true);
+                ReleaseCursor();
+            }
+        }
+        break;
     }
 
 }
@@ -469,5 +500,30 @@ void UInputManager::ReleaseCursor()
         ScreenToClient(WindowHandle, &currentCursor);
         MousePosition = FVector2D(static_cast<float>(currentCursor.x), static_cast<float>(currentCursor.y));
         PreviousMousePosition = MousePosition;
+    }
+}
+
+void UInputManager::SetCursorToCenter()
+{
+    if (!WindowHandle) return;
+
+    // 클라이언트 영역 중앙 계산
+    RECT rc{};
+    if (GetClientRect(WindowHandle, &rc))
+    {
+        int centerX = (rc.right - rc.left) / 2;
+        int centerY = (rc.bottom - rc.top) / 2;
+
+        // 클라이언트 좌표를 스크린 좌표로 변환
+        POINT centerPoint = { centerX, centerY };
+        ClientToScreen(WindowHandle, &centerPoint);
+
+        // 커서 위치 설정
+        SetCursorPos(centerPoint.x, centerPoint.y);
+
+        // 내부 마우스 위치도 동기화
+        MousePosition = FVector2D(static_cast<float>(centerX), static_cast<float>(centerY));
+        PreviousMousePosition = MousePosition;
+        LockedCursorPosition = MousePosition;
     }
 }

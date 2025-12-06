@@ -319,7 +319,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClCompile Include="Source\Runtime\Engine\GameFramework\CapsuleActor.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Character.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\Controller.cpp" />
-    <ClCompile Include="Source\Runtime\Engine\GameFramework\DancingCharacter.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\GameFramework\FirefighterCharacter.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\GameInstance.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\GameModeBase.cpp" />
     <ClCompile Include="Source\Runtime\Engine\GameFramework\GameStateBase.cpp" />
@@ -788,7 +788,6 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClCompile Include="Generated\AGameModeBase.generated.cpp" />
     <ClCompile Include="Generated\AGameStateBase.generated.cpp" />
     <ClCompile Include="Generated\UAnimBlendSpaceInstance.generated.cpp" />
-    <ClCompile Include="Generated\ADancingCharacter.generated.cpp" />
     <ClCompile Include="Generated\UPropertyTestComponent.generated.cpp" />
     <ClCompile Include="Generated\EnumRegistry.generated.cpp" />
     <ClCompile Include="Generated\FTestStruct.generated.cpp" />
@@ -855,6 +854,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClCompile Include="Generated\UGameInstance.generated.cpp" />
     <ClCompile Include="Generated\ALevelTransitionManager.generated.cpp" />
     <ClCompile Include="Generated\FKTriangleMeshElem.generated.cpp" />
+    <ClCompile Include="Generated\AFirefighterCharacter.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Common\LightingBuffers.hlsl">
@@ -1081,7 +1081,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClInclude Include="Source\Runtime\Engine\GameFramework\CapsuleActor.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Character.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Controller.h" />
-    <ClInclude Include="Source\Runtime\Engine\GameFramework\DancingCharacter.h" />
+    <ClInclude Include="Source\Runtime\Engine\GameFramework\FirefighterCharacter.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\FAudioDevice.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CameraModifierBase.h" />
     <ClInclude Include="Source\Runtime\Engine\GameFramework\Camera\CamMod_Fade.h" />
@@ -1425,7 +1425,6 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClInclude Include="Generated\AGameModeBase.generated.h" />
     <ClInclude Include="Generated\AGameStateBase.generated.h" />
     <ClInclude Include="Generated\UAnimBlendSpaceInstance.generated.h" />
-    <ClInclude Include="Generated\ADancingCharacter.generated.h" />
     <ClInclude Include="Generated\UPropertyTestComponent.generated.h" />
     <ClInclude Include="Generated\EnumRegistry.generated.h" />
     <ClInclude Include="Generated\FTestStruct.generated.h" />
@@ -1492,6 +1491,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClInclude Include="Generated\UGameInstance.generated.h" />
     <ClInclude Include="Generated\ALevelTransitionManager.generated.h" />
     <ClInclude Include="Generated\FKTriangleMeshElem.generated.h" />
+    <ClInclude Include="Generated\AFirefighterCharacter.generated.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="BuildTools\CodeGenerator\generate.py" />

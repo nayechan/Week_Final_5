@@ -18,6 +18,8 @@ APlayerController::APlayerController()
 	, bShowMouseCursor(true)
 	, bIsMouseLocked(false)
 	, MouseSensitivity(0.1f)
+	, bRequireMouseButtonForRotation(true)
+	, CurrentInputMode(EInputMode::GameAndUI)
 	, PlayerCameraManager(nullptr)
 {
 }
@@ -130,8 +132,11 @@ void APlayerController::ProcessMouseInput()
 		return;
 	}
 
-	// 마우스 우클릭 중일 때만 카메라 회전
-	if (InputManager->IsMouseButtonDown(EMouseButton::RightButton))
+	// 마우스 버튼 필요 여부에 따라 카메라 회전 조건 결정
+	bool bShouldRotate = !bRequireMouseButtonForRotation ||
+	                     InputManager->IsMouseButtonDown(EMouseButton::RightButton);
+
+	if (bShouldRotate)
 	{
 		FVector2D MouseDelta = InputManager->GetMouseDelta();
 
@@ -196,6 +201,49 @@ UCameraComponent* APlayerController::GetCameraComponentForRendering() const
 		return PlayerCameraManager->GetViewCamera();
 	}
 	return nullptr;
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Input Mode
+// ────────────────────────────────────────────────────────────────────────────
+
+void APlayerController::SetInputMode(EInputMode NewMode)
+{
+	CurrentInputMode = NewMode;
+
+	// InputManager에도 InputMode 동기화
+	if (InputManager)
+	{
+		InputManager->SetInputMode(NewMode);
+	}
+
+	switch (NewMode)
+	{
+	case EInputMode::GameOnly:
+		// 게임 입력만: 커서 숨김, 마우스 잠금, 마우스 버튼 없이 카메라 회전
+		if (InputManager)
+		{
+			InputManager->SetCursorToCenter();
+		}
+		HideMouseCursor();
+		LockMouseCursor();
+		SetRequireMouseButtonForRotation(false);
+		break;
+
+	case EInputMode::UIOnly:
+		// UI 입력만: 커서 표시, 마우스 잠금 해제
+		ShowMouseCursor();
+		UnlockMouseCursor();
+		SetRequireMouseButtonForRotation(true);
+		break;
+
+	case EInputMode::GameAndUI:
+		// 게임 + UI: 커서 표시, 마우스 잠금 해제, 우클릭으로 카메라 회전
+		ShowMouseCursor();
+		UnlockMouseCursor();
+		SetRequireMouseButtonForRotation(true);
+		break;
+	}
 }
 
 // ────────────────────────────────────────────────────────────────────────────

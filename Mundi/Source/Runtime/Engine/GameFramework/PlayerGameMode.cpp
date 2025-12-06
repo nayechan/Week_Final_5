@@ -4,7 +4,7 @@
 // ────────────────────────────────────────────────────────────────────────────
 #include "pch.h"
 #include "PlayerGameMode.h"
-#include "DancingCharacter.h"
+#include "FirefighterCharacter.h"
 #include "Vehicle.h"
 #include "Character.h"
 #include "SkeletalMeshComponent.h"
@@ -22,8 +22,7 @@
 
 APlayerGameMode::APlayerGameMode()
 {
-	// DefaultPawnClass = ADancingCharacter::StaticClass();
-	DefaultPawnClass = ADancingCharacter::StaticClass();
+	DefaultPawnClass = AFirefighterCharacter::StaticClass();
 }
 
 // ────────────────────────────────────────────────────────────────────────────

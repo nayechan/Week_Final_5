@@ -18,6 +18,21 @@ enum EMouseButton
     MaxMouseButtons = 5
 };
 
+/**
+ * EInputMode
+ *
+ * 입력 모드를 정의합니다.
+ * - GameOnly: 게임 입력만 받음 (커서 숨김, 마우스 잠금)
+ * - UIOnly: UI 입력만 받음 (커서 표시, 게임 입력 무시)
+ * - GameAndUI: 게임과 UI 입력 모두 받음 (커서 표시)
+ */
+enum class EInputMode : uint8
+{
+    GameOnly,   // 게임 입력만 (FPS, TPS 게임)
+    UIOnly,     // UI 입력만 (메뉴, 인벤토리)
+    GameAndUI   // 게임 + UI (RTS, 전략 게임, 에디터)
+};
+
 class UInputManager : public UObject
 {
 public:
@@ -75,6 +90,13 @@ public:
     void LockCursor();
     void ReleaseCursor();
     bool IsCursorLocked() const { return bIsCursorLocked; }
+    void SetCursorToCenter();
+
+    // 입력 모드
+    void SetInputMode(EInputMode NewMode) { CurrentInputMode = NewMode; }
+    EInputMode GetInputMode() const { return CurrentInputMode; }
+    bool CanReceiveGameInput() const { return CurrentInputMode == EInputMode::GameOnly || CurrentInputMode == EInputMode::GameAndUI; }
+    bool CanReceiveUIInput() const { return CurrentInputMode == EInputMode::UIOnly || CurrentInputMode == EInputMode::GameAndUI; }
 
 private:
     // 내부 헬퍼 함수들
@@ -109,4 +131,11 @@ private:
     // 커서 잠금 상태
     bool bIsCursorLocked = false;
     FVector2D LockedCursorPosition; // 우클릭한 위치 (기준점)
+
+    // 현재 입력 모드
+    EInputMode CurrentInputMode = EInputMode::GameAndUI;
+
+    // 포커스 잃기 전 InputMode (포커스 복원 시 사용)
+    EInputMode InputModeBeforeFocusLost = EInputMode::GameAndUI;
+    bool bWindowHasFocus = true;
 };
