@@ -1,0 +1,205 @@
+{
+  "Actors" : {
+    "1751" : {
+      "ObjectName" : "LevelTransitionManager",
+      "OwnedComponents" : [{
+          "Id" : 1753,
+          "Mobility" : 1,
+          "ObjectName" : "USceneComponent_59",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1753,
+      "Tag" : "",
+      "Type" : "ALevelTransitionManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1752" : {
+      "ObjectName" : "TimerTrigger",
+      "OwnedComponents" : [{
+          "Id" : 1755,
+          "Mobility" : 1,
+          "ObjectName" : "USceneComponent_60",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1755,
+      "Tag" : "",
+      "TriggerTime" : 10.000000,
+      "Type" : "ATimerTrigger",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true,
+      "bAutoStart" : true,
+      "bShowRemainingTime" : true
+    },
+    "1757" : {
+      "ObjectName" : "AParticleEventManager_26",
+      "OwnedComponents" : [{
+          "Id" : 1758,
+          "Mobility" : 1,
+          "ObjectName" : "USceneComponent_61",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1758,
+      "Tag" : "",
+      "Type" : "AParticleEventManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1760" : {
+      "ObjectName" : "앰비언트 라이트_1",
+      "OwnedComponents" : [{
+          "DiffuseIntensity" : 0.000000,
+          "Id" : 1761,
+          "Intensity" : 1.000000,
+          "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
+          "Mobility" : 1,
+          "ObjectName" : "UAmbientLightComponent_3",
+          "ParentId" : 0,
+          "RelativeLocation" : [-6.251272, 3.533200, 7.649074],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "ShadowBias" : 0.000010,
+          "ShadowResolutionScale" : 1024,
+          "ShadowSharpen" : 0.500000,
+          "ShadowSlopeBias" : 0.000010,
+          "Temperature" : 6500.000000,
+          "Type" : "UAmbientLightComponent",
+          "bCastShadows" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1761,
+      "Tag" : "",
+      "Type" : "AAmbientLightActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1763" : {
+      "ObjectName" : "파이어볼_0",
+      "OwnedComponents" : [{
+          "CollisionChannel" : 1,
+          "CollisionEnabled" : 3,
+          "CollisionMask" : -1,
+          "Id" : 1764,
+          "MaterialSlots" : [{
+              "Overrides" : {
+                "Scalars" : {
+
+                },
+                "Textures" : {
+                  "0" : "Data/Textures/FireballNoise.jpg"
+                },
+                "Vectors" : {
+
+                }
+              },
+              "ParentPath" : "Shaders/Materials/Fireball.hlsl",
+              "Type" : "UMaterialInstanceDynamic"
+            }],
+          "Mobility" : 1,
+          "ObjectName" : "UStaticMeshComponent_39",
+          "ParentId" : 0,
+          "PhysicalMaterial" : "",
+          "RelativeLocation" : [-6.251272, 3.533200, 7.649074],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "StaticMesh" : "Data/Model/Sphere8.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bSimulatePhysics" : false,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }, {
+          "AttenuationRadius" : 5.000000,
+          "FalloffExponent" : 2.000000,
+          "Id" : 1765,
+          "Intensity" : 1.000000,
+          "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
+          "Mobility" : 1,
+          "ObjectName" : "UPointLightComponent_1",
+          "OverrideCameraLightNum" : 0,
+          "ParentId" : 1764,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "ShadowBias" : 0.000010,
+          "ShadowResolutionScale" : 1024,
+          "ShadowSharpen" : 0.500000,
+          "ShadowSlopeBias" : 0.000010,
+          "SourceRadius" : 0.000000,
+          "Temperature" : 6500.000000,
+          "Type" : "UPointLightComponent",
+          "bCastShadows" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bOverrideCameraLightPerspective" : false,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false,
+          "bUseInverseSquareFalloff" : true
+        }, {
+          "ObjectName" : "URotatingMovementComponent_1",
+          "PivotTranslation" : [0.000000, 0.000000, 0.000000],
+          "RotationRate" : [0.000000, 0.000000, 400.000000],
+          "Type" : "URotatingMovementComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bRotationInLocalSpace" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1764,
+      "Tag" : "",
+      "Type" : "AFireBallActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    }
+  },
+  "NextUUID" : 1770,
+  "PerspectiveCamera" : {
+    "FOV" : [60.000000],
+    "FarClip" : [2000.000000],
+    "Location" : [-12.032838, 8.887512, 13.805764],
+    "NearClip" : [0.100000],
+    "Rotation" : [0.000000, 38.000549, -42.802788]
+  },
+  "Version" : 1,
+  "WorldSettings" : {
+    "GameModeClass" : "AGameJamGameMode"
+  }
+}

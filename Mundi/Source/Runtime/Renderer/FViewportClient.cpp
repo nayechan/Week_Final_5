@@ -35,7 +35,10 @@ FViewportClient::~FViewportClient()
 
 void FViewportClient::Tick(float DeltaTime)
 {
-	if (PerspectiveCameraInput)
+	UInputManager& InputManager = UInputManager::GetInstance();
+
+	// UIOnly 모드에서는 카메라 입력 차단
+	if (PerspectiveCameraInput && InputManager.CanReceiveGameInput())
 	{
 		Camera->ProcessEditorCameraInput(DeltaTime);
 	}

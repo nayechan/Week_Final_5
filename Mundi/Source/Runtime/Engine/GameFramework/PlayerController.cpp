@@ -69,6 +69,14 @@ void APlayerController::Tick(float DeltaSeconds)
 		ProcessPlayerInput();
 		ProcessMouseInput();
 	}
+	else
+	{
+		// 입력 비활성화 상태에서는 마우스 델타를 초기화하여 카메라 움직임 방지
+		if (InputManager)
+		{
+			InputManager->GetMouseDelta(); // 델타 소비
+		}
+	}
 
 	// 카메라 업데이트는 PlayerCameraManager의 Tick에서 자동으로 처리됨
 }
@@ -130,6 +138,12 @@ void APlayerController::ProcessPlayerInput()
 		return;
 	}
 
+	// UIOnly 모드에서는 게임 입력 차단
+	if (InputManager && !InputManager->CanReceiveGameInput())
+	{
+		return;
+	}
+
 	// Pawn의 InputComponent에 입력 전달
 	UInputComponent* InputComp = PossessedPawn->GetInputComponent();
 	if (InputComp)
@@ -141,6 +155,12 @@ void APlayerController::ProcessPlayerInput()
 void APlayerController::ProcessMouseInput()
 {
 	if (!InputManager)
+	{
+		return;
+	}
+
+	// UIOnly 모드에서는 게임 입력(카메라 회전) 차단
+	if (!InputManager->CanReceiveGameInput())
 	{
 		return;
 	}

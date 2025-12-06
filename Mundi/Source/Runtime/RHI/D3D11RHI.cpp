@@ -30,12 +30,6 @@ void D3D11RHI::Release()
     // Prevent double Release() calls
     if (bReleased) return;
     bReleased = true;
-    // Game HUD 정리
-    SGameHUD::Get().Shutdown();
-
-    // Direct2D 오버레이를 먼저 정리하여 D3D 리소스에 대한 참조를 제거
-    UStatsOverlayD2D::Get().Shutdown();
-
     if (DeviceContext)
     {
         // 파이프라인에서 바인딩된 상태/리소스를 명시적으로 해제
@@ -57,6 +51,12 @@ void D3D11RHI::Release()
         DeviceContext->ClearState();
         DeviceContext->Flush();
     }
+
+    // Game HUD 정리
+    SGameHUD::Get().Shutdown();
+
+    // Direct2D 오버레이를 먼저 정리하여 D3D 리소스에 대한 참조를 제거
+    UStatsOverlayD2D::Get().Shutdown();
 
     ReleaseSamplerState();
 

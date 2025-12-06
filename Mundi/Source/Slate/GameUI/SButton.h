@@ -67,6 +67,13 @@ public:
     /** 테두리 */
     SButton& SetBorder(float Thickness, const FSlateColor& Color);
 
+    /** 배경 이미지 (Normal, Hovered, Pressed) */
+    SButton& SetBackgroundImage(const FString& NormalImagePath);
+    SButton& SetBackgroundImages(const FString& NormalPath, const FString& HoveredPath, const FString& PressedPath);
+
+    /** 배경 이미지 (텍스처 아틀라스 사용) */
+    SButton& SetBackgroundImageAtlas(const FString& AtlasPath, const FSlateRect& NormalRect, const FSlateRect& HoveredRect, const FSlateRect& PressedRect);
+
     // =====================================================
     // 이벤트 바인딩
     // =====================================================
@@ -113,6 +120,21 @@ private:
     // 테두리
     float BorderThickness = 0.f;
     FSlateColor BorderColor = FSlateColor::White();
+
+    // =====================================================
+    // 배경 이미지
+    // =====================================================
+
+    FString NormalImagePath;
+    FString HoveredImagePath;
+    FString PressedImagePath;
+
+    // 텍스처 아틀라스 지원
+    bool bUseAtlas = false;
+    FString AtlasImagePath;
+    FSlateRect NormalAtlasRect;
+    FSlateRect HoveredAtlasRect;
+    FSlateRect PressedAtlasRect;
 
     // =====================================================
     // 델리게이트

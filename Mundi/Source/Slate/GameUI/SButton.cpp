@@ -13,27 +13,88 @@ void SButton::Paint(FD2DRenderer& Renderer, const FGeometry& Geometry)
     FVector2D Position = Geometry.AbsolutePosition;
     FVector2D Size = Geometry.GetAbsoluteSize();
 
-    // 배경 그리기
-    FSlateColor BgColor = GetCurrentBackgroundColor();
+    // 배경 그리기 (이미지 우선, 없으면 색상)
+    bool bImageRendered = false;
 
-    if (CornerRadius > 0.f)
+    // 아틀라스 사용 여부 확인
+    if (bUseAtlas && !AtlasImagePath.empty())
     {
-        Renderer.DrawFilledRoundedRect(Position, Size, BgColor, CornerRadius);
+        // 상태에 따라 아틀라스 영역 선택
+        FSlateRect CurrentAtlasRect = NormalAtlasRect;
 
-        // 테두리
-        if (BorderThickness > 0.f)
+        if (bIsEnabled)
         {
-            Renderer.DrawRoundedRect(Position, Size, BorderColor, CornerRadius, BorderThickness);
+            if (bIsPressed)
+            {
+                CurrentAtlasRect = PressedAtlasRect;
+            }
+            else if (bIsHovered)
+            {
+                CurrentAtlasRect = HoveredAtlasRect;
+            }
         }
+
+        FSlateColor ImageTint = bIsEnabled ? FSlateColor::White() : FSlateColor(0.5f, 0.5f, 0.5f, 0.7f);
+        Renderer.DrawImageRegion(AtlasImagePath, Position, Size, CurrentAtlasRect, ImageTint);
+        bImageRendered = true;
     }
     else
     {
-        Renderer.DrawFilledRect(Position, Size, BgColor);
+        // 기존 개별 이미지 방식
+        FString CurrentImagePath;
 
-        // 테두리
-        if (BorderThickness > 0.f)
+        // 상태에 따라 이미지 경로 선택
+        if (!bIsEnabled)
         {
-            Renderer.DrawRect(Position, Size, BorderColor, BorderThickness);
+            // Disabled 상태는 Normal 이미지 사용 (회색 톤으로)
+            CurrentImagePath = NormalImagePath;
+        }
+        else if (bIsPressed && !PressedImagePath.empty())
+        {
+            CurrentImagePath = PressedImagePath;
+        }
+        else if (bIsHovered && !HoveredImagePath.empty())
+        {
+            CurrentImagePath = HoveredImagePath;
+        }
+        else if (!NormalImagePath.empty())
+        {
+            CurrentImagePath = NormalImagePath;
+        }
+
+        // 이미지가 있으면 이미지로 렌더링
+        if (!CurrentImagePath.empty())
+        {
+            FSlateColor ImageTint = bIsEnabled ? FSlateColor::White() : FSlateColor(0.5f, 0.5f, 0.5f, 0.7f);
+            Renderer.DrawImage(CurrentImagePath, Position, Size, ImageTint);
+            bImageRendered = true;
+        }
+    }
+
+    // 이미지가 렌더링되지 않았으면 색상으로 렌더링
+    if (!bImageRendered)
+    {
+        FSlateColor BgColor = GetCurrentBackgroundColor();
+
+        if (CornerRadius > 0.f)
+        {
+            Renderer.DrawFilledRoundedRect(Position, Size, BgColor, CornerRadius);
+
+            // 테두리
+            if (BorderThickness > 0.f)
+            {
+                Renderer.DrawRoundedRect(Position, Size, BorderColor, CornerRadius, BorderThickness);
+            }
+        }
+        else
+        {
+            Renderer.DrawFilledRect(Position, Size, BgColor);
+
+            // 테두리
+            if (BorderThickness > 0.f)
+            {
+                Renderer.DrawRect(Position, Size, BorderColor, BorderThickness);
+            }
         }
     }
 
@@ -181,6 +242,33 @@ SButton& SButton::SetBorder(float Thickness, const FSlateColor& Color)
 {
     BorderThickness = Thickness;
     BorderColor = Color;
+    return *this;
+}
+
+SButton& SButton::SetBackgroundImage(const FString& NormalImagePath)
+{
+    this->NormalImagePath = NormalImagePath;
+    // Hovered와 Pressed는 같은 이미지 사용
+    this->HoveredImagePath = NormalImagePath;
+    this->PressedImagePath = NormalImagePath;
+    return *this;
+}
+
+SButton& SButton::SetBackgroundImages(const FString& NormalPath, const FString& HoveredPath, const FString& PressedPath)
+{
+    this->NormalImagePath = NormalPath;
+    this->HoveredImagePath = HoveredPath;
+    this->PressedImagePath = PressedPath;
+    return *this;
+}
+
+SButton& SButton::SetBackgroundImageAtlas(const FString& AtlasPath, const FSlateRect& NormalRect, const FSlateRect& HoveredRect, const FSlateRect& PressedRect)
+{
+    bUseAtlas = true;
+    AtlasImagePath = AtlasPath;
+    NormalAtlasRect = NormalRect;
+    HoveredAtlasRect = HoveredRect;
+    PressedAtlasRect = PressedRect;
     return *this;
 }
 

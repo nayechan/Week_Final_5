@@ -77,6 +77,29 @@ public:
     void DrawLine(const FVector2D& Start, const FVector2D& End, const FSlateColor& Color, float Thickness = 1.0f);
 
     // =====================================================
+    // 이미지 렌더링
+    // =====================================================
+
+    /**
+     * 이미지 그리기
+     * @param ImagePath 이미지 파일 경로
+     * @param Position 위치
+     * @param Size 크기
+     * @param Tint 색상 틴트 (기본: 흰색 = 원본 색상 유지)
+     */
+    void DrawImage(const FString& ImagePath, const FVector2D& Position, const FVector2D& Size, const FSlateColor& Tint = FSlateColor::White());
+
+    /**
+     * 이미지의 특정 영역 그리기 (텍스처 아틀라스용)
+     * @param ImagePath 이미지 파일 경로
+     * @param Position 화면 위치
+     * @param Size 화면 크기
+     * @param SourceRect 원본 이미지에서 잘라낼 영역 (Left, Top, Right, Bottom)
+     * @param Tint 색상 틴트 (기본: 흰색 = 원본 색상 유지)
+     */
+    void DrawImageRegion(const FString& ImagePath, const FVector2D& Position, const FVector2D& Size, const FSlateRect& SourceRect, const FSlateColor& Tint = FSlateColor::White());
+
+    // =====================================================
     // 텍스트 렌더링
     // =====================================================
 
@@ -165,6 +188,15 @@ private:
 
     IDWriteFactory* DWriteFactory = nullptr;
     TMap<int32, IDWriteTextFormat*> TextFormatCache;  // FontSize -> TextFormat
+
+    // =====================================================
+    // 이미지 리소스
+    // =====================================================
+
+    TMap<FString, ID2D1Bitmap*> BitmapCache;  // ImagePath -> Bitmap
+
+    /** 비트맵 로드/캐시 */
+    ID2D1Bitmap* GetOrLoadBitmap(const FString& ImagePath);
 
     // =====================================================
     // 상태

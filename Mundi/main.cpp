@@ -1,4 +1,5 @@
 ﻿#include "pch.h"
+#include <objbase.h>
 
 #ifdef _EDITOR
 #include "EditorEngine.h"
@@ -20,6 +21,14 @@
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
+    // COM 라이브러리 초기화 (STA: Single-Threaded Apartment)
+    // WIC(Windows Imaging Component)와 같은 COM 기반 API 사용에 필수적
+    if (FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED)))
+    {
+        MessageBox(nullptr, L"Failed to initialize COM library.", L"Error", MB_OK | MB_ICONERROR);
+        return -1;
+    }
+
     // 심볼 서버 자동 설정 (가장 먼저 호출)
     // 별도 설정 없이 덤프 파일 분석 가능
     FDebugUtils::InitializeSymbolServer();
@@ -55,6 +64,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         // MiniDump 생성
         FPlatformCrashHandler::GenerateMiniDump();
+        CoUninitialize(); // COM 해제
         return -1;
     }
     catch (...)
@@ -67,8 +77,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
         // MiniDump 생성
         FPlatformCrashHandler::GenerateMiniDump();
+        CoUninitialize(); // COM 해제
         return -1;
     }
 
+    CoUninitialize(); // 정상 종료 시 COM 해제
     return 0;
 }

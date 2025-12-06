@@ -2,17 +2,24 @@
 #include "FD2DRenderer.h"
 
 #include <dxgi1_2.h>
+#include <wincodec.h>
 
 #pragma comment(lib, "d2d1")
 #pragma comment(lib, "dwrite")
+#pragma comment(lib, "windowscodecs")
 
 // =====================================================
 // 헬퍼 함수
 // =====================================================
 
-static void SafeRelease(IUnknown* p)
+template<typename T>
+static void SafeRelease(T*& p)
 {
-    if (p) p->Release();
+    if (p)
+    {
+        p->Release();
+        p = nullptr;
+    }
 }
 
 static D2D1_COLOR_F ToD2DColor(const FSlateColor& Color)
@@ -110,23 +117,56 @@ void FD2DRenderer::Shutdown()
     if (!bInitialized)
         return;
 
-    // TextFormat 캐시 해제
-    for (auto& Pair : TextFormatCache)
+    // 재진입 방지 - Shutdown이 두 번 호출되는 것을 막음
+    bInitialized = false;
+
+    // If we are in the middle of a frame, end the draw call.
+    // D2DERR_WRONG_STATE will be returned if EndDraw is called without a matching BeginDraw,
+    // but that's fine to ignore here.
+    if (bInFrame)
     {
-        SafeRelease(Pair.second);
+        D2DContext->EndDraw();
+        bInFrame = false; // Prevent re-entry if something weird happens
+    }
+
+    // Always unbind the render target before releasing resources.
+    if (D2DContext)
+    {
+        D2DContext->SetTarget(nullptr);
+    }
+
+    // TextFormat 캐시 해제
+    for (auto It = TextFormatCache.begin(); It != TextFormatCache.end(); ++It)
+    {
+        if (It->second)
+        {
+            It->second->Release();
+            It->second = nullptr;
+        }
     }
     TextFormatCache.Empty();
 
-    SafeRelease(RenderTarget);
+    // Bitmap 캐시 해제
+    for (auto It = BitmapCache.begin(); It != BitmapCache.end(); ++It)
+    {
+        if (It->second)
+        {
+            It->second->Release();
+            It->second = nullptr;
+        }
+    }
+    BitmapCache.clear();
+
+    // D2D 리소스 해제 (역순으로 해제)
     SafeRelease(SolidBrush);
-    SafeRelease(DWriteFactory);
+    SafeRelease(RenderTarget);
     SafeRelease(D2DContext);
     SafeRelease(D2DDevice);
+    SafeRelease(DWriteFactory);
     SafeRelease(D2DFactory);
 
     D3DDevice = nullptr;
     SwapChain = nullptr;
-    bInitialized = false;
 }
 
 // =====================================================
@@ -383,4 +423,158 @@ void FD2DRenderer::OnScreenResize(const FVector2D& NewSize)
     // 렌더 타겟은 다음 BeginFrame에서 자동 갱신
     SafeRelease(RenderTarget);
     RenderTarget = nullptr;
+}
+
+// =====================================================
+// 이미지 렌더링
+// =====================================================
+
+void FD2DRenderer::DrawImage(const FString& ImagePath, const FVector2D& Position, const FVector2D& Size, const FSlateColor& Tint)
+{
+    if (!bInFrame || !D2DContext)
+        return;
+
+    ID2D1Bitmap* Bitmap = GetOrLoadBitmap(ImagePath);
+    if (!Bitmap)
+        return;
+
+    D2D1_RECT_F destRect = D2D1::RectF(
+        Position.X,
+        Position.Y,
+        Position.X + Size.X,
+        Position.Y + Size.Y
+    );
+
+    // Tint 적용 (흰색이면 원본 색상, 그 외는 색상 곱셈)
+    float opacity = Tint.A;
+
+    D2DContext->DrawBitmap(
+        Bitmap,
+        destRect,
+        opacity,
+        D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
+        nullptr
+    );
+}
+
+void FD2DRenderer::DrawImageRegion(const FString& ImagePath, const FVector2D& Position, const FVector2D& Size, const FSlateRect& SourceRect, const FSlateColor& Tint)
+{
+    if (!bInFrame || !D2DContext)
+        return;
+
+    ID2D1Bitmap* Bitmap = GetOrLoadBitmap(ImagePath);
+    if (!Bitmap)
+        return;
+
+    D2D1_RECT_F destRect = D2D1::RectF(
+        Position.X,
+        Position.Y,
+        Position.X + Size.X,
+        Position.Y + Size.Y
+    );
+
+    D2D1_RECT_F sourceRect = D2D1::RectF(
+        SourceRect.Left,
+        SourceRect.Top,
+        SourceRect.Right,
+        SourceRect.Bottom
+    );
+
+    float opacity = Tint.A;
+
+    D2DContext->DrawBitmap(
+        Bitmap,
+        destRect,
+        opacity,
+        D2D1_BITMAP_INTERPOLATION_MODE_LINEAR,
+        &sourceRect  // 원본 이미지에서 잘라낼 영역 지정
+    );
+}
+
+ID2D1Bitmap* FD2DRenderer::GetOrLoadBitmap(const FString& ImagePath)
+{
+    // 캐시 확인
+    auto it = BitmapCache.find(ImagePath);
+    if (it != BitmapCache.end())
+    {
+        return it->second;
+    }
+
+    // 비트맵 로드
+    ID2D1Bitmap* Bitmap = nullptr;
+
+    // WIC (Windows Imaging Component)를 사용하여 이미지 로드
+    IWICImagingFactory* WICFactory = nullptr;
+    HRESULT hr = CoCreateInstance(
+        CLSID_WICImagingFactory,
+        nullptr,
+        CLSCTX_INPROC_SERVER,
+        IID_PPV_ARGS(&WICFactory)
+    );
+
+    if (SUCCEEDED(hr))
+    {
+        // 파일 경로를 wstring으로 변환
+        int wideLen = MultiByteToWideChar(CP_UTF8, 0, ImagePath.c_str(), -1, nullptr, 0);
+        std::wstring wPath(wideLen, L'\0');
+        MultiByteToWideChar(CP_UTF8, 0, ImagePath.c_str(), -1, &wPath[0], wideLen);
+
+        IWICBitmapDecoder* Decoder = nullptr;
+        hr = WICFactory->CreateDecoderFromFilename(
+            wPath.c_str(),
+            nullptr,
+            GENERIC_READ,
+            WICDecodeMetadataCacheOnLoad,
+            &Decoder
+        );
+
+        if (SUCCEEDED(hr))
+        {
+            IWICBitmapFrameDecode* Frame = nullptr;
+            hr = Decoder->GetFrame(0, &Frame);
+
+            if (SUCCEEDED(hr))
+            {
+                IWICFormatConverter* Converter = nullptr;
+                hr = WICFactory->CreateFormatConverter(&Converter);
+
+                if (SUCCEEDED(hr))
+                {
+                    hr = Converter->Initialize(
+                        Frame,
+                        GUID_WICPixelFormat32bppPBGRA,
+                        WICBitmapDitherTypeNone,
+                        nullptr,
+                        0.0,
+                        WICBitmapPaletteTypeMedianCut
+                    );
+
+                    if (SUCCEEDED(hr))
+                    {
+                        hr = D2DContext->CreateBitmapFromWicBitmap(
+                            Converter,
+                            nullptr,
+                            &Bitmap
+                        );
+                    }
+
+                    SafeRelease(Converter);
+                }
+
+                SafeRelease(Frame);
+            }
+
+            SafeRelease(Decoder);
+        }
+
+        SafeRelease(WICFactory);
+    }
+
+    // 캐시에 저장
+    if (Bitmap)
+    {
+        BitmapCache[ImagePath] = Bitmap;
+    }
+
+    return Bitmap;
 }

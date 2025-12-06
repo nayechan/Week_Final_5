@@ -1,0 +1,130 @@
+{
+  "Actors" : {
+    "1597" : {
+      "ObjectName" : "LevelTransitionManager",
+      "OwnedComponents" : [{
+          "Id" : 1598,
+          "Mobility" : 1,
+          "ObjectName" : "USceneComponent_21",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1598,
+      "Tag" : "",
+      "Type" : "ALevelTransitionManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1600" : {
+      "ObjectName" : "AParticleEventManager_19",
+      "OwnedComponents" : [{
+          "Id" : 1601,
+          "Mobility" : 1,
+          "ObjectName" : "USceneComponent_22",
+          "ParentId" : 0,
+          "RelativeLocation" : [0.000000, 0.000000, 0.000000],
+          "RelativeRotationEuler" : [0.000000, 0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "Type" : "USceneComponent",
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1601,
+      "Tag" : "",
+      "Type" : "AParticleEventManager",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1645" : {
+      "ObjectName" : "스태틱 메시_0",
+      "OwnedComponents" : [{
+          "CollisionChannel" : 1,
+          "CollisionEnabled" : 3,
+          "CollisionMask" : -1,
+          "Id" : 1646,
+          "MaterialSlots" : [{
+              "AssetPath" : "texture",
+              "Type" : "UMaterial"
+            }],
+          "Mobility" : 1,
+          "ObjectName" : "UStaticMeshComponent_38",
+          "ParentId" : 0,
+          "PhysicalMaterial" : "",
+          "RelativeLocation" : [-29.337673, -0.501376, 15.535028],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 16.703951, 1.000000],
+          "StaticMesh" : "Data/cube-tex.obj",
+          "Type" : "UStaticMeshComponent",
+          "bBlockComponent" : false,
+          "bCastShadows" : true,
+          "bGenerateOverlapEvents" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bSimulatePhysics" : false,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1646,
+      "Tag" : "",
+      "Type" : "AStaticMeshActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    },
+    "1647" : {
+      "ObjectName" : "앰비언트 라이트_0",
+      "OwnedComponents" : [{
+          "DiffuseIntensity" : 0.000000,
+          "Id" : 1648,
+          "Intensity" : 1.000000,
+          "LightColor" : [1.000000, 1.000000, 1.000000, 1.000000],
+          "Mobility" : 1,
+          "ObjectName" : "UAmbientLightComponent_2",
+          "ParentId" : 0,
+          "RelativeLocation" : [-29.337673, -0.501376, 15.535028],
+          "RelativeRotationEuler" : [0.000000, -0.000000, 0.000000],
+          "RelativeScale" : [1.000000, 1.000000, 1.000000],
+          "ShadowBias" : 0.000010,
+          "ShadowResolutionScale" : 1024,
+          "ShadowSharpen" : 0.500000,
+          "ShadowSlopeBias" : 0.000010,
+          "Temperature" : 6500.000000,
+          "Type" : "UAmbientLightComponent",
+          "bCastShadows" : true,
+          "bHiddenInGame" : false,
+          "bIsActive" : true,
+          "bIsVisible" : true,
+          "bTickEnabled" : true,
+          "bTickInEditor" : false
+        }],
+      "RootComponentId" : 1648,
+      "Tag" : "",
+      "Type" : "AAmbientLightActor",
+      "bActorHiddenInGame" : false,
+      "bActorIsActive" : true
+    }
+  },
+  "NextUUID" : 1650,
+  "PerspectiveCamera" : {
+    "FOV" : [60.000000],
+    "FarClip" : [2000.000000],
+    "Location" : [-38.629501, 0.181406, 19.167624],
+    "NearClip" : [0.100000],
+    "Rotation" : [0.000000, 21.300512, -4.202655]
+  },
+  "Version" : 1,
+  "WorldSettings" : {
+    "GameModeClass" : "AGameJamGameMode"
+  }
+}

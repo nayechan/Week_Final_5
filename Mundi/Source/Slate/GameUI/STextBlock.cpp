@@ -10,12 +10,18 @@ void STextBlock::Paint(FD2DRenderer& Renderer, const FGeometry& Geometry)
     if (!IsVisible())
         return;
 
+    FVector2D Position = Geometry.AbsolutePosition;
+    FVector2D Size = Geometry.GetAbsoluteSize();
+
+    // 배경 이미지 먼저 그리기
+    if (!BackgroundImagePath.empty())
+    {
+        Renderer.DrawImage(BackgroundImagePath, Position, Size);
+    }
+
     FWideString DisplayText = GetText();
     if (DisplayText.empty())
         return;
-
-    FVector2D Position = Geometry.AbsolutePosition;
-    FVector2D Size = Geometry.GetAbsoluteSize();
 
     // 그림자 먼저 그리기
     if (bHasShadow)
@@ -119,5 +125,11 @@ STextBlock& STextBlock::SetShadow(bool bEnable, const FVector2D& Offset, const F
     bHasShadow = bEnable;
     ShadowOffset = Offset;
     ShadowColor = Color;
+    return *this;
+}
+
+STextBlock& STextBlock::SetBackgroundImage(const FString& ImagePath)
+{
+    BackgroundImagePath = ImagePath;
     return *this;
 }

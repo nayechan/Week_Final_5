@@ -70,6 +70,9 @@ public:
     /** 그림자 효과 */
     STextBlock& SetShadow(bool bEnable, const FVector2D& Offset = FVector2D(1.f, 1.f), const FSlateColor& Color = FSlateColor::Black());
 
+    /** 배경 이미지 설정 */
+    STextBlock& SetBackgroundImage(const FString& ImagePath);
+
 private:
     // =====================================================
     // 텍스트 데이터
@@ -91,4 +94,7 @@ private:
     bool bHasShadow = false;
     FVector2D ShadowOffset = FVector2D(1.f, 1.f);
     FSlateColor ShadowColor = FSlateColor::Black();
+
+    // 배경 이미지
+    FString BackgroundImagePath;
 };

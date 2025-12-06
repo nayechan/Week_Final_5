@@ -639,6 +639,19 @@ void UWorld::SetLevel(std::unique_ptr<ULevel> InLevel)
         // Clear the level's actor list first
         Level->Clear();
 
+        // Call EndPlay on all actors before deletion (PIE mode only)
+        // This ensures proper cleanup (UI, resources, etc.)
+        if (bPie)
+        {
+            for (AActor* Actor : ActorsToDelete)
+            {
+                if (Actor)
+                {
+                    Actor->EndPlay();
+                }
+            }
+        }
+
         // Delete all actors
         for (AActor* Actor : ActorsToDelete)
         {

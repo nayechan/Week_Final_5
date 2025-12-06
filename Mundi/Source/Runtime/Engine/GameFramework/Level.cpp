@@ -88,6 +88,13 @@ void ULevel::Serialize(const bool bInIsLoading, JSON& InOutHandle)
                     GameModeClassName.c_str(),
                     GWorld->GameModeClass ? GWorld->GameModeClass->Name : "NOT FOUND");
             }
+            else
+            {
+                // WorldSettings에 GameModeClass가 명시되지 않았으면 nullptr로 설정
+                // 이전 씬의 GameMode가 유지되는 것을 방지
+                GWorld->GameModeClass = nullptr;
+                UE_LOG("[info] Level::Serialize - GameModeClass cleared (none specified in WorldSettings)");
+            }
         }
 
         // 카메라 정보
