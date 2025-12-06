@@ -633,16 +633,8 @@ void UWorld::SetLevel(std::unique_ptr<ULevel> InLevel)
                 ObjectFactory::DeleteObject(Actor);
             }
         }
-
-		// PIE 런타임에서 레벨이 전환될 때, 싱글턴 매니저 중 UObject인 것들은
-		// 월드와 함께 소멸될 수 있다. 하지만 static 포인터는 그대로 남아있어
-		// Dangling Pointer 문제가 발생한다.
-		// 따라서 월드 정리 후 명시적으로 싱글턴 인스턴스 포인터를 리셋해줘야 한다.
-		if (bPie)
-		{
-			UInputManager::Shutdown();
-		}
     }
+
     // Clear spatial indices (skip if partition is null for preview worlds)
     if (Partition)
     {
