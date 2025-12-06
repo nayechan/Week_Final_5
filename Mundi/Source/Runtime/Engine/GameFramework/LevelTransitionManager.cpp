@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "LevelTransitionManager.h"
 #include "World.h"
+#include "InputManager.h"
 #include <filesystem>
 
 IMPLEMENT_CLASS(ALevelTransitionManager)
@@ -132,7 +133,12 @@ void ALevelTransitionManager::ProcessPendingTransition()
     bPendingTransition = false;
     TransitionState = ELevelTransitionState::Idle;
 
-    // 5. 새 씬의 게임플레이 시작
+    // 5. 입력 모드를 기본값(GameAndUI)으로 리셋
+    // 이전 씬에서 설정한 입력 모드(예: UIOnly)가 유지되는 것을 방지
+    UInputManager::GetInstance().SetInputMode(EInputMode::GameAndUI);
+    UE_LOG("[info] LevelTransitionManager: Input mode reset to GameAndUI");
+
+    // 6. 새 씬의 게임플레이 시작
     UE_LOG("[info] LevelTransitionManager: BeginPlay on new level");
     PIEWorld->BeginPlay();
 
