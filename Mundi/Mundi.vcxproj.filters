@@ -1679,6 +1679,9 @@
     <ClCompile Include="Generated\USkyboxComponent.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
+    <ClCompile Include="Generated\UItemComponent.generated.cpp">
+      <Filter>Generated</Filter>
+    </ClCompile>
     <ClCompile Include="Generated\UBoneSocketComponent.generated.cpp">
       <Filter>Generated</Filter>
     </ClCompile>
@@ -3630,6 +3633,9 @@
       <Filter>Generated</Filter>
     </ClInclude>
     <ClInclude Include="Generated\USkyboxComponent.generated.h">
+      <Filter>Generated</Filter>
+    </ClInclude>
+    <ClInclude Include="Generated\UItemComponent.generated.h">
       <Filter>Generated</Filter>
     </ClInclude>
     <ClInclude Include="Generated\UBoneSocketComponent.generated.h">

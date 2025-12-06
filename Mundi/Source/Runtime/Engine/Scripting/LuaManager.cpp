@@ -11,6 +11,10 @@
 #include "PlayerCameraManager.h"
 #include "GameInstance.h"
 #include "GameEngine.h"
+#include "ItemComponent.h"
+#include "RenderManager.h"
+#include "Renderer.h"
+#include "PrimitiveComponent.h"
 #include <tuple>
 
 sol::object MakeCompProxy(sol::state_view SolState, UObject* Instance, UClass* Class) {
@@ -43,14 +47,95 @@ FLuaManager::FLuaManager()
     // NOTE: 그냥 FGameObject 개념을 없애고 그냥 Actor/Component 그대로 사용하는 게 좋을듯?
     Lua->new_usertype<FGameObject>("GameObject",
         "UUID", &FGameObject::UUID,
-        "Tag", sol::property(&FGameObject::GetTag, &FGameObject::SetTag),
-        "Location", sol::property(&FGameObject::GetLocation, &FGameObject::SetLocation),
-        "Rotation", sol::property(&FGameObject::GetRotation, &FGameObject::SetRotation), 
-        "Scale", sol::property(&FGameObject::GetScale, &FGameObject::SetScale),
-        "bIsActive", sol::property(&FGameObject::GetIsActive, &FGameObject::SetIsActive),
+        "Tag", sol::property(
+            [](FGameObject& GO) -> FString {
+                if (GO.IsDestroyed()) return "";
+                AActor* Owner = GO.GetOwner();
+                if (!Owner || Owner->IsPendingDestroy()) return "";
+                return GO.GetTag();
+            },
+            [](FGameObject& GO, FString Value) {
+                if (GO.IsDestroyed()) return;
+                AActor* Owner = GO.GetOwner();
+                if (!Owner || Owner->IsPendingDestroy()) return;
+                GO.SetTag(Value);
+            }),
+        "Location", sol::property(
+            [](FGameObject& GO) -> FVector {
+                if (GO.IsDestroyed()) return FVector(0, 0, 0);
+                AActor* Owner = GO.GetOwner();
+                if (!Owner || Owner->IsPendingDestroy()) return FVector(0, 0, 0);
+                return GO.GetLocation();
+            },
+            [](FGameObject& GO, FVector Value) {
+                if (GO.IsDestroyed()) return;
+                AActor* Owner = GO.GetOwner();
+                if (!Owner || Owner->IsPendingDestroy()) return;
+                GO.SetLocation(Value);
+            }),
+        "Rotation", sol::property(
+            [](FGameObject& GO) -> FVector {
+                if (GO.IsDestroyed()) return FVector(0, 0, 0);
+                AActor* Owner = GO.GetOwner();
+                if (!Owner || Owner->IsPendingDestroy()) return FVector(0, 0, 0);
+                return GO.GetRotation();
+            },
+            [](FGameObject& GO, FVector Value) {
+                if (GO.IsDestroyed()) return;
+                AActor* Owner = GO.GetOwner();
+                if (!Owner || Owner->IsPendingDestroy()) return;
+                GO.SetRotation(Value);
+            }),
+        "Scale", sol::property(
+            [](FGameObject& GO) -> FVector {
+                if (GO.IsDestroyed()) return FVector(1, 1, 1);
+                AActor* Owner = GO.GetOwner();
+                if (!Owner || Owner->IsPendingDestroy()) return FVector(1, 1, 1);
+                return GO.GetScale();
+            },
+            [](FGameObject& GO, FVector Value) {
+                if (GO.IsDestroyed()) return;
+                AActor* Owner = GO.GetOwner();
+                if (!Owner || Owner->IsPendingDestroy()) return;
+                GO.SetScale(Value);
+            }),
+        "bIsActive", sol::property(
+            [](FGameObject& GO) -> bool {
+                // bIsDestroyed 체크를 먼저 수행 (dangling pointer 방지)
+                if (GO.IsDestroyed())
+                    return false;
+                AActor* Owner = GO.GetOwner();
+                if (!Owner || Owner->IsPendingDestroy())
+                    return false;  // 파괴됨/파괴대기 중이면 비활성으로 간주
+                return GO.GetIsActive();
+            },
+            [](FGameObject& GO, bool Value) {
+                if (GO.IsDestroyed())
+                    return;
+                AActor* Owner = GO.GetOwner();
+                if (!Owner || Owner->IsPendingDestroy())
+                    return;  // 파괴됨/파괴대기 중이면 무시
+                GO.SetIsActive(Value);
+            }),
         "Velocity", &FGameObject::Velocity,
-        "PrintLocation", &FGameObject::PrintLocation,
-        "GetForward", &FGameObject::GetForward
+        "PrintLocation", [](FGameObject& GO) {
+            if (GO.IsDestroyed()) return;
+            AActor* Owner = GO.GetOwner();
+            if (!Owner || Owner->IsPendingDestroy()) return;
+            GO.PrintLocation();
+        },
+        "GetForward", [](FGameObject& GO) -> FVector {
+            if (GO.IsDestroyed()) return FVector(0, 0, 0);
+            AActor* Owner = GO.GetOwner();
+            if (!Owner || Owner->IsPendingDestroy()) return FVector(0, 0, 0);
+            return GO.GetForward();
+        },
+        "IsDestroyed", [](FGameObject& GO) -> bool {
+            if (GO.IsDestroyed()) return true;
+            AActor* Owner = GO.GetOwner();
+            if (!Owner || Owner->IsPendingDestroy()) return true;
+            return false;
+        }
     );
     
     Lua->new_usertype<UCameraComponent>("CameraComponent",
@@ -512,6 +597,234 @@ FLuaManager::FLuaManager()
         }
     );
 
+    // ════════════════════════════════════════════════════════════════════════
+    // 아이템 시스템 바인딩
+    // ════════════════════════════════════════════════════════════════════════
+
+    // GetItemComponent: GameObject에서 ItemComponent 가져오기
+    SharedLib.set_function("GetItemComponent",
+        [this](sol::object Obj) -> sol::object
+        {
+            if (!Obj.is<FGameObject&>())
+            {
+                UE_LOG("[Lua][error] GetItemComponent: Expected GameObject");
+                return sol::make_object(*Lua, sol::nil);
+            }
+
+            FGameObject& GameObject = Obj.as<FGameObject&>();
+            if (GameObject.IsDestroyed()) return sol::make_object(*Lua, sol::nil);
+
+            AActor* Actor = GameObject.GetOwner();
+            if (!Actor || Actor->IsPendingDestroy()) return sol::make_object(*Lua, sol::nil);
+
+            UClass* ItemCompClass = UClass::FindClass("UItemComponent");
+            if (!ItemCompClass) return sol::make_object(*Lua, sol::nil);
+
+            UActorComponent* ItemComp = Actor->GetComponent(ItemCompClass);
+            if (!ItemComp) return sol::make_object(*Lua, sol::nil);
+
+            return MakeCompProxy(*Lua, ItemComp, ItemCompClass);
+        }
+    );
+
+    // HasItemComponent: GameObject가 ItemComponent를 가지고 있는지 확인
+    SharedLib.set_function("HasItemComponent",
+        [](sol::object Obj) -> bool
+        {
+            if (!Obj.is<FGameObject&>())
+            {
+                return false;
+            }
+
+            FGameObject& GameObject = Obj.as<FGameObject&>();
+            if (GameObject.IsDestroyed()) return false;
+
+            AActor* Actor = GameObject.GetOwner();
+            if (!Actor || Actor->IsPendingDestroy()) return false;
+
+            UClass* ItemCompClass = UClass::FindClass("UItemComponent");
+            if (!ItemCompClass) return false;
+
+            return Actor->GetComponent(ItemCompClass) != nullptr;
+        }
+    );
+
+    // DisableCollision: GameObject의 모든 콜리전 비활성화
+    SharedLib.set_function("DisableCollision",
+        [](sol::object Obj) -> bool
+        {
+            if (!Obj.is<FGameObject&>())
+            {
+                UE_LOG("[Lua][error] DisableCollision: Expected GameObject");
+                return false;
+            }
+
+            FGameObject& GameObject = Obj.as<FGameObject&>();
+            AActor* Actor = GameObject.GetOwner();
+            if (!Actor) return false;
+
+            // 모든 PrimitiveComponent의 콜리전 비활성화
+            const TSet<UActorComponent*>& Components = Actor->GetOwnedComponents();
+            for (UActorComponent* Comp : Components)
+            {
+                UPrimitiveComponent* PrimComp = Cast<UPrimitiveComponent>(Comp);
+                if (PrimComp)
+                {
+                    PrimComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+                    PrimComp->SetSimulatePhysics(false);
+                }
+            }
+            return true;
+        }
+    );
+
+    // DestroyObject: C++에 Actor 파괴 요청
+    // Lua에서는 리스트에서 제거 후 이 함수 호출, 이후 해당 GameObject에 접근하지 않음
+    SharedLib.set_function("DestroyObject",
+        [](sol::object Obj) -> bool
+        {
+            if (!Obj.is<FGameObject&>())
+            {
+                UE_LOG("[Lua][error] DestroyObject: Expected GameObject");
+                return false;
+            }
+
+            FGameObject& GameObject = Obj.as<FGameObject&>();
+
+            // 이미 파괴된 경우 중복 처리 방지
+            if (GameObject.IsDestroyed()) return false;
+
+            AActor* Actor = GameObject.GetOwner();
+            if (!Actor) return false;
+
+            // FGameObject를 파괴됨으로 마킹 (Destroy 중/후 콜백에서 접근 방지)
+            GameObject.MarkDestroyed();
+
+            // 하이라이트 제거
+            URenderer* Renderer = URenderManager::GetInstance().GetRenderer();
+            if (Renderer)
+            {
+                UClass* StaticMeshCompClass = UClass::FindClass("UStaticMeshComponent");
+                if (StaticMeshCompClass)
+                {
+                    UActorComponent* MeshComp = Actor->GetComponent(StaticMeshCompClass);
+                    if (MeshComp)
+                    {
+                        Renderer->RemoveHighlight(MeshComp->InternalIndex);
+                    }
+                }
+            }
+
+            // FGameObject를 지연 삭제 큐에 추가하고 Actor의 포인터를 클리어
+            // EndPlay에서 중복 처리하지 않도록 함
+            if (GWorld && GWorld->GetLuaManager())
+            {
+                GWorld->GetLuaManager()->QueueGameObjectForDestruction(&GameObject);
+            }
+            Actor->ClearLuaGameObject();
+
+            // Actor 파괴 요청 (엔진이 프레임 끝에 알아서 물리/컴포넌트 정리)
+            Actor->Destroy();
+            return true;
+        }
+    );
+
+    // ════════════════════════════════════════════════════════════════════════
+    // 하이라이트 시스템 바인딩 (아이템 아웃라인용)
+    // ════════════════════════════════════════════════════════════════════════
+
+    // AddHighlight: GameObject에 하이라이트 추가
+    SharedLib.set_function("AddHighlight",
+        [](sol::object Obj, sol::optional<sol::table> ColorTable) -> bool
+        {
+            URenderer* Renderer = URenderManager::GetInstance().GetRenderer();
+            if (!Renderer) return false;
+
+            if (!Obj.is<FGameObject&>())
+            {
+                UE_LOG("[Lua][error] AddHighlight: Expected GameObject");
+                return false;
+            }
+
+            FGameObject& GameObject = Obj.as<FGameObject&>();
+            if (GameObject.IsDestroyed()) return false;
+
+            AActor* Actor = GameObject.GetOwner();
+            if (!Actor || Actor->IsPendingDestroy()) return false;
+
+            // StaticMeshComponent의 InternalIndex를 ObjectID로 사용
+            // (IdBuffer에는 컴포넌트의 InternalIndex가 기록됨)
+            UClass* StaticMeshCompClass = UClass::FindClass("UStaticMeshComponent");
+            if (!StaticMeshCompClass) return false;
+
+            UActorComponent* MeshComp = Actor->GetComponent(StaticMeshCompClass);
+            if (!MeshComp) return false;
+
+            uint32 ObjectID = MeshComp->InternalIndex;
+            if (ObjectID == 0) return false;
+
+            // 색상 파싱 (기본값: 노란색)
+            FLinearColor OutlineColor(1.0f, 0.8f, 0.2f, 1.0f);
+            if (ColorTable.has_value())
+            {
+                sol::table Color = ColorTable.value();
+                OutlineColor.R = Color.get_or("R", Color.get_or(1, 1.0f));
+                OutlineColor.G = Color.get_or("G", Color.get_or(2, 0.8f));
+                OutlineColor.B = Color.get_or("B", Color.get_or(3, 0.2f));
+                OutlineColor.A = Color.get_or("A", Color.get_or(4, 1.0f));
+            }
+
+            Renderer->AddHighlight(ObjectID, OutlineColor);
+            return true;
+        }
+    );
+
+    // RemoveHighlight: GameObject의 하이라이트 제거
+    SharedLib.set_function("RemoveHighlight",
+        [](sol::object Obj) -> bool
+        {
+            URenderer* Renderer = URenderManager::GetInstance().GetRenderer();
+            if (!Renderer) return false;
+
+            if (!Obj.is<FGameObject&>())
+            {
+                UE_LOG("[Lua][error] RemoveHighlight: Expected GameObject");
+                return false;
+            }
+
+            FGameObject& GameObject = Obj.as<FGameObject&>();
+            if (GameObject.IsDestroyed()) return false;
+
+            AActor* Actor = GameObject.GetOwner();
+            if (!Actor || Actor->IsPendingDestroy()) return false;
+
+            // StaticMeshComponent의 InternalIndex를 ObjectID로 사용
+            UClass* StaticMeshCompClass = UClass::FindClass("UStaticMeshComponent");
+            if (!StaticMeshCompClass) return false;
+
+            UActorComponent* MeshComp = Actor->GetComponent(StaticMeshCompClass);
+            if (!MeshComp) return false;
+
+            uint32 ObjectID = MeshComp->InternalIndex;
+            if (ObjectID == 0) return false;
+
+            Renderer->RemoveHighlight(ObjectID);
+            return true;
+        }
+    );
+
+    // ClearHighlights: 모든 하이라이트 제거
+    SharedLib.set_function("ClearHighlights",
+        []() -> void
+        {
+            URenderer* Renderer = URenderManager::GetInstance().GetRenderer();
+            if (Renderer)
+            {
+                Renderer->ClearHighlights();
+            }
+        }
+    );
+
     // 위 등록 마친 뒤 fall back 설정 : Shared lib의 fall back은 G
     sol::table MetaTableShared = Lua->create_table();
     MetaTableShared[sol::meta_function::index] = Lua->globals();
@@ -798,14 +1111,53 @@ bool FLuaManager::LoadScriptInto(sol::environment& Env, const FString& Path) {
 void FLuaManager::Tick(double DeltaSeconds)
 {
     CoroutineSchedular.Tick(DeltaSeconds);
+
+    // 프레임 끝에서 지연 삭제 큐 정리
+    FlushPendingDestroyGameObjects();
+}
+
+void FLuaManager::QueueGameObjectForDestruction(FGameObject* GameObject)
+{
+    if (GameObject)
+    {
+        PendingDestroyGameObjects.push_back(GameObject);
+    }
+}
+
+void FLuaManager::FlushPendingDestroyGameObjects()
+{
+    // FGameObject를 즉시 삭제하지 않고 좀비 리스트로 이동
+    // Lua에서 여전히 참조할 수 있으므로 PIE 종료 시까지 메모리 유지
+    // (IsDestroyed() 체크로 안전하게 접근 가능)
+    for (FGameObject* GO : PendingDestroyGameObjects)
+    {
+        if (GO)
+        {
+            ZombieGameObjects.push_back(GO);
+        }
+    }
+    PendingDestroyGameObjects.clear();
 }
 
 void FLuaManager::ShutdownBeforeLuaClose()
 {
     CoroutineSchedular.ShutdownBeforeLuaClose();
-    
+
+    // 남은 지연 삭제 큐 정리 (좀비 리스트로 이동)
+    FlushPendingDestroyGameObjects();
+
+    // 좀비 FGameObject들 최종 삭제 (PIE 종료 시점이므로 안전)
+    for (FGameObject* GO : ZombieGameObjects)
+    {
+        if (GO)
+        {
+            delete GO;
+        }
+    }
+    ZombieGameObjects.clear();
+
     FLuaBindRegistry::Get().Reset();
-    
+
     SharedLib = sol::nil;
 }
 

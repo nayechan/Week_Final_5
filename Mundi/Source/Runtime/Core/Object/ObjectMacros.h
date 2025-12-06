@@ -33,6 +33,8 @@ struct TPropertyTypeTraits
 			return EPropertyType::FVector;
 		else if constexpr (std::is_same_v<T, FVector2D>)
 			return EPropertyType::FVector2D;
+		else if constexpr (std::is_same_v<T, FQuat>)
+			return EPropertyType::FQuat;
 		else if constexpr (std::is_same_v<T, FLinearColor>)
 			return EPropertyType::FLinearColor;
 		else if constexpr (std::is_same_v<T, FString>)

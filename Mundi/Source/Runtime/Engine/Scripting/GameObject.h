@@ -9,6 +9,7 @@ public:
     FVector Scale;
     FVector Forward;
     bool bIsActive;
+    bool bIsDestroyed = false;  // Actor 파괴 시 true로 설정 (dangling pointer 방지)
     
     void SetTag(FString NewTag) { Owner->SetTag(NewTag); }
     FString GetTag() { return Owner->GetTag(); }
@@ -44,6 +45,9 @@ public:
 
     void SetOwner(AActor* NewOwner) { Owner = NewOwner; }
     AActor* GetOwner() { return Owner; }
+
+    bool IsDestroyed() const { return bIsDestroyed; }
+    void MarkDestroyed() { bIsDestroyed = true; Owner = nullptr; }
 
     // Returns the owner's current forward direction (unit vector)
     FVector GetForward() { return Owner ? Owner->GetActorRight() : FVector(0, 0, 0); }

@@ -61,6 +61,8 @@ class Property:
             return 'EPropertyType::FVector'
         elif type_lower in ['fvector2d']:
             return 'EPropertyType::FVector2D'
+        elif type_lower in ['fquat']:
+            return 'EPropertyType::FQuat'
         elif type_lower in ['flinearcolor']:
             return 'EPropertyType::FLinearColor'
         # UObject 포인터 타입

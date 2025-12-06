@@ -189,6 +189,9 @@ public:
         return nullptr;
     }
 
+    /** DestroyObject에서 호출 - EndPlay에서 중복 처리 방지 */
+    void ClearLuaGameObject() { LuaGameObject = nullptr; }
+
 public:
     UWorld* World = nullptr;
     USceneComponent* RootComponent = nullptr;

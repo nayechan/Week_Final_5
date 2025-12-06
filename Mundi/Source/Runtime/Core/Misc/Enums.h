@@ -125,6 +125,7 @@ enum class RHI_SRV_Index : uint32
     DofBlurMap,
     DofNearMap,
     DofFarMap,
+    IdBuffer,    // 오브젝트 ID 버퍼 (하이라이트용)
 };
 
 enum class RHI_Sampler_Index : uint32

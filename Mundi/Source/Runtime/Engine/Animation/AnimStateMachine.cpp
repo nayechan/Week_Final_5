@@ -78,6 +78,13 @@ bool FAnimNode_StateMachine::SetStateTime(int32 Index, float TimeSeconds)
     return true;
 }
 
+float FAnimNode_StateMachine::GetStateLength(int32 Index) const
+{
+    if (Index < 0 || Index >= States.Num()) return 0.f;
+    UAnimSequenceBase* Seq = States[Index].Player.GetSequence();
+    return Seq ? Seq->GetPlayLength() : 0.f;
+}
+
 void FAnimNode_StateMachine::SetCurrentState(int32 StateIndex, float BlendTime)
 {
     if (StateIndex < 0 || StateIndex >= States.Num())

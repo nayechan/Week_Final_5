@@ -31,7 +31,7 @@ USkeletalMeshComponent::USkeletalMeshComponent()
 
     // Keep constructor lightweight for editor/viewer usage.
     // Load a simple default test mesh if available; viewer UI can override.
-    SetSkeletalMesh(GDataDir + "/DancingRacer.fbx");
+    SetSkeletalMesh(GDataDir + "/X Bot.fbx");
 
     // 기본 PhysicsAsset 설정
     PhysicsAsset = UResourceManager::GetInstance().Load<UPhysicsAsset>("Data/Physics/xBot.physicsasset");

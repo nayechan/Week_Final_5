@@ -9,6 +9,7 @@ enum class EPostProcessEffectType : uint8
     Fade,
     Gamma,
     DOF, //DepthOfField
+    Outline, // 아이템 하이라이트용 아웃라인
 };
 
 struct FPostProcessPayload

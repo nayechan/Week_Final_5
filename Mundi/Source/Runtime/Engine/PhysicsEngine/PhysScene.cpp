@@ -434,8 +434,9 @@ void FPhysScene::DispatchPhysNotifications_AssumesLocked()
         AActor* Actor1 = Notify.Info1.Actor.Get();
         UPrimitiveComponent* Comp1 = Notify.Info1.Component.Get();
 
-        bool bIsValid0 = (Actor0 && Comp0);
-        bool bIsValid1 = (Actor1 && Comp1);
+        // IsPendingDestroy 체크 추가 - 파괴 대기 중인 액터에 대한 이벤트 무시 (크래시 방지)
+        bool bIsValid0 = (Actor0 && Comp0 && !Actor0->IsPendingDestroy());
+        bool bIsValid1 = (Actor1 && Comp1 && !Actor1->IsPendingDestroy());
 
         switch (Notify.Type)
         {

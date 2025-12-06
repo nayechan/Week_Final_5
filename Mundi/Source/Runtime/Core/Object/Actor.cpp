@@ -12,6 +12,7 @@
 #include "PrimitiveComponent.h"
 #include"SkeletalMeshComponent.h"
 #include "GameObject.h"
+#include "LuaManager.h"
 
 	/*BEGIN_PROPERTIES(AActor)
 	ADD_PROPERTY(FName, ObjectName, "[액터]", true, "액터의 이름입니다")
@@ -105,7 +106,20 @@ void AActor::EndPlay()
 
 	if (LuaGameObject)
 	{
-		delete LuaGameObject;
+		// FGameObject를 MarkDestroyed() 후 지연 삭제 큐에 추가
+		// Lua에서 여전히 참조할 수 있으므로 즉시 삭제하면 dangling pointer 크래시 발생
+		// 다음 프레임 Tick에서 안전하게 삭제됨
+		LuaGameObject->MarkDestroyed();
+
+		if (World && World->GetLuaManager())
+		{
+			World->GetLuaManager()->QueueGameObjectForDestruction(LuaGameObject);
+		}
+		else
+		{
+			// World가 없으면 어쩔 수 없이 삭제 (PIE 종료 시 등)
+			delete LuaGameObject;
+		}
 		LuaGameObject = nullptr;
 	}
 }

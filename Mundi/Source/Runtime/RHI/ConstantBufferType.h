@@ -104,6 +104,20 @@ struct alignas(16) FGammaCorrectionBufferType
 };
 static_assert(sizeof(FGammaCorrectionBufferType) % 16 == 0, "CB must be 16-byte aligned");
 
+struct alignas(16) FOutlineBufferType // b2
+{
+    FLinearColor OutlineColor;  // 아웃라인 색상
+
+    float Thickness;            // 아웃라인 두께 (픽셀 단위)
+    float DepthThreshold;       // 깊이 에지 감지 임계값
+    float Intensity;            // 아웃라인 강도 (0.0 ~ 1.0)
+    float Weight;               // 최종 효과 가중치
+
+    uint32 HighlightedObjectID; // 하이라이트할 오브젝트 ID (0 = 모든 에지)
+    float Padding[3];           // 16바이트 정렬용
+};
+static_assert(sizeof(FOutlineBufferType) % 16 == 0, "CB must be 16-byte aligned");
+
 struct alignas(16) FDepthOfFieldBufferType
 {
     // Focus 관련 설정
@@ -299,6 +313,7 @@ MACRO(FogBufferType)                \
 MACRO(FSubUVBufferType)             \
 MACRO(FFadeInOutBufferType)         \
 MACRO(FGammaCorrectionBufferType)   \
+MACRO(FOutlineBufferType)           \
 MACRO(FDepthOfFieldBufferType)      \
 MACRO(FVinetteBufferType)           \
 MACRO(FXAABufferType)               \
@@ -328,6 +343,7 @@ CONSTANT_BUFFER_INFO(FogBufferType, 2, false, true)
 CONSTANT_BUFFER_INFO(FSubUVBufferType, 2, true, false) // b2 VS only - Sub-UV 파티클
 CONSTANT_BUFFER_INFO(FFadeInOutBufferType, 2, false, true)
 CONSTANT_BUFFER_INFO(FGammaCorrectionBufferType, 2, false, true)
+CONSTANT_BUFFER_INFO(FOutlineBufferType, 2, false, true)
 CONSTANT_BUFFER_INFO(FDepthOfFieldBufferType, 2, false, true)
 CONSTANT_BUFFER_INFO(FVinetteBufferType, 2, false, true)
 CONSTANT_BUFFER_INFO(FXAABufferType, 2, false, true)

@@ -109,6 +109,21 @@ static void SerializeProperty(void* Instance, const FProperty& Prop, bool bIsLoa
         }
         break;
     }
+    case EPropertyType::FQuat:
+    {
+        FQuat* Value = Prop.GetValuePtr<FQuat>(Instance);
+        if (bIsLoading)
+        {
+            FQuat ReadValue;
+            if (FJsonSerializer::ReadQuat(InOutJson, Prop.Name, ReadValue))
+                *Value = ReadValue;
+        }
+        else
+        {
+            InOutJson[Prop.Name] = FJsonSerializer::QuatToJson(*Value);
+        }
+        break;
+    }
     case EPropertyType::FLinearColor:
     {
         FLinearColor* Value = Prop.GetValuePtr<FLinearColor>(Instance);

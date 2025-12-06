@@ -1368,7 +1368,25 @@ void FSceneRenderer::RenderPostProcessingPasses()
 			}
 		}
 	}
-	
+
+	// 하이라이트된 오브젝트들에 대한 아웃라인 효과 등록
+	if (OwnerRenderer && OwnerRenderer->HasHighlights())
+	{
+		const TMap<uint32, FLinearColor>& HighlightedObjects = OwnerRenderer->GetHighlightedObjects();
+		for (const auto& [ObjectID, OutlineColor] : HighlightedObjects)
+		{
+			FPostProcessModifier OutlinePostProc;
+			OutlinePostProc.Type = EPostProcessEffectType::Outline;
+			OutlinePostProc.bEnabled = true;
+			OutlinePostProc.Priority = 100; // 다른 효과 후에 적용
+			OutlinePostProc.Weight = 1.0f;
+			OutlinePostProc.Payload.Color = OutlineColor;
+			OutlinePostProc.Payload.Params0 = FVector4(2.0f, 10.0f, 1.0f, 0.0f); // Thickness, DepthThreshold, Intensity
+			OutlinePostProc.Payload.Params1 = FVector4(static_cast<float>(ObjectID), 0.0f, 0.0f, 0.0f); // ObjectID
+			PostProcessModifiers.Add(OutlinePostProc);
+		}
+	}
+
 	PostProcessModifiers.Sort([](const FPostProcessModifier& LHS, const FPostProcessModifier& RHS)
 	{
 		if (LHS.Priority == RHS.Priority)
@@ -1396,6 +1414,9 @@ void FSceneRenderer::RenderPostProcessingPasses()
 			break;
 		case EPostProcessEffectType::DOF:
 			DOFPass.Execute(Modifier, View, RHIDevice);
+			break;
+		case EPostProcessEffectType::Outline:
+			OutlinePass.Execute(Modifier, View, RHIDevice);
 			break;
 		}
 	}
@@ -1812,8 +1833,6 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 	// PS 리소스 초기화
 	ID3D11ShaderResourceView* nullSRVs[2] = { nullptr, nullptr };
 	RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 2, nullSRVs);
-	ID3D11SamplerState* nullSamplers[2] = { nullptr, nullptr };
-	RHIDevice->GetDeviceContext()->PSSetSamplers(0, 2, nullSamplers);
 	FPixelConstBufferType DefaultPixelConst{};
 	RHIDevice->SetAndUpdateConstantBuffer(DefaultPixelConst);
 
@@ -1832,6 +1851,10 @@ void FSceneRenderer::DrawMeshBatches(TArray<FMeshBatchElement>& InMeshBatches, b
 	// Shadow PCF용 샘플러 추가
 	ID3D11SamplerState* ShadowSampler = RHIDevice->GetSamplerState(RHI_Sampler_Index::Shadow);
 	ID3D11SamplerState* VSMSampler = RHIDevice->GetSamplerState(RHI_Sampler_Index::VSM);
+
+	// 기본 샘플러를 미리 바인딩 (머티리얼이 null인 배치에서도 경고 방지)
+	ID3D11SamplerState* InitialSamplers[4] = { DefaultSampler, DefaultSampler, ShadowSampler, VSMSampler };
+	RHIDevice->GetDeviceContext()->PSSetSamplers(0, 4, InitialSamplers);
 
 	// 정렬된 리스트 순회
 	for (const FMeshBatchElement& Batch : InMeshBatches)
@@ -2159,6 +2182,10 @@ void FSceneRenderer::RenderSkyboxPass()
 	RHIDevice->GetDeviceContext()->IASetVertexBuffers(0, 1, &VertexBuffer, &Stride, &Offset);
 	RHIDevice->GetDeviceContext()->IASetIndexBuffer(IndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 	RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// 샘플러 바인딩 (스카이박스 텍스처 샘플링용)
+	ID3D11SamplerState* DefaultSampler = RHIDevice->GetSamplerState(RHI_Sampler_Index::Default);
+	RHIDevice->GetDeviceContext()->PSSetSamplers(0, 1, &DefaultSampler);
 
 	// 스카이박스 파라미터 설정
 	struct alignas(16) FSkyboxParams

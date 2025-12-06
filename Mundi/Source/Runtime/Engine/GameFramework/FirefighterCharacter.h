@@ -3,6 +3,8 @@
 #include "AFirefighterCharacter.generated.h"
 
 class UAudioComponent;
+class USphereComponent;
+class ULuaScriptComponent;
 
 UCLASS(DisplayName = "파이어 파이터 캐릭터", Description = "렛츠고 파이어 파이터")
 class AFirefighterCharacter : public ACharacter
@@ -19,6 +21,16 @@ protected:
     virtual void Tick(float DeltaSeconds) override;
     virtual void PossessedBy(AController* NewController) override;
     virtual void HandleAnimNotify(const FAnimNotifyEvent& NotifyEvent) override;
+
+    // ────────────────────────────────────────────────
+    // 아이템 감지
+    // ────────────────────────────────────────────────
+
+    /** 아이템 감지용 스피어 컴포넌트 */
+    USphereComponent* ItemDetectionSphere;
+
+    /** 아이템 줍기 스크립트 */
+    ULuaScriptComponent* ItemPickupScript;
 
     // ────────────────────────────────────────────────
     // 입력 바인딩

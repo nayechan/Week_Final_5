@@ -497,6 +497,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClCompile Include="Source\Runtime\Engine\Components\LightComponentBase.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\LocalLightComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\LuaScriptComponent.cpp" />
+    <ClCompile Include="Source\Runtime\Engine\Components\ItemComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\MovementComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\PointLightComponent.cpp" />
     <ClCompile Include="Source\Runtime\Engine\Components\ProjectileMovementComponent.cpp" />
@@ -580,6 +581,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClCompile Include="Source\Runtime\Renderer\PostProcessing\FadeInOutPass.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\PostProcessing\PostProcessing.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\PostProcessing\VignettePass.cpp" />
+    <ClCompile Include="Source\Runtime\Renderer\PostProcessing\OutlinePass.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\SceneView.cpp" />
     <ClCompile Include="Source\Runtime\Renderer\TileLightCuller.cpp" />
     <ClCompile Include="Source\Slate\Widgets\ModalDialog.cpp" />
@@ -858,6 +860,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClCompile Include="Generated\FKTriangleMeshElem.generated.cpp" />
     <ClCompile Include="Generated\AFirefighterCharacter.generated.cpp" />
     <ClCompile Include="Generated\USkyboxComponent.generated.cpp" />
+    <ClCompile Include="Generated\UItemComponent.generated.cpp" />
     <ClCompile Include="Generated\UBoneSocketComponent.generated.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -1063,6 +1066,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClInclude Include="Source\Runtime\Engine\Components\DOFComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\EPhysicsMode.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\InputComponent.h" />
+    <ClInclude Include="Source\Runtime\Engine\Components\ItemComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\LuaScriptComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\MovementComponent.h" />
     <ClInclude Include="Source\Runtime\Engine\Components\ProjectileMovementComponent.h" />
@@ -1202,6 +1206,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClInclude Include="Source\Runtime\Renderer\MeshBatchElement.h" />
     <ClInclude Include="Source\Runtime\Renderer\PostProcessing\GammaPass.h" />
     <ClInclude Include="Source\Runtime\Renderer\PostProcessing\HeightFogPass.h" />
+    <ClInclude Include="Source\Runtime\Renderer\PostProcessing\OutlinePass.h" />
     <ClInclude Include="Source\Runtime\Renderer\PostProcessing\FadeInOutPass.h" />
     <ClInclude Include="Source\Runtime\Renderer\PostProcessing\PostProcessing.h" />
     <ClInclude Include="Source\Runtime\Renderer\PostProcessing\VignettePass.h" />
@@ -1499,6 +1504,7 @@ xcopy /y /d "$(ProjectDir)ThirdParty\lib\Cloth\Release\*.dll" "$(OutDir)"</Comma
     <ClInclude Include="Generated\FKTriangleMeshElem.generated.h" />
     <ClInclude Include="Generated\AFirefighterCharacter.generated.h" />
     <ClInclude Include="Generated\USkyboxComponent.generated.h" />
+    <ClInclude Include="Generated\UItemComponent.generated.h" />
     <ClInclude Include="Generated\UBoneSocketComponent.generated.h" />
   </ItemGroup>
   <ItemGroup>

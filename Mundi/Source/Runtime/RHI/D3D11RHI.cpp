@@ -429,6 +429,9 @@ ID3D11ShaderResourceView* D3D11RHI::GetSRV(RHI_SRV_Index SRVIndex) const
     case RHI_SRV_Index::DofFarMap:
         TempSRV = DofFarMapSRV;
         break;
+    case RHI_SRV_Index::IdBuffer:
+        TempSRV = IdBufferSRV;
+        break;
     default:
         TempSRV = nullptr;
         break;
@@ -727,6 +730,14 @@ void D3D11RHI::CreateIdBuffer()
     Desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
     Desc.Format = DXGI_FORMAT_R32_UINT;
     Device->CreateRenderTargetView(IdBuffer, &Desc, &IdBufferRTV);
+
+    // IdBuffer SRV 생성 (하이라이트 아웃라인용)
+    D3D11_SHADER_RESOURCE_VIEW_DESC SrvDesc{};
+    SrvDesc.Format = DXGI_FORMAT_R32_UINT;
+    SrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    SrvDesc.Texture2D.MostDetailedMip = 0;
+    SrvDesc.Texture2D.MipLevels = 1;
+    Device->CreateShaderResourceView(IdBuffer, &SrvDesc, &IdBufferSRV);
 
     TextureDesc = {};
 
@@ -1162,6 +1173,11 @@ void D3D11RHI::ReleaseFrameBuffer()
 
 void D3D11RHI::ReleaseIdBuffer()
 {
+    if (IdBufferSRV)
+    {
+        IdBufferSRV->Release();
+        IdBufferSRV = nullptr;
+    }
     if (IdBufferRTV)
     {
         IdBufferRTV->Release();

@@ -880,3 +880,23 @@ void URenderer::EndDebugPrimitiveBatch()
 
 	bDebugPrimitiveBatchActive = false;
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Highlight System (아이템 하이라이트용)
+// ═══════════════════════════════════════════════════════════════════════════
+
+void URenderer::AddHighlight(uint32 ObjectID, const FLinearColor& OutlineColor)
+{
+	if (ObjectID == 0) return; // 0은 무효 ID
+	HighlightedObjects[ObjectID] = OutlineColor;
+}
+
+void URenderer::RemoveHighlight(uint32 ObjectID)
+{
+	HighlightedObjects.erase(ObjectID);
+}
+
+void URenderer::ClearHighlights()
+{
+	HighlightedObjects.clear();
+}

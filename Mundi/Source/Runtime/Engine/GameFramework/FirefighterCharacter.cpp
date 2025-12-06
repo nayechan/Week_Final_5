@@ -4,16 +4,20 @@
 #include "SpringArmComponent.h"
 #include "CameraComponent.h"
 #include "CapsuleComponent.h"
+#include "SphereComponent.h"
 #include "AudioComponent.h"
 #include "FAudioDevice.h"
 #include "PlayerController.h"
 #include "Controller.h"
 #include "InputComponent.h"
+#include "LuaScriptComponent.h"
 
 AFirefighterCharacter::AFirefighterCharacter()
 	: bOrientRotationToMovement(true)
 	, RotationRate(540.0f)
 	, CurrentMovementDirection(FVector::Zero())
+	, ItemDetectionSphere(nullptr)
+	, ItemPickupScript(nullptr)
 {
 	// 캡슐 크기 설정
 	if (CapsuleComponent)
@@ -47,6 +51,26 @@ AFirefighterCharacter::AFirefighterCharacter()
 	if (CameraComponent && SpringArmComponent)
 	{
 		CameraComponent->SetupAttachment(SpringArmComponent);
+	}
+
+	// ItemDetectionSphere 생성 (아이템 감지용)
+	ItemDetectionSphere = CreateDefaultSubobject<USphereComponent>("ItemDetectionSphere");
+	if (ItemDetectionSphere && CapsuleComponent)
+	{
+		ItemDetectionSphere->SetupAttachment(CapsuleComponent);
+		ItemDetectionSphere->SetSphereRadius(2.0f);  // 감지 반경 2m
+		ItemDetectionSphere->SetCollisionEnabled(ECollisionEnabled::QueryOnly);  // 오버랩만 감지, 물리 충돌 X
+		ItemDetectionSphere->SetSimulatePhysics(false);
+		ItemDetectionSphere->SetGenerateOverlapEvents(true);
+		// Pawn 제외, WorldStatic/WorldDynamic만 오버랩 감지 (아이템은 WorldDynamic)
+		ItemDetectionSphere->CollisionMask = CollisionMasks::WorldStatic | CollisionMasks::WorldDynamic;
+	}
+
+	// ItemPickupScript 생성 (아이템 줍기 로직)
+	ItemPickupScript = CreateDefaultSubobject<ULuaScriptComponent>("ItemPickupScript");
+	if (ItemPickupScript)
+	{
+		ItemPickupScript->ScriptFilePath = "Data/Scripts/ItemPickupManager.lua";
 	}
 }
 

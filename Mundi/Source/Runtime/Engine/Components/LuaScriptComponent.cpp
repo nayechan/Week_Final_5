@@ -107,6 +107,12 @@ void ULuaScriptComponent::BeginPlay()
 
 void ULuaScriptComponent::OnBeginOverlap(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp)
 {
+	// Lua 리소스가 이미 정리된 경우 무시 (크래시 방지)
+	if (bIsLuaCleanedUp)
+	{
+		return;
+	}
+
 	if (FuncOnBeginOverlap.valid())
 	{
 		FGameObject* OtherGameObject = nullptr;
@@ -114,6 +120,11 @@ void ULuaScriptComponent::OnBeginOverlap(UPrimitiveComponent* MyComp, UPrimitive
 		{
 			if (AActor* OtherActor = OtherComp->GetOwner())
 			{
+				// 파괴 대기 중인 액터는 무시 (크래시 방지)
+				if (OtherActor->IsPendingDestroy())
+				{
+					return;
+				}
 				OtherGameObject = OtherActor->GetGameObject();
 			}
 		}
@@ -134,6 +145,12 @@ void ULuaScriptComponent::OnBeginOverlap(UPrimitiveComponent* MyComp, UPrimitive
 
 void ULuaScriptComponent::OnEndOverlap(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp)
 {
+	// Lua 리소스가 이미 정리된 경우 무시 (크래시 방지)
+	if (bIsLuaCleanedUp)
+	{
+		return;
+	}
+
 	if (FuncOnEndOverlap.valid())
 	{
 		FGameObject* OtherGameObject = nullptr;
@@ -141,8 +158,14 @@ void ULuaScriptComponent::OnEndOverlap(UPrimitiveComponent* MyComp, UPrimitiveCo
 		{
 			if (AActor* OtherActor = OtherComp->GetOwner())
 			{
-				OtherActor->GetGameObject();
+				// 파괴된 액터라도 GetGameObject()로 FGameObject를 가져옴
+				// FGameObject가 MarkDestroyed 상태면 Lua에서 IsDestroyed()로 체크 가능
 				OtherGameObject = OtherActor->GetGameObject();
+
+				// GetGameObject()가 nullptr이면 (ClearLuaGameObject 호출됨)
+				// Lua에게 알릴 방법이 없으므로 무시
+				// 이 경우 Lua 측에서 이미 리스트에서 제거했거나 (TryPickup),
+				// 또는 다음 프레임에 IsDestroyed 체크로 걸러질 것임
 			}
 		}
 
@@ -162,6 +185,12 @@ void ULuaScriptComponent::OnEndOverlap(UPrimitiveComponent* MyComp, UPrimitiveCo
 
 void ULuaScriptComponent::OnHit(UPrimitiveComponent* MyComp, UPrimitiveComponent* OtherComp)
 {
+	// Lua 리소스가 이미 정리된 경우 무시 (크래시 방지)
+	if (bIsLuaCleanedUp)
+	{
+		return;
+	}
+
 	if (FuncOnHit.valid())
 	{
 		FGameObject* OtherGameObject = nullptr;
@@ -189,6 +218,19 @@ void ULuaScriptComponent::OnHit(UPrimitiveComponent* MyComp, UPrimitiveComponent
 
 void ULuaScriptComponent::TickComponent(float DeltaTime)
 {
+	// Lua 리소스가 이미 정리된 경우 무시
+	if (bIsLuaCleanedUp)
+	{
+		return;
+	}
+
+	// Owner가 파괴 대기 중이면 틱 무시 (DestroyObject 호출 후 실제 파괴 전까지의 틱 방지)
+	AActor* Owner = GetOwner();
+	if (!Owner || Owner->IsPendingDestroy())
+	{
+		return;
+	}
+
 	if (FuncTick.valid()) {
 		auto Result = FuncTick(DeltaTime);
 		if (!Result.valid()) { sol::error Err = Result; UE_LOG("[Lua][error] %s\n", Err.what()); }
@@ -197,6 +239,19 @@ void ULuaScriptComponent::TickComponent(float DeltaTime)
 
 void ULuaScriptComponent::EndPlay()
 {
+	// 먼저 델리게이트 해제 (오버랩 콜백이 더 이상 호출되지 않도록)
+	// PIE 종료 시 순서 문제로 인한 크래시 방지
+	if (AActor* Owner = GetOwner())
+	{
+		if (!Owner->IsPendingDestroy())
+		{
+			Owner->OnComponentBeginOverlap.Remove(BeginHandleLua);
+			Owner->OnComponentEndOverlap.Remove(EndHandleLua);
+			// Owner->OnComponentHit.Remove(HitHandleLua);
+		}
+	}
+
+	// Lua OnEndPlay 콜백 호출
 	if (FuncEndPlay.valid())
 	{
 		auto Result = FuncEndPlay();
@@ -207,14 +262,6 @@ void ULuaScriptComponent::EndPlay()
 			GEngine.EndPIE();
 #endif
 		}
-	}
-
-	// BeginPlay에서 등록한 델리게이트를 대칭적으로 해제
-	if (AActor* Owner = GetOwner())
-	{
-		Owner->OnComponentBeginOverlap.Remove(BeginHandleLua);
-		Owner->OnComponentEndOverlap.Remove(EndHandleLua);
-		// Owner->OnComponentHit.Remove(HitHandleLua);
 	}
 
 	// 모든 Lua 관련 리소스 정리

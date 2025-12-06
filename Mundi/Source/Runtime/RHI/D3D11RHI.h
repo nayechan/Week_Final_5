@@ -299,6 +299,7 @@ private:
 	ID3D11Texture2D* IdStagingBuffer{};
 
 	ID3D11RenderTargetView* IdBufferRTV{};
+	ID3D11ShaderResourceView* IdBufferSRV{};
 	ID3D11RenderTargetView* BackBufferRTV{};
 	ID3D11DepthStencilView* DepthStencilView{};
 

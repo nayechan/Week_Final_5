@@ -74,6 +74,18 @@ public:
 	// Deferred buffer release system (GPU-safe resource management)
 	void DeferredReleaseBuffer(ID3D11Buffer* Buffer);
 
+	// ===== Highlight System (아이템 하이라이트용) =====
+	/** 오브젝트에 하이라이트 추가 (ObjectID 기반) */
+	void AddHighlight(uint32 ObjectID, const FLinearColor& OutlineColor = FLinearColor(1.0f, 0.8f, 0.2f, 1.0f));
+	/** 오브젝트의 하이라이트 제거 */
+	void RemoveHighlight(uint32 ObjectID);
+	/** 모든 하이라이트 제거 */
+	void ClearHighlights();
+	/** 현재 하이라이트된 오브젝트 목록 반환 */
+	const TMap<uint32, FLinearColor>& GetHighlightedObjects() const { return HighlightedObjects; }
+	/** 하이라이트가 있는지 확인 */
+	bool HasHighlights() const { return !HighlightedObjects.empty(); }
+
 private:
 	// Deferred release structure
 	struct FDeferredRelease
@@ -125,5 +137,8 @@ private:
 	ID3D11ShaderResourceView* PreSRV = nullptr;*/
 
 	ACameraActor* CurrentCamera = nullptr;
+
+	// Highlight system (ObjectID -> OutlineColor)
+	TMap<uint32, FLinearColor> HighlightedObjects;
 };
 
