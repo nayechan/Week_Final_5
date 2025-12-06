@@ -38,42 +38,47 @@ void USkyboxComponent::InitializeRenderingResources()
 		// 내부에서 보이도록 winding 설정
 		// LH Z-up 좌표계: +X=Forward, +Y=Right, +Z=Up
 		// 순서: Front(+X), Back(-X), Top(+Z), Bottom(-Z), Right(+Y), Left(-Y)
+
+		// UV bias로 텍스처 가장자리 bleeding 방지
+		constexpr float UVMin = 0.001f;
+		constexpr float UVMax = 0.999f;
+
 		FSkyboxVertex Vertices[] = {
 			// Front (+X) - 카메라가 +X를 바라볼 때 (up=+Z, right=+Y)
-			{  1.0f, -1.0f,  1.0f, 0.0f, 0.0f },  // top-left
-			{  1.0f,  1.0f,  1.0f, 1.0f, 0.0f },  // top-right
-			{  1.0f,  1.0f, -1.0f, 1.0f, 1.0f },  // bottom-right
-			{  1.0f, -1.0f, -1.0f, 0.0f, 1.0f },  // bottom-left
+			{  1.0f, -1.0f,  1.0f, UVMin, UVMin },  // top-left
+			{  1.0f,  1.0f,  1.0f, UVMax, UVMin },  // top-right
+			{  1.0f,  1.0f, -1.0f, UVMax, UVMax },  // bottom-right
+			{  1.0f, -1.0f, -1.0f, UVMin, UVMax },  // bottom-left
 
 			// Back (-X) - 카메라가 -X를 바라볼 때 (up=+Z, right=-Y)
-			{ -1.0f,  1.0f,  1.0f, 0.0f, 0.0f },  // top-left
-			{ -1.0f, -1.0f,  1.0f, 1.0f, 0.0f },  // top-right
-			{ -1.0f, -1.0f, -1.0f, 1.0f, 1.0f },  // bottom-right
-			{ -1.0f,  1.0f, -1.0f, 0.0f, 1.0f },  // bottom-left
+			{ -1.0f,  1.0f,  1.0f, UVMin, UVMin },  // top-left
+			{ -1.0f, -1.0f,  1.0f, UVMax, UVMin },  // top-right
+			{ -1.0f, -1.0f, -1.0f, UVMax, UVMax },  // bottom-right
+			{ -1.0f,  1.0f, -1.0f, UVMin, UVMax },  // bottom-left
 
 			// Top (+Z) - UV 시계방향 90도 회전
-			{  1.0f, -1.0f,  1.0f, 1.0f, 1.0f },
-			{  1.0f,  1.0f,  1.0f, 1.0f, 0.0f },
-			{ -1.0f,  1.0f,  1.0f, 0.0f, 0.0f },
-			{ -1.0f, -1.0f,  1.0f, 0.0f, 1.0f },
+			{  1.0f, -1.0f,  1.0f, UVMax, UVMax },
+			{  1.0f,  1.0f,  1.0f, UVMax, UVMin },
+			{ -1.0f,  1.0f,  1.0f, UVMin, UVMin },
+			{ -1.0f, -1.0f,  1.0f, UVMin, UVMax },
 
 			// Bottom (-Z) - UV 시계방향 90도 회전
-			{  1.0f, -1.0f, -1.0f, 1.0f, 0.0f },
-			{  1.0f,  1.0f, -1.0f, 1.0f, 1.0f },
-			{ -1.0f,  1.0f, -1.0f, 0.0f, 1.0f },
-			{ -1.0f, -1.0f, -1.0f, 0.0f, 0.0f },
+			{  1.0f, -1.0f, -1.0f, UVMax, UVMin },
+			{  1.0f,  1.0f, -1.0f, UVMax, UVMax },
+			{ -1.0f,  1.0f, -1.0f, UVMin, UVMax },
+			{ -1.0f, -1.0f, -1.0f, UVMin, UVMin },
 
 			// Right (+Y) - 카메라가 +Y를 바라볼 때 (up=+Z, right=-X)
-			{  1.0f,  1.0f,  1.0f, 0.0f, 0.0f },  // top-left
-			{ -1.0f,  1.0f,  1.0f, 1.0f, 0.0f },  // top-right
-			{ -1.0f,  1.0f, -1.0f, 1.0f, 1.0f },  // bottom-right
-			{  1.0f,  1.0f, -1.0f, 0.0f, 1.0f },  // bottom-left
+			{  1.0f,  1.0f,  1.0f, UVMin, UVMin },  // top-left
+			{ -1.0f,  1.0f,  1.0f, UVMax, UVMin },  // top-right
+			{ -1.0f,  1.0f, -1.0f, UVMax, UVMax },  // bottom-right
+			{  1.0f,  1.0f, -1.0f, UVMin, UVMax },  // bottom-left
 
 			// Left (-Y) - 카메라가 -Y를 바라볼 때 (up=+Z, right=+X)
-			{ -1.0f, -1.0f,  1.0f, 0.0f, 0.0f },  // top-left
-			{  1.0f, -1.0f,  1.0f, 1.0f, 0.0f },  // top-right
-			{  1.0f, -1.0f, -1.0f, 1.0f, 1.0f },  // bottom-right
-			{ -1.0f, -1.0f, -1.0f, 0.0f, 1.0f },  // bottom-left
+			{ -1.0f, -1.0f,  1.0f, UVMin, UVMin },  // top-left
+			{  1.0f, -1.0f,  1.0f, UVMax, UVMin },  // top-right
+			{  1.0f, -1.0f, -1.0f, UVMax, UVMax },  // bottom-right
+			{ -1.0f, -1.0f, -1.0f, UVMin, UVMax },  // bottom-left
 		};
 
 		// 인덱스 (각 면 2개 삼각형, 총 36개)
